@@ -29,14 +29,13 @@ const opAcceptInvitation = "AcceptInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptInvitationRequest method.
+//	req, resp := client.AcceptInvitationRequest(params)
 //
-//    // Example sending a request using the AcceptInvitationRequest method.
-//    req, resp := client.AcceptInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/AcceptInvitation
 func (c *GuardDuty) AcceptInvitationRequest(input *AcceptInvitationInput) (req *request.Request, output *AcceptInvitationOutput) {
@@ -68,11 +67,12 @@ func (c *GuardDuty) AcceptInvitationRequest(input *AcceptInvitationInput) (req *
 // API operation AcceptInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/AcceptInvitation
 func (c *GuardDuty) AcceptInvitation(input *AcceptInvitationInput) (*AcceptInvitationOutput, error) {
@@ -112,14 +112,13 @@ const opArchiveFindings = "ArchiveFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ArchiveFindingsRequest method.
+//	req, resp := client.ArchiveFindingsRequest(params)
 //
-//    // Example sending a request using the ArchiveFindingsRequest method.
-//    req, resp := client.ArchiveFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ArchiveFindings
 func (c *GuardDuty) ArchiveFindingsRequest(input *ArchiveFindingsInput) (req *request.Request, output *ArchiveFindingsOutput) {
@@ -154,11 +153,12 @@ func (c *GuardDuty) ArchiveFindingsRequest(input *ArchiveFindingsInput) (req *re
 // API operation ArchiveFindings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ArchiveFindings
 func (c *GuardDuty) ArchiveFindings(input *ArchiveFindingsInput) (*ArchiveFindingsOutput, error) {
@@ -198,14 +198,13 @@ const opCreateDetector = "CreateDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDetectorRequest method.
+//	req, resp := client.CreateDetectorRequest(params)
 //
-//    // Example sending a request using the CreateDetectorRequest method.
-//    req, resp := client.CreateDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateDetector
 func (c *GuardDuty) CreateDetectorRequest(input *CreateDetectorInput) (req *request.Request, output *CreateDetectorOutput) {
@@ -240,11 +239,12 @@ func (c *GuardDuty) CreateDetectorRequest(input *CreateDetectorInput) (req *requ
 // API operation CreateDetector for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateDetector
 func (c *GuardDuty) CreateDetector(input *CreateDetectorInput) (*CreateDetectorOutput, error) {
@@ -284,14 +284,13 @@ const opCreateFilter = "CreateFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFilterRequest method.
+//	req, resp := client.CreateFilterRequest(params)
 //
-//    // Example sending a request using the CreateFilterRequest method.
-//    req, resp := client.CreateFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateFilter
 func (c *GuardDuty) CreateFilterRequest(input *CreateFilterInput) (req *request.Request, output *CreateFilterOutput) {
@@ -322,11 +321,12 @@ func (c *GuardDuty) CreateFilterRequest(input *CreateFilterInput) (req *request.
 // API operation CreateFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateFilter
 func (c *GuardDuty) CreateFilter(input *CreateFilterInput) (*CreateFilterOutput, error) {
@@ -366,14 +366,13 @@ const opCreateIPSet = "CreateIPSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIPSetRequest method.
+//	req, resp := client.CreateIPSetRequest(params)
 //
-//    // Example sending a request using the CreateIPSetRequest method.
-//    req, resp := client.CreateIPSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateIPSet
 func (c *GuardDuty) CreateIPSetRequest(input *CreateIPSetInput) (req *request.Request, output *CreateIPSetOutput) {
@@ -408,11 +407,12 @@ func (c *GuardDuty) CreateIPSetRequest(input *CreateIPSetInput) (req *request.Re
 // API operation CreateIPSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateIPSet
 func (c *GuardDuty) CreateIPSet(input *CreateIPSetInput) (*CreateIPSetOutput, error) {
@@ -452,14 +452,13 @@ const opCreateMembers = "CreateMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMembersRequest method.
+//	req, resp := client.CreateMembersRequest(params)
 //
-//    // Example sending a request using the CreateMembersRequest method.
-//    req, resp := client.CreateMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateMembers
 func (c *GuardDuty) CreateMembersRequest(input *CreateMembersInput) (req *request.Request, output *CreateMembersOutput) {
@@ -502,11 +501,12 @@ func (c *GuardDuty) CreateMembersRequest(input *CreateMembersInput) (req *reques
 // API operation CreateMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateMembers
 func (c *GuardDuty) CreateMembers(input *CreateMembersInput) (*CreateMembersOutput, error) {
@@ -546,14 +546,13 @@ const opCreatePublishingDestination = "CreatePublishingDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePublishingDestinationRequest method.
+//	req, resp := client.CreatePublishingDestinationRequest(params)
 //
-//    // Example sending a request using the CreatePublishingDestinationRequest method.
-//    req, resp := client.CreatePublishingDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreatePublishingDestination
 func (c *GuardDuty) CreatePublishingDestinationRequest(input *CreatePublishingDestinationInput) (req *request.Request, output *CreatePublishingDestinationOutput) {
@@ -585,11 +584,12 @@ func (c *GuardDuty) CreatePublishingDestinationRequest(input *CreatePublishingDe
 // API operation CreatePublishingDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreatePublishingDestination
 func (c *GuardDuty) CreatePublishingDestination(input *CreatePublishingDestinationInput) (*CreatePublishingDestinationOutput, error) {
@@ -629,14 +629,13 @@ const opCreateSampleFindings = "CreateSampleFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSampleFindingsRequest method.
+//	req, resp := client.CreateSampleFindingsRequest(params)
 //
-//    // Example sending a request using the CreateSampleFindingsRequest method.
-//    req, resp := client.CreateSampleFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateSampleFindings
 func (c *GuardDuty) CreateSampleFindingsRequest(input *CreateSampleFindingsInput) (req *request.Request, output *CreateSampleFindingsOutput) {
@@ -670,11 +669,12 @@ func (c *GuardDuty) CreateSampleFindingsRequest(input *CreateSampleFindingsInput
 // API operation CreateSampleFindings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateSampleFindings
 func (c *GuardDuty) CreateSampleFindings(input *CreateSampleFindingsInput) (*CreateSampleFindingsOutput, error) {
@@ -714,14 +714,13 @@ const opCreateThreatIntelSet = "CreateThreatIntelSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateThreatIntelSetRequest method.
+//	req, resp := client.CreateThreatIntelSetRequest(params)
 //
-//    // Example sending a request using the CreateThreatIntelSetRequest method.
-//    req, resp := client.CreateThreatIntelSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateThreatIntelSet
 func (c *GuardDuty) CreateThreatIntelSetRequest(input *CreateThreatIntelSetInput) (req *request.Request, output *CreateThreatIntelSetOutput) {
@@ -754,11 +753,12 @@ func (c *GuardDuty) CreateThreatIntelSetRequest(input *CreateThreatIntelSetInput
 // API operation CreateThreatIntelSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/CreateThreatIntelSet
 func (c *GuardDuty) CreateThreatIntelSet(input *CreateThreatIntelSetInput) (*CreateThreatIntelSetOutput, error) {
@@ -798,14 +798,13 @@ const opDeclineInvitations = "DeclineInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeclineInvitationsRequest method.
+//	req, resp := client.DeclineInvitationsRequest(params)
 //
-//    // Example sending a request using the DeclineInvitationsRequest method.
-//    req, resp := client.DeclineInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeclineInvitations
 func (c *GuardDuty) DeclineInvitationsRequest(input *DeclineInvitationsInput) (req *request.Request, output *DeclineInvitationsOutput) {
@@ -837,11 +836,12 @@ func (c *GuardDuty) DeclineInvitationsRequest(input *DeclineInvitationsInput) (r
 // API operation DeclineInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeclineInvitations
 func (c *GuardDuty) DeclineInvitations(input *DeclineInvitationsInput) (*DeclineInvitationsOutput, error) {
@@ -881,14 +881,13 @@ const opDeleteDetector = "DeleteDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDetectorRequest method.
+//	req, resp := client.DeleteDetectorRequest(params)
 //
-//    // Example sending a request using the DeleteDetectorRequest method.
-//    req, resp := client.DeleteDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteDetector
 func (c *GuardDuty) DeleteDetectorRequest(input *DeleteDetectorInput) (req *request.Request, output *DeleteDetectorOutput) {
@@ -920,11 +919,12 @@ func (c *GuardDuty) DeleteDetectorRequest(input *DeleteDetectorInput) (req *requ
 // API operation DeleteDetector for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteDetector
 func (c *GuardDuty) DeleteDetector(input *DeleteDetectorInput) (*DeleteDetectorOutput, error) {
@@ -964,14 +964,13 @@ const opDeleteFilter = "DeleteFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFilterRequest method.
+//	req, resp := client.DeleteFilterRequest(params)
 //
-//    // Example sending a request using the DeleteFilterRequest method.
-//    req, resp := client.DeleteFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteFilter
 func (c *GuardDuty) DeleteFilterRequest(input *DeleteFilterInput) (req *request.Request, output *DeleteFilterOutput) {
@@ -1003,11 +1002,12 @@ func (c *GuardDuty) DeleteFilterRequest(input *DeleteFilterInput) (req *request.
 // API operation DeleteFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteFilter
 func (c *GuardDuty) DeleteFilter(input *DeleteFilterInput) (*DeleteFilterOutput, error) {
@@ -1047,14 +1047,13 @@ const opDeleteIPSet = "DeleteIPSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIPSetRequest method.
+//	req, resp := client.DeleteIPSetRequest(params)
 //
-//    // Example sending a request using the DeleteIPSetRequest method.
-//    req, resp := client.DeleteIPSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteIPSet
 func (c *GuardDuty) DeleteIPSetRequest(input *DeleteIPSetInput) (req *request.Request, output *DeleteIPSetOutput) {
@@ -1087,11 +1086,12 @@ func (c *GuardDuty) DeleteIPSetRequest(input *DeleteIPSetInput) (req *request.Re
 // API operation DeleteIPSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteIPSet
 func (c *GuardDuty) DeleteIPSet(input *DeleteIPSetInput) (*DeleteIPSetOutput, error) {
@@ -1131,14 +1131,13 @@ const opDeleteInvitations = "DeleteInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInvitationsRequest method.
+//	req, resp := client.DeleteInvitationsRequest(params)
 //
-//    // Example sending a request using the DeleteInvitationsRequest method.
-//    req, resp := client.DeleteInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteInvitations
 func (c *GuardDuty) DeleteInvitationsRequest(input *DeleteInvitationsInput) (req *request.Request, output *DeleteInvitationsOutput) {
@@ -1170,11 +1169,12 @@ func (c *GuardDuty) DeleteInvitationsRequest(input *DeleteInvitationsInput) (req
 // API operation DeleteInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteInvitations
 func (c *GuardDuty) DeleteInvitations(input *DeleteInvitationsInput) (*DeleteInvitationsOutput, error) {
@@ -1214,14 +1214,13 @@ const opDeleteMembers = "DeleteMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMembersRequest method.
+//	req, resp := client.DeleteMembersRequest(params)
 //
-//    // Example sending a request using the DeleteMembersRequest method.
-//    req, resp := client.DeleteMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteMembers
 func (c *GuardDuty) DeleteMembersRequest(input *DeleteMembersInput) (req *request.Request, output *DeleteMembersOutput) {
@@ -1253,11 +1252,12 @@ func (c *GuardDuty) DeleteMembersRequest(input *DeleteMembersInput) (req *reques
 // API operation DeleteMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteMembers
 func (c *GuardDuty) DeleteMembers(input *DeleteMembersInput) (*DeleteMembersOutput, error) {
@@ -1297,14 +1297,13 @@ const opDeletePublishingDestination = "DeletePublishingDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePublishingDestinationRequest method.
+//	req, resp := client.DeletePublishingDestinationRequest(params)
 //
-//    // Example sending a request using the DeletePublishingDestinationRequest method.
-//    req, resp := client.DeletePublishingDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeletePublishingDestination
 func (c *GuardDuty) DeletePublishingDestinationRequest(input *DeletePublishingDestinationInput) (req *request.Request, output *DeletePublishingDestinationOutput) {
@@ -1336,11 +1335,12 @@ func (c *GuardDuty) DeletePublishingDestinationRequest(input *DeletePublishingDe
 // API operation DeletePublishingDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeletePublishingDestination
 func (c *GuardDuty) DeletePublishingDestination(input *DeletePublishingDestinationInput) (*DeletePublishingDestinationOutput, error) {
@@ -1380,14 +1380,13 @@ const opDeleteThreatIntelSet = "DeleteThreatIntelSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteThreatIntelSetRequest method.
+//	req, resp := client.DeleteThreatIntelSetRequest(params)
 //
-//    // Example sending a request using the DeleteThreatIntelSetRequest method.
-//    req, resp := client.DeleteThreatIntelSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteThreatIntelSet
 func (c *GuardDuty) DeleteThreatIntelSetRequest(input *DeleteThreatIntelSetInput) (req *request.Request, output *DeleteThreatIntelSetOutput) {
@@ -1419,11 +1418,12 @@ func (c *GuardDuty) DeleteThreatIntelSetRequest(input *DeleteThreatIntelSetInput
 // API operation DeleteThreatIntelSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DeleteThreatIntelSet
 func (c *GuardDuty) DeleteThreatIntelSet(input *DeleteThreatIntelSetInput) (*DeleteThreatIntelSetOutput, error) {
@@ -1463,14 +1463,13 @@ const opDescribeOrganizationConfiguration = "DescribeOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationConfigurationRequest method.
+//	req, resp := client.DescribeOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationConfigurationRequest method.
-//    req, resp := client.DescribeOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DescribeOrganizationConfiguration
 func (c *GuardDuty) DescribeOrganizationConfigurationRequest(input *DescribeOrganizationConfigurationInput) (req *request.Request, output *DescribeOrganizationConfigurationOutput) {
@@ -1502,11 +1501,12 @@ func (c *GuardDuty) DescribeOrganizationConfigurationRequest(input *DescribeOrga
 // API operation DescribeOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DescribeOrganizationConfiguration
 func (c *GuardDuty) DescribeOrganizationConfiguration(input *DescribeOrganizationConfigurationInput) (*DescribeOrganizationConfigurationOutput, error) {
@@ -1546,14 +1546,13 @@ const opDescribePublishingDestination = "DescribePublishingDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePublishingDestinationRequest method.
+//	req, resp := client.DescribePublishingDestinationRequest(params)
 //
-//    // Example sending a request using the DescribePublishingDestinationRequest method.
-//    req, resp := client.DescribePublishingDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DescribePublishingDestination
 func (c *GuardDuty) DescribePublishingDestinationRequest(input *DescribePublishingDestinationInput) (req *request.Request, output *DescribePublishingDestinationOutput) {
@@ -1585,11 +1584,12 @@ func (c *GuardDuty) DescribePublishingDestinationRequest(input *DescribePublishi
 // API operation DescribePublishingDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DescribePublishingDestination
 func (c *GuardDuty) DescribePublishingDestination(input *DescribePublishingDestinationInput) (*DescribePublishingDestinationOutput, error) {
@@ -1629,14 +1629,13 @@ const opDisableOrganizationAdminAccount = "DisableOrganizationAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableOrganizationAdminAccountRequest method.
+//	req, resp := client.DisableOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the DisableOrganizationAdminAccountRequest method.
-//    req, resp := client.DisableOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisableOrganizationAdminAccount
 func (c *GuardDuty) DisableOrganizationAdminAccountRequest(input *DisableOrganizationAdminAccountInput) (req *request.Request, output *DisableOrganizationAdminAccountOutput) {
@@ -1669,11 +1668,12 @@ func (c *GuardDuty) DisableOrganizationAdminAccountRequest(input *DisableOrganiz
 // API operation DisableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisableOrganizationAdminAccount
 func (c *GuardDuty) DisableOrganizationAdminAccount(input *DisableOrganizationAdminAccountInput) (*DisableOrganizationAdminAccountOutput, error) {
@@ -1713,14 +1713,13 @@ const opDisassociateFromMasterAccount = "DisassociateFromMasterAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateFromMasterAccountRequest method.
+//	req, resp := client.DisassociateFromMasterAccountRequest(params)
 //
-//    // Example sending a request using the DisassociateFromMasterAccountRequest method.
-//    req, resp := client.DisassociateFromMasterAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisassociateFromMasterAccount
 func (c *GuardDuty) DisassociateFromMasterAccountRequest(input *DisassociateFromMasterAccountInput) (req *request.Request, output *DisassociateFromMasterAccountOutput) {
@@ -1753,11 +1752,12 @@ func (c *GuardDuty) DisassociateFromMasterAccountRequest(input *DisassociateFrom
 // API operation DisassociateFromMasterAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisassociateFromMasterAccount
 func (c *GuardDuty) DisassociateFromMasterAccount(input *DisassociateFromMasterAccountInput) (*DisassociateFromMasterAccountOutput, error) {
@@ -1797,14 +1797,13 @@ const opDisassociateMembers = "DisassociateMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateMembersRequest method.
+//	req, resp := client.DisassociateMembersRequest(params)
 //
-//    // Example sending a request using the DisassociateMembersRequest method.
-//    req, resp := client.DisassociateMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisassociateMembers
 func (c *GuardDuty) DisassociateMembersRequest(input *DisassociateMembersInput) (req *request.Request, output *DisassociateMembersOutput) {
@@ -1839,11 +1838,12 @@ func (c *GuardDuty) DisassociateMembersRequest(input *DisassociateMembersInput) 
 // API operation DisassociateMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/DisassociateMembers
 func (c *GuardDuty) DisassociateMembers(input *DisassociateMembersInput) (*DisassociateMembersOutput, error) {
@@ -1883,14 +1883,13 @@ const opEnableOrganizationAdminAccount = "EnableOrganizationAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableOrganizationAdminAccountRequest method.
+//	req, resp := client.EnableOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the EnableOrganizationAdminAccountRequest method.
-//    req, resp := client.EnableOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/EnableOrganizationAdminAccount
 func (c *GuardDuty) EnableOrganizationAdminAccountRequest(input *EnableOrganizationAdminAccountInput) (req *request.Request, output *EnableOrganizationAdminAccountOutput) {
@@ -1923,11 +1922,12 @@ func (c *GuardDuty) EnableOrganizationAdminAccountRequest(input *EnableOrganizat
 // API operation EnableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/EnableOrganizationAdminAccount
 func (c *GuardDuty) EnableOrganizationAdminAccount(input *EnableOrganizationAdminAccountInput) (*EnableOrganizationAdminAccountOutput, error) {
@@ -1967,14 +1967,13 @@ const opGetDetector = "GetDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDetectorRequest method.
+//	req, resp := client.GetDetectorRequest(params)
 //
-//    // Example sending a request using the GetDetectorRequest method.
-//    req, resp := client.GetDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetDetector
 func (c *GuardDuty) GetDetectorRequest(input *GetDetectorInput) (req *request.Request, output *GetDetectorOutput) {
@@ -2005,11 +2004,12 @@ func (c *GuardDuty) GetDetectorRequest(input *GetDetectorInput) (req *request.Re
 // API operation GetDetector for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetDetector
 func (c *GuardDuty) GetDetector(input *GetDetectorInput) (*GetDetectorOutput, error) {
@@ -2049,14 +2049,13 @@ const opGetFilter = "GetFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFilterRequest method.
+//	req, resp := client.GetFilterRequest(params)
 //
-//    // Example sending a request using the GetFilterRequest method.
-//    req, resp := client.GetFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFilter
 func (c *GuardDuty) GetFilterRequest(input *GetFilterInput) (req *request.Request, output *GetFilterOutput) {
@@ -2087,11 +2086,12 @@ func (c *GuardDuty) GetFilterRequest(input *GetFilterInput) (req *request.Reques
 // API operation GetFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFilter
 func (c *GuardDuty) GetFilter(input *GetFilterInput) (*GetFilterOutput, error) {
@@ -2131,14 +2131,13 @@ const opGetFindings = "GetFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingsRequest method.
+//	req, resp := client.GetFindingsRequest(params)
 //
-//    // Example sending a request using the GetFindingsRequest method.
-//    req, resp := client.GetFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFindings
 func (c *GuardDuty) GetFindingsRequest(input *GetFindingsInput) (req *request.Request, output *GetFindingsOutput) {
@@ -2169,11 +2168,12 @@ func (c *GuardDuty) GetFindingsRequest(input *GetFindingsInput) (req *request.Re
 // API operation GetFindings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFindings
 func (c *GuardDuty) GetFindings(input *GetFindingsInput) (*GetFindingsOutput, error) {
@@ -2213,14 +2213,13 @@ const opGetFindingsStatistics = "GetFindingsStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingsStatisticsRequest method.
+//	req, resp := client.GetFindingsStatisticsRequest(params)
 //
-//    // Example sending a request using the GetFindingsStatisticsRequest method.
-//    req, resp := client.GetFindingsStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFindingsStatistics
 func (c *GuardDuty) GetFindingsStatisticsRequest(input *GetFindingsStatisticsInput) (req *request.Request, output *GetFindingsStatisticsOutput) {
@@ -2251,11 +2250,12 @@ func (c *GuardDuty) GetFindingsStatisticsRequest(input *GetFindingsStatisticsInp
 // API operation GetFindingsStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetFindingsStatistics
 func (c *GuardDuty) GetFindingsStatistics(input *GetFindingsStatisticsInput) (*GetFindingsStatisticsOutput, error) {
@@ -2295,14 +2295,13 @@ const opGetIPSet = "GetIPSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIPSetRequest method.
+//	req, resp := client.GetIPSetRequest(params)
 //
-//    // Example sending a request using the GetIPSetRequest method.
-//    req, resp := client.GetIPSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetIPSet
 func (c *GuardDuty) GetIPSetRequest(input *GetIPSetInput) (req *request.Request, output *GetIPSetOutput) {
@@ -2333,11 +2332,12 @@ func (c *GuardDuty) GetIPSetRequest(input *GetIPSetInput) (req *request.Request,
 // API operation GetIPSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetIPSet
 func (c *GuardDuty) GetIPSet(input *GetIPSetInput) (*GetIPSetOutput, error) {
@@ -2377,14 +2377,13 @@ const opGetInvitationsCount = "GetInvitationsCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInvitationsCountRequest method.
+//	req, resp := client.GetInvitationsCountRequest(params)
 //
-//    // Example sending a request using the GetInvitationsCountRequest method.
-//    req, resp := client.GetInvitationsCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetInvitationsCount
 func (c *GuardDuty) GetInvitationsCountRequest(input *GetInvitationsCountInput) (req *request.Request, output *GetInvitationsCountOutput) {
@@ -2416,11 +2415,12 @@ func (c *GuardDuty) GetInvitationsCountRequest(input *GetInvitationsCountInput) 
 // API operation GetInvitationsCount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetInvitationsCount
 func (c *GuardDuty) GetInvitationsCount(input *GetInvitationsCountInput) (*GetInvitationsCountOutput, error) {
@@ -2460,14 +2460,13 @@ const opGetMasterAccount = "GetMasterAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMasterAccountRequest method.
+//	req, resp := client.GetMasterAccountRequest(params)
 //
-//    // Example sending a request using the GetMasterAccountRequest method.
-//    req, resp := client.GetMasterAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMasterAccount
 func (c *GuardDuty) GetMasterAccountRequest(input *GetMasterAccountInput) (req *request.Request, output *GetMasterAccountOutput) {
@@ -2499,11 +2498,12 @@ func (c *GuardDuty) GetMasterAccountRequest(input *GetMasterAccountInput) (req *
 // API operation GetMasterAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMasterAccount
 func (c *GuardDuty) GetMasterAccount(input *GetMasterAccountInput) (*GetMasterAccountOutput, error) {
@@ -2543,14 +2543,13 @@ const opGetMemberDetectors = "GetMemberDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMemberDetectorsRequest method.
+//	req, resp := client.GetMemberDetectorsRequest(params)
 //
-//    // Example sending a request using the GetMemberDetectorsRequest method.
-//    req, resp := client.GetMemberDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMemberDetectors
 func (c *GuardDuty) GetMemberDetectorsRequest(input *GetMemberDetectorsInput) (req *request.Request, output *GetMemberDetectorsOutput) {
@@ -2581,11 +2580,12 @@ func (c *GuardDuty) GetMemberDetectorsRequest(input *GetMemberDetectorsInput) (r
 // API operation GetMemberDetectors for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMemberDetectors
 func (c *GuardDuty) GetMemberDetectors(input *GetMemberDetectorsInput) (*GetMemberDetectorsOutput, error) {
@@ -2625,14 +2625,13 @@ const opGetMembers = "GetMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMembersRequest method.
+//	req, resp := client.GetMembersRequest(params)
 //
-//    // Example sending a request using the GetMembersRequest method.
-//    req, resp := client.GetMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMembers
 func (c *GuardDuty) GetMembersRequest(input *GetMembersInput) (req *request.Request, output *GetMembersOutput) {
@@ -2664,11 +2663,12 @@ func (c *GuardDuty) GetMembersRequest(input *GetMembersInput) (req *request.Requ
 // API operation GetMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetMembers
 func (c *GuardDuty) GetMembers(input *GetMembersInput) (*GetMembersOutput, error) {
@@ -2708,14 +2708,13 @@ const opGetThreatIntelSet = "GetThreatIntelSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetThreatIntelSetRequest method.
+//	req, resp := client.GetThreatIntelSetRequest(params)
 //
-//    // Example sending a request using the GetThreatIntelSetRequest method.
-//    req, resp := client.GetThreatIntelSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetThreatIntelSet
 func (c *GuardDuty) GetThreatIntelSetRequest(input *GetThreatIntelSetInput) (req *request.Request, output *GetThreatIntelSetOutput) {
@@ -2746,11 +2745,12 @@ func (c *GuardDuty) GetThreatIntelSetRequest(input *GetThreatIntelSetInput) (req
 // API operation GetThreatIntelSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetThreatIntelSet
 func (c *GuardDuty) GetThreatIntelSet(input *GetThreatIntelSetInput) (*GetThreatIntelSetOutput, error) {
@@ -2790,14 +2790,13 @@ const opGetUsageStatistics = "GetUsageStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsageStatisticsRequest method.
+//	req, resp := client.GetUsageStatisticsRequest(params)
 //
-//    // Example sending a request using the GetUsageStatisticsRequest method.
-//    req, resp := client.GetUsageStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetUsageStatistics
 func (c *GuardDuty) GetUsageStatisticsRequest(input *GetUsageStatisticsInput) (req *request.Request, output *GetUsageStatisticsOutput) {
@@ -2839,11 +2838,12 @@ func (c *GuardDuty) GetUsageStatisticsRequest(input *GetUsageStatisticsInput) (r
 // API operation GetUsageStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/GetUsageStatistics
 func (c *GuardDuty) GetUsageStatistics(input *GetUsageStatisticsInput) (*GetUsageStatisticsOutput, error) {
@@ -2875,15 +2875,14 @@ func (c *GuardDuty) GetUsageStatisticsWithContext(ctx aws.Context, input *GetUsa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUsageStatistics operation.
-//    pageNum := 0
-//    err := client.GetUsageStatisticsPages(params,
-//        func(page *guardduty.GetUsageStatisticsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUsageStatistics operation.
+//	pageNum := 0
+//	err := client.GetUsageStatisticsPages(params,
+//	    func(page *guardduty.GetUsageStatisticsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) GetUsageStatisticsPages(input *GetUsageStatisticsInput, fn func(*GetUsageStatisticsOutput, bool) bool) error {
 	return c.GetUsageStatisticsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2935,14 +2934,13 @@ const opInviteMembers = "InviteMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InviteMembersRequest method.
+//	req, resp := client.InviteMembersRequest(params)
 //
-//    // Example sending a request using the InviteMembersRequest method.
-//    req, resp := client.InviteMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/InviteMembers
 func (c *GuardDuty) InviteMembersRequest(input *InviteMembersInput) (req *request.Request, output *InviteMembersOutput) {
@@ -2976,11 +2974,12 @@ func (c *GuardDuty) InviteMembersRequest(input *InviteMembersInput) (req *reques
 // API operation InviteMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/InviteMembers
 func (c *GuardDuty) InviteMembers(input *InviteMembersInput) (*InviteMembersOutput, error) {
@@ -3020,14 +3019,13 @@ const opListDetectors = "ListDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDetectorsRequest method.
+//	req, resp := client.ListDetectorsRequest(params)
 //
-//    // Example sending a request using the ListDetectorsRequest method.
-//    req, resp := client.ListDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListDetectors
 func (c *GuardDuty) ListDetectorsRequest(input *ListDetectorsInput) (req *request.Request, output *ListDetectorsOutput) {
@@ -3064,11 +3062,12 @@ func (c *GuardDuty) ListDetectorsRequest(input *ListDetectorsInput) (req *reques
 // API operation ListDetectors for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListDetectors
 func (c *GuardDuty) ListDetectors(input *ListDetectorsInput) (*ListDetectorsOutput, error) {
@@ -3100,15 +3099,14 @@ func (c *GuardDuty) ListDetectorsWithContext(ctx aws.Context, input *ListDetecto
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDetectors operation.
-//    pageNum := 0
-//    err := client.ListDetectorsPages(params,
-//        func(page *guardduty.ListDetectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDetectors operation.
+//	pageNum := 0
+//	err := client.ListDetectorsPages(params,
+//	    func(page *guardduty.ListDetectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListDetectorsPages(input *ListDetectorsInput, fn func(*ListDetectorsOutput, bool) bool) error {
 	return c.ListDetectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3160,14 +3158,13 @@ const opListFilters = "ListFilters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFiltersRequest method.
+//	req, resp := client.ListFiltersRequest(params)
 //
-//    // Example sending a request using the ListFiltersRequest method.
-//    req, resp := client.ListFiltersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListFilters
 func (c *GuardDuty) ListFiltersRequest(input *ListFiltersInput) (req *request.Request, output *ListFiltersOutput) {
@@ -3204,11 +3201,12 @@ func (c *GuardDuty) ListFiltersRequest(input *ListFiltersInput) (req *request.Re
 // API operation ListFilters for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListFilters
 func (c *GuardDuty) ListFilters(input *ListFiltersInput) (*ListFiltersOutput, error) {
@@ -3240,15 +3238,14 @@ func (c *GuardDuty) ListFiltersWithContext(ctx aws.Context, input *ListFiltersIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFilters operation.
-//    pageNum := 0
-//    err := client.ListFiltersPages(params,
-//        func(page *guardduty.ListFiltersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFilters operation.
+//	pageNum := 0
+//	err := client.ListFiltersPages(params,
+//	    func(page *guardduty.ListFiltersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListFiltersPages(input *ListFiltersInput, fn func(*ListFiltersOutput, bool) bool) error {
 	return c.ListFiltersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3300,14 +3297,13 @@ const opListFindings = "ListFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingsRequest method.
+//	req, resp := client.ListFindingsRequest(params)
 //
-//    // Example sending a request using the ListFindingsRequest method.
-//    req, resp := client.ListFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListFindings
 func (c *GuardDuty) ListFindingsRequest(input *ListFindingsInput) (req *request.Request, output *ListFindingsOutput) {
@@ -3344,11 +3340,12 @@ func (c *GuardDuty) ListFindingsRequest(input *ListFindingsInput) (req *request.
 // API operation ListFindings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListFindings
 func (c *GuardDuty) ListFindings(input *ListFindingsInput) (*ListFindingsOutput, error) {
@@ -3380,15 +3377,14 @@ func (c *GuardDuty) ListFindingsWithContext(ctx aws.Context, input *ListFindings
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindings operation.
-//    pageNum := 0
-//    err := client.ListFindingsPages(params,
-//        func(page *guardduty.ListFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindings operation.
+//	pageNum := 0
+//	err := client.ListFindingsPages(params,
+//	    func(page *guardduty.ListFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListFindingsPages(input *ListFindingsInput, fn func(*ListFindingsOutput, bool) bool) error {
 	return c.ListFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3440,14 +3436,13 @@ const opListIPSets = "ListIPSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIPSetsRequest method.
+//	req, resp := client.ListIPSetsRequest(params)
 //
-//    // Example sending a request using the ListIPSetsRequest method.
-//    req, resp := client.ListIPSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListIPSets
 func (c *GuardDuty) ListIPSetsRequest(input *ListIPSetsInput) (req *request.Request, output *ListIPSetsOutput) {
@@ -3486,11 +3481,12 @@ func (c *GuardDuty) ListIPSetsRequest(input *ListIPSetsInput) (req *request.Requ
 // API operation ListIPSets for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListIPSets
 func (c *GuardDuty) ListIPSets(input *ListIPSetsInput) (*ListIPSetsOutput, error) {
@@ -3522,15 +3518,14 @@ func (c *GuardDuty) ListIPSetsWithContext(ctx aws.Context, input *ListIPSetsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIPSets operation.
-//    pageNum := 0
-//    err := client.ListIPSetsPages(params,
-//        func(page *guardduty.ListIPSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIPSets operation.
+//	pageNum := 0
+//	err := client.ListIPSetsPages(params,
+//	    func(page *guardduty.ListIPSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListIPSetsPages(input *ListIPSetsInput, fn func(*ListIPSetsOutput, bool) bool) error {
 	return c.ListIPSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3582,14 +3577,13 @@ const opListInvitations = "ListInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInvitationsRequest method.
+//	req, resp := client.ListInvitationsRequest(params)
 //
-//    // Example sending a request using the ListInvitationsRequest method.
-//    req, resp := client.ListInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListInvitations
 func (c *GuardDuty) ListInvitationsRequest(input *ListInvitationsInput) (req *request.Request, output *ListInvitationsOutput) {
@@ -3627,11 +3621,12 @@ func (c *GuardDuty) ListInvitationsRequest(input *ListInvitationsInput) (req *re
 // API operation ListInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListInvitations
 func (c *GuardDuty) ListInvitations(input *ListInvitationsInput) (*ListInvitationsOutput, error) {
@@ -3663,15 +3658,14 @@ func (c *GuardDuty) ListInvitationsWithContext(ctx aws.Context, input *ListInvit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInvitations operation.
-//    pageNum := 0
-//    err := client.ListInvitationsPages(params,
-//        func(page *guardduty.ListInvitationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInvitations operation.
+//	pageNum := 0
+//	err := client.ListInvitationsPages(params,
+//	    func(page *guardduty.ListInvitationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListInvitationsPages(input *ListInvitationsInput, fn func(*ListInvitationsOutput, bool) bool) error {
 	return c.ListInvitationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3723,14 +3717,13 @@ const opListMembers = "ListMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMembersRequest method.
+//	req, resp := client.ListMembersRequest(params)
 //
-//    // Example sending a request using the ListMembersRequest method.
-//    req, resp := client.ListMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListMembers
 func (c *GuardDuty) ListMembersRequest(input *ListMembersInput) (req *request.Request, output *ListMembersOutput) {
@@ -3768,11 +3761,12 @@ func (c *GuardDuty) ListMembersRequest(input *ListMembersInput) (req *request.Re
 // API operation ListMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListMembers
 func (c *GuardDuty) ListMembers(input *ListMembersInput) (*ListMembersOutput, error) {
@@ -3804,15 +3798,14 @@ func (c *GuardDuty) ListMembersWithContext(ctx aws.Context, input *ListMembersIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMembers operation.
-//    pageNum := 0
-//    err := client.ListMembersPages(params,
-//        func(page *guardduty.ListMembersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMembers operation.
+//	pageNum := 0
+//	err := client.ListMembersPages(params,
+//	    func(page *guardduty.ListMembersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListMembersPages(input *ListMembersInput, fn func(*ListMembersOutput, bool) bool) error {
 	return c.ListMembersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3864,14 +3857,13 @@ const opListOrganizationAdminAccounts = "ListOrganizationAdminAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOrganizationAdminAccountsRequest method.
+//	req, resp := client.ListOrganizationAdminAccountsRequest(params)
 //
-//    // Example sending a request using the ListOrganizationAdminAccountsRequest method.
-//    req, resp := client.ListOrganizationAdminAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListOrganizationAdminAccounts
 func (c *GuardDuty) ListOrganizationAdminAccountsRequest(input *ListOrganizationAdminAccountsInput) (req *request.Request, output *ListOrganizationAdminAccountsOutput) {
@@ -3908,11 +3900,12 @@ func (c *GuardDuty) ListOrganizationAdminAccountsRequest(input *ListOrganization
 // API operation ListOrganizationAdminAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListOrganizationAdminAccounts
 func (c *GuardDuty) ListOrganizationAdminAccounts(input *ListOrganizationAdminAccountsInput) (*ListOrganizationAdminAccountsOutput, error) {
@@ -3944,15 +3937,14 @@ func (c *GuardDuty) ListOrganizationAdminAccountsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOrganizationAdminAccounts operation.
-//    pageNum := 0
-//    err := client.ListOrganizationAdminAccountsPages(params,
-//        func(page *guardduty.ListOrganizationAdminAccountsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOrganizationAdminAccounts operation.
+//	pageNum := 0
+//	err := client.ListOrganizationAdminAccountsPages(params,
+//	    func(page *guardduty.ListOrganizationAdminAccountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListOrganizationAdminAccountsPages(input *ListOrganizationAdminAccountsInput, fn func(*ListOrganizationAdminAccountsOutput, bool) bool) error {
 	return c.ListOrganizationAdminAccountsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4004,14 +3996,13 @@ const opListPublishingDestinations = "ListPublishingDestinations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPublishingDestinationsRequest method.
+//	req, resp := client.ListPublishingDestinationsRequest(params)
 //
-//    // Example sending a request using the ListPublishingDestinationsRequest method.
-//    req, resp := client.ListPublishingDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListPublishingDestinations
 func (c *GuardDuty) ListPublishingDestinationsRequest(input *ListPublishingDestinationsInput) (req *request.Request, output *ListPublishingDestinationsOutput) {
@@ -4048,11 +4039,12 @@ func (c *GuardDuty) ListPublishingDestinationsRequest(input *ListPublishingDesti
 // API operation ListPublishingDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListPublishingDestinations
 func (c *GuardDuty) ListPublishingDestinations(input *ListPublishingDestinationsInput) (*ListPublishingDestinationsOutput, error) {
@@ -4084,15 +4076,14 @@ func (c *GuardDuty) ListPublishingDestinationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPublishingDestinations operation.
-//    pageNum := 0
-//    err := client.ListPublishingDestinationsPages(params,
-//        func(page *guardduty.ListPublishingDestinationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPublishingDestinations operation.
+//	pageNum := 0
+//	err := client.ListPublishingDestinationsPages(params,
+//	    func(page *guardduty.ListPublishingDestinationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListPublishingDestinationsPages(input *ListPublishingDestinationsInput, fn func(*ListPublishingDestinationsOutput, bool) bool) error {
 	return c.ListPublishingDestinationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4144,14 +4135,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListTagsForResource
 func (c *GuardDuty) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4185,11 +4175,12 @@ func (c *GuardDuty) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListTagsForResource
 func (c *GuardDuty) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4229,14 +4220,13 @@ const opListThreatIntelSets = "ListThreatIntelSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListThreatIntelSetsRequest method.
+//	req, resp := client.ListThreatIntelSetsRequest(params)
 //
-//    // Example sending a request using the ListThreatIntelSetsRequest method.
-//    req, resp := client.ListThreatIntelSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListThreatIntelSets
 func (c *GuardDuty) ListThreatIntelSetsRequest(input *ListThreatIntelSetsInput) (req *request.Request, output *ListThreatIntelSetsOutput) {
@@ -4275,11 +4265,12 @@ func (c *GuardDuty) ListThreatIntelSetsRequest(input *ListThreatIntelSetsInput) 
 // API operation ListThreatIntelSets for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/ListThreatIntelSets
 func (c *GuardDuty) ListThreatIntelSets(input *ListThreatIntelSetsInput) (*ListThreatIntelSetsOutput, error) {
@@ -4311,15 +4302,14 @@ func (c *GuardDuty) ListThreatIntelSetsWithContext(ctx aws.Context, input *ListT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListThreatIntelSets operation.
-//    pageNum := 0
-//    err := client.ListThreatIntelSetsPages(params,
-//        func(page *guardduty.ListThreatIntelSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListThreatIntelSets operation.
+//	pageNum := 0
+//	err := client.ListThreatIntelSetsPages(params,
+//	    func(page *guardduty.ListThreatIntelSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GuardDuty) ListThreatIntelSetsPages(input *ListThreatIntelSetsInput, fn func(*ListThreatIntelSetsOutput, bool) bool) error {
 	return c.ListThreatIntelSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4371,14 +4361,13 @@ const opStartMonitoringMembers = "StartMonitoringMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMonitoringMembersRequest method.
+//	req, resp := client.StartMonitoringMembersRequest(params)
 //
-//    // Example sending a request using the StartMonitoringMembersRequest method.
-//    req, resp := client.StartMonitoringMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/StartMonitoringMembers
 func (c *GuardDuty) StartMonitoringMembersRequest(input *StartMonitoringMembersInput) (req *request.Request, output *StartMonitoringMembersOutput) {
@@ -4411,11 +4400,12 @@ func (c *GuardDuty) StartMonitoringMembersRequest(input *StartMonitoringMembersI
 // API operation StartMonitoringMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/StartMonitoringMembers
 func (c *GuardDuty) StartMonitoringMembers(input *StartMonitoringMembersInput) (*StartMonitoringMembersOutput, error) {
@@ -4455,14 +4445,13 @@ const opStopMonitoringMembers = "StopMonitoringMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopMonitoringMembersRequest method.
+//	req, resp := client.StopMonitoringMembersRequest(params)
 //
-//    // Example sending a request using the StopMonitoringMembersRequest method.
-//    req, resp := client.StopMonitoringMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/StopMonitoringMembers
 func (c *GuardDuty) StopMonitoringMembersRequest(input *StopMonitoringMembersInput) (req *request.Request, output *StopMonitoringMembersOutput) {
@@ -4494,11 +4483,12 @@ func (c *GuardDuty) StopMonitoringMembersRequest(input *StopMonitoringMembersInp
 // API operation StopMonitoringMembers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/StopMonitoringMembers
 func (c *GuardDuty) StopMonitoringMembers(input *StopMonitoringMembersInput) (*StopMonitoringMembersOutput, error) {
@@ -4538,14 +4528,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/TagResource
 func (c *GuardDuty) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4577,11 +4566,12 @@ func (c *GuardDuty) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/TagResource
 func (c *GuardDuty) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4621,14 +4611,13 @@ const opUnarchiveFindings = "UnarchiveFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnarchiveFindingsRequest method.
+//	req, resp := client.UnarchiveFindingsRequest(params)
 //
-//    // Example sending a request using the UnarchiveFindingsRequest method.
-//    req, resp := client.UnarchiveFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UnarchiveFindings
 func (c *GuardDuty) UnarchiveFindingsRequest(input *UnarchiveFindingsInput) (req *request.Request, output *UnarchiveFindingsOutput) {
@@ -4660,11 +4649,12 @@ func (c *GuardDuty) UnarchiveFindingsRequest(input *UnarchiveFindingsInput) (req
 // API operation UnarchiveFindings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UnarchiveFindings
 func (c *GuardDuty) UnarchiveFindings(input *UnarchiveFindingsInput) (*UnarchiveFindingsOutput, error) {
@@ -4704,14 +4694,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UntagResource
 func (c *GuardDuty) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4743,11 +4732,12 @@ func (c *GuardDuty) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UntagResource
 func (c *GuardDuty) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4787,14 +4777,13 @@ const opUpdateDetector = "UpdateDetector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDetectorRequest method.
+//	req, resp := client.UpdateDetectorRequest(params)
 //
-//    // Example sending a request using the UpdateDetectorRequest method.
-//    req, resp := client.UpdateDetectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateDetector
 func (c *GuardDuty) UpdateDetectorRequest(input *UpdateDetectorInput) (req *request.Request, output *UpdateDetectorOutput) {
@@ -4826,11 +4815,12 @@ func (c *GuardDuty) UpdateDetectorRequest(input *UpdateDetectorInput) (req *requ
 // API operation UpdateDetector for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateDetector
 func (c *GuardDuty) UpdateDetector(input *UpdateDetectorInput) (*UpdateDetectorOutput, error) {
@@ -4870,14 +4860,13 @@ const opUpdateFilter = "UpdateFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFilterRequest method.
+//	req, resp := client.UpdateFilterRequest(params)
 //
-//    // Example sending a request using the UpdateFilterRequest method.
-//    req, resp := client.UpdateFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateFilter
 func (c *GuardDuty) UpdateFilterRequest(input *UpdateFilterInput) (req *request.Request, output *UpdateFilterOutput) {
@@ -4908,11 +4897,12 @@ func (c *GuardDuty) UpdateFilterRequest(input *UpdateFilterInput) (req *request.
 // API operation UpdateFilter for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateFilter
 func (c *GuardDuty) UpdateFilter(input *UpdateFilterInput) (*UpdateFilterOutput, error) {
@@ -4952,14 +4942,13 @@ const opUpdateFindingsFeedback = "UpdateFindingsFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFindingsFeedbackRequest method.
+//	req, resp := client.UpdateFindingsFeedbackRequest(params)
 //
-//    // Example sending a request using the UpdateFindingsFeedbackRequest method.
-//    req, resp := client.UpdateFindingsFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateFindingsFeedback
 func (c *GuardDuty) UpdateFindingsFeedbackRequest(input *UpdateFindingsFeedbackInput) (req *request.Request, output *UpdateFindingsFeedbackOutput) {
@@ -4991,11 +4980,12 @@ func (c *GuardDuty) UpdateFindingsFeedbackRequest(input *UpdateFindingsFeedbackI
 // API operation UpdateFindingsFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateFindingsFeedback
 func (c *GuardDuty) UpdateFindingsFeedback(input *UpdateFindingsFeedbackInput) (*UpdateFindingsFeedbackOutput, error) {
@@ -5035,14 +5025,13 @@ const opUpdateIPSet = "UpdateIPSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIPSetRequest method.
+//	req, resp := client.UpdateIPSetRequest(params)
 //
-//    // Example sending a request using the UpdateIPSetRequest method.
-//    req, resp := client.UpdateIPSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateIPSet
 func (c *GuardDuty) UpdateIPSetRequest(input *UpdateIPSetInput) (req *request.Request, output *UpdateIPSetOutput) {
@@ -5074,11 +5063,12 @@ func (c *GuardDuty) UpdateIPSetRequest(input *UpdateIPSetInput) (req *request.Re
 // API operation UpdateIPSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateIPSet
 func (c *GuardDuty) UpdateIPSet(input *UpdateIPSetInput) (*UpdateIPSetOutput, error) {
@@ -5118,14 +5108,13 @@ const opUpdateMemberDetectors = "UpdateMemberDetectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMemberDetectorsRequest method.
+//	req, resp := client.UpdateMemberDetectorsRequest(params)
 //
-//    // Example sending a request using the UpdateMemberDetectorsRequest method.
-//    req, resp := client.UpdateMemberDetectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateMemberDetectors
 func (c *GuardDuty) UpdateMemberDetectorsRequest(input *UpdateMemberDetectorsInput) (req *request.Request, output *UpdateMemberDetectorsOutput) {
@@ -5156,11 +5145,12 @@ func (c *GuardDuty) UpdateMemberDetectorsRequest(input *UpdateMemberDetectorsInp
 // API operation UpdateMemberDetectors for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateMemberDetectors
 func (c *GuardDuty) UpdateMemberDetectors(input *UpdateMemberDetectorsInput) (*UpdateMemberDetectorsOutput, error) {
@@ -5200,14 +5190,13 @@ const opUpdateOrganizationConfiguration = "UpdateOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateOrganizationConfigurationRequest method.
+//	req, resp := client.UpdateOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateOrganizationConfigurationRequest method.
-//    req, resp := client.UpdateOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateOrganizationConfiguration
 func (c *GuardDuty) UpdateOrganizationConfigurationRequest(input *UpdateOrganizationConfigurationInput) (req *request.Request, output *UpdateOrganizationConfigurationOutput) {
@@ -5239,11 +5228,12 @@ func (c *GuardDuty) UpdateOrganizationConfigurationRequest(input *UpdateOrganiza
 // API operation UpdateOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateOrganizationConfiguration
 func (c *GuardDuty) UpdateOrganizationConfiguration(input *UpdateOrganizationConfigurationInput) (*UpdateOrganizationConfigurationOutput, error) {
@@ -5283,14 +5273,13 @@ const opUpdatePublishingDestination = "UpdatePublishingDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePublishingDestinationRequest method.
+//	req, resp := client.UpdatePublishingDestinationRequest(params)
 //
-//    // Example sending a request using the UpdatePublishingDestinationRequest method.
-//    req, resp := client.UpdatePublishingDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdatePublishingDestination
 func (c *GuardDuty) UpdatePublishingDestinationRequest(input *UpdatePublishingDestinationInput) (req *request.Request, output *UpdatePublishingDestinationOutput) {
@@ -5322,11 +5311,12 @@ func (c *GuardDuty) UpdatePublishingDestinationRequest(input *UpdatePublishingDe
 // API operation UpdatePublishingDestination for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdatePublishingDestination
 func (c *GuardDuty) UpdatePublishingDestination(input *UpdatePublishingDestinationInput) (*UpdatePublishingDestinationOutput, error) {
@@ -5366,14 +5356,13 @@ const opUpdateThreatIntelSet = "UpdateThreatIntelSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateThreatIntelSetRequest method.
+//	req, resp := client.UpdateThreatIntelSetRequest(params)
 //
-//    // Example sending a request using the UpdateThreatIntelSetRequest method.
-//    req, resp := client.UpdateThreatIntelSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateThreatIntelSet
 func (c *GuardDuty) UpdateThreatIntelSetRequest(input *UpdateThreatIntelSetInput) (req *request.Request, output *UpdateThreatIntelSetOutput) {
@@ -5405,11 +5394,12 @@ func (c *GuardDuty) UpdateThreatIntelSetRequest(input *UpdateThreatIntelSetInput
 // API operation UpdateThreatIntelSet for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   A bad request exception object.
 //
-//   * InternalServerErrorException
-//   An internal server error exception object.
+//   - BadRequestException
+//     A bad request exception object.
+//
+//   - InternalServerErrorException
+//     An internal server error exception object.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/guardduty-2017-11-28/UpdateThreatIntelSet
 func (c *GuardDuty) UpdateThreatIntelSet(input *UpdateThreatIntelSetInput) (*UpdateThreatIntelSetOutput, error) {

@@ -11,7 +11,7 @@ import (
 
 // GetPublicIpByPrivateIpIdRequest wrapper for the GetPublicIpByPrivateIpId operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetPublicIpByPrivateIpId.go.html to see an example of how to use GetPublicIpByPrivateIpIdRequest.
 type GetPublicIpByPrivateIpIdRequest struct {

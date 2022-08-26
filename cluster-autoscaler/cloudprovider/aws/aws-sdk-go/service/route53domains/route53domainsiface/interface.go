@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Route 53 Domains.
-//    func myFunc(svc route53domainsiface.Route53DomainsAPI) bool {
-//        // Make svc.AcceptDomainTransferFromAnotherAwsAccount request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Route 53 Domains.
+//	func myFunc(svc route53domainsiface.Route53DomainsAPI) bool {
+//	    // Make svc.AcceptDomainTransferFromAnotherAwsAccount request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := route53domains.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := route53domains.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockRoute53DomainsClient struct {
-//        route53domainsiface.Route53DomainsAPI
-//    }
-//    func (m *mockRoute53DomainsClient) AcceptDomainTransferFromAnotherAwsAccount(input *route53domains.AcceptDomainTransferFromAnotherAwsAccountInput) (*route53domains.AcceptDomainTransferFromAnotherAwsAccountOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockRoute53DomainsClient struct {
+//	    route53domainsiface.Route53DomainsAPI
+//	}
+//	func (m *mockRoute53DomainsClient) AcceptDomainTransferFromAnotherAwsAccount(input *route53domains.AcceptDomainTransferFromAnotherAwsAccountInput) (*route53domains.AcceptDomainTransferFromAnotherAwsAccountOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockRoute53DomainsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockRoute53DomainsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

@@ -7,109 +7,111 @@ application framework or component specified (in the template). A stack is a
 running instance of a template. The result of creating a stack is a deployment
 of the application framework or component.
 
-Prepare required import packages
+# Prepare required import packages
 
 import (
-  "fmt"
-  "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
-  "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack"
-  "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stacks"
+
+	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stacks"
+
 )
 
 Example of Preparing Orchestration client:
 
-    client, err := openstack.NewOrchestrationV1(provider,  gophercloud.EndpointOpts{Region: "RegionOne"})
+	client, err := openstack.NewOrchestrationV1(provider,  gophercloud.EndpointOpts{Region: "RegionOne"})
 
 Example of List Stack:
-    all_stack_pages, err := stacks.List(client, nil).AllPages()
-    if err != nil {
-        panic(err)
-    }
 
-    all_stacks, err := stacks.ExtractStacks(all_stack_pages)
-    if err != nil {
-        panic(err)
-    }
+	all_stack_pages, err := stacks.List(client, nil).AllPages()
+	if err != nil {
+	    panic(err)
+	}
 
-    for _, stack := range all_stacks {
-        fmt.Printf("%+v\n", stack)
-    }
+	all_stacks, err := stacks.ExtractStacks(all_stack_pages)
+	if err != nil {
+	    panic(err)
+	}
 
+	for _, stack := range all_stacks {
+	    fmt.Printf("%+v\n", stack)
+	}
 
 Example to Create an Stack
 
-    // Create Template
-    t := make(map[string]interface{})
-    f, err := ioutil.ReadFile("template.yaml")
-    if err != nil {
-        panic(err)
-    }
-    err = yaml.Unmarshal(f, t)
-    if err != nil {
-        panic(err)
-    }
+	// Create Template
+	t := make(map[string]interface{})
+	f, err := ioutil.ReadFile("template.yaml")
+	if err != nil {
+	    panic(err)
+	}
+	err = yaml.Unmarshal(f, t)
+	if err != nil {
+	    panic(err)
+	}
 
-    template := &stacks.Template{}
-    template.TE = stacks.TE{
-        Bin: f,
-    }
-    // Create Environment if needed
-    t_env := make(map[string]interface{})
-    f_env, err := ioutil.ReadFile("env.yaml")
-    if err != nil {
-        panic(err)
-    }
-    err = yaml.Unmarshal(f_env, t_env)
-    if err != nil {
-        panic(err)
-    }
+	template := &stacks.Template{}
+	template.TE = stacks.TE{
+	    Bin: f,
+	}
+	// Create Environment if needed
+	t_env := make(map[string]interface{})
+	f_env, err := ioutil.ReadFile("env.yaml")
+	if err != nil {
+	    panic(err)
+	}
+	err = yaml.Unmarshal(f_env, t_env)
+	if err != nil {
+	    panic(err)
+	}
 
-    env := &stacks.Environment{}
-    env.TE = stacks.TE{
-        Bin: f_env,
-    }
+	env := &stacks.Environment{}
+	env.TE = stacks.TE{
+	    Bin: f_env,
+	}
 
-    // Remember, the priority of parameters you given through
-    // Parameters is higher than the parameters you provided in EnvironmentOpts.
-    params := make(map[string]string)
-    params["number_of_nodes"] = 1
-    tags := []string{"example-stack"}
-    createOpts := &stacks.CreateOpts{
-        // The name of the stack. It must start with an alphabetic character.
-        Name:       "testing_group",
-        // A structure that contains either the template file or url. Call the
-        // associated methods to extract the information relevant to send in a create request.
-        TemplateOpts: template,
-        // A structure that contains details for the environment of the stack.
-        EnvironmentOpts: env,
-        // User-defined parameters to pass to the template.
-        Parameters: params,
-        // A list of tags to assosciate with the Stack
-        Tags: tags,
-    }
+	// Remember, the priority of parameters you given through
+	// Parameters is higher than the parameters you provided in EnvironmentOpts.
+	params := make(map[string]string)
+	params["number_of_nodes"] = 1
+	tags := []string{"example-stack"}
+	createOpts := &stacks.CreateOpts{
+	    // The name of the stack. It must start with an alphabetic character.
+	    Name:       "testing_group",
+	    // A structure that contains either the template file or url. Call the
+	    // associated methods to extract the information relevant to send in a create request.
+	    TemplateOpts: template,
+	    // A structure that contains details for the environment of the stack.
+	    EnvironmentOpts: env,
+	    // User-defined parameters to pass to the template.
+	    Parameters: params,
+	    // A list of tags to assosciate with the Stack
+	    Tags: tags,
+	}
 
-    r := stacks.Create(client, createOpts)
-    //dcreated_stack := stacks.CreatedStack()
-    if r.Err != nil {
-        panic(r.Err)
-    }
-    created_stack, err := r.Extract()
-    if err != nil {
-        panic(err)
-    }
-    fmt.Printf("Created Stack: %v", created_stack.ID)
+	r := stacks.Create(client, createOpts)
+	//dcreated_stack := stacks.CreatedStack()
+	if r.Err != nil {
+	    panic(r.Err)
+	}
+	created_stack, err := r.Extract()
+	if err != nil {
+	    panic(err)
+	}
+	fmt.Printf("Created Stack: %v", created_stack.ID)
 
 Example for Get Stack
 
-    get_result := stacks.Get(client, stackName, created_stack.ID)
-    if get_result.Err != nil {
-        panic(get_result.Err)
-    }
-    stack, err := get_result.Extract()
-    if err != nil {
-        panic(err)
-    }
-    fmt.Println("Get Stack: Name: ", stack.Name, ", ID: ", stack.ID, ", Status: ", stack.Status)
+	get_result := stacks.Get(client, stackName, created_stack.ID)
+	if get_result.Err != nil {
+	    panic(get_result.Err)
+	}
+	stack, err := get_result.Extract()
+	if err != nil {
+	    panic(err)
+	}
+	fmt.Println("Get Stack: Name: ", stack.Name, ", ID: ", stack.ID, ", Status: ", stack.Status)
 
 Example for Find Stack
 
@@ -125,15 +127,15 @@ Example for Find Stack
 
 Example for Delete Stack
 
-    del_r := stacks.Delete(client, stackName, created_stack.ID)
-    if del_r.Err != nil {
-        panic(del_r.Err)
-    }
-    fmt.Println("Deleted Stack: ", stackName)
+	del_r := stacks.Delete(client, stackName, created_stack.ID)
+	if del_r.Err != nil {
+	    panic(del_r.Err)
+	}
+	fmt.Println("Deleted Stack: ", stackName)
 
 Summary of  Behavior Between Stack Update and UpdatePatch Methods :
 
-Function | Test Case | Result
+# Function | Test Case | Result
 
 Update()	| Template AND Parameters WITH Conflict | Parameter takes priority, parameters are set in raw_template.environment overlay
 Update()	| Template ONLY | Template updates, raw_template.environment overlay is removed

@@ -29,14 +29,13 @@ const opDescribeAffectedAccountsForOrganization = "DescribeAffectedAccountsForOr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAffectedAccountsForOrganizationRequest method.
+//	req, resp := client.DescribeAffectedAccountsForOrganizationRequest(params)
 //
-//    // Example sending a request using the DescribeAffectedAccountsForOrganizationRequest method.
-//    req, resp := client.DescribeAffectedAccountsForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedAccountsForOrganization
 func (c *Health) DescribeAffectedAccountsForOrganizationRequest(input *DescribeAffectedAccountsForOrganizationInput) (req *request.Request, output *DescribeAffectedAccountsForOrganizationOutput) {
@@ -83,8 +82,8 @@ func (c *Health) DescribeAffectedAccountsForOrganizationRequest(input *DescribeA
 // API operation DescribeAffectedAccountsForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedAccountsForOrganization
 func (c *Health) DescribeAffectedAccountsForOrganization(input *DescribeAffectedAccountsForOrganizationInput) (*DescribeAffectedAccountsForOrganizationOutput, error) {
@@ -116,15 +115,14 @@ func (c *Health) DescribeAffectedAccountsForOrganizationWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAffectedAccountsForOrganization operation.
-//    pageNum := 0
-//    err := client.DescribeAffectedAccountsForOrganizationPages(params,
-//        func(page *health.DescribeAffectedAccountsForOrganizationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAffectedAccountsForOrganization operation.
+//	pageNum := 0
+//	err := client.DescribeAffectedAccountsForOrganizationPages(params,
+//	    func(page *health.DescribeAffectedAccountsForOrganizationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeAffectedAccountsForOrganizationPages(input *DescribeAffectedAccountsForOrganizationInput, fn func(*DescribeAffectedAccountsForOrganizationOutput, bool) bool) error {
 	return c.DescribeAffectedAccountsForOrganizationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -176,14 +174,13 @@ const opDescribeAffectedEntities = "DescribeAffectedEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAffectedEntitiesRequest method.
+//	req, resp := client.DescribeAffectedEntitiesRequest(params)
 //
-//    // Example sending a request using the DescribeAffectedEntitiesRequest method.
-//    req, resp := client.DescribeAffectedEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedEntities
 func (c *Health) DescribeAffectedEntitiesRequest(input *DescribeAffectedEntitiesInput) (req *request.Request, output *DescribeAffectedEntitiesOutput) {
@@ -219,13 +216,13 @@ func (c *Health) DescribeAffectedEntitiesRequest(input *DescribeAffectedEntities
 //
 // At least one event ARN is required.
 //
-//    * This API operation uses pagination. Specify the nextToken parameter
-//    in the next request to return more results.
+//   - This API operation uses pagination. Specify the nextToken parameter
+//     in the next request to return more results.
 //
-//    * This operation supports resource-level permissions. You can use this
-//    operation to allow or deny access to specific Health events. For more
-//    information, see Resource- and action-based conditions (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html#resource-action-based-conditions)
-//    in the Health User Guide.
+//   - This operation supports resource-level permissions. You can use this
+//     operation to allow or deny access to specific Health events. For more
+//     information, see Resource- and action-based conditions (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html#resource-action-based-conditions)
+//     in the Health User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -235,11 +232,12 @@ func (c *Health) DescribeAffectedEntitiesRequest(input *DescribeAffectedEntities
 // API operation DescribeAffectedEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
 //
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
+//
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedEntities
 func (c *Health) DescribeAffectedEntities(input *DescribeAffectedEntitiesInput) (*DescribeAffectedEntitiesOutput, error) {
@@ -271,15 +269,14 @@ func (c *Health) DescribeAffectedEntitiesWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAffectedEntities operation.
-//    pageNum := 0
-//    err := client.DescribeAffectedEntitiesPages(params,
-//        func(page *health.DescribeAffectedEntitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAffectedEntities operation.
+//	pageNum := 0
+//	err := client.DescribeAffectedEntitiesPages(params,
+//	    func(page *health.DescribeAffectedEntitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeAffectedEntitiesPages(input *DescribeAffectedEntitiesInput, fn func(*DescribeAffectedEntitiesOutput, bool) bool) error {
 	return c.DescribeAffectedEntitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -331,14 +328,13 @@ const opDescribeAffectedEntitiesForOrganization = "DescribeAffectedEntitiesForOr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAffectedEntitiesForOrganizationRequest method.
+//	req, resp := client.DescribeAffectedEntitiesForOrganizationRequest(params)
 //
-//    // Example sending a request using the DescribeAffectedEntitiesForOrganizationRequest method.
-//    req, resp := client.DescribeAffectedEntitiesForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedEntitiesForOrganization
 func (c *Health) DescribeAffectedEntitiesForOrganizationRequest(input *DescribeAffectedEntitiesForOrganizationInput) (req *request.Request, output *DescribeAffectedEntitiesForOrganizationOutput) {
@@ -378,13 +374,13 @@ func (c *Health) DescribeAffectedEntitiesForOrganizationRequest(input *DescribeA
 // (https://docs.aws.amazon.com/health/latest/APIReference/API_EnableHealthServiceAccessForOrganization.html)
 // operation from your organization's management account.
 //
-//    * This API operation uses pagination. Specify the nextToken parameter
-//    in the next request to return more results.
+//   - This API operation uses pagination. Specify the nextToken parameter
+//     in the next request to return more results.
 //
-//    * This operation doesn't support resource-level permissions. You can't
-//    use this operation to allow or deny access to specific Health events.
-//    For more information, see Resource- and action-based conditions (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html#resource-action-based-conditions)
-//    in the Health User Guide.
+//   - This operation doesn't support resource-level permissions. You can't
+//     use this operation to allow or deny access to specific Health events.
+//     For more information, see Resource- and action-based conditions (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html#resource-action-based-conditions)
+//     in the Health User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -394,11 +390,12 @@ func (c *Health) DescribeAffectedEntitiesForOrganizationRequest(input *DescribeA
 // API operation DescribeAffectedEntitiesForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
 //
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
+//
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeAffectedEntitiesForOrganization
 func (c *Health) DescribeAffectedEntitiesForOrganization(input *DescribeAffectedEntitiesForOrganizationInput) (*DescribeAffectedEntitiesForOrganizationOutput, error) {
@@ -430,15 +427,14 @@ func (c *Health) DescribeAffectedEntitiesForOrganizationWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAffectedEntitiesForOrganization operation.
-//    pageNum := 0
-//    err := client.DescribeAffectedEntitiesForOrganizationPages(params,
-//        func(page *health.DescribeAffectedEntitiesForOrganizationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAffectedEntitiesForOrganization operation.
+//	pageNum := 0
+//	err := client.DescribeAffectedEntitiesForOrganizationPages(params,
+//	    func(page *health.DescribeAffectedEntitiesForOrganizationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeAffectedEntitiesForOrganizationPages(input *DescribeAffectedEntitiesForOrganizationInput, fn func(*DescribeAffectedEntitiesForOrganizationOutput, bool) bool) error {
 	return c.DescribeAffectedEntitiesForOrganizationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -490,14 +486,13 @@ const opDescribeEntityAggregates = "DescribeEntityAggregates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntityAggregatesRequest method.
+//	req, resp := client.DescribeEntityAggregatesRequest(params)
 //
-//    // Example sending a request using the DescribeEntityAggregatesRequest method.
-//    req, resp := client.DescribeEntityAggregatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEntityAggregates
 func (c *Health) DescribeEntityAggregatesRequest(input *DescribeEntityAggregatesInput) (req *request.Request, output *DescribeEntityAggregatesOutput) {
@@ -565,14 +560,13 @@ const opDescribeEventAggregates = "DescribeEventAggregates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventAggregatesRequest method.
+//	req, resp := client.DescribeEventAggregatesRequest(params)
 //
-//    // Example sending a request using the DescribeEventAggregatesRequest method.
-//    req, resp := client.DescribeEventAggregatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventAggregates
 func (c *Health) DescribeEventAggregatesRequest(input *DescribeEventAggregatesInput) (req *request.Request, output *DescribeEventAggregatesOutput) {
@@ -614,8 +608,8 @@ func (c *Health) DescribeEventAggregatesRequest(input *DescribeEventAggregatesIn
 // API operation DescribeEventAggregates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventAggregates
 func (c *Health) DescribeEventAggregates(input *DescribeEventAggregatesInput) (*DescribeEventAggregatesOutput, error) {
@@ -647,15 +641,14 @@ func (c *Health) DescribeEventAggregatesWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEventAggregates operation.
-//    pageNum := 0
-//    err := client.DescribeEventAggregatesPages(params,
-//        func(page *health.DescribeEventAggregatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEventAggregates operation.
+//	pageNum := 0
+//	err := client.DescribeEventAggregatesPages(params,
+//	    func(page *health.DescribeEventAggregatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeEventAggregatesPages(input *DescribeEventAggregatesInput, fn func(*DescribeEventAggregatesOutput, bool) bool) error {
 	return c.DescribeEventAggregatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -707,14 +700,13 @@ const opDescribeEventDetails = "DescribeEventDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventDetailsRequest method.
+//	req, resp := client.DescribeEventDetailsRequest(params)
 //
-//    // Example sending a request using the DescribeEventDetailsRequest method.
-//    req, resp := client.DescribeEventDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventDetails
 func (c *Health) DescribeEventDetailsRequest(input *DescribeEventDetailsInput) (req *request.Request, output *DescribeEventDetailsOutput) {
@@ -759,8 +751,8 @@ func (c *Health) DescribeEventDetailsRequest(input *DescribeEventDetailsInput) (
 // API operation DescribeEventDetails for usage and error information.
 //
 // Returned Error Types:
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventDetails
 func (c *Health) DescribeEventDetails(input *DescribeEventDetailsInput) (*DescribeEventDetailsOutput, error) {
@@ -800,14 +792,13 @@ const opDescribeEventDetailsForOrganization = "DescribeEventDetailsForOrganizati
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventDetailsForOrganizationRequest method.
+//	req, resp := client.DescribeEventDetailsForOrganizationRequest(params)
 //
-//    // Example sending a request using the DescribeEventDetailsForOrganizationRequest method.
-//    req, resp := client.DescribeEventDetailsForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventDetailsForOrganization
 func (c *Health) DescribeEventDetailsForOrganizationRequest(input *DescribeEventDetailsForOrganizationInput) (req *request.Request, output *DescribeEventDetailsForOrganizationOutput) {
@@ -846,15 +837,15 @@ func (c *Health) DescribeEventDetailsForOrganizationRequest(input *DescribeEvent
 // the organizationEventDetailFilters object in the request. Depending on the
 // Health event type, note the following differences:
 //
-//    * To return event details for a public event, you must specify a null
-//    value for the awsAccountId parameter. If you specify an account ID for
-//    a public event, Health returns an error message because public events
-//    aren't specific to an account.
+//   - To return event details for a public event, you must specify a null
+//     value for the awsAccountId parameter. If you specify an account ID for
+//     a public event, Health returns an error message because public events
+//     aren't specific to an account.
 //
-//    * To return event details for an event that is specific to an account
-//    in your organization, you must specify the awsAccountId parameter in the
-//    request. If you don't specify an account ID, Health returns an error message
-//    because the event is specific to an account in your organization.
+//   - To return event details for an event that is specific to an account
+//     in your organization, you must specify the awsAccountId parameter in the
+//     request. If you don't specify an account ID, Health returns an error message
+//     because the event is specific to an account in your organization.
 //
 // For more information, see Event (https://docs.aws.amazon.com/health/latest/APIReference/API_Event.html).
 //
@@ -871,8 +862,8 @@ func (c *Health) DescribeEventDetailsForOrganizationRequest(input *DescribeEvent
 // API operation DescribeEventDetailsForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventDetailsForOrganization
 func (c *Health) DescribeEventDetailsForOrganization(input *DescribeEventDetailsForOrganizationInput) (*DescribeEventDetailsForOrganizationOutput, error) {
@@ -912,14 +903,13 @@ const opDescribeEventTypes = "DescribeEventTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventTypesRequest method.
+//	req, resp := client.DescribeEventTypesRequest(params)
 //
-//    // Example sending a request using the DescribeEventTypesRequest method.
-//    req, resp := client.DescribeEventTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventTypes
 func (c *Health) DescribeEventTypesRequest(input *DescribeEventTypesInput) (req *request.Request, output *DescribeEventTypesOutput) {
@@ -966,11 +956,12 @@ func (c *Health) DescribeEventTypesRequest(input *DescribeEventTypesInput) (req 
 // API operation DescribeEventTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
 //
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
+//
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventTypes
 func (c *Health) DescribeEventTypes(input *DescribeEventTypesInput) (*DescribeEventTypesOutput, error) {
@@ -1002,15 +993,14 @@ func (c *Health) DescribeEventTypesWithContext(ctx aws.Context, input *DescribeE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEventTypes operation.
-//    pageNum := 0
-//    err := client.DescribeEventTypesPages(params,
-//        func(page *health.DescribeEventTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEventTypes operation.
+//	pageNum := 0
+//	err := client.DescribeEventTypesPages(params,
+//	    func(page *health.DescribeEventTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeEventTypesPages(input *DescribeEventTypesInput, fn func(*DescribeEventTypesOutput, bool) bool) error {
 	return c.DescribeEventTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1062,14 +1052,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEvents
 func (c *Health) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -1106,16 +1095,16 @@ func (c *Health) DescribeEventsRequest(input *DescribeEventsInput) (req *request
 // If no filter criteria are specified, all events are returned. Results are
 // sorted by lastModifiedTime, starting with the most recent event.
 //
-//    * When you call the DescribeEvents operation and specify an entity for
-//    the entityValues parameter, Health might return public events that aren't
-//    specific to that resource. For example, if you call DescribeEvents and
-//    specify an ID for an Amazon Elastic Compute Cloud (Amazon EC2) instance,
-//    Health might return events that aren't specific to that resource or service.
-//    To get events that are specific to a service, use the services parameter
-//    in the filter object. For more information, see Event (https://docs.aws.amazon.com/health/latest/APIReference/API_Event.html).
+//   - When you call the DescribeEvents operation and specify an entity for
+//     the entityValues parameter, Health might return public events that aren't
+//     specific to that resource. For example, if you call DescribeEvents and
+//     specify an ID for an Amazon Elastic Compute Cloud (Amazon EC2) instance,
+//     Health might return events that aren't specific to that resource or service.
+//     To get events that are specific to a service, use the services parameter
+//     in the filter object. For more information, see Event (https://docs.aws.amazon.com/health/latest/APIReference/API_Event.html).
 //
-//    * This API operation uses pagination. Specify the nextToken parameter
-//    in the next request to return more results.
+//   - This API operation uses pagination. Specify the nextToken parameter
+//     in the next request to return more results.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1125,11 +1114,12 @@ func (c *Health) DescribeEventsRequest(input *DescribeEventsInput) (req *request
 // API operation DescribeEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
 //
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
+//
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEvents
 func (c *Health) DescribeEvents(input *DescribeEventsInput) (*DescribeEventsOutput, error) {
@@ -1161,15 +1151,14 @@ func (c *Health) DescribeEventsWithContext(ctx aws.Context, input *DescribeEvent
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *health.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *health.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1221,14 +1210,13 @@ const opDescribeEventsForOrganization = "DescribeEventsForOrganization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsForOrganizationRequest method.
+//	req, resp := client.DescribeEventsForOrganizationRequest(params)
 //
-//    // Example sending a request using the DescribeEventsForOrganizationRequest method.
-//    req, resp := client.DescribeEventsForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventsForOrganization
 func (c *Health) DescribeEventsForOrganizationRequest(input *DescribeEventsForOrganizationInput) (req *request.Request, output *DescribeEventsForOrganizationOutput) {
@@ -1262,11 +1250,11 @@ func (c *Health) DescribeEventsForOrganizationRequest(input *DescribeEventsForOr
 // or any affected resources. To retrieve that information, use the following
 // operations:
 //
-//    * DescribeAffectedAccountsForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeAffectedAccountsForOrganization.html)
+//   - DescribeAffectedAccountsForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeAffectedAccountsForOrganization.html)
 //
-//    * DescribeEventDetailsForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeEventDetailsForOrganization.html)
+//   - DescribeEventDetailsForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeEventDetailsForOrganization.html)
 //
-//    * DescribeAffectedEntitiesForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeAffectedEntitiesForOrganization.html)
+//   - DescribeAffectedEntitiesForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeAffectedEntitiesForOrganization.html)
 //
 // If you don't specify a filter, the DescribeEventsForOrganizations returns
 // all events across your organization. Results are sorted by lastModifiedTime,
@@ -1291,11 +1279,12 @@ func (c *Health) DescribeEventsForOrganizationRequest(input *DescribeEventsForOr
 // API operation DescribeEventsForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationToken
-//   The specified pagination token (nextToken) is not valid.
 //
-//   * UnsupportedLocale
-//   The specified locale is not supported.
+//   - InvalidPaginationToken
+//     The specified pagination token (nextToken) is not valid.
+//
+//   - UnsupportedLocale
+//     The specified locale is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeEventsForOrganization
 func (c *Health) DescribeEventsForOrganization(input *DescribeEventsForOrganizationInput) (*DescribeEventsForOrganizationOutput, error) {
@@ -1327,15 +1316,14 @@ func (c *Health) DescribeEventsForOrganizationWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEventsForOrganization operation.
-//    pageNum := 0
-//    err := client.DescribeEventsForOrganizationPages(params,
-//        func(page *health.DescribeEventsForOrganizationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEventsForOrganization operation.
+//	pageNum := 0
+//	err := client.DescribeEventsForOrganizationPages(params,
+//	    func(page *health.DescribeEventsForOrganizationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Health) DescribeEventsForOrganizationPages(input *DescribeEventsForOrganizationInput, fn func(*DescribeEventsForOrganizationOutput, bool) bool) error {
 	return c.DescribeEventsForOrganizationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1387,14 +1375,13 @@ const opDescribeHealthServiceStatusForOrganization = "DescribeHealthServiceStatu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHealthServiceStatusForOrganizationRequest method.
+//	req, resp := client.DescribeHealthServiceStatusForOrganizationRequest(params)
 //
-//    // Example sending a request using the DescribeHealthServiceStatusForOrganizationRequest method.
-//    req, resp := client.DescribeHealthServiceStatusForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DescribeHealthServiceStatusForOrganization
 func (c *Health) DescribeHealthServiceStatusForOrganizationRequest(input *DescribeHealthServiceStatusForOrganizationInput) (req *request.Request, output *DescribeHealthServiceStatusForOrganizationOutput) {
@@ -1464,14 +1451,13 @@ const opDisableHealthServiceAccessForOrganization = "DisableHealthServiceAccessF
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableHealthServiceAccessForOrganizationRequest method.
+//	req, resp := client.DisableHealthServiceAccessForOrganizationRequest(params)
 //
-//    // Example sending a request using the DisableHealthServiceAccessForOrganizationRequest method.
-//    req, resp := client.DisableHealthServiceAccessForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DisableHealthServiceAccessForOrganization
 func (c *Health) DisableHealthServiceAccessForOrganizationRequest(input *DisableHealthServiceAccessForOrganizationInput) (req *request.Request, output *DisableHealthServiceAccessForOrganizationOutput) {
@@ -1521,12 +1507,12 @@ func (c *Health) DisableHealthServiceAccessForOrganizationRequest(input *Disable
 // API operation DisableHealthServiceAccessForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   EnableHealthServiceAccessForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_EnableHealthServiceAccessForOrganization.html)
-//   is already in progress. Wait for the action to complete before trying again.
-//   To get the current status, use the DescribeHealthServiceStatusForOrganization
-//   (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeHealthServiceStatusForOrganization.html)
-//   operation.
+//   - ConcurrentModificationException
+//     EnableHealthServiceAccessForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_EnableHealthServiceAccessForOrganization.html)
+//     is already in progress. Wait for the action to complete before trying again.
+//     To get the current status, use the DescribeHealthServiceStatusForOrganization
+//     (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeHealthServiceStatusForOrganization.html)
+//     operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/DisableHealthServiceAccessForOrganization
 func (c *Health) DisableHealthServiceAccessForOrganization(input *DisableHealthServiceAccessForOrganizationInput) (*DisableHealthServiceAccessForOrganizationOutput, error) {
@@ -1566,14 +1552,13 @@ const opEnableHealthServiceAccessForOrganization = "EnableHealthServiceAccessFor
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableHealthServiceAccessForOrganizationRequest method.
+//	req, resp := client.EnableHealthServiceAccessForOrganizationRequest(params)
 //
-//    // Example sending a request using the EnableHealthServiceAccessForOrganizationRequest method.
-//    req, resp := client.EnableHealthServiceAccessForOrganizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/EnableHealthServiceAccessForOrganization
 func (c *Health) EnableHealthServiceAccessForOrganizationRequest(input *EnableHealthServiceAccessForOrganizationInput) (req *request.Request, output *EnableHealthServiceAccessForOrganizationOutput) {
@@ -1604,15 +1589,15 @@ func (c *Health) EnableHealthServiceAccessForOrganizationRequest(input *EnableHe
 //
 // To call this operation, you must meet the following requirements:
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan from Amazon Web Services Support (http://aws.amazon.com/premiumsupport/)
-//    to use the Health API. If you call the Health API from an Amazon Web Services
-//    account that doesn't have a Business, Enterprise On-Ramp, or Enterprise
-//    Support plan, you receive a SubscriptionRequiredException error.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan from Amazon Web Services Support (http://aws.amazon.com/premiumsupport/)
+//     to use the Health API. If you call the Health API from an Amazon Web Services
+//     account that doesn't have a Business, Enterprise On-Ramp, or Enterprise
+//     Support plan, you receive a SubscriptionRequiredException error.
 //
-//    * You must have permission to call this operation from the organization's
-//    management account. For example IAM policies, see Health identity-based
-//    policy examples (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html).
+//   - You must have permission to call this operation from the organization's
+//     management account. For example IAM policies, see Health identity-based
+//     policy examples (https://docs.aws.amazon.com/health/latest/ug/security_iam_id-based-policy-examples.html).
 //
 // If you don't have the required support plan, you can instead use the Health
 // console to enable the organizational view feature. For more information,
@@ -1627,12 +1612,12 @@ func (c *Health) EnableHealthServiceAccessForOrganizationRequest(input *EnableHe
 // API operation EnableHealthServiceAccessForOrganization for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   EnableHealthServiceAccessForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_EnableHealthServiceAccessForOrganization.html)
-//   is already in progress. Wait for the action to complete before trying again.
-//   To get the current status, use the DescribeHealthServiceStatusForOrganization
-//   (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeHealthServiceStatusForOrganization.html)
-//   operation.
+//   - ConcurrentModificationException
+//     EnableHealthServiceAccessForOrganization (https://docs.aws.amazon.com/health/latest/APIReference/API_EnableHealthServiceAccessForOrganization.html)
+//     is already in progress. Wait for the action to complete before trying again.
+//     To get the current status, use the DescribeHealthServiceStatusForOrganization
+//     (https://docs.aws.amazon.com/health/latest/APIReference/API_DescribeHealthServiceStatusForOrganization.html)
+//     operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/health-2016-08-04/EnableHealthServiceAccessForOrganization
 func (c *Health) EnableHealthServiceAccessForOrganization(input *EnableHealthServiceAccessForOrganizationInput) (*EnableHealthServiceAccessForOrganizationOutput, error) {
@@ -3438,16 +3423,16 @@ func (s *EntityFilter) SetTags(v []map[string]*string) *EntityFilter {
 //
 // Health events can be public or account-specific:
 //
-//    * Public events might be service events that are not specific to an Amazon
-//    Web Services account. For example, if there is an issue with an Amazon
-//    Web Services Region, Health provides information about the event, even
-//    if you don't use services or resources in that Region.
+//   - Public events might be service events that are not specific to an Amazon
+//     Web Services account. For example, if there is an issue with an Amazon
+//     Web Services Region, Health provides information about the event, even
+//     if you don't use services or resources in that Region.
 //
-//    * Account-specific events are specific to either your Amazon Web Services
-//    account or an account in your organization. For example, if there's an
-//    issue with Amazon Elastic Compute Cloud in a Region that you use, Health
-//    provides information about the event and the affected resources in the
-//    account.
+//   - Account-specific events are specific to either your Amazon Web Services
+//     account or an account in your organization. For example, if there's an
+//     issue with Amazon Elastic Compute Cloud in a Region that you use, Health
+//     provides information about the event and the affected resources in the
+//     account.
 //
 // You can determine if an event is public or account-specific by using the
 // eventScopeCode parameter. For more information, see eventScopeCode (https://docs.aws.amazon.com/health/latest/APIReference/API_Event.html#AWSHealth-Type-Event-eventScopeCode).

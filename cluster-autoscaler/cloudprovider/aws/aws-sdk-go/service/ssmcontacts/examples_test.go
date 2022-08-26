@@ -198,7 +198,7 @@ func ExampleSSMContacts_CreateContactChannel_shared00() {
 
 // To deactivate a contact channel
 //
-// The following ``deactivate-contact-channel`` example deactivates a contact channel.
+// The following “deactivate-contact-channel“ example deactivates a contact channel.
 // Deactivating a contact channel means the contact channel will no longer be paged
 // during an incident. You can also reactivate a contact channel at any time using the
 // activate-contact-channel operation.

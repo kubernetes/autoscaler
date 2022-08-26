@@ -52,7 +52,9 @@ type autoscalingService struct {
 /*
 AutoScalingService is interface wrap others resource's interfaces. Includes:
 1. AutoScalingGroups: Provides function interact with an autoscaling group such as:
-    Create, Update, Delete
+
+	Create, Update, Delete
+
 2. Events: Provides function to list events of an autoscaling group
 3. LaunchConfigurations: Provides function to interact with launch configurations
 4. Nodes: Provides function to interact with members of autoscaling group
@@ -905,7 +907,7 @@ func (p *policy) Get(ctx context.Context, clusterID, PolicyID string) (*ScalePol
 	return data, nil
 }
 
-//  Delete
+// Delete
 func (asg *autoScalingGroup) Delete(ctx context.Context, clusterID string) error {
 	req, err := asg.client.NewRequest(ctx, http.MethodDelete, autoScalingServiceName, asg.itemPath(clusterID), nil)
 	if err != nil {

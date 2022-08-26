@@ -11,7 +11,7 @@ import (
 
 // ListVlansRequest wrapper for the ListVlans operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListVlans.go.html to see an example of how to use ListVlansRequest.
 type ListVlansRequest struct {

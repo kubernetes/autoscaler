@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Lookout for Vision.
-//    func myFunc(svc lookoutforvisioniface.LookoutForVisionAPI) bool {
-//        // Make svc.CreateDataset request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Lookout for Vision.
+//	func myFunc(svc lookoutforvisioniface.LookoutForVisionAPI) bool {
+//	    // Make svc.CreateDataset request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := lookoutforvision.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := lookoutforvision.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockLookoutForVisionClient struct {
-//        lookoutforvisioniface.LookoutForVisionAPI
-//    }
-//    func (m *mockLookoutForVisionClient) CreateDataset(input *lookoutforvision.CreateDatasetInput) (*lookoutforvision.CreateDatasetOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockLookoutForVisionClient struct {
+//	    lookoutforvisioniface.LookoutForVisionAPI
+//	}
+//	func (m *mockLookoutForVisionClient) CreateDataset(input *lookoutforvision.CreateDatasetInput) (*lookoutforvision.CreateDatasetOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockLookoutForVisionClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockLookoutForVisionClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

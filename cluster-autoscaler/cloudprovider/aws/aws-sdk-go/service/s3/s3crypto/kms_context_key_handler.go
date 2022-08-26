@@ -21,6 +21,7 @@ const (
 // description.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cmkID := "KMS Key ARN"
 //	var matdesc s3crypto.MaterialDescription
@@ -33,6 +34,7 @@ func NewKMSContextKeyGenerator(client kmsiface.KMSAPI, cmkID string, matdesc Mat
 // will be configured to only call KMS Decrypt using the provided CMK.
 //
 // Example:
+//
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := RegisterKMSContextWrapWithCMK(); err != nil {
 //		panic(err) // handle error
@@ -48,6 +50,7 @@ func RegisterKMSContextWrapWithCMK(registry *CryptoRegistry, client kmsiface.KMS
 // will be configured to call KMS decrypt without providing a CMK.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterKMSContextWrapWithAnyCMK(cr, kms.New(sess)); err != nil {

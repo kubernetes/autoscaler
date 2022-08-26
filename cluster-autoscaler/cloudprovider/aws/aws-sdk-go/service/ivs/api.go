@@ -29,14 +29,13 @@ const opBatchGetChannel = "BatchGetChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetChannelRequest method.
+//	req, resp := client.BatchGetChannelRequest(params)
 //
-//    // Example sending a request using the BatchGetChannelRequest method.
-//    req, resp := client.BatchGetChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/BatchGetChannel
 func (c *IVS) BatchGetChannelRequest(input *BatchGetChannelInput) (req *request.Request, output *BatchGetChannelOutput) {
@@ -103,14 +102,13 @@ const opBatchGetStreamKey = "BatchGetStreamKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetStreamKeyRequest method.
+//	req, resp := client.BatchGetStreamKeyRequest(params)
 //
-//    // Example sending a request using the BatchGetStreamKeyRequest method.
-//    req, resp := client.BatchGetStreamKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/BatchGetStreamKey
 func (c *IVS) BatchGetStreamKeyRequest(input *BatchGetStreamKeyInput) (req *request.Request, output *BatchGetStreamKeyOutput) {
@@ -177,14 +175,13 @@ const opCreateChannel = "CreateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelRequest method.
+//	req, resp := client.CreateChannelRequest(params)
 //
-//    // Example sending a request using the CreateChannelRequest method.
-//    req, resp := client.CreateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateChannel
 func (c *IVS) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
@@ -215,15 +212,16 @@ func (c *IVS) CreateChannelRequest(input *CreateChannelInput) (req *request.Requ
 // API operation CreateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ServiceQuotaExceededException
+//   - PendingVerification
+//
+//   - ServiceQuotaExceededException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateChannel
 func (c *IVS) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, error) {
@@ -263,14 +261,13 @@ const opCreateRecordingConfiguration = "CreateRecordingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecordingConfigurationRequest method.
+//	req, resp := client.CreateRecordingConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateRecordingConfigurationRequest method.
-//    req, resp := client.CreateRecordingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateRecordingConfiguration
 func (c *IVS) CreateRecordingConfigurationRequest(input *CreateRecordingConfigurationInput) (req *request.Request, output *CreateRecordingConfigurationOutput) {
@@ -313,17 +310,18 @@ func (c *IVS) CreateRecordingConfigurationRequest(input *CreateRecordingConfigur
 // API operation CreateRecordingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
 //
-//   * AccessDeniedException
+//   - InternalServerException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ConflictException
+//   - PendingVerification
 //
-//   * ServiceQuotaExceededException
+//   - ConflictException
+//
+//   - ServiceQuotaExceededException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateRecordingConfiguration
 func (c *IVS) CreateRecordingConfiguration(input *CreateRecordingConfigurationInput) (*CreateRecordingConfigurationOutput, error) {
@@ -363,14 +361,13 @@ const opCreateStreamKey = "CreateStreamKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamKeyRequest method.
+//	req, resp := client.CreateStreamKeyRequest(params)
 //
-//    // Example sending a request using the CreateStreamKeyRequest method.
-//    req, resp := client.CreateStreamKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateStreamKey
 func (c *IVS) CreateStreamKeyRequest(input *CreateStreamKeyInput) (req *request.Request, output *CreateStreamKeyOutput) {
@@ -407,15 +404,16 @@ func (c *IVS) CreateStreamKeyRequest(input *CreateStreamKeyInput) (req *request.
 // API operation CreateStreamKey for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ServiceQuotaExceededException
+//   - PendingVerification
+//
+//   - ServiceQuotaExceededException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/CreateStreamKey
 func (c *IVS) CreateStreamKey(input *CreateStreamKeyInput) (*CreateStreamKeyOutput, error) {
@@ -455,14 +453,13 @@ const opDeleteChannel = "DeleteChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelRequest method.
+//	req, resp := client.DeleteChannelRequest(params)
 //
-//    // Example sending a request using the DeleteChannelRequest method.
-//    req, resp := client.DeleteChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteChannel
 func (c *IVS) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
@@ -500,15 +497,16 @@ func (c *IVS) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Requ
 // API operation DeleteChannel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ConflictException
+//   - PendingVerification
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteChannel
 func (c *IVS) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, error) {
@@ -548,14 +546,13 @@ const opDeletePlaybackKeyPair = "DeletePlaybackKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePlaybackKeyPairRequest method.
+//	req, resp := client.DeletePlaybackKeyPairRequest(params)
 //
-//    // Example sending a request using the DeletePlaybackKeyPairRequest method.
-//    req, resp := client.DeletePlaybackKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeletePlaybackKeyPair
 func (c *IVS) DeletePlaybackKeyPairRequest(input *DeletePlaybackKeyPairInput) (req *request.Request, output *DeletePlaybackKeyPairOutput) {
@@ -590,13 +587,14 @@ func (c *IVS) DeletePlaybackKeyPairRequest(input *DeletePlaybackKeyPairInput) (r
 // API operation DeletePlaybackKeyPair for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
+//
+//   - PendingVerification
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeletePlaybackKeyPair
 func (c *IVS) DeletePlaybackKeyPair(input *DeletePlaybackKeyPairInput) (*DeletePlaybackKeyPairOutput, error) {
@@ -636,14 +634,13 @@ const opDeleteRecordingConfiguration = "DeleteRecordingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecordingConfigurationRequest method.
+//	req, resp := client.DeleteRecordingConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteRecordingConfigurationRequest method.
-//    req, resp := client.DeleteRecordingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteRecordingConfiguration
 func (c *IVS) DeleteRecordingConfigurationRequest(input *DeleteRecordingConfigurationInput) (req *request.Request, output *DeleteRecordingConfigurationOutput) {
@@ -680,15 +677,16 @@ func (c *IVS) DeleteRecordingConfigurationRequest(input *DeleteRecordingConfigur
 // API operation DeleteRecordingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - InternalServerException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ConflictException
+//   - ValidationException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteRecordingConfiguration
 func (c *IVS) DeleteRecordingConfiguration(input *DeleteRecordingConfigurationInput) (*DeleteRecordingConfigurationOutput, error) {
@@ -728,14 +726,13 @@ const opDeleteStreamKey = "DeleteStreamKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamKeyRequest method.
+//	req, resp := client.DeleteStreamKeyRequest(params)
 //
-//    // Example sending a request using the DeleteStreamKeyRequest method.
-//    req, resp := client.DeleteStreamKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteStreamKey
 func (c *IVS) DeleteStreamKeyRequest(input *DeleteStreamKeyInput) (req *request.Request, output *DeleteStreamKeyOutput) {
@@ -768,13 +765,14 @@ func (c *IVS) DeleteStreamKeyRequest(input *DeleteStreamKeyInput) (req *request.
 // API operation DeleteStreamKey for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
+//
+//   - PendingVerification
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/DeleteStreamKey
 func (c *IVS) DeleteStreamKey(input *DeleteStreamKeyInput) (*DeleteStreamKeyOutput, error) {
@@ -814,14 +812,13 @@ const opGetChannel = "GetChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelRequest method.
+//	req, resp := client.GetChannelRequest(params)
 //
-//    // Example sending a request using the GetChannelRequest method.
-//    req, resp := client.GetChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetChannel
 func (c *IVS) GetChannelRequest(input *GetChannelInput) (req *request.Request, output *GetChannelOutput) {
@@ -852,11 +849,12 @@ func (c *IVS) GetChannelRequest(input *GetChannelInput) (req *request.Request, o
 // API operation GetChannel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetChannel
 func (c *IVS) GetChannel(input *GetChannelInput) (*GetChannelOutput, error) {
@@ -896,14 +894,13 @@ const opGetPlaybackKeyPair = "GetPlaybackKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPlaybackKeyPairRequest method.
+//	req, resp := client.GetPlaybackKeyPairRequest(params)
 //
-//    // Example sending a request using the GetPlaybackKeyPairRequest method.
-//    req, resp := client.GetPlaybackKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetPlaybackKeyPair
 func (c *IVS) GetPlaybackKeyPairRequest(input *GetPlaybackKeyPairInput) (req *request.Request, output *GetPlaybackKeyPairOutput) {
@@ -938,11 +935,12 @@ func (c *IVS) GetPlaybackKeyPairRequest(input *GetPlaybackKeyPairInput) (req *re
 // API operation GetPlaybackKeyPair for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetPlaybackKeyPair
 func (c *IVS) GetPlaybackKeyPair(input *GetPlaybackKeyPairInput) (*GetPlaybackKeyPairOutput, error) {
@@ -982,14 +980,13 @@ const opGetRecordingConfiguration = "GetRecordingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecordingConfigurationRequest method.
+//	req, resp := client.GetRecordingConfigurationRequest(params)
 //
-//    // Example sending a request using the GetRecordingConfigurationRequest method.
-//    req, resp := client.GetRecordingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetRecordingConfiguration
 func (c *IVS) GetRecordingConfigurationRequest(input *GetRecordingConfigurationInput) (req *request.Request, output *GetRecordingConfigurationOutput) {
@@ -1020,13 +1017,14 @@ func (c *IVS) GetRecordingConfigurationRequest(input *GetRecordingConfigurationI
 // API operation GetRecordingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - InternalServerException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetRecordingConfiguration
 func (c *IVS) GetRecordingConfiguration(input *GetRecordingConfigurationInput) (*GetRecordingConfigurationOutput, error) {
@@ -1066,14 +1064,13 @@ const opGetStream = "GetStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamRequest method.
+//	req, resp := client.GetStreamRequest(params)
 //
-//    // Example sending a request using the GetStreamRequest method.
-//    req, resp := client.GetStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStream
 func (c *IVS) GetStreamRequest(input *GetStreamInput) (req *request.Request, output *GetStreamOutput) {
@@ -1104,13 +1101,14 @@ func (c *IVS) GetStreamRequest(input *GetStreamInput) (req *request.Request, out
 // API operation GetStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ChannelNotBroadcasting
+//   - ValidationException
+//
+//   - ChannelNotBroadcasting
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStream
 func (c *IVS) GetStream(input *GetStreamInput) (*GetStreamOutput, error) {
@@ -1150,14 +1148,13 @@ const opGetStreamKey = "GetStreamKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamKeyRequest method.
+//	req, resp := client.GetStreamKeyRequest(params)
 //
-//    // Example sending a request using the GetStreamKeyRequest method.
-//    req, resp := client.GetStreamKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStreamKey
 func (c *IVS) GetStreamKeyRequest(input *GetStreamKeyInput) (req *request.Request, output *GetStreamKeyOutput) {
@@ -1188,11 +1185,12 @@ func (c *IVS) GetStreamKeyRequest(input *GetStreamKeyInput) (req *request.Reques
 // API operation GetStreamKey for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStreamKey
 func (c *IVS) GetStreamKey(input *GetStreamKeyInput) (*GetStreamKeyOutput, error) {
@@ -1232,14 +1230,13 @@ const opGetStreamSession = "GetStreamSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamSessionRequest method.
+//	req, resp := client.GetStreamSessionRequest(params)
 //
-//    // Example sending a request using the GetStreamSessionRequest method.
-//    req, resp := client.GetStreamSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStreamSession
 func (c *IVS) GetStreamSessionRequest(input *GetStreamSessionInput) (req *request.Request, output *GetStreamSessionOutput) {
@@ -1270,11 +1267,12 @@ func (c *IVS) GetStreamSessionRequest(input *GetStreamSessionInput) (req *reques
 // API operation GetStreamSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/GetStreamSession
 func (c *IVS) GetStreamSession(input *GetStreamSessionInput) (*GetStreamSessionOutput, error) {
@@ -1314,14 +1312,13 @@ const opImportPlaybackKeyPair = "ImportPlaybackKeyPair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportPlaybackKeyPairRequest method.
+//	req, resp := client.ImportPlaybackKeyPairRequest(params)
 //
-//    // Example sending a request using the ImportPlaybackKeyPairRequest method.
-//    req, resp := client.ImportPlaybackKeyPairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ImportPlaybackKeyPair
 func (c *IVS) ImportPlaybackKeyPairRequest(input *ImportPlaybackKeyPairInput) (req *request.Request, output *ImportPlaybackKeyPairOutput) {
@@ -1356,15 +1353,16 @@ func (c *IVS) ImportPlaybackKeyPairRequest(input *ImportPlaybackKeyPairInput) (r
 // API operation ImportPlaybackKeyPair for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ConflictException
+//   - PendingVerification
 //
-//   * ServiceQuotaExceededException
+//   - ConflictException
+//
+//   - ServiceQuotaExceededException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ImportPlaybackKeyPair
 func (c *IVS) ImportPlaybackKeyPair(input *ImportPlaybackKeyPairInput) (*ImportPlaybackKeyPairOutput, error) {
@@ -1404,14 +1402,13 @@ const opListChannels = "ListChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsRequest method.
+//	req, resp := client.ListChannelsRequest(params)
 //
-//    // Example sending a request using the ListChannelsRequest method.
-//    req, resp := client.ListChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListChannels
 func (c *IVS) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
@@ -1452,11 +1449,12 @@ func (c *IVS) ListChannelsRequest(input *ListChannelsInput) (req *request.Reques
 // API operation ListChannels for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ConflictException
+//   - ValidationException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListChannels
 func (c *IVS) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, error) {
@@ -1488,15 +1486,14 @@ func (c *IVS) ListChannelsWithContext(ctx aws.Context, input *ListChannelsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannels operation.
-//    pageNum := 0
-//    err := client.ListChannelsPages(params,
-//        func(page *ivs.ListChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannels operation.
+//	pageNum := 0
+//	err := client.ListChannelsPages(params,
+//	    func(page *ivs.ListChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1548,14 +1545,13 @@ const opListPlaybackKeyPairs = "ListPlaybackKeyPairs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPlaybackKeyPairsRequest method.
+//	req, resp := client.ListPlaybackKeyPairsRequest(params)
 //
-//    // Example sending a request using the ListPlaybackKeyPairsRequest method.
-//    req, resp := client.ListPlaybackKeyPairsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListPlaybackKeyPairs
 func (c *IVS) ListPlaybackKeyPairsRequest(input *ListPlaybackKeyPairsInput) (req *request.Request, output *ListPlaybackKeyPairsOutput) {
@@ -1594,9 +1590,10 @@ func (c *IVS) ListPlaybackKeyPairsRequest(input *ListPlaybackKeyPairsInput) (req
 // API operation ListPlaybackKeyPairs for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListPlaybackKeyPairs
 func (c *IVS) ListPlaybackKeyPairs(input *ListPlaybackKeyPairsInput) (*ListPlaybackKeyPairsOutput, error) {
@@ -1628,15 +1625,14 @@ func (c *IVS) ListPlaybackKeyPairsWithContext(ctx aws.Context, input *ListPlayba
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPlaybackKeyPairs operation.
-//    pageNum := 0
-//    err := client.ListPlaybackKeyPairsPages(params,
-//        func(page *ivs.ListPlaybackKeyPairsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPlaybackKeyPairs operation.
+//	pageNum := 0
+//	err := client.ListPlaybackKeyPairsPages(params,
+//	    func(page *ivs.ListPlaybackKeyPairsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListPlaybackKeyPairsPages(input *ListPlaybackKeyPairsInput, fn func(*ListPlaybackKeyPairsOutput, bool) bool) error {
 	return c.ListPlaybackKeyPairsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1688,14 +1684,13 @@ const opListRecordingConfigurations = "ListRecordingConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecordingConfigurationsRequest method.
+//	req, resp := client.ListRecordingConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListRecordingConfigurationsRequest method.
-//    req, resp := client.ListRecordingConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListRecordingConfigurations
 func (c *IVS) ListRecordingConfigurationsRequest(input *ListRecordingConfigurationsInput) (req *request.Request, output *ListRecordingConfigurationsOutput) {
@@ -1733,11 +1728,12 @@ func (c *IVS) ListRecordingConfigurationsRequest(input *ListRecordingConfigurati
 // API operation ListRecordingConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
 //
-//   * AccessDeniedException
+//   - InternalServerException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListRecordingConfigurations
 func (c *IVS) ListRecordingConfigurations(input *ListRecordingConfigurationsInput) (*ListRecordingConfigurationsOutput, error) {
@@ -1769,15 +1765,14 @@ func (c *IVS) ListRecordingConfigurationsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecordingConfigurations operation.
-//    pageNum := 0
-//    err := client.ListRecordingConfigurationsPages(params,
-//        func(page *ivs.ListRecordingConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecordingConfigurations operation.
+//	pageNum := 0
+//	err := client.ListRecordingConfigurationsPages(params,
+//	    func(page *ivs.ListRecordingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListRecordingConfigurationsPages(input *ListRecordingConfigurationsInput, fn func(*ListRecordingConfigurationsOutput, bool) bool) error {
 	return c.ListRecordingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1829,14 +1824,13 @@ const opListStreamKeys = "ListStreamKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamKeysRequest method.
+//	req, resp := client.ListStreamKeysRequest(params)
 //
-//    // Example sending a request using the ListStreamKeysRequest method.
-//    req, resp := client.ListStreamKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreamKeys
 func (c *IVS) ListStreamKeysRequest(input *ListStreamKeysInput) (req *request.Request, output *ListStreamKeysOutput) {
@@ -1873,11 +1867,12 @@ func (c *IVS) ListStreamKeysRequest(input *ListStreamKeysInput) (req *request.Re
 // API operation ListStreamKeys for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreamKeys
 func (c *IVS) ListStreamKeys(input *ListStreamKeysInput) (*ListStreamKeysOutput, error) {
@@ -1909,15 +1904,14 @@ func (c *IVS) ListStreamKeysWithContext(ctx aws.Context, input *ListStreamKeysIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamKeys operation.
-//    pageNum := 0
-//    err := client.ListStreamKeysPages(params,
-//        func(page *ivs.ListStreamKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamKeys operation.
+//	pageNum := 0
+//	err := client.ListStreamKeysPages(params,
+//	    func(page *ivs.ListStreamKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListStreamKeysPages(input *ListStreamKeysInput, fn func(*ListStreamKeysOutput, bool) bool) error {
 	return c.ListStreamKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1969,14 +1963,13 @@ const opListStreamSessions = "ListStreamSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamSessionsRequest method.
+//	req, resp := client.ListStreamSessionsRequest(params)
 //
-//    // Example sending a request using the ListStreamSessionsRequest method.
-//    req, resp := client.ListStreamSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreamSessions
 func (c *IVS) ListStreamSessionsRequest(input *ListStreamSessionsInput) (req *request.Request, output *ListStreamSessionsOutput) {
@@ -2014,11 +2007,12 @@ func (c *IVS) ListStreamSessionsRequest(input *ListStreamSessionsInput) (req *re
 // API operation ListStreamSessions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreamSessions
 func (c *IVS) ListStreamSessions(input *ListStreamSessionsInput) (*ListStreamSessionsOutput, error) {
@@ -2050,15 +2044,14 @@ func (c *IVS) ListStreamSessionsWithContext(ctx aws.Context, input *ListStreamSe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamSessions operation.
-//    pageNum := 0
-//    err := client.ListStreamSessionsPages(params,
-//        func(page *ivs.ListStreamSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamSessions operation.
+//	pageNum := 0
+//	err := client.ListStreamSessionsPages(params,
+//	    func(page *ivs.ListStreamSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListStreamSessionsPages(input *ListStreamSessionsInput, fn func(*ListStreamSessionsOutput, bool) bool) error {
 	return c.ListStreamSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2110,14 +2103,13 @@ const opListStreams = "ListStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamsRequest method.
+//	req, resp := client.ListStreamsRequest(params)
 //
-//    // Example sending a request using the ListStreamsRequest method.
-//    req, resp := client.ListStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreams
 func (c *IVS) ListStreamsRequest(input *ListStreamsInput) (req *request.Request, output *ListStreamsOutput) {
@@ -2155,9 +2147,10 @@ func (c *IVS) ListStreamsRequest(input *ListStreamsInput) (req *request.Request,
 // API operation ListStreams for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ValidationException
+//   - AccessDeniedException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListStreams
 func (c *IVS) ListStreams(input *ListStreamsInput) (*ListStreamsOutput, error) {
@@ -2189,15 +2182,14 @@ func (c *IVS) ListStreamsWithContext(ctx aws.Context, input *ListStreamsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreams operation.
-//    pageNum := 0
-//    err := client.ListStreamsPages(params,
-//        func(page *ivs.ListStreamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreams operation.
+//	pageNum := 0
+//	err := client.ListStreamsPages(params,
+//	    func(page *ivs.ListStreamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IVS) ListStreamsPages(input *ListStreamsInput, fn func(*ListStreamsOutput, bool) bool) error {
 	return c.ListStreamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2249,14 +2241,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListTagsForResource
 func (c *IVS) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2287,11 +2278,12 @@ func (c *IVS) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/ListTagsForResource
 func (c *IVS) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2331,14 +2323,13 @@ const opPutMetadata = "PutMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMetadataRequest method.
+//	req, resp := client.PutMetadataRequest(params)
 //
-//    // Example sending a request using the PutMetadataRequest method.
-//    req, resp := client.PutMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/PutMetadata
 func (c *IVS) PutMetadataRequest(input *PutMetadataInput) (req *request.Request, output *PutMetadataOutput) {
@@ -2375,15 +2366,16 @@ func (c *IVS) PutMetadataRequest(input *PutMetadataInput) (req *request.Request,
 // API operation PutMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ChannelNotBroadcasting
+//   - ValidationException
 //
-//   * ThrottlingException
+//   - ChannelNotBroadcasting
+//
+//   - ThrottlingException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/PutMetadata
 func (c *IVS) PutMetadata(input *PutMetadataInput) (*PutMetadataOutput, error) {
@@ -2423,14 +2415,13 @@ const opStopStream = "StopStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopStreamRequest method.
+//	req, resp := client.StopStreamRequest(params)
 //
-//    // Example sending a request using the StopStreamRequest method.
-//    req, resp := client.StopStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/StopStream
 func (c *IVS) StopStreamRequest(input *StopStreamInput) (req *request.Request, output *StopStreamOutput) {
@@ -2467,15 +2458,16 @@ func (c *IVS) StopStreamRequest(input *StopStreamInput) (req *request.Request, o
 // API operation StopStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * ChannelNotBroadcasting
+//   - ValidationException
 //
-//   * StreamUnavailable
+//   - ChannelNotBroadcasting
+//
+//   - StreamUnavailable
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/StopStream
 func (c *IVS) StopStream(input *StopStreamInput) (*StopStreamOutput, error) {
@@ -2515,14 +2507,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/TagResource
 func (c *IVS) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2555,11 +2546,12 @@ func (c *IVS) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/TagResource
 func (c *IVS) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2599,14 +2591,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/UntagResource
 func (c *IVS) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2638,11 +2629,12 @@ func (c *IVS) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/UntagResource
 func (c *IVS) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2682,14 +2674,13 @@ const opUpdateChannel = "UpdateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelRequest method.
+//	req, resp := client.UpdateChannelRequest(params)
 //
-//    // Example sending a request using the UpdateChannelRequest method.
-//    req, resp := client.UpdateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/UpdateChannel
 func (c *IVS) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
@@ -2722,15 +2713,16 @@ func (c *IVS) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Requ
 // API operation UpdateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * AccessDeniedException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ValidationException
 //
-//   * ConflictException
+//   - PendingVerification
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivs-2020-07-14/UpdateChannel
 func (c *IVS) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, error) {

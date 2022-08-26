@@ -29,14 +29,13 @@ const opDescribeStream = "DescribeStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStreamRequest method.
+//	req, resp := client.DescribeStreamRequest(params)
 //
-//    // Example sending a request using the DescribeStreamRequest method.
-//    req, resp := client.DescribeStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/DescribeStream
 func (c *DynamoDBStreams) DescribeStreamRequest(input *DescribeStreamInput) (req *request.Request, output *DescribeStreamOutput) {
@@ -77,12 +76,13 @@ func (c *DynamoDBStreams) DescribeStreamRequest(input *DescribeStreamInput) (req
 // API operation DescribeStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation tried to access a nonexistent table or index. The resource
-//   might not be specified correctly, or its status might not be ACTIVE.
 //
-//   * InternalServerError
-//   An error occurred on the server side.
+//   - ResourceNotFoundException
+//     The operation tried to access a nonexistent table or index. The resource
+//     might not be specified correctly, or its status might not be ACTIVE.
+//
+//   - InternalServerError
+//     An error occurred on the server side.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/DescribeStream
 func (c *DynamoDBStreams) DescribeStream(input *DescribeStreamInput) (*DescribeStreamOutput, error) {
@@ -122,14 +122,13 @@ const opGetRecords = "GetRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecordsRequest method.
+//	req, resp := client.GetRecordsRequest(params)
 //
-//    // Example sending a request using the GetRecordsRequest method.
-//    req, resp := client.GetRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/GetRecords
 func (c *DynamoDBStreams) GetRecordsRequest(input *GetRecordsInput) (req *request.Request, output *GetRecordsOutput) {
@@ -170,45 +169,46 @@ func (c *DynamoDBStreams) GetRecordsRequest(input *GetRecordsInput) (req *reques
 // API operation GetRecords for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation tried to access a nonexistent table or index. The resource
-//   might not be specified correctly, or its status might not be ACTIVE.
 //
-//   * LimitExceededException
-//   There is no limit to the number of daily on-demand backups that can be taken.
+//   - ResourceNotFoundException
+//     The operation tried to access a nonexistent table or index. The resource
+//     might not be specified correctly, or its status might not be ACTIVE.
 //
-//   Up to 50 simultaneous table operations are allowed per account. These operations
-//   include CreateTable, UpdateTable, DeleteTable,UpdateTimeToLive, RestoreTableFromBackup,
-//   and RestoreTableToPointInTime.
+//   - LimitExceededException
+//     There is no limit to the number of daily on-demand backups that can be taken.
 //
-//   The only exception is when you are creating a table with one or more secondary
-//   indexes. You can have up to 25 such requests running at a time; however,
-//   if the table or index specifications are complex, DynamoDB might temporarily
-//   reduce the number of concurrent operations.
+//     Up to 50 simultaneous table operations are allowed per account. These operations
+//     include CreateTable, UpdateTable, DeleteTable,UpdateTimeToLive, RestoreTableFromBackup,
+//     and RestoreTableToPointInTime.
 //
-//   There is a soft account quota of 256 tables.
+//     The only exception is when you are creating a table with one or more secondary
+//     indexes. You can have up to 25 such requests running at a time; however,
+//     if the table or index specifications are complex, DynamoDB might temporarily
+//     reduce the number of concurrent operations.
 //
-//   * InternalServerError
-//   An error occurred on the server side.
+//     There is a soft account quota of 256 tables.
 //
-//   * ExpiredIteratorException
-//   The shard iterator has expired and can no longer be used to retrieve stream
-//   records. A shard iterator expires 15 minutes after it is retrieved using
-//   the GetShardIterator action.
+//   - InternalServerError
+//     An error occurred on the server side.
 //
-//   * TrimmedDataAccessException
-//   The operation attempted to read past the oldest stream record in a shard.
+//   - ExpiredIteratorException
+//     The shard iterator has expired and can no longer be used to retrieve stream
+//     records. A shard iterator expires 15 minutes after it is retrieved using
+//     the GetShardIterator action.
 //
-//   In DynamoDB Streams, there is a 24 hour limit on data retention. Stream records
-//   whose age exceeds this limit are subject to removal (trimming) from the stream.
-//   You might receive a TrimmedDataAccessException if:
+//   - TrimmedDataAccessException
+//     The operation attempted to read past the oldest stream record in a shard.
 //
-//      * You request a shard iterator with a sequence number older than the trim
-//      point (24 hours).
+//     In DynamoDB Streams, there is a 24 hour limit on data retention. Stream records
+//     whose age exceeds this limit are subject to removal (trimming) from the stream.
+//     You might receive a TrimmedDataAccessException if:
 //
-//      * You obtain a shard iterator, but before you use the iterator in a GetRecords
-//      request, a stream record in the shard exceeds the 24 hour period and is
-//      trimmed. This causes the iterator to access a record that no longer exists.
+//   - You request a shard iterator with a sequence number older than the trim
+//     point (24 hours).
+//
+//   - You obtain a shard iterator, but before you use the iterator in a GetRecords
+//     request, a stream record in the shard exceeds the 24 hour period and is
+//     trimmed. This causes the iterator to access a record that no longer exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/GetRecords
 func (c *DynamoDBStreams) GetRecords(input *GetRecordsInput) (*GetRecordsOutput, error) {
@@ -248,14 +248,13 @@ const opGetShardIterator = "GetShardIterator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetShardIteratorRequest method.
+//	req, resp := client.GetShardIteratorRequest(params)
 //
-//    // Example sending a request using the GetShardIteratorRequest method.
-//    req, resp := client.GetShardIteratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/GetShardIterator
 func (c *DynamoDBStreams) GetShardIteratorRequest(input *GetShardIteratorInput) (req *request.Request, output *GetShardIteratorOutput) {
@@ -290,26 +289,27 @@ func (c *DynamoDBStreams) GetShardIteratorRequest(input *GetShardIteratorInput) 
 // API operation GetShardIterator for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation tried to access a nonexistent table or index. The resource
-//   might not be specified correctly, or its status might not be ACTIVE.
 //
-//   * InternalServerError
-//   An error occurred on the server side.
+//   - ResourceNotFoundException
+//     The operation tried to access a nonexistent table or index. The resource
+//     might not be specified correctly, or its status might not be ACTIVE.
 //
-//   * TrimmedDataAccessException
-//   The operation attempted to read past the oldest stream record in a shard.
+//   - InternalServerError
+//     An error occurred on the server side.
 //
-//   In DynamoDB Streams, there is a 24 hour limit on data retention. Stream records
-//   whose age exceeds this limit are subject to removal (trimming) from the stream.
-//   You might receive a TrimmedDataAccessException if:
+//   - TrimmedDataAccessException
+//     The operation attempted to read past the oldest stream record in a shard.
 //
-//      * You request a shard iterator with a sequence number older than the trim
-//      point (24 hours).
+//     In DynamoDB Streams, there is a 24 hour limit on data retention. Stream records
+//     whose age exceeds this limit are subject to removal (trimming) from the stream.
+//     You might receive a TrimmedDataAccessException if:
 //
-//      * You obtain a shard iterator, but before you use the iterator in a GetRecords
-//      request, a stream record in the shard exceeds the 24 hour period and is
-//      trimmed. This causes the iterator to access a record that no longer exists.
+//   - You request a shard iterator with a sequence number older than the trim
+//     point (24 hours).
+//
+//   - You obtain a shard iterator, but before you use the iterator in a GetRecords
+//     request, a stream record in the shard exceeds the 24 hour period and is
+//     trimmed. This causes the iterator to access a record that no longer exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/GetShardIterator
 func (c *DynamoDBStreams) GetShardIterator(input *GetShardIteratorInput) (*GetShardIteratorOutput, error) {
@@ -349,14 +349,13 @@ const opListStreams = "ListStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamsRequest method.
+//	req, resp := client.ListStreamsRequest(params)
 //
-//    // Example sending a request using the ListStreamsRequest method.
-//    req, resp := client.ListStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/ListStreams
 func (c *DynamoDBStreams) ListStreamsRequest(input *ListStreamsInput) (req *request.Request, output *ListStreamsOutput) {
@@ -391,12 +390,13 @@ func (c *DynamoDBStreams) ListStreamsRequest(input *ListStreamsInput) (req *requ
 // API operation ListStreams for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation tried to access a nonexistent table or index. The resource
-//   might not be specified correctly, or its status might not be ACTIVE.
 //
-//   * InternalServerError
-//   An error occurred on the server side.
+//   - ResourceNotFoundException
+//     The operation tried to access a nonexistent table or index. The resource
+//     might not be specified correctly, or its status might not be ACTIVE.
+//
+//   - InternalServerError
+//     An error occurred on the server side.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/streams-dynamodb-2012-08-10/ListStreams
 func (c *DynamoDBStreams) ListStreams(input *ListStreamsInput) (*ListStreamsOutput, error) {
@@ -1725,12 +1725,12 @@ func (s *StreamRecord) SetStreamViewType(v string) *StreamRecord {
 // whose age exceeds this limit are subject to removal (trimming) from the stream.
 // You might receive a TrimmedDataAccessException if:
 //
-//    * You request a shard iterator with a sequence number older than the trim
-//    point (24 hours).
+//   - You request a shard iterator with a sequence number older than the trim
+//     point (24 hours).
 //
-//    * You obtain a shard iterator, but before you use the iterator in a GetRecords
-//    request, a stream record in the shard exceeds the 24 hour period and is
-//    trimmed. This causes the iterator to access a record that no longer exists.
+//   - You obtain a shard iterator, but before you use the iterator in a GetRecords
+//     request, a stream record in the shard exceeds the 24 hour period and is
+//     trimmed. This causes the iterator to access a record that no longer exists.
 type TrimmedDataAccessException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`

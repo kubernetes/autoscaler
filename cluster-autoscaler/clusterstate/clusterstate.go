@@ -657,7 +657,7 @@ func (csr *ClusterStateRegistry) updateUnregisteredNodes(unregisteredNodes []Unr
 	csr.unregisteredNodes = result
 }
 
-//GetUnregisteredNodes returns a list of all unregistered nodes.
+// GetUnregisteredNodes returns a list of all unregistered nodes.
 func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 	csr.Lock()
 	defer csr.Unlock()

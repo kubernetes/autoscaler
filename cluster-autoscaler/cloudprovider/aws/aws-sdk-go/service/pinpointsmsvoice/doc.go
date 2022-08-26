@@ -3,14 +3,14 @@
 // Package pinpointsmsvoice provides the client and types for making API
 // requests to Amazon Pinpoint SMS and Voice Service.
 //
-// Pinpoint SMS and Voice Messaging public facing APIs
+// # Pinpoint SMS and Voice Messaging public facing APIs
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-2018-09-05 for more information on this service.
 //
 // See pinpointsmsvoice package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/pinpointsmsvoice/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Pinpoint SMS and Voice Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

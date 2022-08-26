@@ -11,7 +11,7 @@ import (
 
 // GetServiceRequest wrapper for the GetService operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetService.go.html to see an example of how to use GetServiceRequest.
 type GetServiceRequest struct {

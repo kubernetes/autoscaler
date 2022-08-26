@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a KinesisAnalyticsV2 client from just a session.
-//     svc := kinesisanalyticsv2.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a KinesisAnalyticsV2 client with additional configuration
-//     svc := kinesisanalyticsv2.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a KinesisAnalyticsV2 client from just a session.
+//	svc := kinesisanalyticsv2.New(mySession)
+//
+//	// Create a KinesisAnalyticsV2 client with additional configuration
+//	svc := kinesisanalyticsv2.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *KinesisAnalyticsV2 {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

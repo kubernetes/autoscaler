@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Route53RecoveryCluster client from just a session.
-//     svc := route53recoverycluster.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Route53RecoveryCluster client with additional configuration
-//     svc := route53recoverycluster.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Route53RecoveryCluster client from just a session.
+//	svc := route53recoverycluster.New(mySession)
+//
+//	// Create a Route53RecoveryCluster client with additional configuration
+//	svc := route53recoverycluster.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Route53RecoveryCluster {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

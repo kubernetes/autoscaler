@@ -29,14 +29,13 @@ const opAddNotificationChannel = "AddNotificationChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddNotificationChannelRequest method.
+//	req, resp := client.AddNotificationChannelRequest(params)
 //
-//    // Example sending a request using the AddNotificationChannelRequest method.
-//    req, resp := client.AddNotificationChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/AddNotificationChannel
 func (c *DevOpsGuru) AddNotificationChannelRequest(input *AddNotificationChannelInput) (req *request.Request, output *AddNotificationChannelOutput) {
@@ -86,31 +85,32 @@ func (c *DevOpsGuru) AddNotificationChannelRequest(input *AddNotificationChannel
 // API operation AddNotificationChannel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ServiceQuotaExceededException
-//   The request contains a value that exceeds a maximum quota.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ServiceQuotaExceededException
+//     The request contains a value that exceeds a maximum quota.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/AddNotificationChannel
 func (c *DevOpsGuru) AddNotificationChannel(input *AddNotificationChannelInput) (*AddNotificationChannelOutput, error) {
@@ -150,14 +150,13 @@ const opDeleteInsight = "DeleteInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInsightRequest method.
+//	req, resp := client.DeleteInsightRequest(params)
 //
-//    // Example sending a request using the DeleteInsightRequest method.
-//    req, resp := client.DeleteInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DeleteInsight
 func (c *DevOpsGuru) DeleteInsightRequest(input *DeleteInsightInput) (req *request.Request, output *DeleteInsightOutput) {
@@ -189,28 +188,29 @@ func (c *DevOpsGuru) DeleteInsightRequest(input *DeleteInsightInput) (req *reque
 // API operation DeleteInsight for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DeleteInsight
 func (c *DevOpsGuru) DeleteInsight(input *DeleteInsightInput) (*DeleteInsightOutput, error) {
@@ -250,14 +250,13 @@ const opDescribeAccountHealth = "DescribeAccountHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountHealthRequest method.
+//	req, resp := client.DescribeAccountHealthRequest(params)
 //
-//    // Example sending a request using the DescribeAccountHealthRequest method.
-//    req, resp := client.DescribeAccountHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAccountHealth
 func (c *DevOpsGuru) DescribeAccountHealthRequest(input *DescribeAccountHealthInput) (req *request.Request, output *DescribeAccountHealthOutput) {
@@ -291,22 +290,23 @@ func (c *DevOpsGuru) DescribeAccountHealthRequest(input *DescribeAccountHealthIn
 // API operation DescribeAccountHealth for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAccountHealth
 func (c *DevOpsGuru) DescribeAccountHealth(input *DescribeAccountHealthInput) (*DescribeAccountHealthOutput, error) {
@@ -346,14 +346,13 @@ const opDescribeAccountOverview = "DescribeAccountOverview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountOverviewRequest method.
+//	req, resp := client.DescribeAccountOverviewRequest(params)
 //
-//    // Example sending a request using the DescribeAccountOverviewRequest method.
-//    req, resp := client.DescribeAccountOverviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAccountOverview
 func (c *DevOpsGuru) DescribeAccountOverviewRequest(input *DescribeAccountOverviewInput) (req *request.Request, output *DescribeAccountOverviewOutput) {
@@ -386,22 +385,23 @@ func (c *DevOpsGuru) DescribeAccountOverviewRequest(input *DescribeAccountOvervi
 // API operation DescribeAccountOverview for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAccountOverview
 func (c *DevOpsGuru) DescribeAccountOverview(input *DescribeAccountOverviewInput) (*DescribeAccountOverviewOutput, error) {
@@ -441,14 +441,13 @@ const opDescribeAnomaly = "DescribeAnomaly"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAnomalyRequest method.
+//	req, resp := client.DescribeAnomalyRequest(params)
 //
-//    // Example sending a request using the DescribeAnomalyRequest method.
-//    req, resp := client.DescribeAnomalyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAnomaly
 func (c *DevOpsGuru) DescribeAnomalyRequest(input *DescribeAnomalyInput) (req *request.Request, output *DescribeAnomalyOutput) {
@@ -479,25 +478,26 @@ func (c *DevOpsGuru) DescribeAnomalyRequest(input *DescribeAnomalyInput) (req *r
 // API operation DescribeAnomaly for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeAnomaly
 func (c *DevOpsGuru) DescribeAnomaly(input *DescribeAnomalyInput) (*DescribeAnomalyOutput, error) {
@@ -537,14 +537,13 @@ const opDescribeEventSourcesConfig = "DescribeEventSourcesConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventSourcesConfigRequest method.
+//	req, resp := client.DescribeEventSourcesConfigRequest(params)
 //
-//    // Example sending a request using the DescribeEventSourcesConfigRequest method.
-//    req, resp := client.DescribeEventSourcesConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeEventSourcesConfig
 func (c *DevOpsGuru) DescribeEventSourcesConfigRequest(input *DescribeEventSourcesConfigInput) (req *request.Request, output *DescribeEventSourcesConfigOutput) {
@@ -578,22 +577,23 @@ func (c *DevOpsGuru) DescribeEventSourcesConfigRequest(input *DescribeEventSourc
 // API operation DescribeEventSourcesConfig for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeEventSourcesConfig
 func (c *DevOpsGuru) DescribeEventSourcesConfig(input *DescribeEventSourcesConfigInput) (*DescribeEventSourcesConfigOutput, error) {
@@ -633,14 +633,13 @@ const opDescribeFeedback = "DescribeFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFeedbackRequest method.
+//	req, resp := client.DescribeFeedbackRequest(params)
 //
-//    // Example sending a request using the DescribeFeedbackRequest method.
-//    req, resp := client.DescribeFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeFeedback
 func (c *DevOpsGuru) DescribeFeedbackRequest(input *DescribeFeedbackInput) (req *request.Request, output *DescribeFeedbackOutput) {
@@ -672,25 +671,26 @@ func (c *DevOpsGuru) DescribeFeedbackRequest(input *DescribeFeedbackInput) (req 
 // API operation DescribeFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeFeedback
 func (c *DevOpsGuru) DescribeFeedback(input *DescribeFeedbackInput) (*DescribeFeedbackOutput, error) {
@@ -730,14 +730,13 @@ const opDescribeInsight = "DescribeInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInsightRequest method.
+//	req, resp := client.DescribeInsightRequest(params)
 //
-//    // Example sending a request using the DescribeInsightRequest method.
-//    req, resp := client.DescribeInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeInsight
 func (c *DevOpsGuru) DescribeInsightRequest(input *DescribeInsightInput) (req *request.Request, output *DescribeInsightOutput) {
@@ -768,25 +767,26 @@ func (c *DevOpsGuru) DescribeInsightRequest(input *DescribeInsightInput) (req *r
 // API operation DescribeInsight for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeInsight
 func (c *DevOpsGuru) DescribeInsight(input *DescribeInsightInput) (*DescribeInsightOutput, error) {
@@ -826,14 +826,13 @@ const opDescribeOrganizationHealth = "DescribeOrganizationHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationHealthRequest method.
+//	req, resp := client.DescribeOrganizationHealthRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationHealthRequest method.
-//    req, resp := client.DescribeOrganizationHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationHealth
 func (c *DevOpsGuru) DescribeOrganizationHealthRequest(input *DescribeOrganizationHealthInput) (req *request.Request, output *DescribeOrganizationHealthOutput) {
@@ -865,22 +864,23 @@ func (c *DevOpsGuru) DescribeOrganizationHealthRequest(input *DescribeOrganizati
 // API operation DescribeOrganizationHealth for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationHealth
 func (c *DevOpsGuru) DescribeOrganizationHealth(input *DescribeOrganizationHealthInput) (*DescribeOrganizationHealthOutput, error) {
@@ -920,14 +920,13 @@ const opDescribeOrganizationOverview = "DescribeOrganizationOverview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationOverviewRequest method.
+//	req, resp := client.DescribeOrganizationOverviewRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationOverviewRequest method.
-//    req, resp := client.DescribeOrganizationOverviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationOverview
 func (c *DevOpsGuru) DescribeOrganizationOverviewRequest(input *DescribeOrganizationOverviewInput) (req *request.Request, output *DescribeOrganizationOverviewOutput) {
@@ -959,22 +958,23 @@ func (c *DevOpsGuru) DescribeOrganizationOverviewRequest(input *DescribeOrganiza
 // API operation DescribeOrganizationOverview for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationOverview
 func (c *DevOpsGuru) DescribeOrganizationOverview(input *DescribeOrganizationOverviewInput) (*DescribeOrganizationOverviewOutput, error) {
@@ -1014,14 +1014,13 @@ const opDescribeOrganizationResourceCollectionHealth = "DescribeOrganizationReso
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationResourceCollectionHealthRequest method.
+//	req, resp := client.DescribeOrganizationResourceCollectionHealthRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationResourceCollectionHealthRequest method.
-//    req, resp := client.DescribeOrganizationResourceCollectionHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationResourceCollectionHealth
 func (c *DevOpsGuru) DescribeOrganizationResourceCollectionHealthRequest(input *DescribeOrganizationResourceCollectionHealthInput) (req *request.Request, output *DescribeOrganizationResourceCollectionHealthOutput) {
@@ -1060,22 +1059,23 @@ func (c *DevOpsGuru) DescribeOrganizationResourceCollectionHealthRequest(input *
 // API operation DescribeOrganizationResourceCollectionHealth for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeOrganizationResourceCollectionHealth
 func (c *DevOpsGuru) DescribeOrganizationResourceCollectionHealth(input *DescribeOrganizationResourceCollectionHealthInput) (*DescribeOrganizationResourceCollectionHealthOutput, error) {
@@ -1107,15 +1107,14 @@ func (c *DevOpsGuru) DescribeOrganizationResourceCollectionHealthWithContext(ctx
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOrganizationResourceCollectionHealth operation.
-//    pageNum := 0
-//    err := client.DescribeOrganizationResourceCollectionHealthPages(params,
-//        func(page *devopsguru.DescribeOrganizationResourceCollectionHealthOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOrganizationResourceCollectionHealth operation.
+//	pageNum := 0
+//	err := client.DescribeOrganizationResourceCollectionHealthPages(params,
+//	    func(page *devopsguru.DescribeOrganizationResourceCollectionHealthOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) DescribeOrganizationResourceCollectionHealthPages(input *DescribeOrganizationResourceCollectionHealthInput, fn func(*DescribeOrganizationResourceCollectionHealthOutput, bool) bool) error {
 	return c.DescribeOrganizationResourceCollectionHealthPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1167,14 +1166,13 @@ const opDescribeResourceCollectionHealth = "DescribeResourceCollectionHealth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResourceCollectionHealthRequest method.
+//	req, resp := client.DescribeResourceCollectionHealthRequest(params)
 //
-//    // Example sending a request using the DescribeResourceCollectionHealthRequest method.
-//    req, resp := client.DescribeResourceCollectionHealthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeResourceCollectionHealth
 func (c *DevOpsGuru) DescribeResourceCollectionHealthRequest(input *DescribeResourceCollectionHealthInput) (req *request.Request, output *DescribeResourceCollectionHealthOutput) {
@@ -1219,22 +1217,23 @@ func (c *DevOpsGuru) DescribeResourceCollectionHealthRequest(input *DescribeReso
 // API operation DescribeResourceCollectionHealth for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeResourceCollectionHealth
 func (c *DevOpsGuru) DescribeResourceCollectionHealth(input *DescribeResourceCollectionHealthInput) (*DescribeResourceCollectionHealthOutput, error) {
@@ -1266,15 +1265,14 @@ func (c *DevOpsGuru) DescribeResourceCollectionHealthWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeResourceCollectionHealth operation.
-//    pageNum := 0
-//    err := client.DescribeResourceCollectionHealthPages(params,
-//        func(page *devopsguru.DescribeResourceCollectionHealthOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeResourceCollectionHealth operation.
+//	pageNum := 0
+//	err := client.DescribeResourceCollectionHealthPages(params,
+//	    func(page *devopsguru.DescribeResourceCollectionHealthOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) DescribeResourceCollectionHealthPages(input *DescribeResourceCollectionHealthInput, fn func(*DescribeResourceCollectionHealthOutput, bool) bool) error {
 	return c.DescribeResourceCollectionHealthPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1326,14 +1324,13 @@ const opDescribeServiceIntegration = "DescribeServiceIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServiceIntegrationRequest method.
+//	req, resp := client.DescribeServiceIntegrationRequest(params)
 //
-//    // Example sending a request using the DescribeServiceIntegrationRequest method.
-//    req, resp := client.DescribeServiceIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeServiceIntegration
 func (c *DevOpsGuru) DescribeServiceIntegrationRequest(input *DescribeServiceIntegrationInput) (req *request.Request, output *DescribeServiceIntegrationOutput) {
@@ -1367,22 +1364,23 @@ func (c *DevOpsGuru) DescribeServiceIntegrationRequest(input *DescribeServiceInt
 // API operation DescribeServiceIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/DescribeServiceIntegration
 func (c *DevOpsGuru) DescribeServiceIntegration(input *DescribeServiceIntegrationInput) (*DescribeServiceIntegrationOutput, error) {
@@ -1422,14 +1420,13 @@ const opGetCostEstimation = "GetCostEstimation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCostEstimationRequest method.
+//	req, resp := client.GetCostEstimationRequest(params)
 //
-//    // Example sending a request using the GetCostEstimationRequest method.
-//    req, resp := client.GetCostEstimationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/GetCostEstimation
 func (c *DevOpsGuru) GetCostEstimationRequest(input *GetCostEstimationInput) (req *request.Request, output *GetCostEstimationOutput) {
@@ -1469,25 +1466,26 @@ func (c *DevOpsGuru) GetCostEstimationRequest(input *GetCostEstimationInput) (re
 // API operation GetCostEstimation for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/GetCostEstimation
 func (c *DevOpsGuru) GetCostEstimation(input *GetCostEstimationInput) (*GetCostEstimationOutput, error) {
@@ -1519,15 +1517,14 @@ func (c *DevOpsGuru) GetCostEstimationWithContext(ctx aws.Context, input *GetCos
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCostEstimation operation.
-//    pageNum := 0
-//    err := client.GetCostEstimationPages(params,
-//        func(page *devopsguru.GetCostEstimationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCostEstimation operation.
+//	pageNum := 0
+//	err := client.GetCostEstimationPages(params,
+//	    func(page *devopsguru.GetCostEstimationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) GetCostEstimationPages(input *GetCostEstimationInput, fn func(*GetCostEstimationOutput, bool) bool) error {
 	return c.GetCostEstimationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1579,14 +1576,13 @@ const opGetResourceCollection = "GetResourceCollection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceCollectionRequest method.
+//	req, resp := client.GetResourceCollectionRequest(params)
 //
-//    // Example sending a request using the GetResourceCollectionRequest method.
-//    req, resp := client.GetResourceCollectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/GetResourceCollection
 func (c *DevOpsGuru) GetResourceCollectionRequest(input *GetResourceCollectionInput) (req *request.Request, output *GetResourceCollectionOutput) {
@@ -1629,25 +1625,26 @@ func (c *DevOpsGuru) GetResourceCollectionRequest(input *GetResourceCollectionIn
 // API operation GetResourceCollection for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/GetResourceCollection
 func (c *DevOpsGuru) GetResourceCollection(input *GetResourceCollectionInput) (*GetResourceCollectionOutput, error) {
@@ -1679,15 +1676,14 @@ func (c *DevOpsGuru) GetResourceCollectionWithContext(ctx aws.Context, input *Ge
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourceCollection operation.
-//    pageNum := 0
-//    err := client.GetResourceCollectionPages(params,
-//        func(page *devopsguru.GetResourceCollectionOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourceCollection operation.
+//	pageNum := 0
+//	err := client.GetResourceCollectionPages(params,
+//	    func(page *devopsguru.GetResourceCollectionOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) GetResourceCollectionPages(input *GetResourceCollectionInput, fn func(*GetResourceCollectionOutput, bool) bool) error {
 	return c.GetResourceCollectionPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1739,14 +1735,13 @@ const opListAnomaliesForInsight = "ListAnomaliesForInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnomaliesForInsightRequest method.
+//	req, resp := client.ListAnomaliesForInsightRequest(params)
 //
-//    // Example sending a request using the ListAnomaliesForInsightRequest method.
-//    req, resp := client.ListAnomaliesForInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListAnomaliesForInsight
 func (c *DevOpsGuru) ListAnomaliesForInsightRequest(input *ListAnomaliesForInsightInput) (req *request.Request, output *ListAnomaliesForInsightOutput) {
@@ -1784,25 +1779,26 @@ func (c *DevOpsGuru) ListAnomaliesForInsightRequest(input *ListAnomaliesForInsig
 // API operation ListAnomaliesForInsight for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListAnomaliesForInsight
 func (c *DevOpsGuru) ListAnomaliesForInsight(input *ListAnomaliesForInsightInput) (*ListAnomaliesForInsightOutput, error) {
@@ -1834,15 +1830,14 @@ func (c *DevOpsGuru) ListAnomaliesForInsightWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnomaliesForInsight operation.
-//    pageNum := 0
-//    err := client.ListAnomaliesForInsightPages(params,
-//        func(page *devopsguru.ListAnomaliesForInsightOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnomaliesForInsight operation.
+//	pageNum := 0
+//	err := client.ListAnomaliesForInsightPages(params,
+//	    func(page *devopsguru.ListAnomaliesForInsightOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListAnomaliesForInsightPages(input *ListAnomaliesForInsightInput, fn func(*ListAnomaliesForInsightOutput, bool) bool) error {
 	return c.ListAnomaliesForInsightPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1894,14 +1889,13 @@ const opListEvents = "ListEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventsRequest method.
+//	req, resp := client.ListEventsRequest(params)
 //
-//    // Example sending a request using the ListEventsRequest method.
-//    req, resp := client.ListEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListEvents
 func (c *DevOpsGuru) ListEventsRequest(input *ListEventsInput) (req *request.Request, output *ListEventsOutput) {
@@ -1939,25 +1933,26 @@ func (c *DevOpsGuru) ListEventsRequest(input *ListEventsInput) (req *request.Req
 // API operation ListEvents for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListEvents
 func (c *DevOpsGuru) ListEvents(input *ListEventsInput) (*ListEventsOutput, error) {
@@ -1989,15 +1984,14 @@ func (c *DevOpsGuru) ListEventsWithContext(ctx aws.Context, input *ListEventsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEvents operation.
-//    pageNum := 0
-//    err := client.ListEventsPages(params,
-//        func(page *devopsguru.ListEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEvents operation.
+//	pageNum := 0
+//	err := client.ListEventsPages(params,
+//	    func(page *devopsguru.ListEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListEventsPages(input *ListEventsInput, fn func(*ListEventsOutput, bool) bool) error {
 	return c.ListEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2049,14 +2043,13 @@ const opListInsights = "ListInsights"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInsightsRequest method.
+//	req, resp := client.ListInsightsRequest(params)
 //
-//    // Example sending a request using the ListInsightsRequest method.
-//    req, resp := client.ListInsightsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListInsights
 func (c *DevOpsGuru) ListInsightsRequest(input *ListInsightsInput) (req *request.Request, output *ListInsightsOutput) {
@@ -2095,22 +2088,23 @@ func (c *DevOpsGuru) ListInsightsRequest(input *ListInsightsInput) (req *request
 // API operation ListInsights for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListInsights
 func (c *DevOpsGuru) ListInsights(input *ListInsightsInput) (*ListInsightsOutput, error) {
@@ -2142,15 +2136,14 @@ func (c *DevOpsGuru) ListInsightsWithContext(ctx aws.Context, input *ListInsight
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInsights operation.
-//    pageNum := 0
-//    err := client.ListInsightsPages(params,
-//        func(page *devopsguru.ListInsightsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInsights operation.
+//	pageNum := 0
+//	err := client.ListInsightsPages(params,
+//	    func(page *devopsguru.ListInsightsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListInsightsPages(input *ListInsightsInput, fn func(*ListInsightsOutput, bool) bool) error {
 	return c.ListInsightsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2202,14 +2195,13 @@ const opListNotificationChannels = "ListNotificationChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNotificationChannelsRequest method.
+//	req, resp := client.ListNotificationChannelsRequest(params)
 //
-//    // Example sending a request using the ListNotificationChannelsRequest method.
-//    req, resp := client.ListNotificationChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListNotificationChannels
 func (c *DevOpsGuru) ListNotificationChannelsRequest(input *ListNotificationChannelsInput) (req *request.Request, output *ListNotificationChannelsOutput) {
@@ -2250,22 +2242,23 @@ func (c *DevOpsGuru) ListNotificationChannelsRequest(input *ListNotificationChan
 // API operation ListNotificationChannels for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListNotificationChannels
 func (c *DevOpsGuru) ListNotificationChannels(input *ListNotificationChannelsInput) (*ListNotificationChannelsOutput, error) {
@@ -2297,15 +2290,14 @@ func (c *DevOpsGuru) ListNotificationChannelsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNotificationChannels operation.
-//    pageNum := 0
-//    err := client.ListNotificationChannelsPages(params,
-//        func(page *devopsguru.ListNotificationChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNotificationChannels operation.
+//	pageNum := 0
+//	err := client.ListNotificationChannelsPages(params,
+//	    func(page *devopsguru.ListNotificationChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListNotificationChannelsPages(input *ListNotificationChannelsInput, fn func(*ListNotificationChannelsOutput, bool) bool) error {
 	return c.ListNotificationChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2357,14 +2349,13 @@ const opListOrganizationInsights = "ListOrganizationInsights"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOrganizationInsightsRequest method.
+//	req, resp := client.ListOrganizationInsightsRequest(params)
 //
-//    // Example sending a request using the ListOrganizationInsightsRequest method.
-//    req, resp := client.ListOrganizationInsightsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListOrganizationInsights
 func (c *DevOpsGuru) ListOrganizationInsightsRequest(input *ListOrganizationInsightsInput) (req *request.Request, output *ListOrganizationInsightsOutput) {
@@ -2401,22 +2392,23 @@ func (c *DevOpsGuru) ListOrganizationInsightsRequest(input *ListOrganizationInsi
 // API operation ListOrganizationInsights for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListOrganizationInsights
 func (c *DevOpsGuru) ListOrganizationInsights(input *ListOrganizationInsightsInput) (*ListOrganizationInsightsOutput, error) {
@@ -2448,15 +2440,14 @@ func (c *DevOpsGuru) ListOrganizationInsightsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOrganizationInsights operation.
-//    pageNum := 0
-//    err := client.ListOrganizationInsightsPages(params,
-//        func(page *devopsguru.ListOrganizationInsightsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOrganizationInsights operation.
+//	pageNum := 0
+//	err := client.ListOrganizationInsightsPages(params,
+//	    func(page *devopsguru.ListOrganizationInsightsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListOrganizationInsightsPages(input *ListOrganizationInsightsInput, fn func(*ListOrganizationInsightsOutput, bool) bool) error {
 	return c.ListOrganizationInsightsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2508,14 +2499,13 @@ const opListRecommendations = "ListRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecommendationsRequest method.
+//	req, resp := client.ListRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListRecommendationsRequest method.
-//    req, resp := client.ListRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListRecommendations
 func (c *DevOpsGuru) ListRecommendationsRequest(input *ListRecommendationsInput) (req *request.Request, output *ListRecommendationsOutput) {
@@ -2553,25 +2543,26 @@ func (c *DevOpsGuru) ListRecommendationsRequest(input *ListRecommendationsInput)
 // API operation ListRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/ListRecommendations
 func (c *DevOpsGuru) ListRecommendations(input *ListRecommendationsInput) (*ListRecommendationsOutput, error) {
@@ -2603,15 +2594,14 @@ func (c *DevOpsGuru) ListRecommendationsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecommendations operation.
-//    pageNum := 0
-//    err := client.ListRecommendationsPages(params,
-//        func(page *devopsguru.ListRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecommendations operation.
+//	pageNum := 0
+//	err := client.ListRecommendationsPages(params,
+//	    func(page *devopsguru.ListRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) ListRecommendationsPages(input *ListRecommendationsInput, fn func(*ListRecommendationsOutput, bool) bool) error {
 	return c.ListRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2663,14 +2653,13 @@ const opPutFeedback = "PutFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFeedbackRequest method.
+//	req, resp := client.PutFeedbackRequest(params)
 //
-//    // Example sending a request using the PutFeedbackRequest method.
-//    req, resp := client.PutFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/PutFeedback
 func (c *DevOpsGuru) PutFeedbackRequest(input *PutFeedbackInput) (req *request.Request, output *PutFeedbackOutput) {
@@ -2702,28 +2691,29 @@ func (c *DevOpsGuru) PutFeedbackRequest(input *PutFeedbackInput) (req *request.R
 // API operation PutFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/PutFeedback
 func (c *DevOpsGuru) PutFeedback(input *PutFeedbackInput) (*PutFeedbackOutput, error) {
@@ -2763,14 +2753,13 @@ const opRemoveNotificationChannel = "RemoveNotificationChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveNotificationChannelRequest method.
+//	req, resp := client.RemoveNotificationChannelRequest(params)
 //
-//    // Example sending a request using the RemoveNotificationChannelRequest method.
-//    req, resp := client.RemoveNotificationChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/RemoveNotificationChannel
 func (c *DevOpsGuru) RemoveNotificationChannelRequest(input *RemoveNotificationChannelInput) (req *request.Request, output *RemoveNotificationChannelOutput) {
@@ -2804,28 +2793,29 @@ func (c *DevOpsGuru) RemoveNotificationChannelRequest(input *RemoveNotificationC
 // API operation RemoveNotificationChannel for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/RemoveNotificationChannel
 func (c *DevOpsGuru) RemoveNotificationChannel(input *RemoveNotificationChannelInput) (*RemoveNotificationChannelOutput, error) {
@@ -2865,14 +2855,13 @@ const opSearchInsights = "SearchInsights"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchInsightsRequest method.
+//	req, resp := client.SearchInsightsRequest(params)
 //
-//    // Example sending a request using the SearchInsightsRequest method.
-//    req, resp := client.SearchInsightsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/SearchInsights
 func (c *DevOpsGuru) SearchInsightsRequest(input *SearchInsightsInput) (req *request.Request, output *SearchInsightsOutput) {
@@ -2915,22 +2904,23 @@ func (c *DevOpsGuru) SearchInsightsRequest(input *SearchInsightsInput) (req *req
 // API operation SearchInsights for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/SearchInsights
 func (c *DevOpsGuru) SearchInsights(input *SearchInsightsInput) (*SearchInsightsOutput, error) {
@@ -2962,15 +2952,14 @@ func (c *DevOpsGuru) SearchInsightsWithContext(ctx aws.Context, input *SearchIns
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchInsights operation.
-//    pageNum := 0
-//    err := client.SearchInsightsPages(params,
-//        func(page *devopsguru.SearchInsightsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchInsights operation.
+//	pageNum := 0
+//	err := client.SearchInsightsPages(params,
+//	    func(page *devopsguru.SearchInsightsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) SearchInsightsPages(input *SearchInsightsInput, fn func(*SearchInsightsOutput, bool) bool) error {
 	return c.SearchInsightsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3022,14 +3011,13 @@ const opSearchOrganizationInsights = "SearchOrganizationInsights"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchOrganizationInsightsRequest method.
+//	req, resp := client.SearchOrganizationInsightsRequest(params)
 //
-//    // Example sending a request using the SearchOrganizationInsightsRequest method.
-//    req, resp := client.SearchOrganizationInsightsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/SearchOrganizationInsights
 func (c *DevOpsGuru) SearchOrganizationInsightsRequest(input *SearchOrganizationInsightsInput) (req *request.Request, output *SearchOrganizationInsightsOutput) {
@@ -3072,22 +3060,23 @@ func (c *DevOpsGuru) SearchOrganizationInsightsRequest(input *SearchOrganization
 // API operation SearchOrganizationInsights for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/SearchOrganizationInsights
 func (c *DevOpsGuru) SearchOrganizationInsights(input *SearchOrganizationInsightsInput) (*SearchOrganizationInsightsOutput, error) {
@@ -3119,15 +3108,14 @@ func (c *DevOpsGuru) SearchOrganizationInsightsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchOrganizationInsights operation.
-//    pageNum := 0
-//    err := client.SearchOrganizationInsightsPages(params,
-//        func(page *devopsguru.SearchOrganizationInsightsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchOrganizationInsights operation.
+//	pageNum := 0
+//	err := client.SearchOrganizationInsightsPages(params,
+//	    func(page *devopsguru.SearchOrganizationInsightsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DevOpsGuru) SearchOrganizationInsightsPages(input *SearchOrganizationInsightsInput, fn func(*SearchOrganizationInsightsOutput, bool) bool) error {
 	return c.SearchOrganizationInsightsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3179,14 +3167,13 @@ const opStartCostEstimation = "StartCostEstimation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCostEstimationRequest method.
+//	req, resp := client.StartCostEstimationRequest(params)
 //
-//    // Example sending a request using the StartCostEstimationRequest method.
-//    req, resp := client.StartCostEstimationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/StartCostEstimation
 func (c *DevOpsGuru) StartCostEstimationRequest(input *StartCostEstimationInput) (req *request.Request, output *StartCostEstimationOutput) {
@@ -3219,28 +3206,29 @@ func (c *DevOpsGuru) StartCostEstimationRequest(input *StartCostEstimationInput)
 // API operation StartCostEstimation for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ResourceNotFoundException
-//   A requested resource could not be found
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - ResourceNotFoundException
+//     A requested resource could not be found
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/StartCostEstimation
 func (c *DevOpsGuru) StartCostEstimation(input *StartCostEstimationInput) (*StartCostEstimationOutput, error) {
@@ -3280,14 +3268,13 @@ const opUpdateEventSourcesConfig = "UpdateEventSourcesConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEventSourcesConfigRequest method.
+//	req, resp := client.UpdateEventSourcesConfigRequest(params)
 //
-//    // Example sending a request using the UpdateEventSourcesConfigRequest method.
-//    req, resp := client.UpdateEventSourcesConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateEventSourcesConfig
 func (c *DevOpsGuru) UpdateEventSourcesConfigRequest(input *UpdateEventSourcesConfigInput) (req *request.Request, output *UpdateEventSourcesConfigOutput) {
@@ -3322,22 +3309,23 @@ func (c *DevOpsGuru) UpdateEventSourcesConfigRequest(input *UpdateEventSourcesCo
 // API operation UpdateEventSourcesConfig for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateEventSourcesConfig
 func (c *DevOpsGuru) UpdateEventSourcesConfig(input *UpdateEventSourcesConfigInput) (*UpdateEventSourcesConfigOutput, error) {
@@ -3377,14 +3365,13 @@ const opUpdateResourceCollection = "UpdateResourceCollection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourceCollectionRequest method.
+//	req, resp := client.UpdateResourceCollectionRequest(params)
 //
-//    // Example sending a request using the UpdateResourceCollectionRequest method.
-//    req, resp := client.UpdateResourceCollectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateResourceCollection
 func (c *DevOpsGuru) UpdateResourceCollectionRequest(input *UpdateResourceCollectionInput) (req *request.Request, output *UpdateResourceCollectionOutput) {
@@ -3423,25 +3410,26 @@ func (c *DevOpsGuru) UpdateResourceCollectionRequest(input *UpdateResourceCollec
 // API operation UpdateResourceCollection for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateResourceCollection
 func (c *DevOpsGuru) UpdateResourceCollection(input *UpdateResourceCollectionInput) (*UpdateResourceCollectionOutput, error) {
@@ -3481,14 +3469,13 @@ const opUpdateServiceIntegration = "UpdateServiceIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceIntegrationRequest method.
+//	req, resp := client.UpdateServiceIntegrationRequest(params)
 //
-//    // Example sending a request using the UpdateServiceIntegrationRequest method.
-//    req, resp := client.UpdateServiceIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateServiceIntegration
 func (c *DevOpsGuru) UpdateServiceIntegrationRequest(input *UpdateServiceIntegrationInput) (req *request.Request, output *UpdateServiceIntegrationOutput) {
@@ -3523,25 +3510,26 @@ func (c *DevOpsGuru) UpdateServiceIntegrationRequest(input *UpdateServiceIntegra
 // API operation UpdateServiceIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions. For more information, see
-//   Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//   in the IAM User Guide.
 //
-//   * ConflictException
-//   An exception that is thrown when a conflict occurs.
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
 //
-//   * InternalServerException
-//   An internal failure in an Amazon service occurred.
+//   - ConflictException
+//     An exception that is thrown when a conflict occurs.
 //
-//   * ThrottlingException
-//   The request was denied due to a request throttling.
+//   - InternalServerException
+//     An internal failure in an Amazon service occurred.
 //
-//   * ValidationException
-//   Contains information about data passed in to a field during a request that
-//   is not valid.
+//   - ThrottlingException
+//     The request was denied due to a request throttling.
+//
+//   - ValidationException
+//     Contains information about data passed in to a field during a request that
+//     is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/devops-guru-2020-12-01/UpdateServiceIntegration
 func (c *DevOpsGuru) UpdateServiceIntegration(input *UpdateServiceIntegrationInput) (*UpdateServiceIntegrationOutput, error) {
@@ -7968,11 +7956,11 @@ func (s *OpsCenterIntegrationConfig) SetOptInStatus(v string) *OpsCenterIntegrat
 // measured at that time point. Examples include SQL, Wait event, User, and
 // Host.
 //
-//    * To learn more about Performance Insights and Amazon Aurora DB instances,
-//    go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon Aurora DB instances,
+//     go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
 //
-//    * To learn more about Performance Insights and Amazon RDS DB instances,
-//    go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon RDS DB instances,
+//     go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
 type PerformanceInsightsMetricDimensionGroup struct {
 	_ struct{} `type:"structure"`
 
@@ -8107,11 +8095,11 @@ func (s *PerformanceInsightsMetricDimensionGroup) SetLimit(v int64) *Performance
 // measured at that time point. Examples include SQL, Wait event, User, and
 // Host.
 //
-//    * To learn more about Performance Insights and Amazon Aurora DB instances,
-//    go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon Aurora DB instances,
+//     go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
 //
-//    * To learn more about Performance Insights and Amazon RDS DB instances,
-//    go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon RDS DB instances,
+//     go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
 type PerformanceInsightsMetricQuery struct {
 	_ struct{} `type:"structure"`
 
@@ -8198,11 +8186,11 @@ func (s *PerformanceInsightsMetricQuery) SetMetric(v string) *PerformanceInsight
 // measured at that time point. Examples include SQL, Wait event, User, and
 // Host.
 //
-//    * To learn more about Performance Insights and Amazon Aurora DB instances,
-//    go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon Aurora DB instances,
+//     go to the Amazon Aurora User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_PerfInsights.html).
 //
-//    * To learn more about Performance Insights and Amazon RDS DB instances,
-//    go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
+//   - To learn more about Performance Insights and Amazon RDS DB instances,
+//     go to the Amazon RDS User Guide (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html).
 type PerformanceInsightsMetricsDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -11547,12 +11535,12 @@ func (s *StartTimeRange) SetToTime(v time.Time) *StartTimeRange {
 //
 // Each Amazon Web Services tag has two parts.
 //
-//    * A tag key (for example, CostCenter, Environment, Project, or Secret).
-//    Tag keys are case-sensitive.
+//   - A tag key (for example, CostCenter, Environment, Project, or Secret).
+//     Tag keys are case-sensitive.
 //
-//    * An optional field known as a tag value (for example, 111122223333, Production,
-//    or a team name). Omitting the tag value is the same as using an empty
-//    string. Like tag keys, tag values are case-sensitive.
+//   - An optional field known as a tag value (for example, 111122223333, Production,
+//     or a team name). Omitting the tag value is the same as using an empty
+//     string. Like tag keys, tag values are case-sensitive.
 //
 // Together these are known as key-value pairs.
 //

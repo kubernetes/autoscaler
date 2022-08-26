@@ -28,14 +28,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateCluster
 func (c *DAX) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -67,54 +66,55 @@ func (c *DAX) CreateClusterRequest(input *CreateClusterInput) (req *request.Requ
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterAlreadyExistsFault
-//   You already have a DAX cluster with the given identifier.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - ClusterAlreadyExistsFault
+//     You already have a DAX cluster with the given identifier.
 //
-//   * InsufficientClusterCapacityFault
-//   There are not enough system resources to create the cluster you requested
-//   (or to resize an already-existing cluster).
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * SubnetGroupNotFoundFault
-//   The requested subnet group name does not refer to an existing subnet group.
+//   - InsufficientClusterCapacityFault
+//     There are not enough system resources to create the cluster you requested
+//     (or to resize an already-existing cluster).
 //
-//   * InvalidParameterGroupStateFault
-//   One or more parameters in a parameter group are in an invalid state.
+//   - SubnetGroupNotFoundFault
+//     The requested subnet group name does not refer to an existing subnet group.
 //
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
+//   - InvalidParameterGroupStateFault
+//     One or more parameters in a parameter group are in an invalid state.
 //
-//   * ClusterQuotaForCustomerExceededFault
-//   You have attempted to exceed the maximum number of DAX clusters for your
-//   AWS account.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * NodeQuotaForClusterExceededFault
-//   You have attempted to exceed the maximum number of nodes for a DAX cluster.
+//   - ClusterQuotaForCustomerExceededFault
+//     You have attempted to exceed the maximum number of DAX clusters for your
+//     AWS account.
 //
-//   * NodeQuotaForCustomerExceededFault
-//   You have attempted to exceed the maximum number of nodes for your AWS account.
+//   - NodeQuotaForClusterExceededFault
+//     You have attempted to exceed the maximum number of nodes for a DAX cluster.
 //
-//   * InvalidVPCNetworkStateFault
-//   The VPC network is in an invalid state.
+//   - NodeQuotaForCustomerExceededFault
+//     You have attempted to exceed the maximum number of nodes for your AWS account.
 //
-//   * TagQuotaPerResourceExceeded
-//   You have exceeded the maximum number of tags for this DAX cluster.
+//   - InvalidVPCNetworkStateFault
+//     The VPC network is in an invalid state.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - TagQuotaPerResourceExceeded
+//     You have exceeded the maximum number of tags for this DAX cluster.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
 //
-//   * ServiceQuotaExceededException
-//   You have reached the maximum number of x509 certificates that can be created
-//   for encrypted clusters in a 30 day period. Contact AWS customer support to
-//   discuss options for continuing to create encrypted clusters.
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
+//
+//   - ServiceQuotaExceededException
+//     You have reached the maximum number of x509 certificates that can be created
+//     for encrypted clusters in a 30 day period. Contact AWS customer support to
+//     discuss options for continuing to create encrypted clusters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateCluster
 func (c *DAX) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -154,14 +154,13 @@ const opCreateParameterGroup = "CreateParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateParameterGroupRequest method.
+//	req, resp := client.CreateParameterGroupRequest(params)
 //
-//    // Example sending a request using the CreateParameterGroupRequest method.
-//    req, resp := client.CreateParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateParameterGroup
 func (c *DAX) CreateParameterGroupRequest(input *CreateParameterGroupInput) (req *request.Request, output *CreateParameterGroupOutput) {
@@ -193,23 +192,24 @@ func (c *DAX) CreateParameterGroupRequest(input *CreateParameterGroupInput) (req
 // API operation CreateParameterGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ParameterGroupQuotaExceededFault
-//   You have attempted to exceed the maximum number of parameter groups.
 //
-//   * ParameterGroupAlreadyExistsFault
-//   The specified parameter group already exists.
+//   - ParameterGroupQuotaExceededFault
+//     You have attempted to exceed the maximum number of parameter groups.
 //
-//   * InvalidParameterGroupStateFault
-//   One or more parameters in a parameter group are in an invalid state.
+//   - ParameterGroupAlreadyExistsFault
+//     The specified parameter group already exists.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidParameterGroupStateFault
+//     One or more parameters in a parameter group are in an invalid state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateParameterGroup
 func (c *DAX) CreateParameterGroup(input *CreateParameterGroupInput) (*CreateParameterGroupOutput, error) {
@@ -249,14 +249,13 @@ const opCreateSubnetGroup = "CreateSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSubnetGroupRequest method.
+//	req, resp := client.CreateSubnetGroupRequest(params)
 //
-//    // Example sending a request using the CreateSubnetGroupRequest method.
-//    req, resp := client.CreateSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateSubnetGroup
 func (c *DAX) CreateSubnetGroupRequest(input *CreateSubnetGroupInput) (req *request.Request, output *CreateSubnetGroupOutput) {
@@ -287,22 +286,23 @@ func (c *DAX) CreateSubnetGroupRequest(input *CreateSubnetGroupInput) (req *requ
 // API operation CreateSubnetGroup for usage and error information.
 //
 // Returned Error Types:
-//   * SubnetGroupAlreadyExistsFault
-//   The specified subnet group already exists.
 //
-//   * SubnetGroupQuotaExceededFault
-//   The request cannot be processed because it would exceed the allowed number
-//   of subnets in a subnet group.
+//   - SubnetGroupAlreadyExistsFault
+//     The specified subnet group already exists.
 //
-//   * SubnetQuotaExceededFault
-//   The request cannot be processed because it would exceed the allowed number
-//   of subnets in a subnet group.
+//   - SubnetGroupQuotaExceededFault
+//     The request cannot be processed because it would exceed the allowed number
+//     of subnets in a subnet group.
 //
-//   * InvalidSubnet
-//   An invalid subnet identifier was specified.
+//   - SubnetQuotaExceededFault
+//     The request cannot be processed because it would exceed the allowed number
+//     of subnets in a subnet group.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidSubnet
+//     An invalid subnet identifier was specified.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/CreateSubnetGroup
 func (c *DAX) CreateSubnetGroup(input *CreateSubnetGroupInput) (*CreateSubnetGroupOutput, error) {
@@ -342,14 +342,13 @@ const opDecreaseReplicationFactor = "DecreaseReplicationFactor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DecreaseReplicationFactorRequest method.
+//	req, resp := client.DecreaseReplicationFactorRequest(params)
 //
-//    // Example sending a request using the DecreaseReplicationFactorRequest method.
-//    req, resp := client.DecreaseReplicationFactorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DecreaseReplicationFactor
 func (c *DAX) DecreaseReplicationFactorRequest(input *DecreaseReplicationFactorInput) (req *request.Request, output *DecreaseReplicationFactorOutput) {
@@ -383,23 +382,24 @@ func (c *DAX) DecreaseReplicationFactorRequest(input *DecreaseReplicationFactorI
 // API operation DecreaseReplicationFactor for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * NodeNotFoundFault
-//   None of the nodes in the cluster have the given node ID.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - NodeNotFoundFault
+//     None of the nodes in the cluster have the given node ID.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DecreaseReplicationFactor
 func (c *DAX) DecreaseReplicationFactor(input *DecreaseReplicationFactorInput) (*DecreaseReplicationFactorOutput, error) {
@@ -439,14 +439,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteCluster
 func (c *DAX) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -480,20 +479,21 @@ func (c *DAX) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Requ
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteCluster
 func (c *DAX) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -533,14 +533,13 @@ const opDeleteParameterGroup = "DeleteParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteParameterGroupRequest method.
+//	req, resp := client.DeleteParameterGroupRequest(params)
 //
-//    // Example sending a request using the DeleteParameterGroupRequest method.
-//    req, resp := client.DeleteParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteParameterGroup
 func (c *DAX) DeleteParameterGroupRequest(input *DeleteParameterGroupInput) (req *request.Request, output *DeleteParameterGroupOutput) {
@@ -572,20 +571,21 @@ func (c *DAX) DeleteParameterGroupRequest(input *DeleteParameterGroupInput) (req
 // API operation DeleteParameterGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterGroupStateFault
-//   One or more parameters in a parameter group are in an invalid state.
 //
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
+//   - InvalidParameterGroupStateFault
+//     One or more parameters in a parameter group are in an invalid state.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteParameterGroup
 func (c *DAX) DeleteParameterGroup(input *DeleteParameterGroupInput) (*DeleteParameterGroupOutput, error) {
@@ -625,14 +625,13 @@ const opDeleteSubnetGroup = "DeleteSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSubnetGroupRequest method.
+//	req, resp := client.DeleteSubnetGroupRequest(params)
 //
-//    // Example sending a request using the DeleteSubnetGroupRequest method.
-//    req, resp := client.DeleteSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteSubnetGroup
 func (c *DAX) DeleteSubnetGroupRequest(input *DeleteSubnetGroupInput) (req *request.Request, output *DeleteSubnetGroupOutput) {
@@ -665,14 +664,15 @@ func (c *DAX) DeleteSubnetGroupRequest(input *DeleteSubnetGroupInput) (req *requ
 // API operation DeleteSubnetGroup for usage and error information.
 //
 // Returned Error Types:
-//   * SubnetGroupInUseFault
-//   The specified subnet group is currently in use.
 //
-//   * SubnetGroupNotFoundFault
-//   The requested subnet group name does not refer to an existing subnet group.
+//   - SubnetGroupInUseFault
+//     The specified subnet group is currently in use.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - SubnetGroupNotFoundFault
+//     The requested subnet group name does not refer to an existing subnet group.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DeleteSubnetGroup
 func (c *DAX) DeleteSubnetGroup(input *DeleteSubnetGroupInput) (*DeleteSubnetGroupOutput, error) {
@@ -712,14 +712,13 @@ const opDescribeClusters = "DescribeClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClustersRequest method.
+//	req, resp := client.DescribeClustersRequest(params)
 //
-//    // Example sending a request using the DescribeClustersRequest method.
-//    req, resp := client.DescribeClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeClusters
 func (c *DAX) DescribeClustersRequest(input *DescribeClustersInput) (req *request.Request, output *DescribeClustersOutput) {
@@ -766,17 +765,18 @@ func (c *DAX) DescribeClustersRequest(input *DescribeClustersInput) (req *reques
 // API operation DescribeClusters for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeClusters
 func (c *DAX) DescribeClusters(input *DescribeClustersInput) (*DescribeClustersOutput, error) {
@@ -816,14 +816,13 @@ const opDescribeDefaultParameters = "DescribeDefaultParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDefaultParametersRequest method.
+//	req, resp := client.DescribeDefaultParametersRequest(params)
 //
-//    // Example sending a request using the DescribeDefaultParametersRequest method.
-//    req, resp := client.DescribeDefaultParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeDefaultParameters
 func (c *DAX) DescribeDefaultParametersRequest(input *DescribeDefaultParametersInput) (req *request.Request, output *DescribeDefaultParametersOutput) {
@@ -854,14 +853,15 @@ func (c *DAX) DescribeDefaultParametersRequest(input *DescribeDefaultParametersI
 // API operation DescribeDefaultParameters for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeDefaultParameters
 func (c *DAX) DescribeDefaultParameters(input *DescribeDefaultParametersInput) (*DescribeDefaultParametersOutput, error) {
@@ -901,14 +901,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeEvents
 func (c *DAX) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -944,14 +943,15 @@ func (c *DAX) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Re
 // API operation DescribeEvents for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeEvents
 func (c *DAX) DescribeEvents(input *DescribeEventsInput) (*DescribeEventsOutput, error) {
@@ -991,14 +991,13 @@ const opDescribeParameterGroups = "DescribeParameterGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeParameterGroupsRequest method.
+//	req, resp := client.DescribeParameterGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeParameterGroupsRequest method.
-//    req, resp := client.DescribeParameterGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameterGroups
 func (c *DAX) DescribeParameterGroupsRequest(input *DescribeParameterGroupsInput) (req *request.Request, output *DescribeParameterGroupsOutput) {
@@ -1030,17 +1029,18 @@ func (c *DAX) DescribeParameterGroupsRequest(input *DescribeParameterGroupsInput
 // API operation DescribeParameterGroups for usage and error information.
 //
 // Returned Error Types:
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameterGroups
 func (c *DAX) DescribeParameterGroups(input *DescribeParameterGroupsInput) (*DescribeParameterGroupsOutput, error) {
@@ -1080,14 +1080,13 @@ const opDescribeParameters = "DescribeParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeParametersRequest method.
+//	req, resp := client.DescribeParametersRequest(params)
 //
-//    // Example sending a request using the DescribeParametersRequest method.
-//    req, resp := client.DescribeParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameters
 func (c *DAX) DescribeParametersRequest(input *DescribeParametersInput) (req *request.Request, output *DescribeParametersOutput) {
@@ -1118,17 +1117,18 @@ func (c *DAX) DescribeParametersRequest(input *DescribeParametersInput) (req *re
 // API operation DescribeParameters for usage and error information.
 //
 // Returned Error Types:
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeParameters
 func (c *DAX) DescribeParameters(input *DescribeParametersInput) (*DescribeParametersOutput, error) {
@@ -1168,14 +1168,13 @@ const opDescribeSubnetGroups = "DescribeSubnetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSubnetGroupsRequest method.
+//	req, resp := client.DescribeSubnetGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeSubnetGroupsRequest method.
-//    req, resp := client.DescribeSubnetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeSubnetGroups
 func (c *DAX) DescribeSubnetGroupsRequest(input *DescribeSubnetGroupsInput) (req *request.Request, output *DescribeSubnetGroupsOutput) {
@@ -1207,11 +1206,12 @@ func (c *DAX) DescribeSubnetGroupsRequest(input *DescribeSubnetGroupsInput) (req
 // API operation DescribeSubnetGroups for usage and error information.
 //
 // Returned Error Types:
-//   * SubnetGroupNotFoundFault
-//   The requested subnet group name does not refer to an existing subnet group.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - SubnetGroupNotFoundFault
+//     The requested subnet group name does not refer to an existing subnet group.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/DescribeSubnetGroups
 func (c *DAX) DescribeSubnetGroups(input *DescribeSubnetGroupsInput) (*DescribeSubnetGroupsOutput, error) {
@@ -1251,14 +1251,13 @@ const opIncreaseReplicationFactor = "IncreaseReplicationFactor"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IncreaseReplicationFactorRequest method.
+//	req, resp := client.IncreaseReplicationFactorRequest(params)
 //
-//    // Example sending a request using the IncreaseReplicationFactorRequest method.
-//    req, resp := client.IncreaseReplicationFactorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/IncreaseReplicationFactor
 func (c *DAX) IncreaseReplicationFactorRequest(input *IncreaseReplicationFactorInput) (req *request.Request, output *IncreaseReplicationFactorOutput) {
@@ -1289,33 +1288,34 @@ func (c *DAX) IncreaseReplicationFactorRequest(input *IncreaseReplicationFactorI
 // API operation IncreaseReplicationFactor for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InsufficientClusterCapacityFault
-//   There are not enough system resources to create the cluster you requested
-//   (or to resize an already-existing cluster).
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidVPCNetworkStateFault
-//   The VPC network is in an invalid state.
+//   - InsufficientClusterCapacityFault
+//     There are not enough system resources to create the cluster you requested
+//     (or to resize an already-existing cluster).
 //
-//   * NodeQuotaForClusterExceededFault
-//   You have attempted to exceed the maximum number of nodes for a DAX cluster.
+//   - InvalidVPCNetworkStateFault
+//     The VPC network is in an invalid state.
 //
-//   * NodeQuotaForCustomerExceededFault
-//   You have attempted to exceed the maximum number of nodes for your AWS account.
+//   - NodeQuotaForClusterExceededFault
+//     You have attempted to exceed the maximum number of nodes for a DAX cluster.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - NodeQuotaForCustomerExceededFault
+//     You have attempted to exceed the maximum number of nodes for your AWS account.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/IncreaseReplicationFactor
 func (c *DAX) IncreaseReplicationFactor(input *IncreaseReplicationFactorInput) (*IncreaseReplicationFactorOutput, error) {
@@ -1355,14 +1355,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/ListTags
 func (c *DAX) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -1394,23 +1393,24 @@ func (c *DAX) ListTagsRequest(input *ListTagsInput) (req *request.Request, outpu
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidARNFault
-//   The Amazon Resource Name (ARN) supplied in the request is not valid.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - InvalidARNFault
+//     The Amazon Resource Name (ARN) supplied in the request is not valid.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/ListTags
 func (c *DAX) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -1450,14 +1450,13 @@ const opRebootNode = "RebootNode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootNodeRequest method.
+//	req, resp := client.RebootNodeRequest(params)
 //
-//    // Example sending a request using the RebootNodeRequest method.
-//    req, resp := client.RebootNodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/RebootNode
 func (c *DAX) RebootNodeRequest(input *RebootNodeInput) (req *request.Request, output *RebootNodeOutput) {
@@ -1492,23 +1491,24 @@ func (c *DAX) RebootNodeRequest(input *RebootNodeInput) (req *request.Request, o
 // API operation RebootNode for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * NodeNotFoundFault
-//   None of the nodes in the cluster have the given node ID.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - NodeNotFoundFault
+//     None of the nodes in the cluster have the given node ID.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/RebootNode
 func (c *DAX) RebootNode(input *RebootNodeInput) (*RebootNodeOutput, error) {
@@ -1548,14 +1548,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/TagResource
 func (c *DAX) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1587,26 +1586,27 @@ func (c *DAX) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * TagQuotaPerResourceExceeded
-//   You have exceeded the maximum number of tags for this DAX cluster.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidARNFault
-//   The Amazon Resource Name (ARN) supplied in the request is not valid.
+//   - TagQuotaPerResourceExceeded
+//     You have exceeded the maximum number of tags for this DAX cluster.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - InvalidARNFault
+//     The Amazon Resource Name (ARN) supplied in the request is not valid.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/TagResource
 func (c *DAX) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1646,14 +1646,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UntagResource
 func (c *DAX) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1685,26 +1684,27 @@ func (c *DAX) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * InvalidARNFault
-//   The Amazon Resource Name (ARN) supplied in the request is not valid.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * TagNotFoundFault
-//   The tag does not exist.
+//   - InvalidARNFault
+//     The Amazon Resource Name (ARN) supplied in the request is not valid.
 //
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
+//   - TagNotFoundFault
+//     The tag does not exist.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UntagResource
 func (c *DAX) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1744,14 +1744,13 @@ const opUpdateCluster = "UpdateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterRequest method.
+//	req, resp := client.UpdateClusterRequest(params)
 //
-//    // Example sending a request using the UpdateClusterRequest method.
-//    req, resp := client.UpdateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateCluster
 func (c *DAX) UpdateClusterRequest(input *UpdateClusterInput) (req *request.Request, output *UpdateClusterOutput) {
@@ -1784,26 +1783,27 @@ func (c *DAX) UpdateClusterRequest(input *UpdateClusterInput) (req *request.Requ
 // API operation UpdateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidClusterStateFault
-//   The requested DAX cluster is not in the available state.
 //
-//   * ClusterNotFoundFault
-//   The requested cluster ID does not refer to an existing DAX cluster.
+//   - InvalidClusterStateFault
+//     The requested DAX cluster is not in the available state.
 //
-//   * InvalidParameterGroupStateFault
-//   One or more parameters in a parameter group are in an invalid state.
+//   - ClusterNotFoundFault
+//     The requested cluster ID does not refer to an existing DAX cluster.
 //
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
+//   - InvalidParameterGroupStateFault
+//     One or more parameters in a parameter group are in an invalid state.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateCluster
 func (c *DAX) UpdateCluster(input *UpdateClusterInput) (*UpdateClusterOutput, error) {
@@ -1843,14 +1843,13 @@ const opUpdateParameterGroup = "UpdateParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateParameterGroupRequest method.
+//	req, resp := client.UpdateParameterGroupRequest(params)
 //
-//    // Example sending a request using the UpdateParameterGroupRequest method.
-//    req, resp := client.UpdateParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateParameterGroup
 func (c *DAX) UpdateParameterGroupRequest(input *UpdateParameterGroupInput) (req *request.Request, output *UpdateParameterGroupOutput) {
@@ -1882,20 +1881,21 @@ func (c *DAX) UpdateParameterGroupRequest(input *UpdateParameterGroupInput) (req
 // API operation UpdateParameterGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterGroupStateFault
-//   One or more parameters in a parameter group are in an invalid state.
 //
-//   * ParameterGroupNotFoundFault
-//   The specified parameter group does not exist.
+//   - InvalidParameterGroupStateFault
+//     One or more parameters in a parameter group are in an invalid state.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - ParameterGroupNotFoundFault
+//     The specified parameter group does not exist.
 //
-//   * InvalidParameterValueException
-//   The value for a parameter is invalid.
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
-//   * InvalidParameterCombinationException
-//   Two or more incompatible parameters were specified.
+//   - InvalidParameterValueException
+//     The value for a parameter is invalid.
+//
+//   - InvalidParameterCombinationException
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateParameterGroup
 func (c *DAX) UpdateParameterGroup(input *UpdateParameterGroupInput) (*UpdateParameterGroupOutput, error) {
@@ -1935,14 +1935,13 @@ const opUpdateSubnetGroup = "UpdateSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSubnetGroupRequest method.
+//	req, resp := client.UpdateSubnetGroupRequest(params)
 //
-//    // Example sending a request using the UpdateSubnetGroupRequest method.
-//    req, resp := client.UpdateSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateSubnetGroup
 func (c *DAX) UpdateSubnetGroupRequest(input *UpdateSubnetGroupInput) (req *request.Request, output *UpdateSubnetGroupOutput) {
@@ -1973,21 +1972,22 @@ func (c *DAX) UpdateSubnetGroupRequest(input *UpdateSubnetGroupInput) (req *requ
 // API operation UpdateSubnetGroup for usage and error information.
 //
 // Returned Error Types:
-//   * SubnetGroupNotFoundFault
-//   The requested subnet group name does not refer to an existing subnet group.
 //
-//   * SubnetQuotaExceededFault
-//   The request cannot be processed because it would exceed the allowed number
-//   of subnets in a subnet group.
+//   - SubnetGroupNotFoundFault
+//     The requested subnet group name does not refer to an existing subnet group.
 //
-//   * SubnetInUse
-//   The requested subnet is being used by another subnet group.
+//   - SubnetQuotaExceededFault
+//     The request cannot be processed because it would exceed the allowed number
+//     of subnets in a subnet group.
 //
-//   * InvalidSubnet
-//   An invalid subnet identifier was specified.
+//   - SubnetInUse
+//     The requested subnet is being used by another subnet group.
 //
-//   * ServiceLinkedRoleNotFoundFault
-//   The specified service linked role (SLR) was not found.
+//   - InvalidSubnet
+//     An invalid subnet identifier was specified.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//     The specified service linked role (SLR) was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dax-2017-04-19/UpdateSubnetGroup
 func (c *DAX) UpdateSubnetGroup(input *UpdateSubnetGroupInput) (*UpdateSubnetGroupOutput, error) {
@@ -5857,9 +5857,9 @@ func (s *Subnet) SetSubnetIdentifier(v string) *Subnet {
 
 // Represents the output of one of the following actions:
 //
-//    * CreateSubnetGroup
+//   - CreateSubnetGroup
 //
-//    * ModifySubnetGroup
+//   - ModifySubnetGroup
 type SubnetGroup struct {
 	_ struct{} `type:"structure"`
 

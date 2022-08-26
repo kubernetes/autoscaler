@@ -29,14 +29,13 @@ const opCreateLifecyclePolicy = "CreateLifecyclePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLifecyclePolicyRequest method.
+//	req, resp := client.CreateLifecyclePolicyRequest(params)
 //
-//    // Example sending a request using the CreateLifecyclePolicyRequest method.
-//    req, resp := client.CreateLifecyclePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/CreateLifecyclePolicy
 func (c *DLM) CreateLifecyclePolicyRequest(input *CreateLifecyclePolicyInput) (req *request.Request, output *CreateLifecyclePolicyOutput) {
@@ -68,14 +67,15 @@ func (c *DLM) CreateLifecyclePolicyRequest(input *CreateLifecyclePolicyInput) (r
 // API operation CreateLifecyclePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
 //
-//   * LimitExceededException
-//   The request failed because a limit was exceeded.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
 //
-//   * InternalServerException
-//   The service failed in an unexpected way.
+//   - LimitExceededException
+//     The request failed because a limit was exceeded.
+//
+//   - InternalServerException
+//     The service failed in an unexpected way.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/CreateLifecyclePolicy
 func (c *DLM) CreateLifecyclePolicy(input *CreateLifecyclePolicyInput) (*CreateLifecyclePolicyOutput, error) {
@@ -115,14 +115,13 @@ const opDeleteLifecyclePolicy = "DeleteLifecyclePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLifecyclePolicyRequest method.
+//	req, resp := client.DeleteLifecyclePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteLifecyclePolicyRequest method.
-//    req, resp := client.DeleteLifecyclePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/DeleteLifecyclePolicy
 func (c *DLM) DeleteLifecyclePolicyRequest(input *DeleteLifecyclePolicyInput) (req *request.Request, output *DeleteLifecyclePolicyOutput) {
@@ -155,14 +154,15 @@ func (c *DLM) DeleteLifecyclePolicyRequest(input *DeleteLifecyclePolicyInput) (r
 // API operation DeleteLifecyclePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A requested resource was not found.
 //
-//   * InternalServerException
-//   The service failed in an unexpected way.
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
-//   * LimitExceededException
-//   The request failed because a limit was exceeded.
+//   - InternalServerException
+//     The service failed in an unexpected way.
+//
+//   - LimitExceededException
+//     The request failed because a limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/DeleteLifecyclePolicy
 func (c *DLM) DeleteLifecyclePolicy(input *DeleteLifecyclePolicyInput) (*DeleteLifecyclePolicyOutput, error) {
@@ -202,14 +202,13 @@ const opGetLifecyclePolicies = "GetLifecyclePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLifecyclePoliciesRequest method.
+//	req, resp := client.GetLifecyclePoliciesRequest(params)
 //
-//    // Example sending a request using the GetLifecyclePoliciesRequest method.
-//    req, resp := client.GetLifecyclePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/GetLifecyclePolicies
 func (c *DLM) GetLifecyclePoliciesRequest(input *GetLifecyclePoliciesInput) (req *request.Request, output *GetLifecyclePoliciesOutput) {
@@ -242,17 +241,18 @@ func (c *DLM) GetLifecyclePoliciesRequest(input *GetLifecyclePoliciesInput) (req
 // API operation GetLifecyclePolicies for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A requested resource was not found.
 //
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
-//   * InternalServerException
-//   The service failed in an unexpected way.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
 //
-//   * LimitExceededException
-//   The request failed because a limit was exceeded.
+//   - InternalServerException
+//     The service failed in an unexpected way.
+//
+//   - LimitExceededException
+//     The request failed because a limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/GetLifecyclePolicies
 func (c *DLM) GetLifecyclePolicies(input *GetLifecyclePoliciesInput) (*GetLifecyclePoliciesOutput, error) {
@@ -292,14 +292,13 @@ const opGetLifecyclePolicy = "GetLifecyclePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLifecyclePolicyRequest method.
+//	req, resp := client.GetLifecyclePolicyRequest(params)
 //
-//    // Example sending a request using the GetLifecyclePolicyRequest method.
-//    req, resp := client.GetLifecyclePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/GetLifecyclePolicy
 func (c *DLM) GetLifecyclePolicyRequest(input *GetLifecyclePolicyInput) (req *request.Request, output *GetLifecyclePolicyOutput) {
@@ -330,14 +329,15 @@ func (c *DLM) GetLifecyclePolicyRequest(input *GetLifecyclePolicyInput) (req *re
 // API operation GetLifecyclePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A requested resource was not found.
 //
-//   * InternalServerException
-//   The service failed in an unexpected way.
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
-//   * LimitExceededException
-//   The request failed because a limit was exceeded.
+//   - InternalServerException
+//     The service failed in an unexpected way.
+//
+//   - LimitExceededException
+//     The request failed because a limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/GetLifecyclePolicy
 func (c *DLM) GetLifecyclePolicy(input *GetLifecyclePolicyInput) (*GetLifecyclePolicyOutput, error) {
@@ -377,14 +377,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/ListTagsForResource
 func (c *DLM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -415,14 +414,15 @@ func (c *DLM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service failed in an unexpected way.
 //
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
+//   - InternalServerException
+//     The service failed in an unexpected way.
 //
-//   * ResourceNotFoundException
-//   A requested resource was not found.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
+//
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/ListTagsForResource
 func (c *DLM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -462,14 +462,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/TagResource
 func (c *DLM) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -501,14 +500,15 @@ func (c *DLM) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service failed in an unexpected way.
 //
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
+//   - InternalServerException
+//     The service failed in an unexpected way.
 //
-//   * ResourceNotFoundException
-//   A requested resource was not found.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
+//
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/TagResource
 func (c *DLM) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -548,14 +548,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/UntagResource
 func (c *DLM) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -587,14 +586,15 @@ func (c *DLM) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service failed in an unexpected way.
 //
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
+//   - InternalServerException
+//     The service failed in an unexpected way.
 //
-//   * ResourceNotFoundException
-//   A requested resource was not found.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
+//
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/UntagResource
 func (c *DLM) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -634,14 +634,13 @@ const opUpdateLifecyclePolicy = "UpdateLifecyclePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLifecyclePolicyRequest method.
+//	req, resp := client.UpdateLifecyclePolicyRequest(params)
 //
-//    // Example sending a request using the UpdateLifecyclePolicyRequest method.
-//    req, resp := client.UpdateLifecyclePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/UpdateLifecyclePolicy
 func (c *DLM) UpdateLifecyclePolicyRequest(input *UpdateLifecyclePolicyInput) (req *request.Request, output *UpdateLifecyclePolicyOutput) {
@@ -673,17 +672,18 @@ func (c *DLM) UpdateLifecyclePolicyRequest(input *UpdateLifecyclePolicyInput) (r
 // API operation UpdateLifecyclePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A requested resource was not found.
 //
-//   * InvalidRequestException
-//   Bad request. The request is missing required parameters or has invalid parameters.
+//   - ResourceNotFoundException
+//     A requested resource was not found.
 //
-//   * InternalServerException
-//   The service failed in an unexpected way.
+//   - InvalidRequestException
+//     Bad request. The request is missing required parameters or has invalid parameters.
 //
-//   * LimitExceededException
-//   The request failed because a limit was exceeded.
+//   - InternalServerException
+//     The service failed in an unexpected way.
+//
+//   - LimitExceededException
+//     The request failed because a limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/dlm-2018-01-12/UpdateLifecyclePolicy
 func (c *DLM) UpdateLifecyclePolicy(input *UpdateLifecyclePolicyInput) (*UpdateLifecyclePolicyOutput, error) {

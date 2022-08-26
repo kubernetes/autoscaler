@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ChimeSDKMeetings client from just a session.
-//     svc := chimesdkmeetings.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ChimeSDKMeetings client with additional configuration
-//     svc := chimesdkmeetings.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ChimeSDKMeetings client from just a session.
+//	svc := chimesdkmeetings.New(mySession)
+//
+//	// Create a ChimeSDKMeetings client with additional configuration
+//	svc := chimesdkmeetings.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ChimeSDKMeetings {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -37,14 +37,13 @@ const opAddTagsToStream = "AddTagsToStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToStreamRequest method.
+//	req, resp := client.AddTagsToStreamRequest(params)
 //
-//    // Example sending a request using the AddTagsToStreamRequest method.
-//    req, resp := client.AddTagsToStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/AddTagsToStream
 func (c *Kinesis) AddTagsToStreamRequest(input *AddTagsToStreamInput) (req *request.Request, output *AddTagsToStreamOutput) {
@@ -82,21 +81,22 @@ func (c *Kinesis) AddTagsToStreamRequest(input *AddTagsToStreamInput) (req *requ
 // API operation AddTagsToStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/AddTagsToStream
 func (c *Kinesis) AddTagsToStream(input *AddTagsToStreamInput) (*AddTagsToStreamOutput, error) {
@@ -136,14 +136,13 @@ const opCreateStream = "CreateStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamRequest method.
+//	req, resp := client.CreateStreamRequest(params)
 //
-//    // Example sending a request using the CreateStreamRequest method.
-//    req, resp := client.CreateStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/CreateStream
 func (c *Kinesis) CreateStreamRequest(input *CreateStreamInput) (req *request.Request, output *CreateStreamOutput) {
@@ -192,9 +191,9 @@ func (c *Kinesis) CreateStreamRequest(input *CreateStreamInput) (req *request.Re
 // You receive a LimitExceededException when making a CreateStream request when
 // you try to do one of the following:
 //
-//    * Have more than five streams in the CREATING state at any point in time.
+//   - Have more than five streams in the CREATING state at any point in time.
 //
-//    * Create more shards than are authorized for your account.
+//   - Create more shards than are authorized for your account.
 //
 // For the default shard limit for an Amazon Web Services account, see Amazon
 // Kinesis Data Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
@@ -214,17 +213,18 @@ func (c *Kinesis) CreateStreamRequest(input *CreateStreamInput) (req *request.Re
 // API operation CreateStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/CreateStream
 func (c *Kinesis) CreateStream(input *CreateStreamInput) (*CreateStreamOutput, error) {
@@ -264,14 +264,13 @@ const opDecreaseStreamRetentionPeriod = "DecreaseStreamRetentionPeriod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DecreaseStreamRetentionPeriodRequest method.
+//	req, resp := client.DecreaseStreamRetentionPeriodRequest(params)
 //
-//    // Example sending a request using the DecreaseStreamRetentionPeriodRequest method.
-//    req, resp := client.DecreaseStreamRetentionPeriodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DecreaseStreamRetentionPeriod
 func (c *Kinesis) DecreaseStreamRetentionPeriodRequest(input *DecreaseStreamRetentionPeriodInput) (req *request.Request, output *DecreaseStreamRetentionPeriodOutput) {
@@ -309,21 +308,22 @@ func (c *Kinesis) DecreaseStreamRetentionPeriodRequest(input *DecreaseStreamRete
 // API operation DecreaseStreamRetentionPeriod for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DecreaseStreamRetentionPeriod
 func (c *Kinesis) DecreaseStreamRetentionPeriod(input *DecreaseStreamRetentionPeriodInput) (*DecreaseStreamRetentionPeriodOutput, error) {
@@ -363,14 +363,13 @@ const opDeleteStream = "DeleteStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamRequest method.
+//	req, resp := client.DeleteStreamRequest(params)
 //
-//    // Example sending a request using the DeleteStreamRequest method.
-//    req, resp := client.DeleteStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DeleteStream
 func (c *Kinesis) DeleteStreamRequest(input *DeleteStreamInput) (req *request.Request, output *DeleteStreamOutput) {
@@ -421,17 +420,18 @@ func (c *Kinesis) DeleteStreamRequest(input *DeleteStreamInput) (req *request.Re
 // API operation DeleteStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DeleteStream
 func (c *Kinesis) DeleteStream(input *DeleteStreamInput) (*DeleteStreamOutput, error) {
@@ -471,14 +471,13 @@ const opDeregisterStreamConsumer = "DeregisterStreamConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterStreamConsumerRequest method.
+//	req, resp := client.DeregisterStreamConsumerRequest(params)
 //
-//    // Example sending a request using the DeregisterStreamConsumerRequest method.
-//    req, resp := client.DeregisterStreamConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DeregisterStreamConsumer
 func (c *Kinesis) DeregisterStreamConsumerRequest(input *DeregisterStreamConsumerInput) (req *request.Request, output *DeregisterStreamConsumerOutput) {
@@ -519,17 +518,18 @@ func (c *Kinesis) DeregisterStreamConsumerRequest(input *DeregisterStreamConsume
 // API operation DeregisterStreamConsumer for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
+//
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DeregisterStreamConsumer
 func (c *Kinesis) DeregisterStreamConsumer(input *DeregisterStreamConsumerInput) (*DeregisterStreamConsumerOutput, error) {
@@ -569,14 +569,13 @@ const opDescribeLimits = "DescribeLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLimitsRequest method.
+//	req, resp := client.DescribeLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeLimitsRequest method.
-//    req, resp := client.DescribeLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeLimits
 func (c *Kinesis) DescribeLimitsRequest(input *DescribeLimitsInput) (req *request.Request, output *DescribeLimitsOutput) {
@@ -612,9 +611,9 @@ func (c *Kinesis) DescribeLimitsRequest(input *DescribeLimitsInput) (req *reques
 // API operation DescribeLimits for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeLimits
 func (c *Kinesis) DescribeLimits(input *DescribeLimitsInput) (*DescribeLimitsOutput, error) {
@@ -654,14 +653,13 @@ const opDescribeStream = "DescribeStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStreamRequest method.
+//	req, resp := client.DescribeStreamRequest(params)
 //
-//    // Example sending a request using the DescribeStreamRequest method.
-//    req, resp := client.DescribeStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStream
 func (c *Kinesis) DescribeStreamRequest(input *DescribeStreamInput) (req *request.Request, output *DescribeStreamOutput) {
@@ -721,13 +719,14 @@ func (c *Kinesis) DescribeStreamRequest(input *DescribeStreamInput) (req *reques
 // API operation DescribeStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStream
 func (c *Kinesis) DescribeStream(input *DescribeStreamInput) (*DescribeStreamOutput, error) {
@@ -759,15 +758,14 @@ func (c *Kinesis) DescribeStreamWithContext(ctx aws.Context, input *DescribeStre
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStream operation.
-//    pageNum := 0
-//    err := client.DescribeStreamPages(params,
-//        func(page *kinesis.DescribeStreamOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStream operation.
+//	pageNum := 0
+//	err := client.DescribeStreamPages(params,
+//	    func(page *kinesis.DescribeStreamOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kinesis) DescribeStreamPages(input *DescribeStreamInput, fn func(*DescribeStreamOutput, bool) bool) error {
 	return c.DescribeStreamPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -819,14 +817,13 @@ const opDescribeStreamConsumer = "DescribeStreamConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStreamConsumerRequest method.
+//	req, resp := client.DescribeStreamConsumerRequest(params)
 //
-//    // Example sending a request using the DescribeStreamConsumerRequest method.
-//    req, resp := client.DescribeStreamConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStreamConsumer
 func (c *Kinesis) DescribeStreamConsumerRequest(input *DescribeStreamConsumerInput) (req *request.Request, output *DescribeStreamConsumerOutput) {
@@ -865,17 +862,18 @@ func (c *Kinesis) DescribeStreamConsumerRequest(input *DescribeStreamConsumerInp
 // API operation DescribeStreamConsumer for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
+//
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStreamConsumer
 func (c *Kinesis) DescribeStreamConsumer(input *DescribeStreamConsumerInput) (*DescribeStreamConsumerOutput, error) {
@@ -915,14 +913,13 @@ const opDescribeStreamSummary = "DescribeStreamSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStreamSummaryRequest method.
+//	req, resp := client.DescribeStreamSummaryRequest(params)
 //
-//    // Example sending a request using the DescribeStreamSummaryRequest method.
-//    req, resp := client.DescribeStreamSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStreamSummary
 func (c *Kinesis) DescribeStreamSummaryRequest(input *DescribeStreamSummaryInput) (req *request.Request, output *DescribeStreamSummaryOutput) {
@@ -960,13 +957,14 @@ func (c *Kinesis) DescribeStreamSummaryRequest(input *DescribeStreamSummaryInput
 // API operation DescribeStreamSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DescribeStreamSummary
 func (c *Kinesis) DescribeStreamSummary(input *DescribeStreamSummaryInput) (*DescribeStreamSummaryOutput, error) {
@@ -1006,14 +1004,13 @@ const opDisableEnhancedMonitoring = "DisableEnhancedMonitoring"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableEnhancedMonitoringRequest method.
+//	req, resp := client.DisableEnhancedMonitoringRequest(params)
 //
-//    // Example sending a request using the DisableEnhancedMonitoringRequest method.
-//    req, resp := client.DisableEnhancedMonitoringRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DisableEnhancedMonitoring
 func (c *Kinesis) DisableEnhancedMonitoringRequest(input *DisableEnhancedMonitoringInput) (req *request.Request, output *EnhancedMonitoringOutput) {
@@ -1044,21 +1041,22 @@ func (c *Kinesis) DisableEnhancedMonitoringRequest(input *DisableEnhancedMonitor
 // API operation DisableEnhancedMonitoring for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/DisableEnhancedMonitoring
 func (c *Kinesis) DisableEnhancedMonitoring(input *DisableEnhancedMonitoringInput) (*EnhancedMonitoringOutput, error) {
@@ -1098,14 +1096,13 @@ const opEnableEnhancedMonitoring = "EnableEnhancedMonitoring"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableEnhancedMonitoringRequest method.
+//	req, resp := client.EnableEnhancedMonitoringRequest(params)
 //
-//    // Example sending a request using the EnableEnhancedMonitoringRequest method.
-//    req, resp := client.EnableEnhancedMonitoringRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/EnableEnhancedMonitoring
 func (c *Kinesis) EnableEnhancedMonitoringRequest(input *EnableEnhancedMonitoringInput) (req *request.Request, output *EnhancedMonitoringOutput) {
@@ -1136,21 +1133,22 @@ func (c *Kinesis) EnableEnhancedMonitoringRequest(input *EnableEnhancedMonitorin
 // API operation EnableEnhancedMonitoring for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/EnableEnhancedMonitoring
 func (c *Kinesis) EnableEnhancedMonitoring(input *EnableEnhancedMonitoringInput) (*EnhancedMonitoringOutput, error) {
@@ -1190,14 +1188,13 @@ const opGetRecords = "GetRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecordsRequest method.
+//	req, resp := client.GetRecordsRequest(params)
 //
-//    // Example sending a request using the GetRecordsRequest method.
-//    req, resp := client.GetRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/GetRecords
 func (c *Kinesis) GetRecordsRequest(input *GetRecordsInput) (req *request.Request, output *GetRecordsOutput) {
@@ -1286,50 +1283,51 @@ func (c *Kinesis) GetRecordsRequest(input *GetRecordsInput) (req *request.Reques
 // API operation GetRecords for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ProvisionedThroughputExceededException
-//   The request rate for the stream is too high, or the requested data is too
-//   large for the available throughput. Reduce the frequency or size of your
-//   requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
-//   in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
-//   Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-//   in the Amazon Web Services General Reference.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ExpiredIteratorException
-//   The provided iterator exceeds the maximum age allowed.
+//   - ProvisionedThroughputExceededException
+//     The request rate for the stream is too high, or the requested data is too
+//     large for the available throughput. Reduce the frequency or size of your
+//     requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
+//     in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
+//     Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+//     in the Amazon Web Services General Reference.
 //
-//   * KMSDisabledException
-//   The request was rejected because the specified customer master key (CMK)
-//   isn't enabled.
+//   - ExpiredIteratorException
+//     The provided iterator exceeds the maximum age allowed.
 //
-//   * KMSInvalidStateException
-//   The request was rejected because the state of the specified resource isn't
-//   valid for this request. For more information, see How Key State Affects Use
-//   of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSDisabledException
+//     The request was rejected because the specified customer master key (CMK)
+//     isn't enabled.
 //
-//   * KMSAccessDeniedException
-//   The ciphertext references a key that doesn't exist or that you don't have
-//   access to.
+//   - KMSInvalidStateException
+//     The request was rejected because the state of the specified resource isn't
+//     valid for this request. For more information, see How Key State Affects Use
+//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
-//   * KMSNotFoundException
-//   The request was rejected because the specified entity or resource can't be
-//   found.
+//   - KMSAccessDeniedException
+//     The ciphertext references a key that doesn't exist or that you don't have
+//     access to.
 //
-//   * KMSOptInRequired
-//   The Amazon Web Services access key ID needs a subscription for the service.
+//   - KMSNotFoundException
+//     The request was rejected because the specified entity or resource can't be
+//     found.
 //
-//   * KMSThrottlingException
-//   The request was denied due to request throttling. For more information about
-//   throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSOptInRequired
+//     The Amazon Web Services access key ID needs a subscription for the service.
+//
+//   - KMSThrottlingException
+//     The request was denied due to request throttling. For more information about
+//     throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/GetRecords
 func (c *Kinesis) GetRecords(input *GetRecordsInput) (*GetRecordsOutput, error) {
@@ -1369,14 +1367,13 @@ const opGetShardIterator = "GetShardIterator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetShardIteratorRequest method.
+//	req, resp := client.GetShardIteratorRequest(params)
 //
-//    // Example sending a request using the GetShardIteratorRequest method.
-//    req, resp := client.GetShardIteratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/GetShardIterator
 func (c *Kinesis) GetShardIteratorRequest(input *GetShardIteratorInput) (req *request.Request, output *GetShardIteratorOutput) {
@@ -1445,21 +1442,22 @@ func (c *Kinesis) GetShardIteratorRequest(input *GetShardIteratorInput) (req *re
 // API operation GetShardIterator for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ProvisionedThroughputExceededException
-//   The request rate for the stream is too high, or the requested data is too
-//   large for the available throughput. Reduce the frequency or size of your
-//   requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
-//   in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
-//   Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-//   in the Amazon Web Services General Reference.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
+//
+//   - ProvisionedThroughputExceededException
+//     The request rate for the stream is too high, or the requested data is too
+//     large for the available throughput. Reduce the frequency or size of your
+//     requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
+//     in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
+//     Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/GetShardIterator
 func (c *Kinesis) GetShardIterator(input *GetShardIteratorInput) (*GetShardIteratorOutput, error) {
@@ -1499,14 +1497,13 @@ const opIncreaseStreamRetentionPeriod = "IncreaseStreamRetentionPeriod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IncreaseStreamRetentionPeriodRequest method.
+//	req, resp := client.IncreaseStreamRetentionPeriodRequest(params)
 //
-//    // Example sending a request using the IncreaseStreamRetentionPeriodRequest method.
-//    req, resp := client.IncreaseStreamRetentionPeriodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/IncreaseStreamRetentionPeriod
 func (c *Kinesis) IncreaseStreamRetentionPeriodRequest(input *IncreaseStreamRetentionPeriodInput) (req *request.Request, output *IncreaseStreamRetentionPeriodOutput) {
@@ -1548,21 +1545,22 @@ func (c *Kinesis) IncreaseStreamRetentionPeriodRequest(input *IncreaseStreamRete
 // API operation IncreaseStreamRetentionPeriod for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/IncreaseStreamRetentionPeriod
 func (c *Kinesis) IncreaseStreamRetentionPeriod(input *IncreaseStreamRetentionPeriodInput) (*IncreaseStreamRetentionPeriodOutput, error) {
@@ -1602,14 +1600,13 @@ const opListShards = "ListShards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListShardsRequest method.
+//	req, resp := client.ListShardsRequest(params)
 //
-//    // Example sending a request using the ListShardsRequest method.
-//    req, resp := client.ListShardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListShards
 func (c *Kinesis) ListShardsRequest(input *ListShardsInput) (req *request.Request, output *ListShardsOutput) {
@@ -1650,24 +1647,25 @@ func (c *Kinesis) ListShardsRequest(input *ListShardsInput) (req *request.Reques
 // API operation ListShards for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ExpiredNextTokenException
-//   The pagination token passed to the operation is expired.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ExpiredNextTokenException
+//     The pagination token passed to the operation is expired.
+//
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListShards
 func (c *Kinesis) ListShards(input *ListShardsInput) (*ListShardsOutput, error) {
@@ -1707,14 +1705,13 @@ const opListStreamConsumers = "ListStreamConsumers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamConsumersRequest method.
+//	req, resp := client.ListStreamConsumersRequest(params)
 //
-//    // Example sending a request using the ListStreamConsumersRequest method.
-//    req, resp := client.ListStreamConsumersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListStreamConsumers
 func (c *Kinesis) ListStreamConsumersRequest(input *ListStreamConsumersInput) (req *request.Request, output *ListStreamConsumersOutput) {
@@ -1754,24 +1751,25 @@ func (c *Kinesis) ListStreamConsumersRequest(input *ListStreamConsumersInput) (r
 // API operation ListStreamConsumers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ExpiredNextTokenException
-//   The pagination token passed to the operation is expired.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ExpiredNextTokenException
+//     The pagination token passed to the operation is expired.
+//
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListStreamConsumers
 func (c *Kinesis) ListStreamConsumers(input *ListStreamConsumersInput) (*ListStreamConsumersOutput, error) {
@@ -1803,15 +1801,14 @@ func (c *Kinesis) ListStreamConsumersWithContext(ctx aws.Context, input *ListStr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamConsumers operation.
-//    pageNum := 0
-//    err := client.ListStreamConsumersPages(params,
-//        func(page *kinesis.ListStreamConsumersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamConsumers operation.
+//	pageNum := 0
+//	err := client.ListStreamConsumersPages(params,
+//	    func(page *kinesis.ListStreamConsumersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kinesis) ListStreamConsumersPages(input *ListStreamConsumersInput, fn func(*ListStreamConsumersOutput, bool) bool) error {
 	return c.ListStreamConsumersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1863,14 +1860,13 @@ const opListStreams = "ListStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamsRequest method.
+//	req, resp := client.ListStreamsRequest(params)
 //
-//    // Example sending a request using the ListStreamsRequest method.
-//    req, resp := client.ListStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListStreams
 func (c *Kinesis) ListStreamsRequest(input *ListStreamsInput) (req *request.Request, output *ListStreamsOutput) {
@@ -1922,9 +1918,9 @@ func (c *Kinesis) ListStreamsRequest(input *ListStreamsInput) (req *request.Requ
 // API operation ListStreams for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListStreams
 func (c *Kinesis) ListStreams(input *ListStreamsInput) (*ListStreamsOutput, error) {
@@ -1956,15 +1952,14 @@ func (c *Kinesis) ListStreamsWithContext(ctx aws.Context, input *ListStreamsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreams operation.
-//    pageNum := 0
-//    err := client.ListStreamsPages(params,
-//        func(page *kinesis.ListStreamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreams operation.
+//	pageNum := 0
+//	err := client.ListStreamsPages(params,
+//	    func(page *kinesis.ListStreamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kinesis) ListStreamsPages(input *ListStreamsInput, fn func(*ListStreamsOutput, bool) bool) error {
 	return c.ListStreamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2016,14 +2011,13 @@ const opListTagsForStream = "ListTagsForStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForStreamRequest method.
+//	req, resp := client.ListTagsForStreamRequest(params)
 //
-//    // Example sending a request using the ListTagsForStreamRequest method.
-//    req, resp := client.ListTagsForStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListTagsForStream
 func (c *Kinesis) ListTagsForStreamRequest(input *ListTagsForStreamInput) (req *request.Request, output *ListTagsForStreamOutput) {
@@ -2055,17 +2049,18 @@ func (c *Kinesis) ListTagsForStreamRequest(input *ListTagsForStreamInput) (req *
 // API operation ListTagsForStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/ListTagsForStream
 func (c *Kinesis) ListTagsForStream(input *ListTagsForStreamInput) (*ListTagsForStreamOutput, error) {
@@ -2105,14 +2100,13 @@ const opMergeShards = "MergeShards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergeShardsRequest method.
+//	req, resp := client.MergeShardsRequest(params)
 //
-//    // Example sending a request using the MergeShardsRequest method.
-//    req, resp := client.MergeShardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/MergeShards
 func (c *Kinesis) MergeShardsRequest(input *MergeShardsInput) (req *request.Request, output *MergeShardsOutput) {
@@ -2179,23 +2173,24 @@ func (c *Kinesis) MergeShardsRequest(input *MergeShardsInput) (req *request.Requ
 // API operation MergeShards for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ValidationException
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/MergeShards
 func (c *Kinesis) MergeShards(input *MergeShardsInput) (*MergeShardsOutput, error) {
@@ -2235,14 +2230,13 @@ const opPutRecord = "PutRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecordRequest method.
+//	req, resp := client.PutRecordRequest(params)
 //
-//    // Example sending a request using the PutRecordRequest method.
-//    req, resp := client.PutRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/PutRecord
 func (c *Kinesis) PutRecordRequest(input *PutRecordInput) (req *request.Request, output *PutRecordOutput) {
@@ -2314,47 +2308,48 @@ func (c *Kinesis) PutRecordRequest(input *PutRecordInput) (req *request.Request,
 // API operation PutRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ProvisionedThroughputExceededException
-//   The request rate for the stream is too high, or the requested data is too
-//   large for the available throughput. Reduce the frequency or size of your
-//   requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
-//   in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
-//   Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-//   in the Amazon Web Services General Reference.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * KMSDisabledException
-//   The request was rejected because the specified customer master key (CMK)
-//   isn't enabled.
+//   - ProvisionedThroughputExceededException
+//     The request rate for the stream is too high, or the requested data is too
+//     large for the available throughput. Reduce the frequency or size of your
+//     requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
+//     in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
+//     Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+//     in the Amazon Web Services General Reference.
 //
-//   * KMSInvalidStateException
-//   The request was rejected because the state of the specified resource isn't
-//   valid for this request. For more information, see How Key State Affects Use
-//   of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSDisabledException
+//     The request was rejected because the specified customer master key (CMK)
+//     isn't enabled.
 //
-//   * KMSAccessDeniedException
-//   The ciphertext references a key that doesn't exist or that you don't have
-//   access to.
+//   - KMSInvalidStateException
+//     The request was rejected because the state of the specified resource isn't
+//     valid for this request. For more information, see How Key State Affects Use
+//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
-//   * KMSNotFoundException
-//   The request was rejected because the specified entity or resource can't be
-//   found.
+//   - KMSAccessDeniedException
+//     The ciphertext references a key that doesn't exist or that you don't have
+//     access to.
 //
-//   * KMSOptInRequired
-//   The Amazon Web Services access key ID needs a subscription for the service.
+//   - KMSNotFoundException
+//     The request was rejected because the specified entity or resource can't be
+//     found.
 //
-//   * KMSThrottlingException
-//   The request was denied due to request throttling. For more information about
-//   throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSOptInRequired
+//     The Amazon Web Services access key ID needs a subscription for the service.
+//
+//   - KMSThrottlingException
+//     The request was denied due to request throttling. For more information about
+//     throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/PutRecord
 func (c *Kinesis) PutRecord(input *PutRecordInput) (*PutRecordOutput, error) {
@@ -2394,14 +2389,13 @@ const opPutRecords = "PutRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecordsRequest method.
+//	req, resp := client.PutRecordsRequest(params)
 //
-//    // Example sending a request using the PutRecordsRequest method.
-//    req, resp := client.PutRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/PutRecords
 func (c *Kinesis) PutRecordsRequest(input *PutRecordsInput) (req *request.Request, output *PutRecordsOutput) {
@@ -2496,47 +2490,48 @@ func (c *Kinesis) PutRecordsRequest(input *PutRecordsInput) (req *request.Reques
 // API operation PutRecords for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ProvisionedThroughputExceededException
-//   The request rate for the stream is too high, or the requested data is too
-//   large for the available throughput. Reduce the frequency or size of your
-//   requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
-//   in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
-//   Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-//   in the Amazon Web Services General Reference.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * KMSDisabledException
-//   The request was rejected because the specified customer master key (CMK)
-//   isn't enabled.
+//   - ProvisionedThroughputExceededException
+//     The request rate for the stream is too high, or the requested data is too
+//     large for the available throughput. Reduce the frequency or size of your
+//     requests. For more information, see Streams Limits (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
+//     in the Amazon Kinesis Data Streams Developer Guide, and Error Retries and
+//     Exponential Backoff in Amazon Web Services (https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+//     in the Amazon Web Services General Reference.
 //
-//   * KMSInvalidStateException
-//   The request was rejected because the state of the specified resource isn't
-//   valid for this request. For more information, see How Key State Affects Use
-//   of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSDisabledException
+//     The request was rejected because the specified customer master key (CMK)
+//     isn't enabled.
 //
-//   * KMSAccessDeniedException
-//   The ciphertext references a key that doesn't exist or that you don't have
-//   access to.
+//   - KMSInvalidStateException
+//     The request was rejected because the state of the specified resource isn't
+//     valid for this request. For more information, see How Key State Affects Use
+//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
-//   * KMSNotFoundException
-//   The request was rejected because the specified entity or resource can't be
-//   found.
+//   - KMSAccessDeniedException
+//     The ciphertext references a key that doesn't exist or that you don't have
+//     access to.
 //
-//   * KMSOptInRequired
-//   The Amazon Web Services access key ID needs a subscription for the service.
+//   - KMSNotFoundException
+//     The request was rejected because the specified entity or resource can't be
+//     found.
 //
-//   * KMSThrottlingException
-//   The request was denied due to request throttling. For more information about
-//   throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSOptInRequired
+//     The Amazon Web Services access key ID needs a subscription for the service.
+//
+//   - KMSThrottlingException
+//     The request was denied due to request throttling. For more information about
+//     throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/PutRecords
 func (c *Kinesis) PutRecords(input *PutRecordsInput) (*PutRecordsOutput, error) {
@@ -2576,14 +2571,13 @@ const opRegisterStreamConsumer = "RegisterStreamConsumer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterStreamConsumerRequest method.
+//	req, resp := client.RegisterStreamConsumerRequest(params)
 //
-//    // Example sending a request using the RegisterStreamConsumerRequest method.
-//    req, resp := client.RegisterStreamConsumerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/RegisterStreamConsumer
 func (c *Kinesis) RegisterStreamConsumerRequest(input *RegisterStreamConsumerInput) (req *request.Request, output *RegisterStreamConsumerOutput) {
@@ -2630,21 +2624,22 @@ func (c *Kinesis) RegisterStreamConsumerRequest(input *RegisterStreamConsumerInp
 // API operation RegisterStreamConsumer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/RegisterStreamConsumer
 func (c *Kinesis) RegisterStreamConsumer(input *RegisterStreamConsumerInput) (*RegisterStreamConsumerOutput, error) {
@@ -2684,14 +2679,13 @@ const opRemoveTagsFromStream = "RemoveTagsFromStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromStreamRequest method.
+//	req, resp := client.RemoveTagsFromStreamRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromStreamRequest method.
-//    req, resp := client.RemoveTagsFromStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/RemoveTagsFromStream
 func (c *Kinesis) RemoveTagsFromStreamRequest(input *RemoveTagsFromStreamInput) (req *request.Request, output *RemoveTagsFromStreamOutput) {
@@ -2728,21 +2722,22 @@ func (c *Kinesis) RemoveTagsFromStreamRequest(input *RemoveTagsFromStreamInput) 
 // API operation RemoveTagsFromStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/RemoveTagsFromStream
 func (c *Kinesis) RemoveTagsFromStream(input *RemoveTagsFromStreamInput) (*RemoveTagsFromStreamOutput, error) {
@@ -2782,14 +2777,13 @@ const opSplitShard = "SplitShard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SplitShardRequest method.
+//	req, resp := client.SplitShardRequest(params)
 //
-//    // Example sending a request using the SplitShardRequest method.
-//    req, resp := client.SplitShardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/SplitShard
 func (c *Kinesis) SplitShardRequest(input *SplitShardInput) (req *request.Request, output *SplitShardOutput) {
@@ -2865,23 +2859,24 @@ func (c *Kinesis) SplitShardRequest(input *SplitShardInput) (req *request.Reques
 // API operation SplitShard for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ValidationException
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/SplitShard
 func (c *Kinesis) SplitShard(input *SplitShardInput) (*SplitShardOutput, error) {
@@ -2921,14 +2916,13 @@ const opStartStreamEncryption = "StartStreamEncryption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStreamEncryptionRequest method.
+//	req, resp := client.StartStreamEncryptionRequest(params)
 //
-//    // Example sending a request using the StartStreamEncryptionRequest method.
-//    req, resp := client.StartStreamEncryptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/StartStreamEncryption
 func (c *Kinesis) StartStreamEncryptionRequest(input *StartStreamEncryptionInput) (req *request.Request, output *StartStreamEncryptionOutput) {
@@ -2978,47 +2972,48 @@ func (c *Kinesis) StartStreamEncryptionRequest(input *StartStreamEncryptionInput
 // API operation StartStreamEncryption for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * KMSDisabledException
-//   The request was rejected because the specified customer master key (CMK)
-//   isn't enabled.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * KMSInvalidStateException
-//   The request was rejected because the state of the specified resource isn't
-//   valid for this request. For more information, see How Key State Affects Use
-//   of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSDisabledException
+//     The request was rejected because the specified customer master key (CMK)
+//     isn't enabled.
 //
-//   * KMSAccessDeniedException
-//   The ciphertext references a key that doesn't exist or that you don't have
-//   access to.
+//   - KMSInvalidStateException
+//     The request was rejected because the state of the specified resource isn't
+//     valid for this request. For more information, see How Key State Affects Use
+//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
-//   * KMSNotFoundException
-//   The request was rejected because the specified entity or resource can't be
-//   found.
+//   - KMSAccessDeniedException
+//     The ciphertext references a key that doesn't exist or that you don't have
+//     access to.
 //
-//   * KMSOptInRequired
-//   The Amazon Web Services access key ID needs a subscription for the service.
+//   - KMSNotFoundException
+//     The request was rejected because the specified entity or resource can't be
+//     found.
 //
-//   * KMSThrottlingException
-//   The request was denied due to request throttling. For more information about
-//   throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
-//   in the Amazon Web Services Key Management Service Developer Guide.
+//   - KMSOptInRequired
+//     The Amazon Web Services access key ID needs a subscription for the service.
+//
+//   - KMSThrottlingException
+//     The request was denied due to request throttling. For more information about
+//     throttling, see Limits (https://docs.aws.amazon.com/kms/latest/developerguide/limits.html#requests-per-second)
+//     in the Amazon Web Services Key Management Service Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/StartStreamEncryption
 func (c *Kinesis) StartStreamEncryption(input *StartStreamEncryptionInput) (*StartStreamEncryptionOutput, error) {
@@ -3058,14 +3053,13 @@ const opStopStreamEncryption = "StopStreamEncryption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopStreamEncryptionRequest method.
+//	req, resp := client.StopStreamEncryptionRequest(params)
 //
-//    // Example sending a request using the StopStreamEncryptionRequest method.
-//    req, resp := client.StopStreamEncryptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/StopStreamEncryption
 func (c *Kinesis) StopStreamEncryptionRequest(input *StopStreamEncryptionInput) (req *request.Request, output *StopStreamEncryptionOutput) {
@@ -3114,21 +3108,22 @@ func (c *Kinesis) StopStreamEncryptionRequest(input *StopStreamEncryptionInput) 
 // API operation StopStreamEncryption for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/StopStreamEncryption
 func (c *Kinesis) StopStreamEncryption(input *StopStreamEncryptionInput) (*StopStreamEncryptionOutput, error) {
@@ -3168,14 +3163,13 @@ const opSubscribeToShard = "SubscribeToShard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SubscribeToShardRequest method.
+//	req, resp := client.SubscribeToShardRequest(params)
 //
-//    // Example sending a request using the SubscribeToShardRequest method.
-//    req, resp := client.SubscribeToShardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/SubscribeToShard
 func (c *Kinesis) SubscribeToShardRequest(input *SubscribeToShardInput) (req *request.Request, output *SubscribeToShardOutput) {
@@ -3242,21 +3236,22 @@ func (c *Kinesis) SubscribeToShardRequest(input *SubscribeToShardInput) (req *re
 // API operation SubscribeToShard for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
 //
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/SubscribeToShard
 func (c *Kinesis) SubscribeToShard(input *SubscribeToShardInput) (*SubscribeToShardOutput, error) {
@@ -3320,10 +3315,10 @@ type SubscribeToShardEventStream struct {
 // (e.g. http.Response.Body), that will be closed when the stream Close method
 // is called.
 //
-//   es := NewSubscribeToShardEventStream(func(o *SubscribeToShardEventStream){
-//       es.Reader = myMockStreamReader
-//       es.StreamCloser = myMockStreamCloser
-//   })
+//	es := NewSubscribeToShardEventStream(func(o *SubscribeToShardEventStream){
+//	    es.Reader = myMockStreamReader
+//	    es.StreamCloser = myMockStreamCloser
+//	})
 func NewSubscribeToShardEventStream(opts ...func(*SubscribeToShardEventStream)) *SubscribeToShardEventStream {
 	es := &SubscribeToShardEventStream{
 		done: make(chan struct{}),
@@ -3388,8 +3383,8 @@ func (e eventTypeForSubscribeToShardEventStreamOutputEvent) UnmarshalerForEventN
 //
 // These events are:
 //
-//     * SubscribeToShardEvent
-//     * SubscribeToShardEventStreamUnknownEvent
+//   - SubscribeToShardEvent
+//   - SubscribeToShardEventStreamUnknownEvent
 func (es *SubscribeToShardEventStream) Events() <-chan SubscribeToShardEventStreamEvent {
 	return es.Reader.Events()
 }
@@ -3453,7 +3448,6 @@ func (es *SubscribeToShardEventStream) recvInitialEvent(r *request.Request) {
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *SubscribeToShardEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -3501,14 +3495,13 @@ const opUpdateShardCount = "UpdateShardCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateShardCountRequest method.
+//	req, resp := client.UpdateShardCountRequest(params)
 //
-//    // Example sending a request using the UpdateShardCountRequest method.
-//    req, resp := client.UpdateShardCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/UpdateShardCount
 func (c *Kinesis) UpdateShardCountRequest(input *UpdateShardCountInput) (req *request.Request, output *UpdateShardCountOutput) {
@@ -3552,18 +3545,18 @@ func (c *Kinesis) UpdateShardCountRequest(input *UpdateShardCountInput) (req *re
 // This operation has the following default limits. By default, you cannot do
 // the following:
 //
-//    * Scale more than ten times per rolling 24-hour period per stream
+//   - Scale more than ten times per rolling 24-hour period per stream
 //
-//    * Scale up to more than double your current shard count for a stream
+//   - Scale up to more than double your current shard count for a stream
 //
-//    * Scale down below half your current shard count for a stream
+//   - Scale down below half your current shard count for a stream
 //
-//    * Scale up to more than 10000 shards in a stream
+//   - Scale up to more than 10000 shards in a stream
 //
-//    * Scale a stream with more than 10000 shards down unless the result is
-//    less than 10000 shards
+//   - Scale a stream with more than 10000 shards down unless the result is
+//     less than 10000 shards
 //
-//    * Scale up to more than the shard limit for your account
+//   - Scale up to more than the shard limit for your account
 //
 // For the default limits for an Amazon Web Services account, see Streams Limits
 // (https://docs.aws.amazon.com/kinesis/latest/dev/service-sizes-and-limits.html)
@@ -3579,23 +3572,24 @@ func (c *Kinesis) UpdateShardCountRequest(input *UpdateShardCountInput) (req *re
 // API operation UpdateShardCount for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/UpdateShardCount
 func (c *Kinesis) UpdateShardCount(input *UpdateShardCountInput) (*UpdateShardCountOutput, error) {
@@ -3635,14 +3629,13 @@ const opUpdateStreamMode = "UpdateStreamMode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStreamModeRequest method.
+//	req, resp := client.UpdateStreamModeRequest(params)
 //
-//    // Example sending a request using the UpdateStreamModeRequest method.
-//    req, resp := client.UpdateStreamModeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/UpdateStreamMode
 func (c *Kinesis) UpdateStreamModeRequest(input *UpdateStreamModeInput) (req *request.Request, output *UpdateStreamModeOutput) {
@@ -3676,21 +3669,22 @@ func (c *Kinesis) UpdateStreamModeRequest(input *UpdateStreamModeInput) (req *re
 // API operation UpdateStreamMode for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   A specified parameter exceeds its restrictions, is not supported, or can't
-//   be used. For more information, see the returned message.
 //
-//   * LimitExceededException
-//   The requested resource exceeds the maximum number allowed, or the number
-//   of concurrent stream requests exceeds the maximum number allowed.
+//   - InvalidArgumentException
+//     A specified parameter exceeds its restrictions, is not supported, or can't
+//     be used. For more information, see the returned message.
 //
-//   * ResourceInUseException
-//   The resource is not available for this operation. For successful operation,
-//   the resource must be in the ACTIVE state.
+//   - LimitExceededException
+//     The requested resource exceeds the maximum number allowed, or the number
+//     of concurrent stream requests exceeds the maximum number allowed.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found. The stream might not be specified
-//   correctly.
+//   - ResourceInUseException
+//     The resource is not available for this operation. For successful operation,
+//     the resource must be in the ACTIVE state.
+//
+//   - ResourceNotFoundException
+//     The requested resource could not be found. The stream might not be specified
+//     correctly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-2013-12-02/UpdateStreamMode
 func (c *Kinesis) UpdateStreamMode(input *UpdateStreamModeInput) (*UpdateStreamModeOutput, error) {
@@ -9281,7 +9275,7 @@ func (s *SubscribeToShardEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg 
 //
 // These events are:
 //
-//     * SubscribeToShardEvent
+//   - SubscribeToShardEvent
 type SubscribeToShardEventStreamEvent interface {
 	eventSubscribeToShardEventStream()
 	eventstreamapi.Marshaler
@@ -9295,8 +9289,8 @@ type SubscribeToShardEventStreamEvent interface {
 //
 // These events are:
 //
-//     * SubscribeToShardEvent
-//     * SubscribeToShardEventStreamUnknownEvent
+//   - SubscribeToShardEvent
+//   - SubscribeToShardEventStreamUnknownEvent
 type SubscribeToShardEventStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan SubscribeToShardEventStreamEvent

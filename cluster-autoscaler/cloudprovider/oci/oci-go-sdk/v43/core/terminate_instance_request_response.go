@@ -11,7 +11,7 @@ import (
 
 // TerminateInstanceRequest wrapper for the TerminateInstance operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/TerminateInstance.go.html to see an example of how to use TerminateInstanceRequest.
 type TerminateInstanceRequest struct {

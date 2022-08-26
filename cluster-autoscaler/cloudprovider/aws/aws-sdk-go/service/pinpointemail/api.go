@@ -29,14 +29,13 @@ const opCreateConfigurationSet = "CreateConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetRequest method.
+//	req, resp := client.CreateConfigurationSetRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetRequest method.
-//    req, resp := client.CreateConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateConfigurationSet
 func (c *PinpointEmail) CreateConfigurationSetRequest(input *CreateConfigurationSetInput) (req *request.Request, output *CreateConfigurationSetOutput) {
@@ -72,23 +71,24 @@ func (c *PinpointEmail) CreateConfigurationSetRequest(input *CreateConfiguration
 // API operation CreateConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateConfigurationSet
 func (c *PinpointEmail) CreateConfigurationSet(input *CreateConfigurationSetInput) (*CreateConfigurationSetOutput, error) {
@@ -128,14 +128,13 @@ const opCreateConfigurationSetEventDestination = "CreateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.CreateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateConfigurationSetEventDestination
 func (c *PinpointEmail) CreateConfigurationSetEventDestinationRequest(input *CreateConfigurationSetEventDestinationInput) (req *request.Request, output *CreateConfigurationSetEventDestinationOutput) {
@@ -174,20 +173,21 @@ func (c *PinpointEmail) CreateConfigurationSetEventDestinationRequest(input *Cre
 // API operation CreateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateConfigurationSetEventDestination
 func (c *PinpointEmail) CreateConfigurationSetEventDestination(input *CreateConfigurationSetEventDestinationInput) (*CreateConfigurationSetEventDestinationOutput, error) {
@@ -227,14 +227,13 @@ const opCreateDedicatedIpPool = "CreateDedicatedIpPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDedicatedIpPoolRequest method.
+//	req, resp := client.CreateDedicatedIpPoolRequest(params)
 //
-//    // Example sending a request using the CreateDedicatedIpPoolRequest method.
-//    req, resp := client.CreateDedicatedIpPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateDedicatedIpPool
 func (c *PinpointEmail) CreateDedicatedIpPoolRequest(input *CreateDedicatedIpPoolInput) (req *request.Request, output *CreateDedicatedIpPoolOutput) {
@@ -270,20 +269,21 @@ func (c *PinpointEmail) CreateDedicatedIpPoolRequest(input *CreateDedicatedIpPoo
 // API operation CreateDedicatedIpPool for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateDedicatedIpPool
 func (c *PinpointEmail) CreateDedicatedIpPool(input *CreateDedicatedIpPoolInput) (*CreateDedicatedIpPoolOutput, error) {
@@ -323,14 +323,13 @@ const opCreateDeliverabilityTestReport = "CreateDeliverabilityTestReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeliverabilityTestReportRequest method.
+//	req, resp := client.CreateDeliverabilityTestReportRequest(params)
 //
-//    // Example sending a request using the CreateDeliverabilityTestReportRequest method.
-//    req, resp := client.CreateDeliverabilityTestReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateDeliverabilityTestReport
 func (c *PinpointEmail) CreateDeliverabilityTestReportRequest(input *CreateDeliverabilityTestReportInput) (req *request.Request, output *CreateDeliverabilityTestReportOutput) {
@@ -368,34 +367,35 @@ func (c *PinpointEmail) CreateDeliverabilityTestReportRequest(input *CreateDeliv
 // API operation CreateDeliverabilityTestReport for usage and error information.
 //
 // Returned Error Types:
-//   * AccountSuspendedException
-//   The message can't be sent because the account's ability to send email has
-//   been permanently restricted.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - AccountSuspendedException
+//     The message can't be sent because the account's ability to send email has
+//     been permanently restricted.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateDeliverabilityTestReport
 func (c *PinpointEmail) CreateDeliverabilityTestReport(input *CreateDeliverabilityTestReportInput) (*CreateDeliverabilityTestReportOutput, error) {
@@ -435,14 +435,13 @@ const opCreateEmailIdentity = "CreateEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEmailIdentityRequest method.
+//	req, resp := client.CreateEmailIdentityRequest(params)
 //
-//    // Example sending a request using the CreateEmailIdentityRequest method.
-//    req, resp := client.CreateEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateEmailIdentity
 func (c *PinpointEmail) CreateEmailIdentityRequest(input *CreateEmailIdentityInput) (req *request.Request, output *CreateEmailIdentityOutput) {
@@ -488,17 +487,18 @@ func (c *PinpointEmail) CreateEmailIdentityRequest(input *CreateEmailIdentityInp
 // API operation CreateEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/CreateEmailIdentity
 func (c *PinpointEmail) CreateEmailIdentity(input *CreateEmailIdentityInput) (*CreateEmailIdentityOutput, error) {
@@ -538,14 +538,13 @@ const opDeleteConfigurationSet = "DeleteConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetRequest method.
+//	req, resp := client.DeleteConfigurationSetRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetRequest method.
-//    req, resp := client.DeleteConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteConfigurationSet
 func (c *PinpointEmail) DeleteConfigurationSetRequest(input *DeleteConfigurationSetInput) (req *request.Request, output *DeleteConfigurationSetOutput) {
@@ -583,17 +582,18 @@ func (c *PinpointEmail) DeleteConfigurationSetRequest(input *DeleteConfiguration
 // API operation DeleteConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteConfigurationSet
 func (c *PinpointEmail) DeleteConfigurationSet(input *DeleteConfigurationSetInput) (*DeleteConfigurationSetOutput, error) {
@@ -633,14 +633,13 @@ const opDeleteConfigurationSetEventDestination = "DeleteConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
+//	req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetEventDestinationRequest method.
-//    req, resp := client.DeleteConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteConfigurationSetEventDestination
 func (c *PinpointEmail) DeleteConfigurationSetEventDestinationRequest(input *DeleteConfigurationSetEventDestinationInput) (req *request.Request, output *DeleteConfigurationSetEventDestinationOutput) {
@@ -679,14 +678,15 @@ func (c *PinpointEmail) DeleteConfigurationSetEventDestinationRequest(input *Del
 // API operation DeleteConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteConfigurationSetEventDestination
 func (c *PinpointEmail) DeleteConfigurationSetEventDestination(input *DeleteConfigurationSetEventDestinationInput) (*DeleteConfigurationSetEventDestinationOutput, error) {
@@ -726,14 +726,13 @@ const opDeleteDedicatedIpPool = "DeleteDedicatedIpPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDedicatedIpPoolRequest method.
+//	req, resp := client.DeleteDedicatedIpPoolRequest(params)
 //
-//    // Example sending a request using the DeleteDedicatedIpPoolRequest method.
-//    req, resp := client.DeleteDedicatedIpPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteDedicatedIpPool
 func (c *PinpointEmail) DeleteDedicatedIpPoolRequest(input *DeleteDedicatedIpPoolInput) (req *request.Request, output *DeleteDedicatedIpPoolOutput) {
@@ -765,17 +764,18 @@ func (c *PinpointEmail) DeleteDedicatedIpPoolRequest(input *DeleteDedicatedIpPoo
 // API operation DeleteDedicatedIpPool for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteDedicatedIpPool
 func (c *PinpointEmail) DeleteDedicatedIpPool(input *DeleteDedicatedIpPoolInput) (*DeleteDedicatedIpPoolOutput, error) {
@@ -815,14 +815,13 @@ const opDeleteEmailIdentity = "DeleteEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailIdentityRequest method.
+//	req, resp := client.DeleteEmailIdentityRequest(params)
 //
-//    // Example sending a request using the DeleteEmailIdentityRequest method.
-//    req, resp := client.DeleteEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteEmailIdentity
 func (c *PinpointEmail) DeleteEmailIdentityRequest(input *DeleteEmailIdentityInput) (req *request.Request, output *DeleteEmailIdentityOutput) {
@@ -855,17 +854,18 @@ func (c *PinpointEmail) DeleteEmailIdentityRequest(input *DeleteEmailIdentityInp
 // API operation DeleteEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/DeleteEmailIdentity
 func (c *PinpointEmail) DeleteEmailIdentity(input *DeleteEmailIdentityInput) (*DeleteEmailIdentityOutput, error) {
@@ -905,14 +905,13 @@ const opGetAccount = "GetAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountRequest method.
+//	req, resp := client.GetAccountRequest(params)
 //
-//    // Example sending a request using the GetAccountRequest method.
-//    req, resp := client.GetAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetAccount
 func (c *PinpointEmail) GetAccountRequest(input *GetAccountInput) (req *request.Request, output *GetAccountOutput) {
@@ -944,11 +943,12 @@ func (c *PinpointEmail) GetAccountRequest(input *GetAccountInput) (req *request.
 // API operation GetAccount for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetAccount
 func (c *PinpointEmail) GetAccount(input *GetAccountInput) (*GetAccountOutput, error) {
@@ -988,14 +988,13 @@ const opGetBlacklistReports = "GetBlacklistReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlacklistReportsRequest method.
+//	req, resp := client.GetBlacklistReportsRequest(params)
 //
-//    // Example sending a request using the GetBlacklistReportsRequest method.
-//    req, resp := client.GetBlacklistReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetBlacklistReports
 func (c *PinpointEmail) GetBlacklistReportsRequest(input *GetBlacklistReportsInput) (req *request.Request, output *GetBlacklistReportsOutput) {
@@ -1027,14 +1026,15 @@ func (c *PinpointEmail) GetBlacklistReportsRequest(input *GetBlacklistReportsInp
 // API operation GetBlacklistReports for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetBlacklistReports
 func (c *PinpointEmail) GetBlacklistReports(input *GetBlacklistReportsInput) (*GetBlacklistReportsOutput, error) {
@@ -1074,14 +1074,13 @@ const opGetConfigurationSet = "GetConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationSetRequest method.
+//	req, resp := client.GetConfigurationSetRequest(params)
 //
-//    // Example sending a request using the GetConfigurationSetRequest method.
-//    req, resp := client.GetConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetConfigurationSet
 func (c *PinpointEmail) GetConfigurationSetRequest(input *GetConfigurationSetInput) (req *request.Request, output *GetConfigurationSetOutput) {
@@ -1120,14 +1119,15 @@ func (c *PinpointEmail) GetConfigurationSetRequest(input *GetConfigurationSetInp
 // API operation GetConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetConfigurationSet
 func (c *PinpointEmail) GetConfigurationSet(input *GetConfigurationSetInput) (*GetConfigurationSetOutput, error) {
@@ -1167,14 +1167,13 @@ const opGetConfigurationSetEventDestinations = "GetConfigurationSetEventDestinat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
+//	req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
 //
-//    // Example sending a request using the GetConfigurationSetEventDestinationsRequest method.
-//    req, resp := client.GetConfigurationSetEventDestinationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetConfigurationSetEventDestinations
 func (c *PinpointEmail) GetConfigurationSetEventDestinationsRequest(input *GetConfigurationSetEventDestinationsInput) (req *request.Request, output *GetConfigurationSetEventDestinationsOutput) {
@@ -1213,14 +1212,15 @@ func (c *PinpointEmail) GetConfigurationSetEventDestinationsRequest(input *GetCo
 // API operation GetConfigurationSetEventDestinations for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetConfigurationSetEventDestinations
 func (c *PinpointEmail) GetConfigurationSetEventDestinations(input *GetConfigurationSetEventDestinationsInput) (*GetConfigurationSetEventDestinationsOutput, error) {
@@ -1260,14 +1260,13 @@ const opGetDedicatedIp = "GetDedicatedIp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDedicatedIpRequest method.
+//	req, resp := client.GetDedicatedIpRequest(params)
 //
-//    // Example sending a request using the GetDedicatedIpRequest method.
-//    req, resp := client.GetDedicatedIpRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDedicatedIp
 func (c *PinpointEmail) GetDedicatedIpRequest(input *GetDedicatedIpInput) (req *request.Request, output *GetDedicatedIpOutput) {
@@ -1300,14 +1299,15 @@ func (c *PinpointEmail) GetDedicatedIpRequest(input *GetDedicatedIpInput) (req *
 // API operation GetDedicatedIp for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDedicatedIp
 func (c *PinpointEmail) GetDedicatedIp(input *GetDedicatedIpInput) (*GetDedicatedIpOutput, error) {
@@ -1347,14 +1347,13 @@ const opGetDedicatedIps = "GetDedicatedIps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDedicatedIpsRequest method.
+//	req, resp := client.GetDedicatedIpsRequest(params)
 //
-//    // Example sending a request using the GetDedicatedIpsRequest method.
-//    req, resp := client.GetDedicatedIpsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDedicatedIps
 func (c *PinpointEmail) GetDedicatedIpsRequest(input *GetDedicatedIpsInput) (req *request.Request, output *GetDedicatedIpsOutput) {
@@ -1392,14 +1391,15 @@ func (c *PinpointEmail) GetDedicatedIpsRequest(input *GetDedicatedIpsInput) (req
 // API operation GetDedicatedIps for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDedicatedIps
 func (c *PinpointEmail) GetDedicatedIps(input *GetDedicatedIpsInput) (*GetDedicatedIpsOutput, error) {
@@ -1431,15 +1431,14 @@ func (c *PinpointEmail) GetDedicatedIpsWithContext(ctx aws.Context, input *GetDe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDedicatedIps operation.
-//    pageNum := 0
-//    err := client.GetDedicatedIpsPages(params,
-//        func(page *pinpointemail.GetDedicatedIpsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDedicatedIps operation.
+//	pageNum := 0
+//	err := client.GetDedicatedIpsPages(params,
+//	    func(page *pinpointemail.GetDedicatedIpsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) GetDedicatedIpsPages(input *GetDedicatedIpsInput, fn func(*GetDedicatedIpsOutput, bool) bool) error {
 	return c.GetDedicatedIpsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1491,14 +1490,13 @@ const opGetDeliverabilityDashboardOptions = "GetDeliverabilityDashboardOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeliverabilityDashboardOptionsRequest method.
+//	req, resp := client.GetDeliverabilityDashboardOptionsRequest(params)
 //
-//    // Example sending a request using the GetDeliverabilityDashboardOptionsRequest method.
-//    req, resp := client.GetDeliverabilityDashboardOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDeliverabilityDashboardOptions
 func (c *PinpointEmail) GetDeliverabilityDashboardOptionsRequest(input *GetDeliverabilityDashboardOptionsInput) (req *request.Request, output *GetDeliverabilityDashboardOptionsOutput) {
@@ -1538,14 +1536,15 @@ func (c *PinpointEmail) GetDeliverabilityDashboardOptionsRequest(input *GetDeliv
 // API operation GetDeliverabilityDashboardOptions for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDeliverabilityDashboardOptions
 func (c *PinpointEmail) GetDeliverabilityDashboardOptions(input *GetDeliverabilityDashboardOptionsInput) (*GetDeliverabilityDashboardOptionsOutput, error) {
@@ -1585,14 +1584,13 @@ const opGetDeliverabilityTestReport = "GetDeliverabilityTestReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeliverabilityTestReportRequest method.
+//	req, resp := client.GetDeliverabilityTestReportRequest(params)
 //
-//    // Example sending a request using the GetDeliverabilityTestReportRequest method.
-//    req, resp := client.GetDeliverabilityTestReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDeliverabilityTestReport
 func (c *PinpointEmail) GetDeliverabilityTestReportRequest(input *GetDeliverabilityTestReportInput) (req *request.Request, output *GetDeliverabilityTestReportOutput) {
@@ -1623,14 +1621,15 @@ func (c *PinpointEmail) GetDeliverabilityTestReportRequest(input *GetDeliverabil
 // API operation GetDeliverabilityTestReport for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDeliverabilityTestReport
 func (c *PinpointEmail) GetDeliverabilityTestReport(input *GetDeliverabilityTestReportInput) (*GetDeliverabilityTestReportOutput, error) {
@@ -1670,14 +1669,13 @@ const opGetDomainDeliverabilityCampaign = "GetDomainDeliverabilityCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainDeliverabilityCampaignRequest method.
+//	req, resp := client.GetDomainDeliverabilityCampaignRequest(params)
 //
-//    // Example sending a request using the GetDomainDeliverabilityCampaignRequest method.
-//    req, resp := client.GetDomainDeliverabilityCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDomainDeliverabilityCampaign
 func (c *PinpointEmail) GetDomainDeliverabilityCampaignRequest(input *GetDomainDeliverabilityCampaignInput) (req *request.Request, output *GetDomainDeliverabilityCampaignOutput) {
@@ -1711,14 +1709,15 @@ func (c *PinpointEmail) GetDomainDeliverabilityCampaignRequest(input *GetDomainD
 // API operation GetDomainDeliverabilityCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDomainDeliverabilityCampaign
 func (c *PinpointEmail) GetDomainDeliverabilityCampaign(input *GetDomainDeliverabilityCampaignInput) (*GetDomainDeliverabilityCampaignOutput, error) {
@@ -1758,14 +1757,13 @@ const opGetDomainStatisticsReport = "GetDomainStatisticsReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainStatisticsReportRequest method.
+//	req, resp := client.GetDomainStatisticsReportRequest(params)
 //
-//    // Example sending a request using the GetDomainStatisticsReportRequest method.
-//    req, resp := client.GetDomainStatisticsReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDomainStatisticsReport
 func (c *PinpointEmail) GetDomainStatisticsReportRequest(input *GetDomainStatisticsReportInput) (req *request.Request, output *GetDomainStatisticsReportOutput) {
@@ -1797,14 +1795,15 @@ func (c *PinpointEmail) GetDomainStatisticsReportRequest(input *GetDomainStatist
 // API operation GetDomainStatisticsReport for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetDomainStatisticsReport
 func (c *PinpointEmail) GetDomainStatisticsReport(input *GetDomainStatisticsReportInput) (*GetDomainStatisticsReportOutput, error) {
@@ -1844,14 +1843,13 @@ const opGetEmailIdentity = "GetEmailIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailIdentityRequest method.
+//	req, resp := client.GetEmailIdentityRequest(params)
 //
-//    // Example sending a request using the GetEmailIdentityRequest method.
-//    req, resp := client.GetEmailIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetEmailIdentity
 func (c *PinpointEmail) GetEmailIdentityRequest(input *GetEmailIdentityInput) (req *request.Request, output *GetEmailIdentityOutput) {
@@ -1884,14 +1882,15 @@ func (c *PinpointEmail) GetEmailIdentityRequest(input *GetEmailIdentityInput) (r
 // API operation GetEmailIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/GetEmailIdentity
 func (c *PinpointEmail) GetEmailIdentity(input *GetEmailIdentityInput) (*GetEmailIdentityOutput, error) {
@@ -1931,14 +1930,13 @@ const opListConfigurationSets = "ListConfigurationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationSetsRequest method.
+//	req, resp := client.ListConfigurationSetsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationSetsRequest method.
-//    req, resp := client.ListConfigurationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListConfigurationSets
 func (c *PinpointEmail) ListConfigurationSetsRequest(input *ListConfigurationSetsInput) (req *request.Request, output *ListConfigurationSetsOutput) {
@@ -1982,11 +1980,12 @@ func (c *PinpointEmail) ListConfigurationSetsRequest(input *ListConfigurationSet
 // API operation ListConfigurationSets for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListConfigurationSets
 func (c *PinpointEmail) ListConfigurationSets(input *ListConfigurationSetsInput) (*ListConfigurationSetsOutput, error) {
@@ -2018,15 +2017,14 @@ func (c *PinpointEmail) ListConfigurationSetsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationSets operation.
-//    pageNum := 0
-//    err := client.ListConfigurationSetsPages(params,
-//        func(page *pinpointemail.ListConfigurationSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationSets operation.
+//	pageNum := 0
+//	err := client.ListConfigurationSetsPages(params,
+//	    func(page *pinpointemail.ListConfigurationSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) ListConfigurationSetsPages(input *ListConfigurationSetsInput, fn func(*ListConfigurationSetsOutput, bool) bool) error {
 	return c.ListConfigurationSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2078,14 +2076,13 @@ const opListDedicatedIpPools = "ListDedicatedIpPools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDedicatedIpPoolsRequest method.
+//	req, resp := client.ListDedicatedIpPoolsRequest(params)
 //
-//    // Example sending a request using the ListDedicatedIpPoolsRequest method.
-//    req, resp := client.ListDedicatedIpPoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDedicatedIpPools
 func (c *PinpointEmail) ListDedicatedIpPoolsRequest(input *ListDedicatedIpPoolsInput) (req *request.Request, output *ListDedicatedIpPoolsOutput) {
@@ -2123,11 +2120,12 @@ func (c *PinpointEmail) ListDedicatedIpPoolsRequest(input *ListDedicatedIpPoolsI
 // API operation ListDedicatedIpPools for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDedicatedIpPools
 func (c *PinpointEmail) ListDedicatedIpPools(input *ListDedicatedIpPoolsInput) (*ListDedicatedIpPoolsOutput, error) {
@@ -2159,15 +2157,14 @@ func (c *PinpointEmail) ListDedicatedIpPoolsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDedicatedIpPools operation.
-//    pageNum := 0
-//    err := client.ListDedicatedIpPoolsPages(params,
-//        func(page *pinpointemail.ListDedicatedIpPoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDedicatedIpPools operation.
+//	pageNum := 0
+//	err := client.ListDedicatedIpPoolsPages(params,
+//	    func(page *pinpointemail.ListDedicatedIpPoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) ListDedicatedIpPoolsPages(input *ListDedicatedIpPoolsInput, fn func(*ListDedicatedIpPoolsOutput, bool) bool) error {
 	return c.ListDedicatedIpPoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2219,14 +2216,13 @@ const opListDeliverabilityTestReports = "ListDeliverabilityTestReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeliverabilityTestReportsRequest method.
+//	req, resp := client.ListDeliverabilityTestReportsRequest(params)
 //
-//    // Example sending a request using the ListDeliverabilityTestReportsRequest method.
-//    req, resp := client.ListDeliverabilityTestReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDeliverabilityTestReports
 func (c *PinpointEmail) ListDeliverabilityTestReportsRequest(input *ListDeliverabilityTestReportsInput) (req *request.Request, output *ListDeliverabilityTestReportsOutput) {
@@ -2266,14 +2262,15 @@ func (c *PinpointEmail) ListDeliverabilityTestReportsRequest(input *ListDelivera
 // API operation ListDeliverabilityTestReports for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDeliverabilityTestReports
 func (c *PinpointEmail) ListDeliverabilityTestReports(input *ListDeliverabilityTestReportsInput) (*ListDeliverabilityTestReportsOutput, error) {
@@ -2305,15 +2302,14 @@ func (c *PinpointEmail) ListDeliverabilityTestReportsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeliverabilityTestReports operation.
-//    pageNum := 0
-//    err := client.ListDeliverabilityTestReportsPages(params,
-//        func(page *pinpointemail.ListDeliverabilityTestReportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeliverabilityTestReports operation.
+//	pageNum := 0
+//	err := client.ListDeliverabilityTestReportsPages(params,
+//	    func(page *pinpointemail.ListDeliverabilityTestReportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) ListDeliverabilityTestReportsPages(input *ListDeliverabilityTestReportsInput, fn func(*ListDeliverabilityTestReportsOutput, bool) bool) error {
 	return c.ListDeliverabilityTestReportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2365,14 +2361,13 @@ const opListDomainDeliverabilityCampaigns = "ListDomainDeliverabilityCampaigns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainDeliverabilityCampaignsRequest method.
+//	req, resp := client.ListDomainDeliverabilityCampaignsRequest(params)
 //
-//    // Example sending a request using the ListDomainDeliverabilityCampaignsRequest method.
-//    req, resp := client.ListDomainDeliverabilityCampaignsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDomainDeliverabilityCampaigns
 func (c *PinpointEmail) ListDomainDeliverabilityCampaignsRequest(input *ListDomainDeliverabilityCampaignsInput) (req *request.Request, output *ListDomainDeliverabilityCampaignsOutput) {
@@ -2412,14 +2407,15 @@ func (c *PinpointEmail) ListDomainDeliverabilityCampaignsRequest(input *ListDoma
 // API operation ListDomainDeliverabilityCampaigns for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListDomainDeliverabilityCampaigns
 func (c *PinpointEmail) ListDomainDeliverabilityCampaigns(input *ListDomainDeliverabilityCampaignsInput) (*ListDomainDeliverabilityCampaignsOutput, error) {
@@ -2451,15 +2447,14 @@ func (c *PinpointEmail) ListDomainDeliverabilityCampaignsWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomainDeliverabilityCampaigns operation.
-//    pageNum := 0
-//    err := client.ListDomainDeliverabilityCampaignsPages(params,
-//        func(page *pinpointemail.ListDomainDeliverabilityCampaignsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomainDeliverabilityCampaigns operation.
+//	pageNum := 0
+//	err := client.ListDomainDeliverabilityCampaignsPages(params,
+//	    func(page *pinpointemail.ListDomainDeliverabilityCampaignsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) ListDomainDeliverabilityCampaignsPages(input *ListDomainDeliverabilityCampaignsInput, fn func(*ListDomainDeliverabilityCampaignsOutput, bool) bool) error {
 	return c.ListDomainDeliverabilityCampaignsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2511,14 +2506,13 @@ const opListEmailIdentities = "ListEmailIdentities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEmailIdentitiesRequest method.
+//	req, resp := client.ListEmailIdentitiesRequest(params)
 //
-//    // Example sending a request using the ListEmailIdentitiesRequest method.
-//    req, resp := client.ListEmailIdentitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListEmailIdentities
 func (c *PinpointEmail) ListEmailIdentitiesRequest(input *ListEmailIdentitiesInput) (req *request.Request, output *ListEmailIdentitiesOutput) {
@@ -2558,11 +2552,12 @@ func (c *PinpointEmail) ListEmailIdentitiesRequest(input *ListEmailIdentitiesInp
 // API operation ListEmailIdentities for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListEmailIdentities
 func (c *PinpointEmail) ListEmailIdentities(input *ListEmailIdentitiesInput) (*ListEmailIdentitiesOutput, error) {
@@ -2594,15 +2589,14 @@ func (c *PinpointEmail) ListEmailIdentitiesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEmailIdentities operation.
-//    pageNum := 0
-//    err := client.ListEmailIdentitiesPages(params,
-//        func(page *pinpointemail.ListEmailIdentitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEmailIdentities operation.
+//	pageNum := 0
+//	err := client.ListEmailIdentitiesPages(params,
+//	    func(page *pinpointemail.ListEmailIdentitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointEmail) ListEmailIdentitiesPages(input *ListEmailIdentitiesInput, fn func(*ListEmailIdentitiesOutput, bool) bool) error {
 	return c.ListEmailIdentitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2654,14 +2648,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListTagsForResource
 func (c *PinpointEmail) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2697,14 +2690,15 @@ func (c *PinpointEmail) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/ListTagsForResource
 func (c *PinpointEmail) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2744,14 +2738,13 @@ const opPutAccountDedicatedIpWarmupAttributes = "PutAccountDedicatedIpWarmupAttr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountDedicatedIpWarmupAttributesRequest method.
+//	req, resp := client.PutAccountDedicatedIpWarmupAttributesRequest(params)
 //
-//    // Example sending a request using the PutAccountDedicatedIpWarmupAttributesRequest method.
-//    req, resp := client.PutAccountDedicatedIpWarmupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutAccountDedicatedIpWarmupAttributes
 func (c *PinpointEmail) PutAccountDedicatedIpWarmupAttributesRequest(input *PutAccountDedicatedIpWarmupAttributesInput) (req *request.Request, output *PutAccountDedicatedIpWarmupAttributesOutput) {
@@ -2783,11 +2776,12 @@ func (c *PinpointEmail) PutAccountDedicatedIpWarmupAttributesRequest(input *PutA
 // API operation PutAccountDedicatedIpWarmupAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutAccountDedicatedIpWarmupAttributes
 func (c *PinpointEmail) PutAccountDedicatedIpWarmupAttributes(input *PutAccountDedicatedIpWarmupAttributesInput) (*PutAccountDedicatedIpWarmupAttributesOutput, error) {
@@ -2827,14 +2821,13 @@ const opPutAccountSendingAttributes = "PutAccountSendingAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountSendingAttributesRequest method.
+//	req, resp := client.PutAccountSendingAttributesRequest(params)
 //
-//    // Example sending a request using the PutAccountSendingAttributesRequest method.
-//    req, resp := client.PutAccountSendingAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutAccountSendingAttributes
 func (c *PinpointEmail) PutAccountSendingAttributesRequest(input *PutAccountSendingAttributesInput) (req *request.Request, output *PutAccountSendingAttributesOutput) {
@@ -2866,11 +2859,12 @@ func (c *PinpointEmail) PutAccountSendingAttributesRequest(input *PutAccountSend
 // API operation PutAccountSendingAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutAccountSendingAttributes
 func (c *PinpointEmail) PutAccountSendingAttributes(input *PutAccountSendingAttributesInput) (*PutAccountSendingAttributesOutput, error) {
@@ -2910,14 +2904,13 @@ const opPutConfigurationSetDeliveryOptions = "PutConfigurationSetDeliveryOptions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetDeliveryOptionsRequest method.
+//	req, resp := client.PutConfigurationSetDeliveryOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetDeliveryOptionsRequest method.
-//    req, resp := client.PutConfigurationSetDeliveryOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetDeliveryOptions
 func (c *PinpointEmail) PutConfigurationSetDeliveryOptionsRequest(input *PutConfigurationSetDeliveryOptionsInput) (req *request.Request, output *PutConfigurationSetDeliveryOptionsOutput) {
@@ -2951,14 +2944,15 @@ func (c *PinpointEmail) PutConfigurationSetDeliveryOptionsRequest(input *PutConf
 // API operation PutConfigurationSetDeliveryOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetDeliveryOptions
 func (c *PinpointEmail) PutConfigurationSetDeliveryOptions(input *PutConfigurationSetDeliveryOptionsInput) (*PutConfigurationSetDeliveryOptionsOutput, error) {
@@ -2998,14 +2992,13 @@ const opPutConfigurationSetReputationOptions = "PutConfigurationSetReputationOpt
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetReputationOptionsRequest method.
+//	req, resp := client.PutConfigurationSetReputationOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetReputationOptionsRequest method.
-//    req, resp := client.PutConfigurationSetReputationOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetReputationOptions
 func (c *PinpointEmail) PutConfigurationSetReputationOptionsRequest(input *PutConfigurationSetReputationOptionsInput) (req *request.Request, output *PutConfigurationSetReputationOptionsOutput) {
@@ -3038,14 +3031,15 @@ func (c *PinpointEmail) PutConfigurationSetReputationOptionsRequest(input *PutCo
 // API operation PutConfigurationSetReputationOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetReputationOptions
 func (c *PinpointEmail) PutConfigurationSetReputationOptions(input *PutConfigurationSetReputationOptionsInput) (*PutConfigurationSetReputationOptionsOutput, error) {
@@ -3085,14 +3079,13 @@ const opPutConfigurationSetSendingOptions = "PutConfigurationSetSendingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetSendingOptionsRequest method.
+//	req, resp := client.PutConfigurationSetSendingOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetSendingOptionsRequest method.
-//    req, resp := client.PutConfigurationSetSendingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetSendingOptions
 func (c *PinpointEmail) PutConfigurationSetSendingOptionsRequest(input *PutConfigurationSetSendingOptionsInput) (req *request.Request, output *PutConfigurationSetSendingOptionsOutput) {
@@ -3125,14 +3118,15 @@ func (c *PinpointEmail) PutConfigurationSetSendingOptionsRequest(input *PutConfi
 // API operation PutConfigurationSetSendingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetSendingOptions
 func (c *PinpointEmail) PutConfigurationSetSendingOptions(input *PutConfigurationSetSendingOptionsInput) (*PutConfigurationSetSendingOptionsOutput, error) {
@@ -3172,14 +3166,13 @@ const opPutConfigurationSetTrackingOptions = "PutConfigurationSetTrackingOptions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConfigurationSetTrackingOptionsRequest method.
+//	req, resp := client.PutConfigurationSetTrackingOptionsRequest(params)
 //
-//    // Example sending a request using the PutConfigurationSetTrackingOptionsRequest method.
-//    req, resp := client.PutConfigurationSetTrackingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetTrackingOptions
 func (c *PinpointEmail) PutConfigurationSetTrackingOptionsRequest(input *PutConfigurationSetTrackingOptionsInput) (req *request.Request, output *PutConfigurationSetTrackingOptionsOutput) {
@@ -3212,14 +3205,15 @@ func (c *PinpointEmail) PutConfigurationSetTrackingOptionsRequest(input *PutConf
 // API operation PutConfigurationSetTrackingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutConfigurationSetTrackingOptions
 func (c *PinpointEmail) PutConfigurationSetTrackingOptions(input *PutConfigurationSetTrackingOptionsInput) (*PutConfigurationSetTrackingOptionsOutput, error) {
@@ -3259,14 +3253,13 @@ const opPutDedicatedIpInPool = "PutDedicatedIpInPool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDedicatedIpInPoolRequest method.
+//	req, resp := client.PutDedicatedIpInPoolRequest(params)
 //
-//    // Example sending a request using the PutDedicatedIpInPoolRequest method.
-//    req, resp := client.PutDedicatedIpInPoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDedicatedIpInPool
 func (c *PinpointEmail) PutDedicatedIpInPoolRequest(input *PutDedicatedIpInPoolInput) (req *request.Request, output *PutDedicatedIpInPoolOutput) {
@@ -3304,14 +3297,15 @@ func (c *PinpointEmail) PutDedicatedIpInPoolRequest(input *PutDedicatedIpInPoolI
 // API operation PutDedicatedIpInPool for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDedicatedIpInPool
 func (c *PinpointEmail) PutDedicatedIpInPool(input *PutDedicatedIpInPoolInput) (*PutDedicatedIpInPoolOutput, error) {
@@ -3351,14 +3345,13 @@ const opPutDedicatedIpWarmupAttributes = "PutDedicatedIpWarmupAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDedicatedIpWarmupAttributesRequest method.
+//	req, resp := client.PutDedicatedIpWarmupAttributesRequest(params)
 //
-//    // Example sending a request using the PutDedicatedIpWarmupAttributesRequest method.
-//    req, resp := client.PutDedicatedIpWarmupAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDedicatedIpWarmupAttributes
 func (c *PinpointEmail) PutDedicatedIpWarmupAttributesRequest(input *PutDedicatedIpWarmupAttributesInput) (req *request.Request, output *PutDedicatedIpWarmupAttributesOutput) {
@@ -3388,14 +3381,15 @@ func (c *PinpointEmail) PutDedicatedIpWarmupAttributesRequest(input *PutDedicate
 // API operation PutDedicatedIpWarmupAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDedicatedIpWarmupAttributes
 func (c *PinpointEmail) PutDedicatedIpWarmupAttributes(input *PutDedicatedIpWarmupAttributesInput) (*PutDedicatedIpWarmupAttributesOutput, error) {
@@ -3435,14 +3429,13 @@ const opPutDeliverabilityDashboardOption = "PutDeliverabilityDashboardOption"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDeliverabilityDashboardOptionRequest method.
+//	req, resp := client.PutDeliverabilityDashboardOptionRequest(params)
 //
-//    // Example sending a request using the PutDeliverabilityDashboardOptionRequest method.
-//    req, resp := client.PutDeliverabilityDashboardOptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDeliverabilityDashboardOption
 func (c *PinpointEmail) PutDeliverabilityDashboardOptionRequest(input *PutDeliverabilityDashboardOptionInput) (req *request.Request, output *PutDeliverabilityDashboardOptionOutput) {
@@ -3483,20 +3476,21 @@ func (c *PinpointEmail) PutDeliverabilityDashboardOptionRequest(input *PutDelive
 // API operation PutDeliverabilityDashboardOption for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource specified in your request already exists.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - AlreadyExistsException
+//     The resource specified in your request already exists.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutDeliverabilityDashboardOption
 func (c *PinpointEmail) PutDeliverabilityDashboardOption(input *PutDeliverabilityDashboardOptionInput) (*PutDeliverabilityDashboardOptionOutput, error) {
@@ -3536,14 +3530,13 @@ const opPutEmailIdentityDkimAttributes = "PutEmailIdentityDkimAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityDkimAttributesRequest method.
+//	req, resp := client.PutEmailIdentityDkimAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityDkimAttributesRequest method.
-//    req, resp := client.PutEmailIdentityDkimAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityDkimAttributes
 func (c *PinpointEmail) PutEmailIdentityDkimAttributesRequest(input *PutEmailIdentityDkimAttributesInput) (req *request.Request, output *PutEmailIdentityDkimAttributesOutput) {
@@ -3575,14 +3568,15 @@ func (c *PinpointEmail) PutEmailIdentityDkimAttributesRequest(input *PutEmailIde
 // API operation PutEmailIdentityDkimAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityDkimAttributes
 func (c *PinpointEmail) PutEmailIdentityDkimAttributes(input *PutEmailIdentityDkimAttributesInput) (*PutEmailIdentityDkimAttributesOutput, error) {
@@ -3622,14 +3616,13 @@ const opPutEmailIdentityFeedbackAttributes = "PutEmailIdentityFeedbackAttributes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityFeedbackAttributesRequest method.
+//	req, resp := client.PutEmailIdentityFeedbackAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityFeedbackAttributesRequest method.
-//    req, resp := client.PutEmailIdentityFeedbackAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityFeedbackAttributes
 func (c *PinpointEmail) PutEmailIdentityFeedbackAttributesRequest(input *PutEmailIdentityFeedbackAttributesInput) (req *request.Request, output *PutEmailIdentityFeedbackAttributesOutput) {
@@ -3675,14 +3668,15 @@ func (c *PinpointEmail) PutEmailIdentityFeedbackAttributesRequest(input *PutEmai
 // API operation PutEmailIdentityFeedbackAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityFeedbackAttributes
 func (c *PinpointEmail) PutEmailIdentityFeedbackAttributes(input *PutEmailIdentityFeedbackAttributesInput) (*PutEmailIdentityFeedbackAttributesOutput, error) {
@@ -3722,14 +3716,13 @@ const opPutEmailIdentityMailFromAttributes = "PutEmailIdentityMailFromAttributes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEmailIdentityMailFromAttributesRequest method.
+//	req, resp := client.PutEmailIdentityMailFromAttributesRequest(params)
 //
-//    // Example sending a request using the PutEmailIdentityMailFromAttributesRequest method.
-//    req, resp := client.PutEmailIdentityMailFromAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityMailFromAttributes
 func (c *PinpointEmail) PutEmailIdentityMailFromAttributesRequest(input *PutEmailIdentityMailFromAttributesInput) (req *request.Request, output *PutEmailIdentityMailFromAttributesOutput) {
@@ -3762,14 +3755,15 @@ func (c *PinpointEmail) PutEmailIdentityMailFromAttributesRequest(input *PutEmai
 // API operation PutEmailIdentityMailFromAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/PutEmailIdentityMailFromAttributes
 func (c *PinpointEmail) PutEmailIdentityMailFromAttributes(input *PutEmailIdentityMailFromAttributesInput) (*PutEmailIdentityMailFromAttributesOutput, error) {
@@ -3809,14 +3803,13 @@ const opSendEmail = "SendEmail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendEmailRequest method.
+//	req, resp := client.SendEmailRequest(params)
 //
-//    // Example sending a request using the SendEmailRequest method.
-//    req, resp := client.SendEmailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/SendEmail
 func (c *PinpointEmail) SendEmailRequest(input *SendEmailInput) (req *request.Request, output *SendEmailOutput) {
@@ -3840,14 +3833,14 @@ func (c *PinpointEmail) SendEmailRequest(input *SendEmailInput) (req *request.Re
 // Sends an email message. You can use the Amazon Pinpoint Email API to send
 // two types of messages:
 //
-//    * Simple – A standard email message. When you create this type of message,
-//    you specify the sender, the recipient, and the message body, and Amazon
-//    Pinpoint assembles the message for you.
+//   - Simple – A standard email message. When you create this type of message,
+//     you specify the sender, the recipient, and the message body, and Amazon
+//     Pinpoint assembles the message for you.
 //
-//    * Raw – A raw, MIME-formatted email message. When you send this type
-//    of email, you have to specify all of the message headers, as well as the
-//    message body. You can use this message type to send messages that contain
-//    attachments. The message that you specify has to be a valid MIME message.
+//   - Raw – A raw, MIME-formatted email message. When you send this type
+//     of email, you have to specify all of the message headers, as well as the
+//     message body. You can use this message type to send messages that contain
+//     attachments. The message that you specify has to be a valid MIME message.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3857,31 +3850,32 @@ func (c *PinpointEmail) SendEmailRequest(input *SendEmailInput) (req *request.Re
 // API operation SendEmail for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
 //
-//   * LimitExceededException
-//   There are too many instances of the specified resource type.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
-//   * AccountSuspendedException
-//   The message can't be sent because the account's ability to send email has
-//   been permanently restricted.
+//   - LimitExceededException
+//     There are too many instances of the specified resource type.
 //
-//   * SendingPausedException
-//   The message can't be sent because the account's ability to send email is
-//   currently paused.
+//   - AccountSuspendedException
+//     The message can't be sent because the account's ability to send email has
+//     been permanently restricted.
 //
-//   * MessageRejected
-//   The message can't be sent because it contains invalid content.
+//   - SendingPausedException
+//     The message can't be sent because the account's ability to send email is
+//     currently paused.
 //
-//   * MailFromDomainNotVerifiedException
-//   The message can't be sent because the sending domain isn't verified.
+//   - MessageRejected
+//     The message can't be sent because it contains invalid content.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - MailFromDomainNotVerifiedException
+//     The message can't be sent because the sending domain isn't verified.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/SendEmail
 func (c *PinpointEmail) SendEmail(input *SendEmailInput) (*SendEmailOutput, error) {
@@ -3921,14 +3915,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/TagResource
 func (c *PinpointEmail) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3969,17 +3962,18 @@ func (c *PinpointEmail) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/TagResource
 func (c *PinpointEmail) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4019,14 +4013,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/UntagResource
 func (c *PinpointEmail) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4058,17 +4051,18 @@ func (c *PinpointEmail) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ConcurrentModificationException
-//   The resource is being modified by another operation or thread.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
+//   - ConcurrentModificationException
+//     The resource is being modified by another operation or thread.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
+//
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/UntagResource
 func (c *PinpointEmail) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4108,14 +4102,13 @@ const opUpdateConfigurationSetEventDestination = "UpdateConfigurationSetEventDes
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
+//	req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationSetEventDestinationRequest method.
-//    req, resp := client.UpdateConfigurationSetEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/UpdateConfigurationSetEventDestination
 func (c *PinpointEmail) UpdateConfigurationSetEventDestinationRequest(input *UpdateConfigurationSetEventDestinationInput) (req *request.Request, output *UpdateConfigurationSetEventDestinationOutput) {
@@ -4154,14 +4147,15 @@ func (c *PinpointEmail) UpdateConfigurationSetEventDestinationRequest(input *Upd
 // API operation UpdateConfigurationSetEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource you attempted to access doesn't exist.
 //
-//   * TooManyRequestsException
-//   Too many requests have been made to the operation.
+//   - NotFoundException
+//     The resource you attempted to access doesn't exist.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - TooManyRequestsException
+//     Too many requests have been made to the operation.
+//
+//   - BadRequestException
+//     The input you provided is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-email-2018-07-26/UpdateConfigurationSetEventDestination
 func (c *PinpointEmail) UpdateConfigurationSetEventDestination(input *UpdateConfigurationSetEventDestinationInput) (*UpdateConfigurationSetEventDestinationOutput, error) {
@@ -10925,20 +10919,20 @@ func (s *SnsDestination) SetTopicArn(v string) *SnsDestination {
 // digits, white space, or one of the following symbols: _ . : / = + -. The
 // following additional restrictions apply to tags:
 //
-//    * Tag keys and values are case sensitive.
+//   - Tag keys and values are case sensitive.
 //
-//    * For each associated resource, each tag key must be unique and it can
-//    have only one value.
+//   - For each associated resource, each tag key must be unique and it can
+//     have only one value.
 //
-//    * The aws: prefix is reserved for use by AWS; you can’t use it in any
-//    tag keys or values that you define. In addition, you can't edit or remove
-//    tag keys or values that use this prefix. Tags that use this prefix don’t
-//    count against the limit of 50 tags per resource.
+//   - The aws: prefix is reserved for use by AWS; you can’t use it in any
+//     tag keys or values that you define. In addition, you can't edit or remove
+//     tag keys or values that use this prefix. Tags that use this prefix don’t
+//     count against the limit of 50 tags per resource.
 //
-//    * You can associate tags with public or shared resources, but the tags
-//    are available only for your AWS account, not any other accounts that share
-//    the resource. In addition, the tags are available only for resources that
-//    are located in the specified AWS Region for your AWS account.
+//   - You can associate tags with public or shared resources, but the tags
+//     are available only for your AWS account, not any other accounts that share
+//     the resource. In addition, the tags are available only for resources that
+//     are located in the specified AWS Region for your AWS account.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -11622,21 +11616,21 @@ func DimensionValueSource_Values() []string {
 // The DKIM authentication status of the identity. The status can be one of
 // the following:
 //
-//    * PENDING – The DKIM verification process was initiated, and Amazon
-//    Pinpoint is still waiting for the required CNAME records to appear in
-//    the DNS configuration for the domain.
+//   - PENDING – The DKIM verification process was initiated, and Amazon
+//     Pinpoint is still waiting for the required CNAME records to appear in
+//     the DNS configuration for the domain.
 //
-//    * SUCCESS – The DKIM authentication process completed successfully.
+//   - SUCCESS – The DKIM authentication process completed successfully.
 //
-//    * FAILED – The DKIM authentication process failed. This can happen when
-//    Amazon Pinpoint fails to find the required CNAME records in the DNS configuration
-//    of the domain.
+//   - FAILED – The DKIM authentication process failed. This can happen when
+//     Amazon Pinpoint fails to find the required CNAME records in the DNS configuration
+//     of the domain.
 //
-//    * TEMPORARY_FAILURE – A temporary issue is preventing Amazon Pinpoint
-//    from determining the DKIM authentication status of the domain.
+//   - TEMPORARY_FAILURE – A temporary issue is preventing Amazon Pinpoint
+//     from determining the DKIM authentication status of the domain.
 //
-//    * NOT_STARTED – The DKIM verification process hasn't been initiated
-//    for the domain.
+//   - NOT_STARTED – The DKIM verification process hasn't been initiated
+//     for the domain.
 const (
 	// DkimStatusPending is a DkimStatus enum value
 	DkimStatusPending = "PENDING"
@@ -11709,9 +11703,9 @@ func EventType_Values() []string {
 
 // The email identity type. The identity type can be one of the following:
 //
-//    * EMAIL_ADDRESS – The identity is an email address.
+//   - EMAIL_ADDRESS – The identity is an email address.
 //
-//    * DOMAIN – The identity is a domain.
+//   - DOMAIN – The identity is a domain.
 const (
 	// IdentityTypeEmailAddress is a IdentityType enum value
 	IdentityTypeEmailAddress = "EMAIL_ADDRESS"
@@ -11734,17 +11728,17 @@ func IdentityType_Values() []string {
 
 // The status of the MAIL FROM domain. This status can have the following values:
 //
-//    * PENDING – Amazon Pinpoint hasn't started searching for the MX record
-//    yet.
+//   - PENDING – Amazon Pinpoint hasn't started searching for the MX record
+//     yet.
 //
-//    * SUCCESS – Amazon Pinpoint detected the required MX record for the
-//    MAIL FROM domain.
+//   - SUCCESS – Amazon Pinpoint detected the required MX record for the
+//     MAIL FROM domain.
 //
-//    * FAILED – Amazon Pinpoint can't find the required MX record, or the
-//    record no longer exists.
+//   - FAILED – Amazon Pinpoint can't find the required MX record, or the
+//     record no longer exists.
 //
-//    * TEMPORARY_FAILURE – A temporary issue occurred, which prevented Amazon
-//    Pinpoint from determining the status of the MAIL FROM domain.
+//   - TEMPORARY_FAILURE – A temporary issue occurred, which prevented Amazon
+//     Pinpoint from determining the status of the MAIL FROM domain.
 const (
 	// MailFromDomainStatusPending is a MailFromDomainStatus enum value
 	MailFromDomainStatusPending = "PENDING"

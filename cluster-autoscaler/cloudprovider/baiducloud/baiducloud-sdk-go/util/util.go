@@ -580,7 +580,7 @@ func FormatTest(funcName, got, expected string) string {
 
 const dictionary = "_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-//CreateRandomString create random string
+// CreateRandomString create random string
 func CreateRandomString() string {
 	b := make([]byte, 32)
 	l := len(dictionary)

@@ -11,7 +11,7 @@ import (
 
 // GetIPSecConnectionRequest wrapper for the GetIPSecConnection operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetIPSecConnection.go.html to see an example of how to use GetIPSecConnectionRequest.
 type GetIPSecConnectionRequest struct {

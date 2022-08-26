@@ -29,14 +29,13 @@ const opDeleteSession = "DeleteSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSessionRequest method.
+//	req, resp := client.DeleteSessionRequest(params)
 //
-//    // Example sending a request using the DeleteSessionRequest method.
-//    req, resp := client.DeleteSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/DeleteSession
 func (c *LexRuntimeService) DeleteSessionRequest(input *DeleteSessionInput) (req *request.Request, output *DeleteSessionOutput) {
@@ -67,22 +66,23 @@ func (c *LexRuntimeService) DeleteSessionRequest(input *DeleteSessionInput) (req
 // API operation DeleteSession for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (such as the Amazon Lex bot or an alias) that is referred to
-//   is not found.
 //
-//   * BadRequestException
-//   Request validation failed, there is no usable message in the context, or
-//   the bot build failed, is still in progress, or contains unbuilt changes.
+//   - NotFoundException
+//     The resource (such as the Amazon Lex bot or an alias) that is referred to
+//     is not found.
 //
-//   * LimitExceededException
-//   Exceeded a limit.
+//   - BadRequestException
+//     Request validation failed, there is no usable message in the context, or
+//     the bot build failed, is still in progress, or contains unbuilt changes.
 //
-//   * InternalFailureException
-//   Internal service error. Retry the call.
+//   - LimitExceededException
+//     Exceeded a limit.
 //
-//   * ConflictException
-//   Two clients are using the same AWS account, Amazon Lex bot, and user ID.
+//   - InternalFailureException
+//     Internal service error. Retry the call.
+//
+//   - ConflictException
+//     Two clients are using the same AWS account, Amazon Lex bot, and user ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/DeleteSession
 func (c *LexRuntimeService) DeleteSession(input *DeleteSessionInput) (*DeleteSessionOutput, error) {
@@ -122,14 +122,13 @@ const opGetSession = "GetSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSessionRequest method.
+//	req, resp := client.GetSessionRequest(params)
 //
-//    // Example sending a request using the GetSessionRequest method.
-//    req, resp := client.GetSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/GetSession
 func (c *LexRuntimeService) GetSessionRequest(input *GetSessionInput) (req *request.Request, output *GetSessionOutput) {
@@ -160,19 +159,20 @@ func (c *LexRuntimeService) GetSessionRequest(input *GetSessionInput) (req *requ
 // API operation GetSession for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (such as the Amazon Lex bot or an alias) that is referred to
-//   is not found.
 //
-//   * BadRequestException
-//   Request validation failed, there is no usable message in the context, or
-//   the bot build failed, is still in progress, or contains unbuilt changes.
+//   - NotFoundException
+//     The resource (such as the Amazon Lex bot or an alias) that is referred to
+//     is not found.
 //
-//   * LimitExceededException
-//   Exceeded a limit.
+//   - BadRequestException
+//     Request validation failed, there is no usable message in the context, or
+//     the bot build failed, is still in progress, or contains unbuilt changes.
 //
-//   * InternalFailureException
-//   Internal service error. Retry the call.
+//   - LimitExceededException
+//     Exceeded a limit.
+//
+//   - InternalFailureException
+//     Internal service error. Retry the call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/GetSession
 func (c *LexRuntimeService) GetSession(input *GetSessionInput) (*GetSessionOutput, error) {
@@ -212,14 +212,13 @@ const opPostContent = "PostContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostContentRequest method.
+//	req, resp := client.PostContentRequest(params)
 //
-//    // Example sending a request using the PostContentRequest method.
-//    req, resp := client.PostContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PostContent
 func (c *LexRuntimeService) PostContentRequest(input *PostContentInput) (req *request.Request, output *PostContentOutput) {
@@ -254,17 +253,17 @@ func (c *LexRuntimeService) PostContentRequest(input *PostContentInput) (req *re
 // In response, Amazon Lex returns the next message to convey to the user. Consider
 // the following example messages:
 //
-//    * For a user input "I would like a pizza," Amazon Lex might return a response
-//    with a message eliciting slot data (for example, PizzaSize): "What size
-//    pizza would you like?".
+//   - For a user input "I would like a pizza," Amazon Lex might return a response
+//     with a message eliciting slot data (for example, PizzaSize): "What size
+//     pizza would you like?".
 //
-//    * After the user provides all of the pizza order information, Amazon Lex
-//    might return a response with a message to get user confirmation: "Order
-//    the pizza?".
+//   - After the user provides all of the pizza order information, Amazon Lex
+//     might return a response with a message to get user confirmation: "Order
+//     the pizza?".
 //
-//    * After the user replies "Yes" to the confirmation prompt, Amazon Lex
-//    might return a conclusion statement: "Thank you, your cheese pizza has
-//    been ordered.".
+//   - After the user replies "Yes" to the confirmation prompt, Amazon Lex
+//     might return a conclusion statement: "Thank you, your cheese pizza has
+//     been ordered.".
 //
 // Not all Amazon Lex messages require a response from the user. For example,
 // conclusion statements do not require a response. Some messages require only
@@ -273,20 +272,20 @@ func (c *LexRuntimeService) PostContentRequest(input *PostContentInput) (req *re
 // behavior, such as displaying the appropriate client user interface. Consider
 // the following examples:
 //
-//    * If the message is to elicit slot data, Amazon Lex returns the following
-//    context information: x-amz-lex-dialog-state header set to ElicitSlot x-amz-lex-intent-name
-//    header set to the intent name in the current context x-amz-lex-slot-to-elicit
-//    header set to the slot name for which the message is eliciting information
-//    x-amz-lex-slots header set to a map of slots configured for the intent
-//    with their current values
+//   - If the message is to elicit slot data, Amazon Lex returns the following
+//     context information: x-amz-lex-dialog-state header set to ElicitSlot x-amz-lex-intent-name
+//     header set to the intent name in the current context x-amz-lex-slot-to-elicit
+//     header set to the slot name for which the message is eliciting information
+//     x-amz-lex-slots header set to a map of slots configured for the intent
+//     with their current values
 //
-//    * If the message is a confirmation prompt, the x-amz-lex-dialog-state
-//    header is set to Confirmation and the x-amz-lex-slot-to-elicit header
-//    is omitted.
+//   - If the message is a confirmation prompt, the x-amz-lex-dialog-state
+//     header is set to Confirmation and the x-amz-lex-slot-to-elicit header
+//     is omitted.
 //
-//    * If the message is a clarification prompt configured for the intent,
-//    indicating that the user intent is not understood, the x-amz-dialog-state
-//    header is set to ElicitIntent and the x-amz-slot-to-elicit header is omitted.
+//   - If the message is a clarification prompt configured for the intent,
+//     indicating that the user intent is not understood, the x-amz-dialog-state
+//     header is set to ElicitIntent and the x-amz-slot-to-elicit header is omitted.
 //
 // In addition, Amazon Lex also returns your application-specific sessionAttributes.
 // For more information, see Managing Conversation Context (https://docs.aws.amazon.com/lex/latest/dg/context-mgmt.html).
@@ -299,50 +298,51 @@ func (c *LexRuntimeService) PostContentRequest(input *PostContentInput) (req *re
 // API operation PostContent for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (such as the Amazon Lex bot or an alias) that is referred to
-//   is not found.
 //
-//   * BadRequestException
-//   Request validation failed, there is no usable message in the context, or
-//   the bot build failed, is still in progress, or contains unbuilt changes.
+//   - NotFoundException
+//     The resource (such as the Amazon Lex bot or an alias) that is referred to
+//     is not found.
 //
-//   * LimitExceededException
-//   Exceeded a limit.
+//   - BadRequestException
+//     Request validation failed, there is no usable message in the context, or
+//     the bot build failed, is still in progress, or contains unbuilt changes.
 //
-//   * InternalFailureException
-//   Internal service error. Retry the call.
+//   - LimitExceededException
+//     Exceeded a limit.
 //
-//   * ConflictException
-//   Two clients are using the same AWS account, Amazon Lex bot, and user ID.
+//   - InternalFailureException
+//     Internal service error. Retry the call.
 //
-//   * UnsupportedMediaTypeException
-//   The Content-Type header (PostContent API) has an invalid value.
+//   - ConflictException
+//     Two clients are using the same AWS account, Amazon Lex bot, and user ID.
 //
-//   * NotAcceptableException
-//   The accept header in the request does not have a valid value.
+//   - UnsupportedMediaTypeException
+//     The Content-Type header (PostContent API) has an invalid value.
 //
-//   * RequestTimeoutException
-//   The input speech is too long.
+//   - NotAcceptableException
+//     The accept header in the request does not have a valid value.
 //
-//   * DependencyFailedException
-//   One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
-//   For example,
+//   - RequestTimeoutException
+//     The input speech is too long.
 //
-//      * If Amazon Lex does not have sufficient permissions to call a Lambda
-//      function.
+//   - DependencyFailedException
+//     One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
+//     For example,
 //
-//      * If a Lambda function takes longer than 30 seconds to execute.
+//   - If Amazon Lex does not have sufficient permissions to call a Lambda
+//     function.
 //
-//      * If a fulfillment Lambda function returns a Delegate dialog action without
-//      removing any slot values.
+//   - If a Lambda function takes longer than 30 seconds to execute.
 //
-//   * BadGatewayException
-//   Either the Amazon Lex bot is still building, or one of the dependent services
-//   (Amazon Polly, AWS Lambda) failed with an internal service error.
+//   - If a fulfillment Lambda function returns a Delegate dialog action without
+//     removing any slot values.
 //
-//   * LoopDetectedException
-//   This exception is not used.
+//   - BadGatewayException
+//     Either the Amazon Lex bot is still building, or one of the dependent services
+//     (Amazon Polly, AWS Lambda) failed with an internal service error.
+//
+//   - LoopDetectedException
+//     This exception is not used.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PostContent
 func (c *LexRuntimeService) PostContent(input *PostContentInput) (*PostContentOutput, error) {
@@ -382,14 +382,13 @@ const opPostText = "PostText"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostTextRequest method.
+//	req, resp := client.PostTextRequest(params)
 //
-//    // Example sending a request using the PostTextRequest method.
-//    req, resp := client.PostTextRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PostText
 func (c *LexRuntimeService) PostTextRequest(input *PostTextInput) (req *request.Request, output *PostTextOutput) {
@@ -417,17 +416,17 @@ func (c *LexRuntimeService) PostTextRequest(input *PostTextInput) (req *request.
 // In response, Amazon Lex returns the next message to convey to the user an
 // optional responseCard to display. Consider the following example messages:
 //
-//    * For a user input "I would like a pizza", Amazon Lex might return a response
-//    with a message eliciting slot data (for example, PizzaSize): "What size
-//    pizza would you like?"
+//   - For a user input "I would like a pizza", Amazon Lex might return a response
+//     with a message eliciting slot data (for example, PizzaSize): "What size
+//     pizza would you like?"
 //
-//    * After the user provides all of the pizza order information, Amazon Lex
-//    might return a response with a message to obtain user confirmation "Proceed
-//    with the pizza order?".
+//   - After the user provides all of the pizza order information, Amazon Lex
+//     might return a response with a message to obtain user confirmation "Proceed
+//     with the pizza order?".
 //
-//    * After the user replies to a confirmation prompt with a "yes", Amazon
-//    Lex might return a conclusion statement: "Thank you, your cheese pizza
-//    has been ordered.".
+//   - After the user replies to a confirmation prompt with a "yes", Amazon
+//     Lex might return a conclusion statement: "Thank you, your cheese pizza
+//     has been ordered.".
 //
 // Not all Amazon Lex messages require a user response. For example, a conclusion
 // statement does not require a response. Some messages require only a "yes"
@@ -437,18 +436,18 @@ func (c *LexRuntimeService) PostTextRequest(input *PostTextInput) (req *request.
 // These are the slotToElicit, dialogState, intentName, and slots fields in
 // the response. Consider the following examples:
 //
-//    * If the message is to elicit slot data, Amazon Lex returns the following
-//    context information: dialogState set to ElicitSlot intentName set to the
-//    intent name in the current context slotToElicit set to the slot name for
-//    which the message is eliciting information slots set to a map of slots,
-//    configured for the intent, with currently known values
+//   - If the message is to elicit slot data, Amazon Lex returns the following
+//     context information: dialogState set to ElicitSlot intentName set to the
+//     intent name in the current context slotToElicit set to the slot name for
+//     which the message is eliciting information slots set to a map of slots,
+//     configured for the intent, with currently known values
 //
-//    * If the message is a confirmation prompt, the dialogState is set to ConfirmIntent
-//    and SlotToElicit is set to null.
+//   - If the message is a confirmation prompt, the dialogState is set to ConfirmIntent
+//     and SlotToElicit is set to null.
 //
-//    * If the message is a clarification prompt (configured for the intent)
-//    that indicates that user intent is not understood, the dialogState is
-//    set to ElicitIntent and slotToElicit is set to null.
+//   - If the message is a clarification prompt (configured for the intent)
+//     that indicates that user intent is not understood, the dialogState is
+//     set to ElicitIntent and slotToElicit is set to null.
 //
 // In addition, Amazon Lex also returns your application-specific sessionAttributes.
 // For more information, see Managing Conversation Context (https://docs.aws.amazon.com/lex/latest/dg/context-mgmt.html).
@@ -461,41 +460,42 @@ func (c *LexRuntimeService) PostTextRequest(input *PostTextInput) (req *request.
 // API operation PostText for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (such as the Amazon Lex bot or an alias) that is referred to
-//   is not found.
 //
-//   * BadRequestException
-//   Request validation failed, there is no usable message in the context, or
-//   the bot build failed, is still in progress, or contains unbuilt changes.
+//   - NotFoundException
+//     The resource (such as the Amazon Lex bot or an alias) that is referred to
+//     is not found.
 //
-//   * LimitExceededException
-//   Exceeded a limit.
+//   - BadRequestException
+//     Request validation failed, there is no usable message in the context, or
+//     the bot build failed, is still in progress, or contains unbuilt changes.
 //
-//   * InternalFailureException
-//   Internal service error. Retry the call.
+//   - LimitExceededException
+//     Exceeded a limit.
 //
-//   * ConflictException
-//   Two clients are using the same AWS account, Amazon Lex bot, and user ID.
+//   - InternalFailureException
+//     Internal service error. Retry the call.
 //
-//   * DependencyFailedException
-//   One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
-//   For example,
+//   - ConflictException
+//     Two clients are using the same AWS account, Amazon Lex bot, and user ID.
 //
-//      * If Amazon Lex does not have sufficient permissions to call a Lambda
-//      function.
+//   - DependencyFailedException
+//     One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
+//     For example,
 //
-//      * If a Lambda function takes longer than 30 seconds to execute.
+//   - If Amazon Lex does not have sufficient permissions to call a Lambda
+//     function.
 //
-//      * If a fulfillment Lambda function returns a Delegate dialog action without
-//      removing any slot values.
+//   - If a Lambda function takes longer than 30 seconds to execute.
 //
-//   * BadGatewayException
-//   Either the Amazon Lex bot is still building, or one of the dependent services
-//   (Amazon Polly, AWS Lambda) failed with an internal service error.
+//   - If a fulfillment Lambda function returns a Delegate dialog action without
+//     removing any slot values.
 //
-//   * LoopDetectedException
-//   This exception is not used.
+//   - BadGatewayException
+//     Either the Amazon Lex bot is still building, or one of the dependent services
+//     (Amazon Polly, AWS Lambda) failed with an internal service error.
+//
+//   - LoopDetectedException
+//     This exception is not used.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PostText
 func (c *LexRuntimeService) PostText(input *PostTextInput) (*PostTextOutput, error) {
@@ -535,14 +535,13 @@ const opPutSession = "PutSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSessionRequest method.
+//	req, resp := client.PutSessionRequest(params)
 //
-//    // Example sending a request using the PutSessionRequest method.
-//    req, resp := client.PutSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PutSession
 func (c *LexRuntimeService) PutSessionRequest(input *PutSessionInput) (req *request.Request, output *PutSessionOutput) {
@@ -577,41 +576,42 @@ func (c *LexRuntimeService) PutSessionRequest(input *PutSessionInput) (req *requ
 // API operation PutSession for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (such as the Amazon Lex bot or an alias) that is referred to
-//   is not found.
 //
-//   * BadRequestException
-//   Request validation failed, there is no usable message in the context, or
-//   the bot build failed, is still in progress, or contains unbuilt changes.
+//   - NotFoundException
+//     The resource (such as the Amazon Lex bot or an alias) that is referred to
+//     is not found.
 //
-//   * LimitExceededException
-//   Exceeded a limit.
+//   - BadRequestException
+//     Request validation failed, there is no usable message in the context, or
+//     the bot build failed, is still in progress, or contains unbuilt changes.
 //
-//   * InternalFailureException
-//   Internal service error. Retry the call.
+//   - LimitExceededException
+//     Exceeded a limit.
 //
-//   * ConflictException
-//   Two clients are using the same AWS account, Amazon Lex bot, and user ID.
+//   - InternalFailureException
+//     Internal service error. Retry the call.
 //
-//   * NotAcceptableException
-//   The accept header in the request does not have a valid value.
+//   - ConflictException
+//     Two clients are using the same AWS account, Amazon Lex bot, and user ID.
 //
-//   * DependencyFailedException
-//   One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
-//   For example,
+//   - NotAcceptableException
+//     The accept header in the request does not have a valid value.
 //
-//      * If Amazon Lex does not have sufficient permissions to call a Lambda
-//      function.
+//   - DependencyFailedException
+//     One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
+//     For example,
 //
-//      * If a Lambda function takes longer than 30 seconds to execute.
+//   - If Amazon Lex does not have sufficient permissions to call a Lambda
+//     function.
 //
-//      * If a fulfillment Lambda function returns a Delegate dialog action without
-//      removing any slot values.
+//   - If a Lambda function takes longer than 30 seconds to execute.
 //
-//   * BadGatewayException
-//   Either the Amazon Lex bot is still building, or one of the dependent services
-//   (Amazon Polly, AWS Lambda) failed with an internal service error.
+//   - If a fulfillment Lambda function returns a Delegate dialog action without
+//     removing any slot values.
+//
+//   - BadGatewayException
+//     Either the Amazon Lex bot is still building, or one of the dependent services
+//     (Amazon Polly, AWS Lambda) failed with an internal service error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/runtime.lex-2016-11-28/PutSession
 func (c *LexRuntimeService) PutSession(input *PutSessionInput) (*PutSessionOutput, error) {
@@ -1169,13 +1169,13 @@ func (s *DeleteSessionOutput) SetUserId(v string) *DeleteSessionOutput {
 // One of the dependencies, such as AWS Lambda or Amazon Polly, threw an exception.
 // For example,
 //
-//    * If Amazon Lex does not have sufficient permissions to call a Lambda
-//    function.
+//   - If Amazon Lex does not have sufficient permissions to call a Lambda
+//     function.
 //
-//    * If a Lambda function takes longer than 30 seconds to execute.
+//   - If a Lambda function takes longer than 30 seconds to execute.
 //
-//    * If a fulfillment Lambda function returns a Delegate dialog action without
-//    removing any slot values.
+//   - If a fulfillment Lambda function returns a Delegate dialog action without
+//     removing any slot values.
 type DependencyFailedException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`

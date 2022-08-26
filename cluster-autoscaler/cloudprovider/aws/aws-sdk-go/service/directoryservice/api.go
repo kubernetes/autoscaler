@@ -29,14 +29,13 @@ const opAcceptSharedDirectory = "AcceptSharedDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptSharedDirectoryRequest method.
+//	req, resp := client.AcceptSharedDirectoryRequest(params)
 //
-//    // Example sending a request using the AcceptSharedDirectoryRequest method.
-//    req, resp := client.AcceptSharedDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AcceptSharedDirectory
 func (c *DirectoryService) AcceptSharedDirectoryRequest(input *AcceptSharedDirectoryInput) (req *request.Request, output *AcceptSharedDirectoryOutput) {
@@ -68,21 +67,22 @@ func (c *DirectoryService) AcceptSharedDirectoryRequest(input *AcceptSharedDirec
 // API operation AcceptSharedDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * DirectoryAlreadySharedException
-//   The specified directory has already been shared with this Amazon Web Services
-//   account.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - DirectoryAlreadySharedException
+//     The specified directory has already been shared with this Amazon Web Services
+//     account.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AcceptSharedDirectory
 func (c *DirectoryService) AcceptSharedDirectory(input *AcceptSharedDirectoryInput) (*AcceptSharedDirectoryOutput, error) {
@@ -122,14 +122,13 @@ const opAddIpRoutes = "AddIpRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddIpRoutesRequest method.
+//	req, resp := client.AddIpRoutesRequest(params)
 //
-//    // Example sending a request using the AddIpRoutesRequest method.
-//    req, resp := client.AddIpRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddIpRoutes
 func (c *DirectoryService) AddIpRoutesRequest(input *AddIpRoutesInput) (req *request.Request, output *AddIpRoutesOutput) {
@@ -171,27 +170,28 @@ func (c *DirectoryService) AddIpRoutesRequest(input *AddIpRoutesInput) (req *req
 // API operation AddIpRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * IpRouteLimitExceededException
-//   The maximum allowed number of IP addresses was exceeded. The default limit
-//   is 100 IP address blocks.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - IpRouteLimitExceededException
+//     The maximum allowed number of IP addresses was exceeded. The default limit
+//     is 100 IP address blocks.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddIpRoutes
 func (c *DirectoryService) AddIpRoutes(input *AddIpRoutesInput) (*AddIpRoutesOutput, error) {
@@ -231,14 +231,13 @@ const opAddRegion = "AddRegion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddRegionRequest method.
+//	req, resp := client.AddRegionRequest(params)
 //
-//    // Example sending a request using the AddRegionRequest method.
-//    req, resp := client.AddRegionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddRegion
 func (c *DirectoryService) AddRegionRequest(input *AddRegionInput) (req *request.Request, output *AddRegionOutput) {
@@ -270,37 +269,38 @@ func (c *DirectoryService) AddRegionRequest(input *AddRegionInput) (req *request
 // API operation AddRegion for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * DirectoryAlreadyInRegionException
-//   The Region you specified is the same Region where the Managed Microsoft AD
-//   directory was created. Specify a different Region and try again.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryAlreadyInRegionException
+//     The Region you specified is the same Region where the Managed Microsoft AD
+//     directory was created. Specify a different Region and try again.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * RegionLimitExceededException
-//   You have reached the limit for maximum number of simultaneous Region replications
-//   per directory.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - RegionLimitExceededException
+//     You have reached the limit for maximum number of simultaneous Region replications
+//     per directory.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddRegion
 func (c *DirectoryService) AddRegion(input *AddRegionInput) (*AddRegionOutput, error) {
@@ -340,14 +340,13 @@ const opAddTagsToResource = "AddTagsToResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToResourceRequest method.
+//	req, resp := client.AddTagsToResourceRequest(params)
 //
-//    // Example sending a request using the AddTagsToResourceRequest method.
-//    req, resp := client.AddTagsToResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddTagsToResource
 func (c *DirectoryService) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *AddTagsToResourceOutput) {
@@ -381,20 +380,21 @@ func (c *DirectoryService) AddTagsToResourceRequest(input *AddTagsToResourceInpu
 // API operation AddTagsToResource for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * TagLimitExceededException
-//   The maximum allowed number of tags was exceeded.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - TagLimitExceededException
+//     The maximum allowed number of tags was exceeded.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/AddTagsToResource
 func (c *DirectoryService) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
@@ -434,14 +434,13 @@ const opCancelSchemaExtension = "CancelSchemaExtension"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSchemaExtensionRequest method.
+//	req, resp := client.CancelSchemaExtensionRequest(params)
 //
-//    // Example sending a request using the CancelSchemaExtensionRequest method.
-//    req, resp := client.CancelSchemaExtensionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CancelSchemaExtension
 func (c *DirectoryService) CancelSchemaExtensionRequest(input *CancelSchemaExtensionInput) (req *request.Request, output *CancelSchemaExtensionOutput) {
@@ -476,14 +475,15 @@ func (c *DirectoryService) CancelSchemaExtensionRequest(input *CancelSchemaExten
 // API operation CancelSchemaExtension for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CancelSchemaExtension
 func (c *DirectoryService) CancelSchemaExtension(input *CancelSchemaExtensionInput) (*CancelSchemaExtensionOutput, error) {
@@ -523,14 +523,13 @@ const opConnectDirectory = "ConnectDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConnectDirectoryRequest method.
+//	req, resp := client.ConnectDirectoryRequest(params)
 //
-//    // Example sending a request using the ConnectDirectoryRequest method.
-//    req, resp := client.ConnectDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ConnectDirectory
 func (c *DirectoryService) ConnectDirectoryRequest(input *ConnectDirectoryInput) (req *request.Request, output *ConnectDirectoryOutput) {
@@ -566,19 +565,20 @@ func (c *DirectoryService) ConnectDirectoryRequest(input *ConnectDirectoryInput)
 // API operation ConnectDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryLimitExceededException
-//   The maximum number of directories in the region has been reached. You can
-//   use the GetDirectoryLimits operation to determine your directory limits in
-//   the region.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryLimitExceededException
+//     The maximum number of directories in the region has been reached. You can
+//     use the GetDirectoryLimits operation to determine your directory limits in
+//     the region.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ConnectDirectory
 func (c *DirectoryService) ConnectDirectory(input *ConnectDirectoryInput) (*ConnectDirectoryOutput, error) {
@@ -618,14 +618,13 @@ const opCreateAlias = "CreateAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAliasRequest method.
+//	req, resp := client.CreateAliasRequest(params)
 //
-//    // Example sending a request using the CreateAliasRequest method.
-//    req, resp := client.CreateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateAlias
 func (c *DirectoryService) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *CreateAliasOutput) {
@@ -661,20 +660,21 @@ func (c *DirectoryService) CreateAliasRequest(input *CreateAliasInput) (req *req
 // API operation CreateAlias for usage and error information.
 //
 // Returned Error Types:
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateAlias
 func (c *DirectoryService) CreateAlias(input *CreateAliasInput) (*CreateAliasOutput, error) {
@@ -714,14 +714,13 @@ const opCreateComputer = "CreateComputer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComputerRequest method.
+//	req, resp := client.CreateComputerRequest(params)
 //
-//    // Example sending a request using the CreateComputerRequest method.
-//    req, resp := client.CreateComputerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateComputer
 func (c *DirectoryService) CreateComputerRequest(input *CreateComputerInput) (req *request.Request, output *CreateComputerOutput) {
@@ -752,29 +751,30 @@ func (c *DirectoryService) CreateComputerRequest(input *CreateComputerInput) (re
 // API operation CreateComputer for usage and error information.
 //
 // Returned Error Types:
-//   * AuthenticationFailedException
-//   An authentication error occurred.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - AuthenticationFailedException
+//     An authentication error occurred.
 //
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateComputer
 func (c *DirectoryService) CreateComputer(input *CreateComputerInput) (*CreateComputerOutput, error) {
@@ -814,14 +814,13 @@ const opCreateConditionalForwarder = "CreateConditionalForwarder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConditionalForwarderRequest method.
+//	req, resp := client.CreateConditionalForwarderRequest(params)
 //
-//    // Example sending a request using the CreateConditionalForwarderRequest method.
-//    req, resp := client.CreateConditionalForwarderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateConditionalForwarder
 func (c *DirectoryService) CreateConditionalForwarderRequest(input *CreateConditionalForwarderInput) (req *request.Request, output *CreateConditionalForwarderOutput) {
@@ -856,26 +855,27 @@ func (c *DirectoryService) CreateConditionalForwarderRequest(input *CreateCondit
 // API operation CreateConditionalForwarder for usage and error information.
 //
 // Returned Error Types:
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateConditionalForwarder
 func (c *DirectoryService) CreateConditionalForwarder(input *CreateConditionalForwarderInput) (*CreateConditionalForwarderOutput, error) {
@@ -915,14 +915,13 @@ const opCreateDirectory = "CreateDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDirectoryRequest method.
+//	req, resp := client.CreateDirectoryRequest(params)
 //
-//    // Example sending a request using the CreateDirectoryRequest method.
-//    req, resp := client.CreateDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateDirectory
 func (c *DirectoryService) CreateDirectoryRequest(input *CreateDirectoryInput) (req *request.Request, output *CreateDirectoryOutput) {
@@ -960,19 +959,20 @@ func (c *DirectoryService) CreateDirectoryRequest(input *CreateDirectoryInput) (
 // API operation CreateDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryLimitExceededException
-//   The maximum number of directories in the region has been reached. You can
-//   use the GetDirectoryLimits operation to determine your directory limits in
-//   the region.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryLimitExceededException
+//     The maximum number of directories in the region has been reached. You can
+//     use the GetDirectoryLimits operation to determine your directory limits in
+//     the region.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateDirectory
 func (c *DirectoryService) CreateDirectory(input *CreateDirectoryInput) (*CreateDirectoryOutput, error) {
@@ -1012,14 +1012,13 @@ const opCreateLogSubscription = "CreateLogSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLogSubscriptionRequest method.
+//	req, resp := client.CreateLogSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateLogSubscriptionRequest method.
-//    req, resp := client.CreateLogSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateLogSubscription
 func (c *DirectoryService) CreateLogSubscriptionRequest(input *CreateLogSubscriptionInput) (req *request.Request, output *CreateLogSubscriptionOutput) {
@@ -1053,23 +1052,24 @@ func (c *DirectoryService) CreateLogSubscriptionRequest(input *CreateLogSubscrip
 // API operation CreateLogSubscription for usage and error information.
 //
 // Returned Error Types:
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InsufficientPermissionsException
-//   The account does not have sufficient permission to perform the operation.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InsufficientPermissionsException
+//     The account does not have sufficient permission to perform the operation.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateLogSubscription
 func (c *DirectoryService) CreateLogSubscription(input *CreateLogSubscriptionInput) (*CreateLogSubscriptionOutput, error) {
@@ -1109,14 +1109,13 @@ const opCreateMicrosoftAD = "CreateMicrosoftAD"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMicrosoftADRequest method.
+//	req, resp := client.CreateMicrosoftADRequest(params)
 //
-//    // Example sending a request using the CreateMicrosoftADRequest method.
-//    req, resp := client.CreateMicrosoftADRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateMicrosoftAD
 func (c *DirectoryService) CreateMicrosoftADRequest(input *CreateMicrosoftADInput) (req *request.Request, output *CreateMicrosoftADOutput) {
@@ -1154,22 +1153,23 @@ func (c *DirectoryService) CreateMicrosoftADRequest(input *CreateMicrosoftADInpu
 // API operation CreateMicrosoftAD for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryLimitExceededException
-//   The maximum number of directories in the region has been reached. You can
-//   use the GetDirectoryLimits operation to determine your directory limits in
-//   the region.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryLimitExceededException
+//     The maximum number of directories in the region has been reached. You can
+//     use the GetDirectoryLimits operation to determine your directory limits in
+//     the region.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateMicrosoftAD
 func (c *DirectoryService) CreateMicrosoftAD(input *CreateMicrosoftADInput) (*CreateMicrosoftADOutput, error) {
@@ -1209,14 +1209,13 @@ const opCreateSnapshot = "CreateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotRequest method.
+//	req, resp := client.CreateSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotRequest method.
-//    req, resp := client.CreateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateSnapshot
 func (c *DirectoryService) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Request, output *CreateSnapshotOutput) {
@@ -1250,22 +1249,23 @@ func (c *DirectoryService) CreateSnapshotRequest(input *CreateSnapshotInput) (re
 // API operation CreateSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * SnapshotLimitExceededException
-//   The maximum number of manual snapshots for the directory has been reached.
-//   You can use the GetSnapshotLimits operation to determine the snapshot limits
-//   for a directory.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - SnapshotLimitExceededException
+//     The maximum number of manual snapshots for the directory has been reached.
+//     You can use the GetSnapshotLimits operation to determine the snapshot limits
+//     for a directory.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateSnapshot
 func (c *DirectoryService) CreateSnapshot(input *CreateSnapshotInput) (*CreateSnapshotOutput, error) {
@@ -1305,14 +1305,13 @@ const opCreateTrust = "CreateTrust"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrustRequest method.
+//	req, resp := client.CreateTrustRequest(params)
 //
-//    // Example sending a request using the CreateTrustRequest method.
-//    req, resp := client.CreateTrustRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateTrust
 func (c *DirectoryService) CreateTrustRequest(input *CreateTrustInput) (req *request.Request, output *CreateTrustOutput) {
@@ -1351,23 +1350,24 @@ func (c *DirectoryService) CreateTrustRequest(input *CreateTrustInput) (req *req
 // API operation CreateTrust for usage and error information.
 //
 // Returned Error Types:
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/CreateTrust
 func (c *DirectoryService) CreateTrust(input *CreateTrustInput) (*CreateTrustOutput, error) {
@@ -1407,14 +1407,13 @@ const opDeleteConditionalForwarder = "DeleteConditionalForwarder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConditionalForwarderRequest method.
+//	req, resp := client.DeleteConditionalForwarderRequest(params)
 //
-//    // Example sending a request using the DeleteConditionalForwarderRequest method.
-//    req, resp := client.DeleteConditionalForwarderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteConditionalForwarder
 func (c *DirectoryService) DeleteConditionalForwarderRequest(input *DeleteConditionalForwarderInput) (req *request.Request, output *DeleteConditionalForwarderOutput) {
@@ -1447,23 +1446,24 @@ func (c *DirectoryService) DeleteConditionalForwarderRequest(input *DeleteCondit
 // API operation DeleteConditionalForwarder for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteConditionalForwarder
 func (c *DirectoryService) DeleteConditionalForwarder(input *DeleteConditionalForwarderInput) (*DeleteConditionalForwarderOutput, error) {
@@ -1503,14 +1503,13 @@ const opDeleteDirectory = "DeleteDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDirectoryRequest method.
+//	req, resp := client.DeleteDirectoryRequest(params)
 //
-//    // Example sending a request using the DeleteDirectoryRequest method.
-//    req, resp := client.DeleteDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteDirectory
 func (c *DirectoryService) DeleteDirectoryRequest(input *DeleteDirectoryInput) (req *request.Request, output *DeleteDirectoryOutput) {
@@ -1546,14 +1545,15 @@ func (c *DirectoryService) DeleteDirectoryRequest(input *DeleteDirectoryInput) (
 // API operation DeleteDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteDirectory
 func (c *DirectoryService) DeleteDirectory(input *DeleteDirectoryInput) (*DeleteDirectoryOutput, error) {
@@ -1593,14 +1593,13 @@ const opDeleteLogSubscription = "DeleteLogSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLogSubscriptionRequest method.
+//	req, resp := client.DeleteLogSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteLogSubscriptionRequest method.
-//    req, resp := client.DeleteLogSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteLogSubscription
 func (c *DirectoryService) DeleteLogSubscriptionRequest(input *DeleteLogSubscriptionInput) (req *request.Request, output *DeleteLogSubscriptionOutput) {
@@ -1632,17 +1631,18 @@ func (c *DirectoryService) DeleteLogSubscriptionRequest(input *DeleteLogSubscrip
 // API operation DeleteLogSubscription for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteLogSubscription
 func (c *DirectoryService) DeleteLogSubscription(input *DeleteLogSubscriptionInput) (*DeleteLogSubscriptionOutput, error) {
@@ -1682,14 +1682,13 @@ const opDeleteSnapshot = "DeleteSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotRequest method.
+//	req, resp := client.DeleteSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotRequest method.
-//    req, resp := client.DeleteSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteSnapshot
 func (c *DirectoryService) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *request.Request, output *DeleteSnapshotOutput) {
@@ -1720,17 +1719,18 @@ func (c *DirectoryService) DeleteSnapshotRequest(input *DeleteSnapshotInput) (re
 // API operation DeleteSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteSnapshot
 func (c *DirectoryService) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
@@ -1770,14 +1770,13 @@ const opDeleteTrust = "DeleteTrust"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrustRequest method.
+//	req, resp := client.DeleteTrustRequest(params)
 //
-//    // Example sending a request using the DeleteTrustRequest method.
-//    req, resp := client.DeleteTrustRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteTrust
 func (c *DirectoryService) DeleteTrustRequest(input *DeleteTrustInput) (req *request.Request, output *DeleteTrustOutput) {
@@ -1809,20 +1808,21 @@ func (c *DirectoryService) DeleteTrustRequest(input *DeleteTrustInput) (req *req
 // API operation DeleteTrust for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeleteTrust
 func (c *DirectoryService) DeleteTrust(input *DeleteTrustInput) (*DeleteTrustOutput, error) {
@@ -1862,14 +1862,13 @@ const opDeregisterCertificate = "DeregisterCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterCertificateRequest method.
+//	req, resp := client.DeregisterCertificateRequest(params)
 //
-//    // Example sending a request using the DeregisterCertificateRequest method.
-//    req, resp := client.DeregisterCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeregisterCertificate
 func (c *DirectoryService) DeregisterCertificateRequest(input *DeregisterCertificateInput) (req *request.Request, output *DeregisterCertificateOutput) {
@@ -1902,30 +1901,31 @@ func (c *DirectoryService) DeregisterCertificateRequest(input *DeregisterCertifi
 // API operation DeregisterCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * CertificateDoesNotExistException
-//   The certificate is not present in the system for describe or deregister activities.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * CertificateInUseException
-//   The certificate is being used for the LDAP security connection and cannot
-//   be removed without disabling LDAP security.
+//   - CertificateDoesNotExistException
+//     The certificate is not present in the system for describe or deregister activities.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - CertificateInUseException
+//     The certificate is being used for the LDAP security connection and cannot
+//     be removed without disabling LDAP security.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeregisterCertificate
 func (c *DirectoryService) DeregisterCertificate(input *DeregisterCertificateInput) (*DeregisterCertificateOutput, error) {
@@ -1965,14 +1965,13 @@ const opDeregisterEventTopic = "DeregisterEventTopic"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterEventTopicRequest method.
+//	req, resp := client.DeregisterEventTopicRequest(params)
 //
-//    // Example sending a request using the DeregisterEventTopicRequest method.
-//    req, resp := client.DeregisterEventTopicRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeregisterEventTopic
 func (c *DirectoryService) DeregisterEventTopicRequest(input *DeregisterEventTopicInput) (req *request.Request, output *DeregisterEventTopicOutput) {
@@ -2005,17 +2004,18 @@ func (c *DirectoryService) DeregisterEventTopicRequest(input *DeregisterEventTop
 // API operation DeregisterEventTopic for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DeregisterEventTopic
 func (c *DirectoryService) DeregisterEventTopic(input *DeregisterEventTopicInput) (*DeregisterEventTopicOutput, error) {
@@ -2055,14 +2055,13 @@ const opDescribeCertificate = "DescribeCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCertificateRequest method.
+//	req, resp := client.DescribeCertificateRequest(params)
 //
-//    // Example sending a request using the DescribeCertificateRequest method.
-//    req, resp := client.DescribeCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeCertificate
 func (c *DirectoryService) DescribeCertificateRequest(input *DescribeCertificateInput) (req *request.Request, output *DescribeCertificateOutput) {
@@ -2094,23 +2093,24 @@ func (c *DirectoryService) DescribeCertificateRequest(input *DescribeCertificate
 // API operation DescribeCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * CertificateDoesNotExistException
-//   The certificate is not present in the system for describe or deregister activities.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - CertificateDoesNotExistException
+//     The certificate is not present in the system for describe or deregister activities.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeCertificate
 func (c *DirectoryService) DescribeCertificate(input *DescribeCertificateInput) (*DescribeCertificateOutput, error) {
@@ -2150,14 +2150,13 @@ const opDescribeClientAuthenticationSettings = "DescribeClientAuthenticationSett
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientAuthenticationSettingsRequest method.
+//	req, resp := client.DescribeClientAuthenticationSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeClientAuthenticationSettingsRequest method.
-//    req, resp := client.DescribeClientAuthenticationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeClientAuthenticationSettings
 func (c *DirectoryService) DescribeClientAuthenticationSettingsRequest(input *DescribeClientAuthenticationSettingsInput) (req *request.Request, output *DescribeClientAuthenticationSettingsOutput) {
@@ -2191,23 +2190,24 @@ func (c *DirectoryService) DescribeClientAuthenticationSettingsRequest(input *De
 // API operation DescribeClientAuthenticationSettings for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeClientAuthenticationSettings
 func (c *DirectoryService) DescribeClientAuthenticationSettings(input *DescribeClientAuthenticationSettingsInput) (*DescribeClientAuthenticationSettingsOutput, error) {
@@ -2247,14 +2247,13 @@ const opDescribeConditionalForwarders = "DescribeConditionalForwarders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConditionalForwardersRequest method.
+//	req, resp := client.DescribeConditionalForwardersRequest(params)
 //
-//    // Example sending a request using the DescribeConditionalForwardersRequest method.
-//    req, resp := client.DescribeConditionalForwardersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeConditionalForwarders
 func (c *DirectoryService) DescribeConditionalForwardersRequest(input *DescribeConditionalForwardersInput) (req *request.Request, output *DescribeConditionalForwardersOutput) {
@@ -2288,23 +2287,24 @@ func (c *DirectoryService) DescribeConditionalForwardersRequest(input *DescribeC
 // API operation DescribeConditionalForwarders for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeConditionalForwarders
 func (c *DirectoryService) DescribeConditionalForwarders(input *DescribeConditionalForwardersInput) (*DescribeConditionalForwardersOutput, error) {
@@ -2344,14 +2344,13 @@ const opDescribeDirectories = "DescribeDirectories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectoriesRequest method.
+//	req, resp := client.DescribeDirectoriesRequest(params)
 //
-//    // Example sending a request using the DescribeDirectoriesRequest method.
-//    req, resp := client.DescribeDirectoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeDirectories
 func (c *DirectoryService) DescribeDirectoriesRequest(input *DescribeDirectoriesInput) (req *request.Request, output *DescribeDirectoriesOutput) {
@@ -2393,20 +2392,21 @@ func (c *DirectoryService) DescribeDirectoriesRequest(input *DescribeDirectories
 // API operation DescribeDirectories for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeDirectories
 func (c *DirectoryService) DescribeDirectories(input *DescribeDirectoriesInput) (*DescribeDirectoriesOutput, error) {
@@ -2446,14 +2446,13 @@ const opDescribeDomainControllers = "DescribeDomainControllers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainControllersRequest method.
+//	req, resp := client.DescribeDomainControllersRequest(params)
 //
-//    // Example sending a request using the DescribeDomainControllersRequest method.
-//    req, resp := client.DescribeDomainControllersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeDomainControllers
 func (c *DirectoryService) DescribeDomainControllersRequest(input *DescribeDomainControllersInput) (req *request.Request, output *DescribeDomainControllersOutput) {
@@ -2490,23 +2489,24 @@ func (c *DirectoryService) DescribeDomainControllersRequest(input *DescribeDomai
 // API operation DescribeDomainControllers for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeDomainControllers
 func (c *DirectoryService) DescribeDomainControllers(input *DescribeDomainControllersInput) (*DescribeDomainControllersOutput, error) {
@@ -2538,15 +2538,14 @@ func (c *DirectoryService) DescribeDomainControllersWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDomainControllers operation.
-//    pageNum := 0
-//    err := client.DescribeDomainControllersPages(params,
-//        func(page *directoryservice.DescribeDomainControllersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDomainControllers operation.
+//	pageNum := 0
+//	err := client.DescribeDomainControllersPages(params,
+//	    func(page *directoryservice.DescribeDomainControllersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DirectoryService) DescribeDomainControllersPages(input *DescribeDomainControllersInput, fn func(*DescribeDomainControllersOutput, bool) bool) error {
 	return c.DescribeDomainControllersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2598,14 +2597,13 @@ const opDescribeEventTopics = "DescribeEventTopics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventTopicsRequest method.
+//	req, resp := client.DescribeEventTopicsRequest(params)
 //
-//    // Example sending a request using the DescribeEventTopicsRequest method.
-//    req, resp := client.DescribeEventTopicsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeEventTopics
 func (c *DirectoryService) DescribeEventTopicsRequest(input *DescribeEventTopicsInput) (req *request.Request, output *DescribeEventTopicsOutput) {
@@ -2640,17 +2638,18 @@ func (c *DirectoryService) DescribeEventTopicsRequest(input *DescribeEventTopics
 // API operation DescribeEventTopics for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeEventTopics
 func (c *DirectoryService) DescribeEventTopics(input *DescribeEventTopicsInput) (*DescribeEventTopicsOutput, error) {
@@ -2690,14 +2689,13 @@ const opDescribeLDAPSSettings = "DescribeLDAPSSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLDAPSSettingsRequest method.
+//	req, resp := client.DescribeLDAPSSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeLDAPSSettingsRequest method.
-//    req, resp := client.DescribeLDAPSSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeLDAPSSettings
 func (c *DirectoryService) DescribeLDAPSSettingsRequest(input *DescribeLDAPSSettingsInput) (req *request.Request, output *DescribeLDAPSSettingsOutput) {
@@ -2728,23 +2726,24 @@ func (c *DirectoryService) DescribeLDAPSSettingsRequest(input *DescribeLDAPSSett
 // API operation DescribeLDAPSSettings for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeLDAPSSettings
 func (c *DirectoryService) DescribeLDAPSSettings(input *DescribeLDAPSSettingsInput) (*DescribeLDAPSSettingsOutput, error) {
@@ -2784,14 +2783,13 @@ const opDescribeRegions = "DescribeRegions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRegionsRequest method.
+//	req, resp := client.DescribeRegionsRequest(params)
 //
-//    // Example sending a request using the DescribeRegionsRequest method.
-//    req, resp := client.DescribeRegionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeRegions
 func (c *DirectoryService) DescribeRegionsRequest(input *DescribeRegionsInput) (req *request.Request, output *DescribeRegionsOutput) {
@@ -2823,26 +2821,27 @@ func (c *DirectoryService) DescribeRegionsRequest(input *DescribeRegionsInput) (
 // API operation DescribeRegions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeRegions
 func (c *DirectoryService) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
@@ -2882,14 +2881,13 @@ const opDescribeSharedDirectories = "DescribeSharedDirectories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSharedDirectoriesRequest method.
+//	req, resp := client.DescribeSharedDirectoriesRequest(params)
 //
-//    // Example sending a request using the DescribeSharedDirectoriesRequest method.
-//    req, resp := client.DescribeSharedDirectoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSharedDirectories
 func (c *DirectoryService) DescribeSharedDirectoriesRequest(input *DescribeSharedDirectoriesInput) (req *request.Request, output *DescribeSharedDirectoriesOutput) {
@@ -2920,23 +2918,24 @@ func (c *DirectoryService) DescribeSharedDirectoriesRequest(input *DescribeShare
 // API operation DescribeSharedDirectories for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSharedDirectories
 func (c *DirectoryService) DescribeSharedDirectories(input *DescribeSharedDirectoriesInput) (*DescribeSharedDirectoriesOutput, error) {
@@ -2976,14 +2975,13 @@ const opDescribeSnapshots = "DescribeSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotsRequest method.
+//	req, resp := client.DescribeSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotsRequest method.
-//    req, resp := client.DescribeSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSnapshots
 func (c *DirectoryService) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *request.Request, output *DescribeSnapshotsOutput) {
@@ -3021,20 +3019,21 @@ func (c *DirectoryService) DescribeSnapshotsRequest(input *DescribeSnapshotsInpu
 // API operation DescribeSnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSnapshots
 func (c *DirectoryService) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
@@ -3074,14 +3073,13 @@ const opDescribeTrusts = "DescribeTrusts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrustsRequest method.
+//	req, resp := client.DescribeTrustsRequest(params)
 //
-//    // Example sending a request using the DescribeTrustsRequest method.
-//    req, resp := client.DescribeTrustsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeTrusts
 func (c *DirectoryService) DescribeTrustsRequest(input *DescribeTrustsInput) (req *request.Request, output *DescribeTrustsOutput) {
@@ -3115,23 +3113,24 @@ func (c *DirectoryService) DescribeTrustsRequest(input *DescribeTrustsInput) (re
 // API operation DescribeTrusts for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeTrusts
 func (c *DirectoryService) DescribeTrusts(input *DescribeTrustsInput) (*DescribeTrustsOutput, error) {
@@ -3171,14 +3170,13 @@ const opDisableClientAuthentication = "DisableClientAuthentication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableClientAuthenticationRequest method.
+//	req, resp := client.DisableClientAuthenticationRequest(params)
 //
-//    // Example sending a request using the DisableClientAuthenticationRequest method.
-//    req, resp := client.DisableClientAuthenticationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableClientAuthentication
 func (c *DirectoryService) DisableClientAuthenticationRequest(input *DisableClientAuthenticationInput) (req *request.Request, output *DisableClientAuthenticationOutput) {
@@ -3210,23 +3208,24 @@ func (c *DirectoryService) DisableClientAuthenticationRequest(input *DisableClie
 // API operation DisableClientAuthentication for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidClientAuthStatusException
-//   Client authentication is already enabled.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - InvalidClientAuthStatusException
+//     Client authentication is already enabled.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableClientAuthentication
 func (c *DirectoryService) DisableClientAuthentication(input *DisableClientAuthenticationInput) (*DisableClientAuthenticationOutput, error) {
@@ -3266,14 +3265,13 @@ const opDisableLDAPS = "DisableLDAPS"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableLDAPSRequest method.
+//	req, resp := client.DisableLDAPSRequest(params)
 //
-//    // Example sending a request using the DisableLDAPSRequest method.
-//    req, resp := client.DisableLDAPSRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableLDAPS
 func (c *DirectoryService) DisableLDAPSRequest(input *DisableLDAPSInput) (req *request.Request, output *DisableLDAPSOutput) {
@@ -3305,27 +3303,28 @@ func (c *DirectoryService) DisableLDAPSRequest(input *DisableLDAPSInput) (req *r
 // API operation DisableLDAPS for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * InvalidLDAPSStatusException
-//   The LDAP activities could not be performed because they are limited by the
-//   LDAPS status.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidLDAPSStatusException
+//     The LDAP activities could not be performed because they are limited by the
+//     LDAPS status.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableLDAPS
 func (c *DirectoryService) DisableLDAPS(input *DisableLDAPSInput) (*DisableLDAPSOutput, error) {
@@ -3365,14 +3364,13 @@ const opDisableRadius = "DisableRadius"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableRadiusRequest method.
+//	req, resp := client.DisableRadiusRequest(params)
 //
-//    // Example sending a request using the DisableRadiusRequest method.
-//    req, resp := client.DisableRadiusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableRadius
 func (c *DirectoryService) DisableRadiusRequest(input *DisableRadiusInput) (req *request.Request, output *DisableRadiusOutput) {
@@ -3406,14 +3404,15 @@ func (c *DirectoryService) DisableRadiusRequest(input *DisableRadiusInput) (req 
 // API operation DisableRadius for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableRadius
 func (c *DirectoryService) DisableRadius(input *DisableRadiusInput) (*DisableRadiusOutput, error) {
@@ -3453,14 +3452,13 @@ const opDisableSso = "DisableSso"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableSsoRequest method.
+//	req, resp := client.DisableSsoRequest(params)
 //
-//    // Example sending a request using the DisableSsoRequest method.
-//    req, resp := client.DisableSsoRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableSso
 func (c *DirectoryService) DisableSsoRequest(input *DisableSsoInput) (req *request.Request, output *DisableSsoOutput) {
@@ -3492,20 +3490,21 @@ func (c *DirectoryService) DisableSsoRequest(input *DisableSsoInput) (req *reque
 // API operation DisableSso for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InsufficientPermissionsException
-//   The account does not have sufficient permission to perform the operation.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * AuthenticationFailedException
-//   An authentication error occurred.
+//   - InsufficientPermissionsException
+//     The account does not have sufficient permission to perform the operation.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AuthenticationFailedException
+//     An authentication error occurred.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DisableSso
 func (c *DirectoryService) DisableSso(input *DisableSsoInput) (*DisableSsoOutput, error) {
@@ -3545,14 +3544,13 @@ const opEnableClientAuthentication = "EnableClientAuthentication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableClientAuthenticationRequest method.
+//	req, resp := client.EnableClientAuthenticationRequest(params)
 //
-//    // Example sending a request using the EnableClientAuthenticationRequest method.
-//    req, resp := client.EnableClientAuthenticationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableClientAuthentication
 func (c *DirectoryService) EnableClientAuthenticationRequest(input *EnableClientAuthenticationInput) (req *request.Request, output *EnableClientAuthenticationOutput) {
@@ -3584,27 +3582,28 @@ func (c *DirectoryService) EnableClientAuthenticationRequest(input *EnableClient
 // API operation EnableClientAuthentication for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidClientAuthStatusException
-//   Client authentication is already enabled.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - InvalidClientAuthStatusException
+//     Client authentication is already enabled.
 //
-//   * NoAvailableCertificateException
-//   Client authentication setup could not be completed because at least one valid
-//   certificate must be registered in the system.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - NoAvailableCertificateException
+//     Client authentication setup could not be completed because at least one valid
+//     certificate must be registered in the system.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableClientAuthentication
 func (c *DirectoryService) EnableClientAuthentication(input *EnableClientAuthenticationInput) (*EnableClientAuthenticationOutput, error) {
@@ -3644,14 +3643,13 @@ const opEnableLDAPS = "EnableLDAPS"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableLDAPSRequest method.
+//	req, resp := client.EnableLDAPSRequest(params)
 //
-//    // Example sending a request using the EnableLDAPSRequest method.
-//    req, resp := client.EnableLDAPSRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableLDAPS
 func (c *DirectoryService) EnableLDAPSRequest(input *EnableLDAPSInput) (req *request.Request, output *EnableLDAPSOutput) {
@@ -3684,31 +3682,32 @@ func (c *DirectoryService) EnableLDAPSRequest(input *EnableLDAPSInput) (req *req
 // API operation EnableLDAPS for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * NoAvailableCertificateException
-//   Client authentication setup could not be completed because at least one valid
-//   certificate must be registered in the system.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidLDAPSStatusException
-//   The LDAP activities could not be performed because they are limited by the
-//   LDAPS status.
+//   - NoAvailableCertificateException
+//     Client authentication setup could not be completed because at least one valid
+//     certificate must be registered in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidLDAPSStatusException
+//     The LDAP activities could not be performed because they are limited by the
+//     LDAPS status.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableLDAPS
 func (c *DirectoryService) EnableLDAPS(input *EnableLDAPSInput) (*EnableLDAPSOutput, error) {
@@ -3748,14 +3747,13 @@ const opEnableRadius = "EnableRadius"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableRadiusRequest method.
+//	req, resp := client.EnableRadiusRequest(params)
 //
-//    // Example sending a request using the EnableRadiusRequest method.
-//    req, resp := client.EnableRadiusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableRadius
 func (c *DirectoryService) EnableRadiusRequest(input *EnableRadiusInput) (req *request.Request, output *EnableRadiusOutput) {
@@ -3789,20 +3787,21 @@ func (c *DirectoryService) EnableRadiusRequest(input *EnableRadiusInput) (req *r
 // API operation EnableRadius for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * EntityAlreadyExistsException
-//   The specified entity already exists.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - EntityAlreadyExistsException
+//     The specified entity already exists.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableRadius
 func (c *DirectoryService) EnableRadius(input *EnableRadiusInput) (*EnableRadiusOutput, error) {
@@ -3842,14 +3841,13 @@ const opEnableSso = "EnableSso"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableSsoRequest method.
+//	req, resp := client.EnableSsoRequest(params)
 //
-//    // Example sending a request using the EnableSsoRequest method.
-//    req, resp := client.EnableSsoRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableSso
 func (c *DirectoryService) EnableSsoRequest(input *EnableSsoInput) (req *request.Request, output *EnableSsoOutput) {
@@ -3883,20 +3881,21 @@ func (c *DirectoryService) EnableSsoRequest(input *EnableSsoInput) (req *request
 // API operation EnableSso for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InsufficientPermissionsException
-//   The account does not have sufficient permission to perform the operation.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * AuthenticationFailedException
-//   An authentication error occurred.
+//   - InsufficientPermissionsException
+//     The account does not have sufficient permission to perform the operation.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AuthenticationFailedException
+//     An authentication error occurred.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/EnableSso
 func (c *DirectoryService) EnableSso(input *EnableSsoInput) (*EnableSsoOutput, error) {
@@ -3936,14 +3935,13 @@ const opGetDirectoryLimits = "GetDirectoryLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDirectoryLimitsRequest method.
+//	req, resp := client.GetDirectoryLimitsRequest(params)
 //
-//    // Example sending a request using the GetDirectoryLimitsRequest method.
-//    req, resp := client.GetDirectoryLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/GetDirectoryLimits
 func (c *DirectoryService) GetDirectoryLimitsRequest(input *GetDirectoryLimitsInput) (req *request.Request, output *GetDirectoryLimitsOutput) {
@@ -3974,14 +3972,15 @@ func (c *DirectoryService) GetDirectoryLimitsRequest(input *GetDirectoryLimitsIn
 // API operation GetDirectoryLimits for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/GetDirectoryLimits
 func (c *DirectoryService) GetDirectoryLimits(input *GetDirectoryLimitsInput) (*GetDirectoryLimitsOutput, error) {
@@ -4021,14 +4020,13 @@ const opGetSnapshotLimits = "GetSnapshotLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSnapshotLimitsRequest method.
+//	req, resp := client.GetSnapshotLimitsRequest(params)
 //
-//    // Example sending a request using the GetSnapshotLimitsRequest method.
-//    req, resp := client.GetSnapshotLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/GetSnapshotLimits
 func (c *DirectoryService) GetSnapshotLimitsRequest(input *GetSnapshotLimitsInput) (req *request.Request, output *GetSnapshotLimitsOutput) {
@@ -4059,14 +4057,15 @@ func (c *DirectoryService) GetSnapshotLimitsRequest(input *GetSnapshotLimitsInpu
 // API operation GetSnapshotLimits for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/GetSnapshotLimits
 func (c *DirectoryService) GetSnapshotLimits(input *GetSnapshotLimitsInput) (*GetSnapshotLimitsOutput, error) {
@@ -4106,14 +4105,13 @@ const opListCertificates = "ListCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCertificatesRequest method.
+//	req, resp := client.ListCertificatesRequest(params)
 //
-//    // Example sending a request using the ListCertificatesRequest method.
-//    req, resp := client.ListCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListCertificates
 func (c *DirectoryService) ListCertificatesRequest(input *ListCertificatesInput) (req *request.Request, output *ListCertificatesOutput) {
@@ -4145,23 +4143,24 @@ func (c *DirectoryService) ListCertificatesRequest(input *ListCertificatesInput)
 // API operation ListCertificates for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListCertificates
 func (c *DirectoryService) ListCertificates(input *ListCertificatesInput) (*ListCertificatesOutput, error) {
@@ -4201,14 +4200,13 @@ const opListIpRoutes = "ListIpRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIpRoutesRequest method.
+//	req, resp := client.ListIpRoutesRequest(params)
 //
-//    // Example sending a request using the ListIpRoutesRequest method.
-//    req, resp := client.ListIpRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListIpRoutes
 func (c *DirectoryService) ListIpRoutesRequest(input *ListIpRoutesInput) (req *request.Request, output *ListIpRoutesOutput) {
@@ -4239,20 +4237,21 @@ func (c *DirectoryService) ListIpRoutesRequest(input *ListIpRoutesInput) (req *r
 // API operation ListIpRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListIpRoutes
 func (c *DirectoryService) ListIpRoutes(input *ListIpRoutesInput) (*ListIpRoutesOutput, error) {
@@ -4292,14 +4291,13 @@ const opListLogSubscriptions = "ListLogSubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLogSubscriptionsRequest method.
+//	req, resp := client.ListLogSubscriptionsRequest(params)
 //
-//    // Example sending a request using the ListLogSubscriptionsRequest method.
-//    req, resp := client.ListLogSubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListLogSubscriptions
 func (c *DirectoryService) ListLogSubscriptionsRequest(input *ListLogSubscriptionsInput) (req *request.Request, output *ListLogSubscriptionsOutput) {
@@ -4330,17 +4328,18 @@ func (c *DirectoryService) ListLogSubscriptionsRequest(input *ListLogSubscriptio
 // API operation ListLogSubscriptions for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListLogSubscriptions
 func (c *DirectoryService) ListLogSubscriptions(input *ListLogSubscriptionsInput) (*ListLogSubscriptionsOutput, error) {
@@ -4380,14 +4379,13 @@ const opListSchemaExtensions = "ListSchemaExtensions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchemaExtensionsRequest method.
+//	req, resp := client.ListSchemaExtensionsRequest(params)
 //
-//    // Example sending a request using the ListSchemaExtensionsRequest method.
-//    req, resp := client.ListSchemaExtensionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListSchemaExtensions
 func (c *DirectoryService) ListSchemaExtensionsRequest(input *ListSchemaExtensionsInput) (req *request.Request, output *ListSchemaExtensionsOutput) {
@@ -4418,17 +4416,18 @@ func (c *DirectoryService) ListSchemaExtensionsRequest(input *ListSchemaExtensio
 // API operation ListSchemaExtensions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListSchemaExtensions
 func (c *DirectoryService) ListSchemaExtensions(input *ListSchemaExtensionsInput) (*ListSchemaExtensionsOutput, error) {
@@ -4468,14 +4467,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListTagsForResource
 func (c *DirectoryService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4506,20 +4504,21 @@ func (c *DirectoryService) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidNextTokenException
-//   The NextToken value is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ListTagsForResource
 func (c *DirectoryService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4559,14 +4558,13 @@ const opRegisterCertificate = "RegisterCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterCertificateRequest method.
+//	req, resp := client.RegisterCertificateRequest(params)
 //
-//    // Example sending a request using the RegisterCertificateRequest method.
-//    req, resp := client.RegisterCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RegisterCertificate
 func (c *DirectoryService) RegisterCertificateRequest(input *RegisterCertificateInput) (req *request.Request, output *RegisterCertificateOutput) {
@@ -4597,33 +4595,34 @@ func (c *DirectoryService) RegisterCertificateRequest(input *RegisterCertificate
 // API operation RegisterCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * InvalidCertificateException
-//   The certificate PEM that was provided has incorrect encoding.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * CertificateLimitExceededException
-//   The certificate could not be added because the certificate limit has been
-//   reached.
+//   - InvalidCertificateException
+//     The certificate PEM that was provided has incorrect encoding.
 //
-//   * CertificateAlreadyExistsException
-//   The certificate has already been registered into the system.
+//   - CertificateLimitExceededException
+//     The certificate could not be added because the certificate limit has been
+//     reached.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - CertificateAlreadyExistsException
+//     The certificate has already been registered into the system.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RegisterCertificate
 func (c *DirectoryService) RegisterCertificate(input *RegisterCertificateInput) (*RegisterCertificateOutput, error) {
@@ -4663,14 +4662,13 @@ const opRegisterEventTopic = "RegisterEventTopic"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterEventTopicRequest method.
+//	req, resp := client.RegisterEventTopicRequest(params)
 //
-//    // Example sending a request using the RegisterEventTopicRequest method.
-//    req, resp := client.RegisterEventTopicRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RegisterEventTopic
 func (c *DirectoryService) RegisterEventTopicRequest(input *RegisterEventTopicInput) (req *request.Request, output *RegisterEventTopicOutput) {
@@ -4707,17 +4705,18 @@ func (c *DirectoryService) RegisterEventTopicRequest(input *RegisterEventTopicIn
 // API operation RegisterEventTopic for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RegisterEventTopic
 func (c *DirectoryService) RegisterEventTopic(input *RegisterEventTopicInput) (*RegisterEventTopicOutput, error) {
@@ -4757,14 +4756,13 @@ const opRejectSharedDirectory = "RejectSharedDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectSharedDirectoryRequest method.
+//	req, resp := client.RejectSharedDirectoryRequest(params)
 //
-//    // Example sending a request using the RejectSharedDirectoryRequest method.
-//    req, resp := client.RejectSharedDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RejectSharedDirectory
 func (c *DirectoryService) RejectSharedDirectoryRequest(input *RejectSharedDirectoryInput) (req *request.Request, output *RejectSharedDirectoryOutput) {
@@ -4796,21 +4794,22 @@ func (c *DirectoryService) RejectSharedDirectoryRequest(input *RejectSharedDirec
 // API operation RejectSharedDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * DirectoryAlreadySharedException
-//   The specified directory has already been shared with this Amazon Web Services
-//   account.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - DirectoryAlreadySharedException
+//     The specified directory has already been shared with this Amazon Web Services
+//     account.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RejectSharedDirectory
 func (c *DirectoryService) RejectSharedDirectory(input *RejectSharedDirectoryInput) (*RejectSharedDirectoryOutput, error) {
@@ -4850,14 +4849,13 @@ const opRemoveIpRoutes = "RemoveIpRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveIpRoutesRequest method.
+//	req, resp := client.RemoveIpRoutesRequest(params)
 //
-//    // Example sending a request using the RemoveIpRoutesRequest method.
-//    req, resp := client.RemoveIpRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveIpRoutes
 func (c *DirectoryService) RemoveIpRoutesRequest(input *RemoveIpRoutesInput) (req *request.Request, output *RemoveIpRoutesOutput) {
@@ -4889,20 +4887,21 @@ func (c *DirectoryService) RemoveIpRoutesRequest(input *RemoveIpRoutesInput) (re
 // API operation RemoveIpRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveIpRoutes
 func (c *DirectoryService) RemoveIpRoutes(input *RemoveIpRoutesInput) (*RemoveIpRoutesOutput, error) {
@@ -4942,14 +4941,13 @@ const opRemoveRegion = "RemoveRegion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveRegionRequest method.
+//	req, resp := client.RemoveRegionRequest(params)
 //
-//    // Example sending a request using the RemoveRegionRequest method.
-//    req, resp := client.RemoveRegionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveRegion
 func (c *DirectoryService) RemoveRegionRequest(input *RemoveRegionInput) (req *request.Request, output *RemoveRegionOutput) {
@@ -4983,23 +4981,24 @@ func (c *DirectoryService) RemoveRegionRequest(input *RemoveRegionInput) (req *r
 // API operation RemoveRegion for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * DirectoryDoesNotExistException
-//   The specified directory does not exist in the system.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveRegion
 func (c *DirectoryService) RemoveRegion(input *RemoveRegionInput) (*RemoveRegionOutput, error) {
@@ -5039,14 +5038,13 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromResourceRequest method.
+//	req, resp := client.RemoveTagsFromResourceRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromResourceRequest method.
-//    req, resp := client.RemoveTagsFromResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveTagsFromResource
 func (c *DirectoryService) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *RemoveTagsFromResourceOutput) {
@@ -5078,17 +5076,18 @@ func (c *DirectoryService) RemoveTagsFromResourceRequest(input *RemoveTagsFromRe
 // API operation RemoveTagsFromResource for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RemoveTagsFromResource
 func (c *DirectoryService) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
@@ -5128,14 +5127,13 @@ const opResetUserPassword = "ResetUserPassword"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetUserPasswordRequest method.
+//	req, resp := client.ResetUserPasswordRequest(params)
 //
-//    // Example sending a request using the ResetUserPasswordRequest method.
-//    req, resp := client.ResetUserPasswordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ResetUserPassword
 func (c *DirectoryService) ResetUserPasswordRequest(input *ResetUserPasswordInput) (req *request.Request, output *ResetUserPasswordOutput) {
@@ -5163,17 +5161,17 @@ func (c *DirectoryService) ResetUserPasswordRequest(input *ResetUserPasswordInpu
 // You can reset the password for any user in your directory with the following
 // exceptions:
 //
-//    * For Simple AD, you cannot reset the password for any user that is a
-//    member of either the Domain Admins or Enterprise Admins group except for
-//    the administrator user.
+//   - For Simple AD, you cannot reset the password for any user that is a
+//     member of either the Domain Admins or Enterprise Admins group except for
+//     the administrator user.
 //
-//    * For Managed Microsoft AD, you can only reset the password for a user
-//    that is in an OU based off of the NetBIOS name that you typed when you
-//    created your directory. For example, you cannot reset the password for
-//    a user in the Amazon Web Services Reserved OU. For more information about
-//    the OU structure for an Managed Microsoft AD directory, see What Gets
-//    Created (https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ms_ad_getting_started_what_gets_created.html)
-//    in the Directory Service Administration Guide.
+//   - For Managed Microsoft AD, you can only reset the password for a user
+//     that is in an OU based off of the NetBIOS name that you typed when you
+//     created your directory. For example, you cannot reset the password for
+//     a user in the Amazon Web Services Reserved OU. For more information about
+//     the OU structure for an Managed Microsoft AD directory, see What Gets
+//     Created (https://docs.aws.amazon.com/directoryservice/latest/admin-guide/ms_ad_getting_started_what_gets_created.html)
+//     in the Directory Service Administration Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5183,27 +5181,28 @@ func (c *DirectoryService) ResetUserPasswordRequest(input *ResetUserPasswordInpu
 // API operation ResetUserPassword for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * UserDoesNotExistException
-//   The user provided a username that does not exist in your directory.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * InvalidPasswordException
-//   The new password provided by the user does not meet the password complexity
-//   requirements defined in your directory.
+//   - UserDoesNotExistException
+//     The user provided a username that does not exist in your directory.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidPasswordException
+//     The new password provided by the user does not meet the password complexity
+//     requirements defined in your directory.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ResetUserPassword
 func (c *DirectoryService) ResetUserPassword(input *ResetUserPasswordInput) (*ResetUserPasswordOutput, error) {
@@ -5243,14 +5242,13 @@ const opRestoreFromSnapshot = "RestoreFromSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreFromSnapshotRequest method.
+//	req, resp := client.RestoreFromSnapshotRequest(params)
 //
-//    // Example sending a request using the RestoreFromSnapshotRequest method.
-//    req, resp := client.RestoreFromSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RestoreFromSnapshot
 func (c *DirectoryService) RestoreFromSnapshotRequest(input *RestoreFromSnapshotInput) (req *request.Request, output *RestoreFromSnapshotOutput) {
@@ -5290,17 +5288,18 @@ func (c *DirectoryService) RestoreFromSnapshotRequest(input *RestoreFromSnapshot
 // API operation RestoreFromSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/RestoreFromSnapshot
 func (c *DirectoryService) RestoreFromSnapshot(input *RestoreFromSnapshotInput) (*RestoreFromSnapshotOutput, error) {
@@ -5340,14 +5339,13 @@ const opShareDirectory = "ShareDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ShareDirectoryRequest method.
+//	req, resp := client.ShareDirectoryRequest(params)
 //
-//    // Example sending a request using the ShareDirectoryRequest method.
-//    req, resp := client.ShareDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ShareDirectory
 func (c *DirectoryService) ShareDirectoryRequest(input *ShareDirectoryInput) (req *request.Request, output *ShareDirectoryOutput) {
@@ -5396,37 +5394,38 @@ func (c *DirectoryService) ShareDirectoryRequest(input *ShareDirectoryInput) (re
 // API operation ShareDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryAlreadySharedException
-//   The specified directory has already been shared with this Amazon Web Services
-//   account.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - DirectoryAlreadySharedException
+//     The specified directory has already been shared with this Amazon Web Services
+//     account.
 //
-//   * InvalidTargetException
-//   The specified shared target is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - InvalidTargetException
+//     The specified shared target is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ShareLimitExceededException
-//   The maximum number of Amazon Web Services accounts that you can share with
-//   this directory has been reached.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * OrganizationsException
-//   Exception encountered while trying to access your Amazon Web Services organization.
+//   - ShareLimitExceededException
+//     The maximum number of Amazon Web Services accounts that you can share with
+//     this directory has been reached.
 //
-//   * AccessDeniedException
-//   Client authentication is not available in this region at this time.
+//   - OrganizationsException
+//     Exception encountered while trying to access your Amazon Web Services organization.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - UnsupportedOperationException
+//     The operation is not supported.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/ShareDirectory
 func (c *DirectoryService) ShareDirectory(input *ShareDirectoryInput) (*ShareDirectoryOutput, error) {
@@ -5466,14 +5465,13 @@ const opStartSchemaExtension = "StartSchemaExtension"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSchemaExtensionRequest method.
+//	req, resp := client.StartSchemaExtensionRequest(params)
 //
-//    // Example sending a request using the StartSchemaExtensionRequest method.
-//    req, resp := client.StartSchemaExtensionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/StartSchemaExtension
 func (c *DirectoryService) StartSchemaExtensionRequest(input *StartSchemaExtensionInput) (req *request.Request, output *StartSchemaExtensionOutput) {
@@ -5504,25 +5502,26 @@ func (c *DirectoryService) StartSchemaExtensionRequest(input *StartSchemaExtensi
 // API operation StartSchemaExtension for usage and error information.
 //
 // Returned Error Types:
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * SnapshotLimitExceededException
-//   The maximum number of manual snapshots for the directory has been reached.
-//   You can use the GetSnapshotLimits operation to determine the snapshot limits
-//   for a directory.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - SnapshotLimitExceededException
+//     The maximum number of manual snapshots for the directory has been reached.
+//     You can use the GetSnapshotLimits operation to determine the snapshot limits
+//     for a directory.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/StartSchemaExtension
 func (c *DirectoryService) StartSchemaExtension(input *StartSchemaExtensionInput) (*StartSchemaExtensionOutput, error) {
@@ -5562,14 +5561,13 @@ const opUnshareDirectory = "UnshareDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnshareDirectoryRequest method.
+//	req, resp := client.UnshareDirectoryRequest(params)
 //
-//    // Example sending a request using the UnshareDirectoryRequest method.
-//    req, resp := client.UnshareDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UnshareDirectory
 func (c *DirectoryService) UnshareDirectoryRequest(input *UnshareDirectoryInput) (req *request.Request, output *UnshareDirectoryOutput) {
@@ -5600,21 +5598,22 @@ func (c *DirectoryService) UnshareDirectoryRequest(input *UnshareDirectoryInput)
 // API operation UnshareDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidTargetException
-//   The specified shared target is not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * DirectoryNotSharedException
-//   The specified directory has not been shared with this Amazon Web Services
-//   account.
+//   - InvalidTargetException
+//     The specified shared target is not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - DirectoryNotSharedException
+//     The specified directory has not been shared with this Amazon Web Services
+//     account.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UnshareDirectory
 func (c *DirectoryService) UnshareDirectory(input *UnshareDirectoryInput) (*UnshareDirectoryOutput, error) {
@@ -5654,14 +5653,13 @@ const opUpdateConditionalForwarder = "UpdateConditionalForwarder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConditionalForwarderRequest method.
+//	req, resp := client.UpdateConditionalForwarderRequest(params)
 //
-//    // Example sending a request using the UpdateConditionalForwarderRequest method.
-//    req, resp := client.UpdateConditionalForwarderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateConditionalForwarder
 func (c *DirectoryService) UpdateConditionalForwarderRequest(input *UpdateConditionalForwarderInput) (req *request.Request, output *UpdateConditionalForwarderOutput) {
@@ -5694,23 +5692,24 @@ func (c *DirectoryService) UpdateConditionalForwarderRequest(input *UpdateCondit
 // API operation UpdateConditionalForwarder for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateConditionalForwarder
 func (c *DirectoryService) UpdateConditionalForwarder(input *UpdateConditionalForwarderInput) (*UpdateConditionalForwarderOutput, error) {
@@ -5750,14 +5749,13 @@ const opUpdateNumberOfDomainControllers = "UpdateNumberOfDomainControllers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNumberOfDomainControllersRequest method.
+//	req, resp := client.UpdateNumberOfDomainControllersRequest(params)
 //
-//    // Example sending a request using the UpdateNumberOfDomainControllersRequest method.
-//    req, resp := client.UpdateNumberOfDomainControllersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateNumberOfDomainControllers
 func (c *DirectoryService) UpdateNumberOfDomainControllersRequest(input *UpdateNumberOfDomainControllersInput) (req *request.Request, output *UpdateNumberOfDomainControllersOutput) {
@@ -5794,27 +5792,28 @@ func (c *DirectoryService) UpdateNumberOfDomainControllersRequest(input *UpdateN
 // API operation UpdateNumberOfDomainControllers for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * DirectoryUnavailableException
-//   The specified directory is unavailable or could not be found.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * DomainControllerLimitExceededException
-//   The maximum allowed number of domain controllers per directory was exceeded.
-//   The default limit per directory is 20 domain controllers.
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - DomainControllerLimitExceededException
+//     The maximum allowed number of domain controllers per directory was exceeded.
+//     The default limit per directory is 20 domain controllers.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateNumberOfDomainControllers
 func (c *DirectoryService) UpdateNumberOfDomainControllers(input *UpdateNumberOfDomainControllersInput) (*UpdateNumberOfDomainControllersOutput, error) {
@@ -5854,14 +5853,13 @@ const opUpdateRadius = "UpdateRadius"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRadiusRequest method.
+//	req, resp := client.UpdateRadiusRequest(params)
 //
-//    // Example sending a request using the UpdateRadiusRequest method.
-//    req, resp := client.UpdateRadiusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateRadius
 func (c *DirectoryService) UpdateRadiusRequest(input *UpdateRadiusInput) (req *request.Request, output *UpdateRadiusOutput) {
@@ -5894,17 +5892,18 @@ func (c *DirectoryService) UpdateRadiusRequest(input *UpdateRadiusInput) (req *r
 // API operation UpdateRadius for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateRadius
 func (c *DirectoryService) UpdateRadius(input *UpdateRadiusInput) (*UpdateRadiusOutput, error) {
@@ -5944,14 +5943,13 @@ const opUpdateTrust = "UpdateTrust"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTrustRequest method.
+//	req, resp := client.UpdateTrustRequest(params)
 //
-//    // Example sending a request using the UpdateTrustRequest method.
-//    req, resp := client.UpdateTrustRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateTrust
 func (c *DirectoryService) UpdateTrustRequest(input *UpdateTrustInput) (req *request.Request, output *UpdateTrustOutput) {
@@ -5983,17 +5981,18 @@ func (c *DirectoryService) UpdateTrustRequest(input *UpdateTrustInput) (req *req
 // API operation UpdateTrust for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateTrust
 func (c *DirectoryService) UpdateTrust(input *UpdateTrustInput) (*UpdateTrustOutput, error) {
@@ -6033,14 +6032,13 @@ const opVerifyTrust = "VerifyTrust"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the VerifyTrustRequest method.
+//	req, resp := client.VerifyTrustRequest(params)
 //
-//    // Example sending a request using the VerifyTrustRequest method.
-//    req, resp := client.VerifyTrustRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/VerifyTrust
 func (c *DirectoryService) VerifyTrustRequest(input *VerifyTrustInput) (req *request.Request, output *VerifyTrustOutput) {
@@ -6075,20 +6073,21 @@ func (c *DirectoryService) VerifyTrustRequest(input *VerifyTrustInput) (req *req
 // API operation VerifyTrust for usage and error information.
 //
 // Returned Error Types:
-//   * EntityDoesNotExistException
-//   The specified entity could not be found.
 //
-//   * InvalidParameterException
-//   One or more parameters are not valid.
+//   - EntityDoesNotExistException
+//     The specified entity could not be found.
 //
-//   * ClientException
-//   A client exception has occurred.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ServiceException
-//   An exception has occurred in Directory Service.
+//   - ClientException
+//     A client exception has occurred.
 //
-//   * UnsupportedOperationException
-//   The operation is not supported.
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/VerifyTrust
 func (c *DirectoryService) VerifyTrust(input *VerifyTrustInput) (*VerifyTrustOutput, error) {

@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type Matches struct {
 	// 键。暂限定为resource_name。
 

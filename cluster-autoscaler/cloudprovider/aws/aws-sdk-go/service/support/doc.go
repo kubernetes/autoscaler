@@ -9,13 +9,13 @@
 // The Amazon Web Services Support API uses HTTP methods that return results
 // in JSON format.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // The Amazon Web Services Support service also exposes a set of Trusted Advisor
 // (http://aws.amazon.com/premiumsupport/trustedadvisor/) features. You can
@@ -25,37 +25,37 @@
 // The following list describes the Amazon Web Services Support case management
 // operations:
 //
-//    * Service names, issue categories, and available severity levels - The
-//    DescribeServices and DescribeSeverityLevels operations return Amazon Web
-//    Services service names, service codes, service categories, and problem
-//    severity levels. You use these values when you call the CreateCase operation.
+//   - Service names, issue categories, and available severity levels - The
+//     DescribeServices and DescribeSeverityLevels operations return Amazon Web
+//     Services service names, service codes, service categories, and problem
+//     severity levels. You use these values when you call the CreateCase operation.
 //
-//    * Case creation, case details, and case resolution - The CreateCase, DescribeCases,
-//    DescribeAttachment, and ResolveCase operations create Amazon Web Services
-//    Support cases, retrieve information about cases, and resolve cases.
+//   - Case creation, case details, and case resolution - The CreateCase, DescribeCases,
+//     DescribeAttachment, and ResolveCase operations create Amazon Web Services
+//     Support cases, retrieve information about cases, and resolve cases.
 //
-//    * Case communication - The DescribeCommunications, AddCommunicationToCase,
-//    and AddAttachmentsToSet operations retrieve and add communications and
-//    attachments to Amazon Web Services Support cases.
+//   - Case communication - The DescribeCommunications, AddCommunicationToCase,
+//     and AddAttachmentsToSet operations retrieve and add communications and
+//     attachments to Amazon Web Services Support cases.
 //
 // The following list describes the operations available from the Amazon Web
 // Services Support service for Trusted Advisor:
 //
-//    * DescribeTrustedAdvisorChecks returns the list of checks that run against
-//    your Amazon Web Services resources.
+//   - DescribeTrustedAdvisorChecks returns the list of checks that run against
+//     your Amazon Web Services resources.
 //
-//    * Using the checkId for a specific check returned by DescribeTrustedAdvisorChecks,
-//    you can call DescribeTrustedAdvisorCheckResult to obtain the results for
-//    the check that you specified.
+//   - Using the checkId for a specific check returned by DescribeTrustedAdvisorChecks,
+//     you can call DescribeTrustedAdvisorCheckResult to obtain the results for
+//     the check that you specified.
 //
-//    * DescribeTrustedAdvisorCheckSummaries returns summarized results for
-//    one or more Trusted Advisor checks.
+//   - DescribeTrustedAdvisorCheckSummaries returns summarized results for
+//     one or more Trusted Advisor checks.
 //
-//    * RefreshTrustedAdvisorCheck requests that Trusted Advisor rerun a specified
-//    check.
+//   - RefreshTrustedAdvisorCheck requests that Trusted Advisor rerun a specified
+//     check.
 //
-//    * DescribeTrustedAdvisorCheckRefreshStatuses reports the refresh status
-//    of one or more checks.
+//   - DescribeTrustedAdvisorCheckRefreshStatuses reports the refresh status
+//     of one or more checks.
 //
 // For authentication of requests, Amazon Web Services Support uses Signature
 // Version 4 Signing Process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -70,7 +70,7 @@
 // See support package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/support/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Support with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

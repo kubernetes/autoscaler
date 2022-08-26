@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudWatchRUM client from just a session.
-//     svc := cloudwatchrum.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudWatchRUM client with additional configuration
-//     svc := cloudwatchrum.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CloudWatchRUM client from just a session.
+//	svc := cloudwatchrum.New(mySession)
+//
+//	// Create a CloudWatchRUM client with additional configuration
+//	svc := cloudwatchrum.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CloudWatchRUM {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

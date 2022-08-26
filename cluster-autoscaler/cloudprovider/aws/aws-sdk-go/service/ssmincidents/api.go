@@ -29,14 +29,13 @@ const opCreateReplicationSet = "CreateReplicationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplicationSetRequest method.
+//	req, resp := client.CreateReplicationSetRequest(params)
 //
-//    // Example sending a request using the CreateReplicationSetRequest method.
-//    req, resp := client.CreateReplicationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateReplicationSet
 func (c *SSMIncidents) CreateReplicationSetRequest(input *CreateReplicationSetInput) (req *request.Request, output *CreateReplicationSetOutput) {
@@ -68,25 +67,26 @@ func (c *SSMIncidents) CreateReplicationSetRequest(input *CreateReplicationSetIn
 // API operation CreateReplicationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateReplicationSet
 func (c *SSMIncidents) CreateReplicationSet(input *CreateReplicationSetInput) (*CreateReplicationSetOutput, error) {
@@ -126,14 +126,13 @@ const opCreateResponsePlan = "CreateResponsePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResponsePlanRequest method.
+//	req, resp := client.CreateResponsePlanRequest(params)
 //
-//    // Example sending a request using the CreateResponsePlanRequest method.
-//    req, resp := client.CreateResponsePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateResponsePlan
 func (c *SSMIncidents) CreateResponsePlanRequest(input *CreateResponsePlanInput) (req *request.Request, output *CreateResponsePlanOutput) {
@@ -166,25 +165,26 @@ func (c *SSMIncidents) CreateResponsePlanRequest(input *CreateResponsePlanInput)
 // API operation CreateResponsePlan for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateResponsePlan
 func (c *SSMIncidents) CreateResponsePlan(input *CreateResponsePlanInput) (*CreateResponsePlanOutput, error) {
@@ -224,14 +224,13 @@ const opCreateTimelineEvent = "CreateTimelineEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTimelineEventRequest method.
+//	req, resp := client.CreateTimelineEventRequest(params)
 //
-//    // Example sending a request using the CreateTimelineEventRequest method.
-//    req, resp := client.CreateTimelineEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateTimelineEvent
 func (c *SSMIncidents) CreateTimelineEventRequest(input *CreateTimelineEventInput) (req *request.Request, output *CreateTimelineEventOutput) {
@@ -265,25 +264,26 @@ func (c *SSMIncidents) CreateTimelineEventRequest(input *CreateTimelineEventInpu
 // API operation CreateTimelineEvent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/CreateTimelineEvent
 func (c *SSMIncidents) CreateTimelineEvent(input *CreateTimelineEventInput) (*CreateTimelineEventOutput, error) {
@@ -323,14 +323,13 @@ const opDeleteIncidentRecord = "DeleteIncidentRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIncidentRecordRequest method.
+//	req, resp := client.DeleteIncidentRecordRequest(params)
 //
-//    // Example sending a request using the DeleteIncidentRecordRequest method.
-//    req, resp := client.DeleteIncidentRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteIncidentRecord
 func (c *SSMIncidents) DeleteIncidentRecordRequest(input *DeleteIncidentRecordInput) (req *request.Request, output *DeleteIncidentRecordOutput) {
@@ -362,19 +361,20 @@ func (c *SSMIncidents) DeleteIncidentRecordRequest(input *DeleteIncidentRecordIn
 // API operation DeleteIncidentRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteIncidentRecord
 func (c *SSMIncidents) DeleteIncidentRecord(input *DeleteIncidentRecordInput) (*DeleteIncidentRecordOutput, error) {
@@ -414,14 +414,13 @@ const opDeleteReplicationSet = "DeleteReplicationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReplicationSetRequest method.
+//	req, resp := client.DeleteReplicationSetRequest(params)
 //
-//    // Example sending a request using the DeleteReplicationSetRequest method.
-//    req, resp := client.DeleteReplicationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteReplicationSet
 func (c *SSMIncidents) DeleteReplicationSetRequest(input *DeleteReplicationSetInput) (req *request.Request, output *DeleteReplicationSetOutput) {
@@ -454,22 +453,23 @@ func (c *SSMIncidents) DeleteReplicationSetRequest(input *DeleteReplicationSetIn
 // API operation DeleteReplicationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteReplicationSet
 func (c *SSMIncidents) DeleteReplicationSet(input *DeleteReplicationSetInput) (*DeleteReplicationSetOutput, error) {
@@ -509,14 +509,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteResourcePolicy
 func (c *SSMIncidents) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -549,22 +548,23 @@ func (c *SSMIncidents) DeleteResourcePolicyRequest(input *DeleteResourcePolicyIn
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteResourcePolicy
 func (c *SSMIncidents) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -604,14 +604,13 @@ const opDeleteResponsePlan = "DeleteResponsePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResponsePlanRequest method.
+//	req, resp := client.DeleteResponsePlanRequest(params)
 //
-//    // Example sending a request using the DeleteResponsePlanRequest method.
-//    req, resp := client.DeleteResponsePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteResponsePlan
 func (c *SSMIncidents) DeleteResponsePlanRequest(input *DeleteResponsePlanInput) (req *request.Request, output *DeleteResponsePlanOutput) {
@@ -645,19 +644,20 @@ func (c *SSMIncidents) DeleteResponsePlanRequest(input *DeleteResponsePlanInput)
 // API operation DeleteResponsePlan for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteResponsePlan
 func (c *SSMIncidents) DeleteResponsePlan(input *DeleteResponsePlanInput) (*DeleteResponsePlanOutput, error) {
@@ -697,14 +697,13 @@ const opDeleteTimelineEvent = "DeleteTimelineEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTimelineEventRequest method.
+//	req, resp := client.DeleteTimelineEventRequest(params)
 //
-//    // Example sending a request using the DeleteTimelineEventRequest method.
-//    req, resp := client.DeleteTimelineEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteTimelineEvent
 func (c *SSMIncidents) DeleteTimelineEventRequest(input *DeleteTimelineEventInput) (req *request.Request, output *DeleteTimelineEventOutput) {
@@ -736,19 +735,20 @@ func (c *SSMIncidents) DeleteTimelineEventRequest(input *DeleteTimelineEventInpu
 // API operation DeleteTimelineEvent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/DeleteTimelineEvent
 func (c *SSMIncidents) DeleteTimelineEvent(input *DeleteTimelineEventInput) (*DeleteTimelineEventOutput, error) {
@@ -788,14 +788,13 @@ const opGetIncidentRecord = "GetIncidentRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIncidentRecordRequest method.
+//	req, resp := client.GetIncidentRecordRequest(params)
 //
-//    // Example sending a request using the GetIncidentRecordRequest method.
-//    req, resp := client.GetIncidentRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetIncidentRecord
 func (c *SSMIncidents) GetIncidentRecordRequest(input *GetIncidentRecordInput) (req *request.Request, output *GetIncidentRecordOutput) {
@@ -826,22 +825,23 @@ func (c *SSMIncidents) GetIncidentRecordRequest(input *GetIncidentRecordInput) (
 // API operation GetIncidentRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetIncidentRecord
 func (c *SSMIncidents) GetIncidentRecord(input *GetIncidentRecordInput) (*GetIncidentRecordOutput, error) {
@@ -881,14 +881,13 @@ const opGetReplicationSet = "GetReplicationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReplicationSetRequest method.
+//	req, resp := client.GetReplicationSetRequest(params)
 //
-//    // Example sending a request using the GetReplicationSetRequest method.
-//    req, resp := client.GetReplicationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetReplicationSet
 func (c *SSMIncidents) GetReplicationSetRequest(input *GetReplicationSetInput) (req *request.Request, output *GetReplicationSetOutput) {
@@ -919,22 +918,23 @@ func (c *SSMIncidents) GetReplicationSetRequest(input *GetReplicationSetInput) (
 // API operation GetReplicationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetReplicationSet
 func (c *SSMIncidents) GetReplicationSet(input *GetReplicationSetInput) (*GetReplicationSetOutput, error) {
@@ -974,14 +974,13 @@ const opGetResourcePolicies = "GetResourcePolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePoliciesRequest method.
+//	req, resp := client.GetResourcePoliciesRequest(params)
 //
-//    // Example sending a request using the GetResourcePoliciesRequest method.
-//    req, resp := client.GetResourcePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetResourcePolicies
 func (c *SSMIncidents) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *request.Request, output *GetResourcePoliciesOutput) {
@@ -1018,22 +1017,23 @@ func (c *SSMIncidents) GetResourcePoliciesRequest(input *GetResourcePoliciesInpu
 // API operation GetResourcePolicies for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetResourcePolicies
 func (c *SSMIncidents) GetResourcePolicies(input *GetResourcePoliciesInput) (*GetResourcePoliciesOutput, error) {
@@ -1065,15 +1065,14 @@ func (c *SSMIncidents) GetResourcePoliciesWithContext(ctx aws.Context, input *Ge
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourcePolicies operation.
-//    pageNum := 0
-//    err := client.GetResourcePoliciesPages(params,
-//        func(page *ssmincidents.GetResourcePoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourcePolicies operation.
+//	pageNum := 0
+//	err := client.GetResourcePoliciesPages(params,
+//	    func(page *ssmincidents.GetResourcePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) GetResourcePoliciesPages(input *GetResourcePoliciesInput, fn func(*GetResourcePoliciesOutput, bool) bool) error {
 	return c.GetResourcePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1125,14 +1124,13 @@ const opGetResponsePlan = "GetResponsePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResponsePlanRequest method.
+//	req, resp := client.GetResponsePlanRequest(params)
 //
-//    // Example sending a request using the GetResponsePlanRequest method.
-//    req, resp := client.GetResponsePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetResponsePlan
 func (c *SSMIncidents) GetResponsePlanRequest(input *GetResponsePlanInput) (req *request.Request, output *GetResponsePlanOutput) {
@@ -1163,22 +1161,23 @@ func (c *SSMIncidents) GetResponsePlanRequest(input *GetResponsePlanInput) (req 
 // API operation GetResponsePlan for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetResponsePlan
 func (c *SSMIncidents) GetResponsePlan(input *GetResponsePlanInput) (*GetResponsePlanOutput, error) {
@@ -1218,14 +1217,13 @@ const opGetTimelineEvent = "GetTimelineEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTimelineEventRequest method.
+//	req, resp := client.GetTimelineEventRequest(params)
 //
-//    // Example sending a request using the GetTimelineEventRequest method.
-//    req, resp := client.GetTimelineEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetTimelineEvent
 func (c *SSMIncidents) GetTimelineEventRequest(input *GetTimelineEventInput) (req *request.Request, output *GetTimelineEventOutput) {
@@ -1256,22 +1254,23 @@ func (c *SSMIncidents) GetTimelineEventRequest(input *GetTimelineEventInput) (re
 // API operation GetTimelineEvent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/GetTimelineEvent
 func (c *SSMIncidents) GetTimelineEvent(input *GetTimelineEventInput) (*GetTimelineEventOutput, error) {
@@ -1311,14 +1310,13 @@ const opListIncidentRecords = "ListIncidentRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIncidentRecordsRequest method.
+//	req, resp := client.ListIncidentRecordsRequest(params)
 //
-//    // Example sending a request using the ListIncidentRecordsRequest method.
-//    req, resp := client.ListIncidentRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListIncidentRecords
 func (c *SSMIncidents) ListIncidentRecordsRequest(input *ListIncidentRecordsInput) (req *request.Request, output *ListIncidentRecordsOutput) {
@@ -1356,19 +1354,20 @@ func (c *SSMIncidents) ListIncidentRecordsRequest(input *ListIncidentRecordsInpu
 // API operation ListIncidentRecords for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListIncidentRecords
 func (c *SSMIncidents) ListIncidentRecords(input *ListIncidentRecordsInput) (*ListIncidentRecordsOutput, error) {
@@ -1400,15 +1399,14 @@ func (c *SSMIncidents) ListIncidentRecordsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIncidentRecords operation.
-//    pageNum := 0
-//    err := client.ListIncidentRecordsPages(params,
-//        func(page *ssmincidents.ListIncidentRecordsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIncidentRecords operation.
+//	pageNum := 0
+//	err := client.ListIncidentRecordsPages(params,
+//	    func(page *ssmincidents.ListIncidentRecordsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) ListIncidentRecordsPages(input *ListIncidentRecordsInput, fn func(*ListIncidentRecordsOutput, bool) bool) error {
 	return c.ListIncidentRecordsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1460,14 +1458,13 @@ const opListRelatedItems = "ListRelatedItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRelatedItemsRequest method.
+//	req, resp := client.ListRelatedItemsRequest(params)
 //
-//    // Example sending a request using the ListRelatedItemsRequest method.
-//    req, resp := client.ListRelatedItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListRelatedItems
 func (c *SSMIncidents) ListRelatedItemsRequest(input *ListRelatedItemsInput) (req *request.Request, output *ListRelatedItemsOutput) {
@@ -1504,19 +1501,20 @@ func (c *SSMIncidents) ListRelatedItemsRequest(input *ListRelatedItemsInput) (re
 // API operation ListRelatedItems for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListRelatedItems
 func (c *SSMIncidents) ListRelatedItems(input *ListRelatedItemsInput) (*ListRelatedItemsOutput, error) {
@@ -1548,15 +1546,14 @@ func (c *SSMIncidents) ListRelatedItemsWithContext(ctx aws.Context, input *ListR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRelatedItems operation.
-//    pageNum := 0
-//    err := client.ListRelatedItemsPages(params,
-//        func(page *ssmincidents.ListRelatedItemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRelatedItems operation.
+//	pageNum := 0
+//	err := client.ListRelatedItemsPages(params,
+//	    func(page *ssmincidents.ListRelatedItemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) ListRelatedItemsPages(input *ListRelatedItemsInput, fn func(*ListRelatedItemsOutput, bool) bool) error {
 	return c.ListRelatedItemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1608,14 +1605,13 @@ const opListReplicationSets = "ListReplicationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReplicationSetsRequest method.
+//	req, resp := client.ListReplicationSetsRequest(params)
 //
-//    // Example sending a request using the ListReplicationSetsRequest method.
-//    req, resp := client.ListReplicationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListReplicationSets
 func (c *SSMIncidents) ListReplicationSetsRequest(input *ListReplicationSetsInput) (req *request.Request, output *ListReplicationSetsOutput) {
@@ -1652,19 +1648,20 @@ func (c *SSMIncidents) ListReplicationSetsRequest(input *ListReplicationSetsInpu
 // API operation ListReplicationSets for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListReplicationSets
 func (c *SSMIncidents) ListReplicationSets(input *ListReplicationSetsInput) (*ListReplicationSetsOutput, error) {
@@ -1696,15 +1693,14 @@ func (c *SSMIncidents) ListReplicationSetsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReplicationSets operation.
-//    pageNum := 0
-//    err := client.ListReplicationSetsPages(params,
-//        func(page *ssmincidents.ListReplicationSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReplicationSets operation.
+//	pageNum := 0
+//	err := client.ListReplicationSetsPages(params,
+//	    func(page *ssmincidents.ListReplicationSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) ListReplicationSetsPages(input *ListReplicationSetsInput, fn func(*ListReplicationSetsOutput, bool) bool) error {
 	return c.ListReplicationSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1756,14 +1752,13 @@ const opListResponsePlans = "ListResponsePlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResponsePlansRequest method.
+//	req, resp := client.ListResponsePlansRequest(params)
 //
-//    // Example sending a request using the ListResponsePlansRequest method.
-//    req, resp := client.ListResponsePlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListResponsePlans
 func (c *SSMIncidents) ListResponsePlansRequest(input *ListResponsePlansInput) (req *request.Request, output *ListResponsePlansOutput) {
@@ -1800,19 +1795,20 @@ func (c *SSMIncidents) ListResponsePlansRequest(input *ListResponsePlansInput) (
 // API operation ListResponsePlans for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListResponsePlans
 func (c *SSMIncidents) ListResponsePlans(input *ListResponsePlansInput) (*ListResponsePlansOutput, error) {
@@ -1844,15 +1840,14 @@ func (c *SSMIncidents) ListResponsePlansWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResponsePlans operation.
-//    pageNum := 0
-//    err := client.ListResponsePlansPages(params,
-//        func(page *ssmincidents.ListResponsePlansOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResponsePlans operation.
+//	pageNum := 0
+//	err := client.ListResponsePlansPages(params,
+//	    func(page *ssmincidents.ListResponsePlansOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) ListResponsePlansPages(input *ListResponsePlansInput, fn func(*ListResponsePlansOutput, bool) bool) error {
 	return c.ListResponsePlansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1904,14 +1899,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListTagsForResource
 func (c *SSMIncidents) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1942,22 +1936,23 @@ func (c *SSMIncidents) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListTagsForResource
 func (c *SSMIncidents) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1997,14 +1992,13 @@ const opListTimelineEvents = "ListTimelineEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTimelineEventsRequest method.
+//	req, resp := client.ListTimelineEventsRequest(params)
 //
-//    // Example sending a request using the ListTimelineEventsRequest method.
-//    req, resp := client.ListTimelineEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListTimelineEvents
 func (c *SSMIncidents) ListTimelineEventsRequest(input *ListTimelineEventsInput) (req *request.Request, output *ListTimelineEventsOutput) {
@@ -2041,19 +2035,20 @@ func (c *SSMIncidents) ListTimelineEventsRequest(input *ListTimelineEventsInput)
 // API operation ListTimelineEvents for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/ListTimelineEvents
 func (c *SSMIncidents) ListTimelineEvents(input *ListTimelineEventsInput) (*ListTimelineEventsOutput, error) {
@@ -2085,15 +2080,14 @@ func (c *SSMIncidents) ListTimelineEventsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTimelineEvents operation.
-//    pageNum := 0
-//    err := client.ListTimelineEventsPages(params,
-//        func(page *ssmincidents.ListTimelineEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTimelineEvents operation.
+//	pageNum := 0
+//	err := client.ListTimelineEventsPages(params,
+//	    func(page *ssmincidents.ListTimelineEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSMIncidents) ListTimelineEventsPages(input *ListTimelineEventsInput, fn func(*ListTimelineEventsOutput, bool) bool) error {
 	return c.ListTimelineEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2145,14 +2139,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/PutResourcePolicy
 func (c *SSMIncidents) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -2186,22 +2179,23 @@ func (c *SSMIncidents) PutResourcePolicyRequest(input *PutResourcePolicyInput) (
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/PutResourcePolicy
 func (c *SSMIncidents) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -2241,14 +2235,13 @@ const opStartIncident = "StartIncident"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartIncidentRequest method.
+//	req, resp := client.StartIncidentRequest(params)
 //
-//    // Example sending a request using the StartIncidentRequest method.
-//    req, resp := client.StartIncidentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/StartIncident
 func (c *SSMIncidents) StartIncidentRequest(input *StartIncidentInput) (req *request.Request, output *StartIncidentOutput) {
@@ -2280,25 +2273,26 @@ func (c *SSMIncidents) StartIncidentRequest(input *StartIncidentInput) (req *req
 // API operation StartIncident for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/StartIncident
 func (c *SSMIncidents) StartIncident(input *StartIncidentInput) (*StartIncidentOutput, error) {
@@ -2338,14 +2332,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/TagResource
 func (c *SSMIncidents) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2377,28 +2370,29 @@ func (c *SSMIncidents) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/TagResource
 func (c *SSMIncidents) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2438,14 +2432,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UntagResource
 func (c *SSMIncidents) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2477,25 +2470,26 @@ func (c *SSMIncidents) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UntagResource
 func (c *SSMIncidents) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2535,14 +2529,13 @@ const opUpdateDeletionProtection = "UpdateDeletionProtection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeletionProtectionRequest method.
+//	req, resp := client.UpdateDeletionProtectionRequest(params)
 //
-//    // Example sending a request using the UpdateDeletionProtectionRequest method.
-//    req, resp := client.UpdateDeletionProtectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateDeletionProtection
 func (c *SSMIncidents) UpdateDeletionProtectionRequest(input *UpdateDeletionProtectionInput) (req *request.Request, output *UpdateDeletionProtectionOutput) {
@@ -2575,22 +2568,23 @@ func (c *SSMIncidents) UpdateDeletionProtectionRequest(input *UpdateDeletionProt
 // API operation UpdateDeletionProtection for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateDeletionProtection
 func (c *SSMIncidents) UpdateDeletionProtection(input *UpdateDeletionProtectionInput) (*UpdateDeletionProtectionOutput, error) {
@@ -2630,14 +2624,13 @@ const opUpdateIncidentRecord = "UpdateIncidentRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIncidentRecordRequest method.
+//	req, resp := client.UpdateIncidentRecordRequest(params)
 //
-//    // Example sending a request using the UpdateIncidentRecordRequest method.
-//    req, resp := client.UpdateIncidentRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateIncidentRecord
 func (c *SSMIncidents) UpdateIncidentRecordRequest(input *UpdateIncidentRecordInput) (req *request.Request, output *UpdateIncidentRecordOutput) {
@@ -2671,25 +2664,26 @@ func (c *SSMIncidents) UpdateIncidentRecordRequest(input *UpdateIncidentRecordIn
 // API operation UpdateIncidentRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateIncidentRecord
 func (c *SSMIncidents) UpdateIncidentRecord(input *UpdateIncidentRecordInput) (*UpdateIncidentRecordOutput, error) {
@@ -2729,14 +2723,13 @@ const opUpdateRelatedItems = "UpdateRelatedItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRelatedItemsRequest method.
+//	req, resp := client.UpdateRelatedItemsRequest(params)
 //
-//    // Example sending a request using the UpdateRelatedItemsRequest method.
-//    req, resp := client.UpdateRelatedItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateRelatedItems
 func (c *SSMIncidents) UpdateRelatedItemsRequest(input *UpdateRelatedItemsInput) (req *request.Request, output *UpdateRelatedItemsOutput) {
@@ -2768,25 +2761,26 @@ func (c *SSMIncidents) UpdateRelatedItemsRequest(input *UpdateRelatedItemsInput)
 // API operation UpdateRelatedItems for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateRelatedItems
 func (c *SSMIncidents) UpdateRelatedItems(input *UpdateRelatedItemsInput) (*UpdateRelatedItemsOutput, error) {
@@ -2826,14 +2820,13 @@ const opUpdateReplicationSet = "UpdateReplicationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationSetRequest method.
+//	req, resp := client.UpdateReplicationSetRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationSetRequest method.
-//    req, resp := client.UpdateReplicationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateReplicationSet
 func (c *SSMIncidents) UpdateReplicationSetRequest(input *UpdateReplicationSetInput) (req *request.Request, output *UpdateReplicationSetOutput) {
@@ -2865,25 +2858,26 @@ func (c *SSMIncidents) UpdateReplicationSetRequest(input *UpdateReplicationSetIn
 // API operation UpdateReplicationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateReplicationSet
 func (c *SSMIncidents) UpdateReplicationSet(input *UpdateReplicationSetInput) (*UpdateReplicationSetOutput, error) {
@@ -2923,14 +2917,13 @@ const opUpdateResponsePlan = "UpdateResponsePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResponsePlanRequest method.
+//	req, resp := client.UpdateResponsePlanRequest(params)
 //
-//    // Example sending a request using the UpdateResponsePlanRequest method.
-//    req, resp := client.UpdateResponsePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateResponsePlan
 func (c *SSMIncidents) UpdateResponsePlanRequest(input *UpdateResponsePlanInput) (req *request.Request, output *UpdateResponsePlanOutput) {
@@ -2962,25 +2955,26 @@ func (c *SSMIncidents) UpdateResponsePlanRequest(input *UpdateResponsePlanInput)
 // API operation UpdateResponsePlan for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateResponsePlan
 func (c *SSMIncidents) UpdateResponsePlan(input *UpdateResponsePlanInput) (*UpdateResponsePlanOutput, error) {
@@ -3020,14 +3014,13 @@ const opUpdateTimelineEvent = "UpdateTimelineEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTimelineEventRequest method.
+//	req, resp := client.UpdateTimelineEventRequest(params)
 //
-//    // Example sending a request using the UpdateTimelineEventRequest method.
-//    req, resp := client.UpdateTimelineEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateTimelineEvent
 func (c *SSMIncidents) UpdateTimelineEventRequest(input *UpdateTimelineEventInput) (req *request.Request, output *UpdateTimelineEventOutput) {
@@ -3059,25 +3052,26 @@ func (c *SSMIncidents) UpdateTimelineEventRequest(input *UpdateTimelineEventInpu
 // API operation UpdateTimelineEvent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which doesn't exist.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   You don't have sufficient access to perform this operation.
+//   - ResourceNotFoundException
+//     Request references a resource which doesn't exist.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - AccessDeniedException
+//     You don't have sufficient access to perform this operation.
 //
-//   * ConflictException
-//   Updating or deleting a resource causes an inconsistent state.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ConflictException
+//     Updating or deleting a resource causes an inconsistent state.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-incidents-2018-05-10/UpdateTimelineEvent
 func (c *SSMIncidents) UpdateTimelineEvent(input *UpdateTimelineEventInput) (*UpdateTimelineEventOutput, error) {

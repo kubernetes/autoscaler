@@ -47,7 +47,7 @@ func NewClient(url string, account string, httpClient *http.Client) (*Client, er
 	}, err
 }
 
-//Server fetches a server by id
+// Server fetches a server by id
 func (c *Client) Server(identifier string) (*brightbox.Server, error) {
 	if cachedServer, found := c.clientCache.Get(identifier); found {
 		klog.V(4).Infof("Cache hit %q", identifier)
@@ -62,7 +62,7 @@ func (c *Client) Server(identifier string) (*brightbox.Server, error) {
 	return server, nil
 }
 
-//ServerGroup fetches a server group by id
+// ServerGroup fetches a server group by id
 func (c *Client) ServerGroup(identifier string) (*brightbox.ServerGroup, error) {
 	if cachedServerGroup, found := c.clientCache.Get(identifier); found {
 		klog.V(4).Infof("Cache hit %q", identifier)
@@ -77,7 +77,7 @@ func (c *Client) ServerGroup(identifier string) (*brightbox.ServerGroup, error) 
 	return serverGroup, nil
 }
 
-//ConfigMap fetches a config map by id
+// ConfigMap fetches a config map by id
 func (c *Client) ConfigMap(identifier string) (*brightbox.ConfigMap, error) {
 	if cachedConfigMap, found := c.clientCache.Get(identifier); found {
 		klog.V(4).Infof("Cache hit %q", identifier)
@@ -92,7 +92,7 @@ func (c *Client) ConfigMap(identifier string) (*brightbox.ConfigMap, error) {
 	return configMap, nil
 }
 
-//DestroyServer removes a server by id
+// DestroyServer removes a server by id
 func (c *Client) DestroyServer(identifier string) error {
 	err := c.Client.DestroyServer(identifier)
 	if err == nil {
@@ -101,7 +101,7 @@ func (c *Client) DestroyServer(identifier string) error {
 	return err
 }
 
-//DestroyServerGroup removes a server group by id
+// DestroyServerGroup removes a server group by id
 func (c *Client) DestroyServerGroup(identifier string) error {
 	err := c.Client.DestroyServerGroup(identifier)
 	if err == nil {

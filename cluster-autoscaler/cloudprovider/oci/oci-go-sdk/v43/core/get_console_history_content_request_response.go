@@ -11,7 +11,7 @@ import (
 
 // GetConsoleHistoryContentRequest wrapper for the GetConsoleHistoryContent operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetConsoleHistoryContent.go.html to see an example of how to use GetConsoleHistoryContentRequest.
 type GetConsoleHistoryContentRequest struct {

@@ -29,14 +29,13 @@ const opAssociateApplicationFleet = "AssociateApplicationFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateApplicationFleetRequest method.
+//	req, resp := client.AssociateApplicationFleetRequest(params)
 //
-//    // Example sending a request using the AssociateApplicationFleetRequest method.
-//    req, resp := client.AssociateApplicationFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateApplicationFleet
 func (c *AppStream) AssociateApplicationFleetRequest(input *AssociateApplicationFleetInput) (req *request.Request, output *AssociateApplicationFleetOutput) {
@@ -68,20 +67,21 @@ func (c *AppStream) AssociateApplicationFleetRequest(input *AssociateApplication
 // API operation AssociateApplicationFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateApplicationFleet
 func (c *AppStream) AssociateApplicationFleet(input *AssociateApplicationFleetInput) (*AssociateApplicationFleetOutput, error) {
@@ -121,14 +121,13 @@ const opAssociateApplicationToEntitlement = "AssociateApplicationToEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateApplicationToEntitlementRequest method.
+//	req, resp := client.AssociateApplicationToEntitlementRequest(params)
 //
-//    // Example sending a request using the AssociateApplicationToEntitlementRequest method.
-//    req, resp := client.AssociateApplicationToEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateApplicationToEntitlement
 func (c *AppStream) AssociateApplicationToEntitlementRequest(input *AssociateApplicationToEntitlementInput) (req *request.Request, output *AssociateApplicationToEntitlementOutput) {
@@ -160,20 +159,21 @@ func (c *AppStream) AssociateApplicationToEntitlementRequest(input *AssociateApp
 // API operation AssociateApplicationToEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateApplicationToEntitlement
 func (c *AppStream) AssociateApplicationToEntitlement(input *AssociateApplicationToEntitlementInput) (*AssociateApplicationToEntitlementOutput, error) {
@@ -213,14 +213,13 @@ const opAssociateFleet = "AssociateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateFleetRequest method.
+//	req, resp := client.AssociateFleetRequest(params)
 //
-//    // Example sending a request using the AssociateFleetRequest method.
-//    req, resp := client.AssociateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateFleet
 func (c *AppStream) AssociateFleetRequest(input *AssociateFleetInput) (req *request.Request, output *AssociateFleetOutput) {
@@ -252,24 +251,25 @@ func (c *AppStream) AssociateFleetRequest(input *AssociateFleetInput) (req *requ
 // API operation AssociateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/AssociateFleet
 func (c *AppStream) AssociateFleet(input *AssociateFleetInput) (*AssociateFleetOutput, error) {
@@ -309,14 +309,13 @@ const opBatchAssociateUserStack = "BatchAssociateUserStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAssociateUserStackRequest method.
+//	req, resp := client.BatchAssociateUserStackRequest(params)
 //
-//    // Example sending a request using the BatchAssociateUserStackRequest method.
-//    req, resp := client.BatchAssociateUserStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/BatchAssociateUserStack
 func (c *AppStream) BatchAssociateUserStackRequest(input *BatchAssociateUserStackInput) (req *request.Request, output *BatchAssociateUserStackOutput) {
@@ -349,11 +348,12 @@ func (c *AppStream) BatchAssociateUserStackRequest(input *BatchAssociateUserStac
 // API operation BatchAssociateUserStack for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/BatchAssociateUserStack
 func (c *AppStream) BatchAssociateUserStack(input *BatchAssociateUserStackInput) (*BatchAssociateUserStackOutput, error) {
@@ -393,14 +393,13 @@ const opBatchDisassociateUserStack = "BatchDisassociateUserStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisassociateUserStackRequest method.
+//	req, resp := client.BatchDisassociateUserStackRequest(params)
 //
-//    // Example sending a request using the BatchDisassociateUserStackRequest method.
-//    req, resp := client.BatchDisassociateUserStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/BatchDisassociateUserStack
 func (c *AppStream) BatchDisassociateUserStackRequest(input *BatchDisassociateUserStackInput) (req *request.Request, output *BatchDisassociateUserStackOutput) {
@@ -431,11 +430,12 @@ func (c *AppStream) BatchDisassociateUserStackRequest(input *BatchDisassociateUs
 // API operation BatchDisassociateUserStack for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/BatchDisassociateUserStack
 func (c *AppStream) BatchDisassociateUserStack(input *BatchDisassociateUserStackInput) (*BatchDisassociateUserStackOutput, error) {
@@ -475,14 +475,13 @@ const opCopyImage = "CopyImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyImageRequest method.
+//	req, resp := client.CopyImageRequest(params)
 //
-//    // Example sending a request using the CopyImageRequest method.
-//    req, resp := client.CopyImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CopyImage
 func (c *AppStream) CopyImageRequest(input *CopyImageInput) (req *request.Request, output *CopyImageOutput) {
@@ -514,24 +513,25 @@ func (c *AppStream) CopyImageRequest(input *CopyImageInput) (req *request.Reques
 // API operation CopyImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CopyImage
 func (c *AppStream) CopyImage(input *CopyImageInput) (*CopyImageOutput, error) {
@@ -571,14 +571,13 @@ const opCreateAppBlock = "CreateAppBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppBlockRequest method.
+//	req, resp := client.CreateAppBlockRequest(params)
 //
-//    // Example sending a request using the CreateAppBlockRequest method.
-//    req, resp := client.CreateAppBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlock
 func (c *AppStream) CreateAppBlockRequest(input *CreateAppBlockInput) (req *request.Request, output *CreateAppBlockOutput) {
@@ -617,17 +616,18 @@ func (c *AppStream) CreateAppBlockRequest(input *CreateAppBlockInput) (req *requ
 // API operation CreateAppBlock for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateAppBlock
 func (c *AppStream) CreateAppBlock(input *CreateAppBlockInput) (*CreateAppBlockOutput, error) {
@@ -667,14 +667,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateApplication
 func (c *AppStream) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
@@ -714,20 +713,21 @@ func (c *AppStream) CreateApplicationRequest(input *CreateApplicationInput) (req
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateApplication
 func (c *AppStream) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
@@ -767,14 +767,13 @@ const opCreateDirectoryConfig = "CreateDirectoryConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDirectoryConfigRequest method.
+//	req, resp := client.CreateDirectoryConfigRequest(params)
 //
-//    // Example sending a request using the CreateDirectoryConfigRequest method.
-//    req, resp := client.CreateDirectoryConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateDirectoryConfig
 func (c *AppStream) CreateDirectoryConfigRequest(input *CreateDirectoryConfigInput) (req *request.Request, output *CreateDirectoryConfigOutput) {
@@ -807,24 +806,25 @@ func (c *AppStream) CreateDirectoryConfigRequest(input *CreateDirectoryConfigInp
 // API operation CreateDirectoryConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateDirectoryConfig
 func (c *AppStream) CreateDirectoryConfig(input *CreateDirectoryConfigInput) (*CreateDirectoryConfigOutput, error) {
@@ -864,14 +864,13 @@ const opCreateEntitlement = "CreateEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEntitlementRequest method.
+//	req, resp := client.CreateEntitlementRequest(params)
 //
-//    // Example sending a request using the CreateEntitlementRequest method.
-//    req, resp := client.CreateEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateEntitlement
 func (c *AppStream) CreateEntitlementRequest(input *CreateEntitlementInput) (req *request.Request, output *CreateEntitlementOutput) {
@@ -907,17 +906,18 @@ func (c *AppStream) CreateEntitlementRequest(input *CreateEntitlementInput) (req
 // API operation CreateEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * EntitlementAlreadyExistsException
-//   The entitlement already exists.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - EntitlementAlreadyExistsException
+//     The entitlement already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateEntitlement
 func (c *AppStream) CreateEntitlement(input *CreateEntitlementInput) (*CreateEntitlementOutput, error) {
@@ -957,14 +957,13 @@ const opCreateFleet = "CreateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetRequest method.
+//	req, resp := client.CreateFleetRequest(params)
 //
-//    // Example sending a request using the CreateFleetRequest method.
-//    req, resp := client.CreateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateFleet
 func (c *AppStream) CreateFleetRequest(input *CreateFleetInput) (req *request.Request, output *CreateFleetOutput) {
@@ -996,41 +995,42 @@ func (c *AppStream) CreateFleetRequest(input *CreateFleetInput) (req *request.Re
 // API operation CreateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * RequestLimitExceededException
-//   AppStream 2.0 can’t process the request right now because the Describe
-//   calls from your AWS account are being throttled by Amazon EC2. Try again
-//   later.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateFleet
 func (c *AppStream) CreateFleet(input *CreateFleetInput) (*CreateFleetOutput, error) {
@@ -1070,14 +1070,13 @@ const opCreateImageBuilder = "CreateImageBuilder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageBuilderRequest method.
+//	req, resp := client.CreateImageBuilderRequest(params)
 //
-//    // Example sending a request using the CreateImageBuilderRequest method.
-//    req, resp := client.CreateImageBuilderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateImageBuilder
 func (c *AppStream) CreateImageBuilderRequest(input *CreateImageBuilderInput) (req *request.Request, output *CreateImageBuilderOutput) {
@@ -1112,41 +1111,42 @@ func (c *AppStream) CreateImageBuilderRequest(input *CreateImageBuilderInput) (r
 // API operation CreateImageBuilder for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
 //
-//   * RequestLimitExceededException
-//   AppStream 2.0 can’t process the request right now because the Describe
-//   calls from your AWS account are being throttled by Amazon EC2. Try again
-//   later.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateImageBuilder
 func (c *AppStream) CreateImageBuilder(input *CreateImageBuilderInput) (*CreateImageBuilderOutput, error) {
@@ -1186,14 +1186,13 @@ const opCreateImageBuilderStreamingURL = "CreateImageBuilderStreamingURL"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImageBuilderStreamingURLRequest method.
+//	req, resp := client.CreateImageBuilderStreamingURLRequest(params)
 //
-//    // Example sending a request using the CreateImageBuilderStreamingURLRequest method.
-//    req, resp := client.CreateImageBuilderStreamingURLRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateImageBuilderStreamingURL
 func (c *AppStream) CreateImageBuilderStreamingURLRequest(input *CreateImageBuilderStreamingURLInput) (req *request.Request, output *CreateImageBuilderStreamingURLOutput) {
@@ -1224,11 +1223,12 @@ func (c *AppStream) CreateImageBuilderStreamingURLRequest(input *CreateImageBuil
 // API operation CreateImageBuilderStreamingURL for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateImageBuilderStreamingURL
 func (c *AppStream) CreateImageBuilderStreamingURL(input *CreateImageBuilderStreamingURLInput) (*CreateImageBuilderStreamingURLOutput, error) {
@@ -1268,14 +1268,13 @@ const opCreateStack = "CreateStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStackRequest method.
+//	req, resp := client.CreateStackRequest(params)
 //
-//    // Example sending a request using the CreateStackRequest method.
-//    req, resp := client.CreateStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateStack
 func (c *AppStream) CreateStackRequest(input *CreateStackInput) (req *request.Request, output *CreateStackOutput) {
@@ -1307,27 +1306,28 @@ func (c *AppStream) CreateStackRequest(input *CreateStackInput) (req *request.Re
 // API operation CreateStack for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateStack
 func (c *AppStream) CreateStack(input *CreateStackInput) (*CreateStackOutput, error) {
@@ -1367,14 +1367,13 @@ const opCreateStreamingURL = "CreateStreamingURL"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingURLRequest method.
+//	req, resp := client.CreateStreamingURLRequest(params)
 //
-//    // Example sending a request using the CreateStreamingURLRequest method.
-//    req, resp := client.CreateStreamingURLRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateStreamingURL
 func (c *AppStream) CreateStreamingURLRequest(input *CreateStreamingURLInput) (req *request.Request, output *CreateStreamingURLOutput) {
@@ -1407,17 +1406,18 @@ func (c *AppStream) CreateStreamingURLRequest(input *CreateStreamingURLInput) (r
 // API operation CreateStreamingURL for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateStreamingURL
 func (c *AppStream) CreateStreamingURL(input *CreateStreamingURLInput) (*CreateStreamingURLOutput, error) {
@@ -1457,14 +1457,13 @@ const opCreateUpdatedImage = "CreateUpdatedImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUpdatedImageRequest method.
+//	req, resp := client.CreateUpdatedImageRequest(params)
 //
-//    // Example sending a request using the CreateUpdatedImageRequest method.
-//    req, resp := client.CreateUpdatedImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUpdatedImage
 func (c *AppStream) CreateUpdatedImageRequest(input *CreateUpdatedImageInput) (req *request.Request, output *CreateUpdatedImageOutput) {
@@ -1500,27 +1499,28 @@ func (c *AppStream) CreateUpdatedImageRequest(input *CreateUpdatedImageInput) (r
 // API operation CreateUpdatedImage for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUpdatedImage
 func (c *AppStream) CreateUpdatedImage(input *CreateUpdatedImageInput) (*CreateUpdatedImageOutput, error) {
@@ -1560,14 +1560,13 @@ const opCreateUsageReportSubscription = "CreateUsageReportSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUsageReportSubscriptionRequest method.
+//	req, resp := client.CreateUsageReportSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateUsageReportSubscriptionRequest method.
-//    req, resp := client.CreateUsageReportSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUsageReportSubscription
 func (c *AppStream) CreateUsageReportSubscriptionRequest(input *CreateUsageReportSubscriptionInput) (req *request.Request, output *CreateUsageReportSubscriptionOutput) {
@@ -1598,15 +1597,16 @@ func (c *AppStream) CreateUsageReportSubscriptionRequest(input *CreateUsageRepor
 // API operation CreateUsageReportSubscription for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRoleException
-//   The specified role is invalid.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUsageReportSubscription
 func (c *AppStream) CreateUsageReportSubscription(input *CreateUsageReportSubscriptionInput) (*CreateUsageReportSubscriptionOutput, error) {
@@ -1646,14 +1646,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUser
 func (c *AppStream) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -1685,21 +1684,22 @@ func (c *AppStream) CreateUserRequest(input *CreateUserInput) (req *request.Requ
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/CreateUser
 func (c *AppStream) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -1739,14 +1739,13 @@ const opDeleteAppBlock = "DeleteAppBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppBlockRequest method.
+//	req, resp := client.DeleteAppBlockRequest(params)
 //
-//    // Example sending a request using the DeleteAppBlockRequest method.
-//    req, resp := client.DeleteAppBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteAppBlock
 func (c *AppStream) DeleteAppBlockRequest(input *DeleteAppBlockInput) (req *request.Request, output *DeleteAppBlockOutput) {
@@ -1778,14 +1777,15 @@ func (c *AppStream) DeleteAppBlockRequest(input *DeleteAppBlockInput) (req *requ
 // API operation DeleteAppBlock for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteAppBlock
 func (c *AppStream) DeleteAppBlock(input *DeleteAppBlockInput) (*DeleteAppBlockOutput, error) {
@@ -1825,14 +1825,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteApplication
 func (c *AppStream) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -1864,17 +1863,18 @@ func (c *AppStream) DeleteApplicationRequest(input *DeleteApplicationInput) (req
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteApplication
 func (c *AppStream) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -1914,14 +1914,13 @@ const opDeleteDirectoryConfig = "DeleteDirectoryConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDirectoryConfigRequest method.
+//	req, resp := client.DeleteDirectoryConfigRequest(params)
 //
-//    // Example sending a request using the DeleteDirectoryConfigRequest method.
-//    req, resp := client.DeleteDirectoryConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteDirectoryConfig
 func (c *AppStream) DeleteDirectoryConfigRequest(input *DeleteDirectoryConfigInput) (req *request.Request, output *DeleteDirectoryConfigOutput) {
@@ -1955,11 +1954,12 @@ func (c *AppStream) DeleteDirectoryConfigRequest(input *DeleteDirectoryConfigInp
 // API operation DeleteDirectoryConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteDirectoryConfig
 func (c *AppStream) DeleteDirectoryConfig(input *DeleteDirectoryConfigInput) (*DeleteDirectoryConfigOutput, error) {
@@ -1999,14 +1999,13 @@ const opDeleteEntitlement = "DeleteEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEntitlementRequest method.
+//	req, resp := client.DeleteEntitlementRequest(params)
 //
-//    // Example sending a request using the DeleteEntitlementRequest method.
-//    req, resp := client.DeleteEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteEntitlement
 func (c *AppStream) DeleteEntitlementRequest(input *DeleteEntitlementInput) (req *request.Request, output *DeleteEntitlementOutput) {
@@ -2038,20 +2037,21 @@ func (c *AppStream) DeleteEntitlementRequest(input *DeleteEntitlementInput) (req
 // API operation DeleteEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteEntitlement
 func (c *AppStream) DeleteEntitlement(input *DeleteEntitlementInput) (*DeleteEntitlementOutput, error) {
@@ -2091,14 +2091,13 @@ const opDeleteFleet = "DeleteFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetRequest method.
+//	req, resp := client.DeleteFleetRequest(params)
 //
-//    // Example sending a request using the DeleteFleetRequest method.
-//    req, resp := client.DeleteFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteFleet
 func (c *AppStream) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Request, output *DeleteFleetOutput) {
@@ -2130,14 +2129,15 @@ func (c *AppStream) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Re
 // API operation DeleteFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteFleet
 func (c *AppStream) DeleteFleet(input *DeleteFleetInput) (*DeleteFleetOutput, error) {
@@ -2177,14 +2177,13 @@ const opDeleteImage = "DeleteImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageRequest method.
+//	req, resp := client.DeleteImageRequest(params)
 //
-//    // Example sending a request using the DeleteImageRequest method.
-//    req, resp := client.DeleteImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImage
 func (c *AppStream) DeleteImageRequest(input *DeleteImageInput) (req *request.Request, output *DeleteImageOutput) {
@@ -2216,17 +2215,18 @@ func (c *AppStream) DeleteImageRequest(input *DeleteImageInput) (req *request.Re
 // API operation DeleteImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImage
 func (c *AppStream) DeleteImage(input *DeleteImageInput) (*DeleteImageOutput, error) {
@@ -2266,14 +2266,13 @@ const opDeleteImageBuilder = "DeleteImageBuilder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImageBuilderRequest method.
+//	req, resp := client.DeleteImageBuilderRequest(params)
 //
-//    // Example sending a request using the DeleteImageBuilderRequest method.
-//    req, resp := client.DeleteImageBuilderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImageBuilder
 func (c *AppStream) DeleteImageBuilderRequest(input *DeleteImageBuilderInput) (req *request.Request, output *DeleteImageBuilderOutput) {
@@ -2304,14 +2303,15 @@ func (c *AppStream) DeleteImageBuilderRequest(input *DeleteImageBuilderInput) (r
 // API operation DeleteImageBuilder for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImageBuilder
 func (c *AppStream) DeleteImageBuilder(input *DeleteImageBuilderInput) (*DeleteImageBuilderOutput, error) {
@@ -2351,14 +2351,13 @@ const opDeleteImagePermissions = "DeleteImagePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteImagePermissionsRequest method.
+//	req, resp := client.DeleteImagePermissionsRequest(params)
 //
-//    // Example sending a request using the DeleteImagePermissionsRequest method.
-//    req, resp := client.DeleteImagePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImagePermissions
 func (c *AppStream) DeleteImagePermissionsRequest(input *DeleteImagePermissionsInput) (req *request.Request, output *DeleteImagePermissionsOutput) {
@@ -2392,11 +2391,12 @@ func (c *AppStream) DeleteImagePermissionsRequest(input *DeleteImagePermissionsI
 // API operation DeleteImagePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteImagePermissions
 func (c *AppStream) DeleteImagePermissions(input *DeleteImagePermissionsInput) (*DeleteImagePermissionsOutput, error) {
@@ -2436,14 +2436,13 @@ const opDeleteStack = "DeleteStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStackRequest method.
+//	req, resp := client.DeleteStackRequest(params)
 //
-//    // Example sending a request using the DeleteStackRequest method.
-//    req, resp := client.DeleteStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteStack
 func (c *AppStream) DeleteStackRequest(input *DeleteStackInput) (req *request.Request, output *DeleteStackOutput) {
@@ -2478,17 +2477,18 @@ func (c *AppStream) DeleteStackRequest(input *DeleteStackInput) (req *request.Re
 // API operation DeleteStack for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteStack
 func (c *AppStream) DeleteStack(input *DeleteStackInput) (*DeleteStackOutput, error) {
@@ -2528,14 +2528,13 @@ const opDeleteUsageReportSubscription = "DeleteUsageReportSubscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUsageReportSubscriptionRequest method.
+//	req, resp := client.DeleteUsageReportSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteUsageReportSubscriptionRequest method.
-//    req, resp := client.DeleteUsageReportSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteUsageReportSubscription
 func (c *AppStream) DeleteUsageReportSubscriptionRequest(input *DeleteUsageReportSubscriptionInput) (req *request.Request, output *DeleteUsageReportSubscriptionOutput) {
@@ -2567,12 +2566,13 @@ func (c *AppStream) DeleteUsageReportSubscriptionRequest(input *DeleteUsageRepor
 // API operation DeleteUsageReportSubscription for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteUsageReportSubscription
 func (c *AppStream) DeleteUsageReportSubscription(input *DeleteUsageReportSubscriptionInput) (*DeleteUsageReportSubscriptionOutput, error) {
@@ -2612,14 +2612,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteUser
 func (c *AppStream) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -2651,8 +2650,8 @@ func (c *AppStream) DeleteUserRequest(input *DeleteUserInput) (req *request.Requ
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DeleteUser
 func (c *AppStream) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -2692,14 +2691,13 @@ const opDescribeAppBlocks = "DescribeAppBlocks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppBlocksRequest method.
+//	req, resp := client.DescribeAppBlocksRequest(params)
 //
-//    // Example sending a request using the DescribeAppBlocksRequest method.
-//    req, resp := client.DescribeAppBlocksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlocks
 func (c *AppStream) DescribeAppBlocksRequest(input *DescribeAppBlocksInput) (req *request.Request, output *DescribeAppBlocksOutput) {
@@ -2730,11 +2728,12 @@ func (c *AppStream) DescribeAppBlocksRequest(input *DescribeAppBlocksInput) (req
 // API operation DescribeAppBlocks for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeAppBlocks
 func (c *AppStream) DescribeAppBlocks(input *DescribeAppBlocksInput) (*DescribeAppBlocksOutput, error) {
@@ -2774,14 +2773,13 @@ const opDescribeApplicationFleetAssociations = "DescribeApplicationFleetAssociat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationFleetAssociationsRequest method.
+//	req, resp := client.DescribeApplicationFleetAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationFleetAssociationsRequest method.
-//    req, resp := client.DescribeApplicationFleetAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeApplicationFleetAssociations
 func (c *AppStream) DescribeApplicationFleetAssociationsRequest(input *DescribeApplicationFleetAssociationsInput) (req *request.Request, output *DescribeApplicationFleetAssociationsOutput) {
@@ -2813,11 +2811,12 @@ func (c *AppStream) DescribeApplicationFleetAssociationsRequest(input *DescribeA
 // API operation DescribeApplicationFleetAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeApplicationFleetAssociations
 func (c *AppStream) DescribeApplicationFleetAssociations(input *DescribeApplicationFleetAssociationsInput) (*DescribeApplicationFleetAssociationsOutput, error) {
@@ -2857,14 +2856,13 @@ const opDescribeApplications = "DescribeApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeApplicationsRequest method.
+//	req, resp := client.DescribeApplicationsRequest(params)
 //
-//    // Example sending a request using the DescribeApplicationsRequest method.
-//    req, resp := client.DescribeApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeApplications
 func (c *AppStream) DescribeApplicationsRequest(input *DescribeApplicationsInput) (req *request.Request, output *DescribeApplicationsOutput) {
@@ -2895,11 +2893,12 @@ func (c *AppStream) DescribeApplicationsRequest(input *DescribeApplicationsInput
 // API operation DescribeApplications for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeApplications
 func (c *AppStream) DescribeApplications(input *DescribeApplicationsInput) (*DescribeApplicationsOutput, error) {
@@ -2939,14 +2938,13 @@ const opDescribeDirectoryConfigs = "DescribeDirectoryConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDirectoryConfigsRequest method.
+//	req, resp := client.DescribeDirectoryConfigsRequest(params)
 //
-//    // Example sending a request using the DescribeDirectoryConfigsRequest method.
-//    req, resp := client.DescribeDirectoryConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeDirectoryConfigs
 func (c *AppStream) DescribeDirectoryConfigsRequest(input *DescribeDirectoryConfigsInput) (req *request.Request, output *DescribeDirectoryConfigsOutput) {
@@ -2984,8 +2982,8 @@ func (c *AppStream) DescribeDirectoryConfigsRequest(input *DescribeDirectoryConf
 // API operation DescribeDirectoryConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeDirectoryConfigs
 func (c *AppStream) DescribeDirectoryConfigs(input *DescribeDirectoryConfigsInput) (*DescribeDirectoryConfigsOutput, error) {
@@ -3025,14 +3023,13 @@ const opDescribeEntitlements = "DescribeEntitlements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntitlementsRequest method.
+//	req, resp := client.DescribeEntitlementsRequest(params)
 //
-//    // Example sending a request using the DescribeEntitlementsRequest method.
-//    req, resp := client.DescribeEntitlementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeEntitlements
 func (c *AppStream) DescribeEntitlementsRequest(input *DescribeEntitlementsInput) (req *request.Request, output *DescribeEntitlementsOutput) {
@@ -3063,14 +3060,15 @@ func (c *AppStream) DescribeEntitlementsRequest(input *DescribeEntitlementsInput
 // API operation DescribeEntitlements for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeEntitlements
 func (c *AppStream) DescribeEntitlements(input *DescribeEntitlementsInput) (*DescribeEntitlementsOutput, error) {
@@ -3110,14 +3108,13 @@ const opDescribeFleets = "DescribeFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetsRequest method.
+//	req, resp := client.DescribeFleetsRequest(params)
 //
-//    // Example sending a request using the DescribeFleetsRequest method.
-//    req, resp := client.DescribeFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeFleets
 func (c *AppStream) DescribeFleetsRequest(input *DescribeFleetsInput) (req *request.Request, output *DescribeFleetsOutput) {
@@ -3149,8 +3146,8 @@ func (c *AppStream) DescribeFleetsRequest(input *DescribeFleetsInput) (req *requ
 // API operation DescribeFleets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeFleets
 func (c *AppStream) DescribeFleets(input *DescribeFleetsInput) (*DescribeFleetsOutput, error) {
@@ -3190,14 +3187,13 @@ const opDescribeImageBuilders = "DescribeImageBuilders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImageBuildersRequest method.
+//	req, resp := client.DescribeImageBuildersRequest(params)
 //
-//    // Example sending a request using the DescribeImageBuildersRequest method.
-//    req, resp := client.DescribeImageBuildersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImageBuilders
 func (c *AppStream) DescribeImageBuildersRequest(input *DescribeImageBuildersInput) (req *request.Request, output *DescribeImageBuildersOutput) {
@@ -3230,8 +3226,8 @@ func (c *AppStream) DescribeImageBuildersRequest(input *DescribeImageBuildersInp
 // API operation DescribeImageBuilders for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImageBuilders
 func (c *AppStream) DescribeImageBuilders(input *DescribeImageBuildersInput) (*DescribeImageBuildersOutput, error) {
@@ -3271,14 +3267,13 @@ const opDescribeImagePermissions = "DescribeImagePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImagePermissionsRequest method.
+//	req, resp := client.DescribeImagePermissionsRequest(params)
 //
-//    // Example sending a request using the DescribeImagePermissionsRequest method.
-//    req, resp := client.DescribeImagePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImagePermissions
 func (c *AppStream) DescribeImagePermissionsRequest(input *DescribeImagePermissionsInput) (req *request.Request, output *DescribeImagePermissionsOutput) {
@@ -3316,8 +3311,8 @@ func (c *AppStream) DescribeImagePermissionsRequest(input *DescribeImagePermissi
 // API operation DescribeImagePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImagePermissions
 func (c *AppStream) DescribeImagePermissions(input *DescribeImagePermissionsInput) (*DescribeImagePermissionsOutput, error) {
@@ -3349,15 +3344,14 @@ func (c *AppStream) DescribeImagePermissionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeImagePermissions operation.
-//    pageNum := 0
-//    err := client.DescribeImagePermissionsPages(params,
-//        func(page *appstream.DescribeImagePermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeImagePermissions operation.
+//	pageNum := 0
+//	err := client.DescribeImagePermissionsPages(params,
+//	    func(page *appstream.DescribeImagePermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppStream) DescribeImagePermissionsPages(input *DescribeImagePermissionsInput, fn func(*DescribeImagePermissionsOutput, bool) bool) error {
 	return c.DescribeImagePermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3409,14 +3403,13 @@ const opDescribeImages = "DescribeImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImagesRequest method.
+//	req, resp := client.DescribeImagesRequest(params)
 //
-//    // Example sending a request using the DescribeImagesRequest method.
-//    req, resp := client.DescribeImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImages
 func (c *AppStream) DescribeImagesRequest(input *DescribeImagesInput) (req *request.Request, output *DescribeImagesOutput) {
@@ -3455,11 +3448,12 @@ func (c *AppStream) DescribeImagesRequest(input *DescribeImagesInput) (req *requ
 // API operation DescribeImages for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeImages
 func (c *AppStream) DescribeImages(input *DescribeImagesInput) (*DescribeImagesOutput, error) {
@@ -3491,15 +3485,14 @@ func (c *AppStream) DescribeImagesWithContext(ctx aws.Context, input *DescribeIm
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeImages operation.
-//    pageNum := 0
-//    err := client.DescribeImagesPages(params,
-//        func(page *appstream.DescribeImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeImages operation.
+//	pageNum := 0
+//	err := client.DescribeImagesPages(params,
+//	    func(page *appstream.DescribeImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppStream) DescribeImagesPages(input *DescribeImagesInput, fn func(*DescribeImagesOutput, bool) bool) error {
 	return c.DescribeImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3551,14 +3544,13 @@ const opDescribeSessions = "DescribeSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSessionsRequest method.
+//	req, resp := client.DescribeSessionsRequest(params)
 //
-//    // Example sending a request using the DescribeSessionsRequest method.
-//    req, resp := client.DescribeSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeSessions
 func (c *AppStream) DescribeSessionsRequest(input *DescribeSessionsInput) (req *request.Request, output *DescribeSessionsOutput) {
@@ -3592,8 +3584,8 @@ func (c *AppStream) DescribeSessionsRequest(input *DescribeSessionsInput) (req *
 // API operation DescribeSessions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeSessions
 func (c *AppStream) DescribeSessions(input *DescribeSessionsInput) (*DescribeSessionsOutput, error) {
@@ -3633,14 +3625,13 @@ const opDescribeStacks = "DescribeStacks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStacksRequest method.
+//	req, resp := client.DescribeStacksRequest(params)
 //
-//    // Example sending a request using the DescribeStacksRequest method.
-//    req, resp := client.DescribeStacksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeStacks
 func (c *AppStream) DescribeStacksRequest(input *DescribeStacksInput) (req *request.Request, output *DescribeStacksOutput) {
@@ -3672,8 +3663,8 @@ func (c *AppStream) DescribeStacksRequest(input *DescribeStacksInput) (req *requ
 // API operation DescribeStacks for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeStacks
 func (c *AppStream) DescribeStacks(input *DescribeStacksInput) (*DescribeStacksOutput, error) {
@@ -3713,14 +3704,13 @@ const opDescribeUsageReportSubscriptions = "DescribeUsageReportSubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUsageReportSubscriptionsRequest method.
+//	req, resp := client.DescribeUsageReportSubscriptionsRequest(params)
 //
-//    // Example sending a request using the DescribeUsageReportSubscriptionsRequest method.
-//    req, resp := client.DescribeUsageReportSubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUsageReportSubscriptions
 func (c *AppStream) DescribeUsageReportSubscriptionsRequest(input *DescribeUsageReportSubscriptionsInput) (req *request.Request, output *DescribeUsageReportSubscriptionsOutput) {
@@ -3751,12 +3741,13 @@ func (c *AppStream) DescribeUsageReportSubscriptionsRequest(input *DescribeUsage
 // API operation DescribeUsageReportSubscriptions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUsageReportSubscriptions
 func (c *AppStream) DescribeUsageReportSubscriptions(input *DescribeUsageReportSubscriptionsInput) (*DescribeUsageReportSubscriptionsOutput, error) {
@@ -3796,14 +3787,13 @@ const opDescribeUserStackAssociations = "DescribeUserStackAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserStackAssociationsRequest method.
+//	req, resp := client.DescribeUserStackAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeUserStackAssociationsRequest method.
-//    req, resp := client.DescribeUserStackAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUserStackAssociations
 func (c *AppStream) DescribeUserStackAssociationsRequest(input *DescribeUserStackAssociationsInput) (req *request.Request, output *DescribeUserStackAssociationsOutput) {
@@ -3827,10 +3817,10 @@ func (c *AppStream) DescribeUserStackAssociationsRequest(input *DescribeUserStac
 // Retrieves a list that describes the UserStackAssociation objects. You must
 // specify either or both of the following:
 //
-//    * The stack name
+//   - The stack name
 //
-//    * The user name (email address of the user associated with the stack)
-//    and the authentication type for the user
+//   - The user name (email address of the user associated with the stack)
+//     and the authentication type for the user
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3840,11 +3830,12 @@ func (c *AppStream) DescribeUserStackAssociationsRequest(input *DescribeUserStac
 // API operation DescribeUserStackAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUserStackAssociations
 func (c *AppStream) DescribeUserStackAssociations(input *DescribeUserStackAssociationsInput) (*DescribeUserStackAssociationsOutput, error) {
@@ -3884,14 +3875,13 @@ const opDescribeUsers = "DescribeUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUsersRequest method.
+//	req, resp := client.DescribeUsersRequest(params)
 //
-//    // Example sending a request using the DescribeUsersRequest method.
-//    req, resp := client.DescribeUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUsers
 func (c *AppStream) DescribeUsersRequest(input *DescribeUsersInput) (req *request.Request, output *DescribeUsersOutput) {
@@ -3922,14 +3912,15 @@ func (c *AppStream) DescribeUsersRequest(input *DescribeUsersInput) (req *reques
 // API operation DescribeUsers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DescribeUsers
 func (c *AppStream) DescribeUsers(input *DescribeUsersInput) (*DescribeUsersOutput, error) {
@@ -3969,14 +3960,13 @@ const opDisableUser = "DisableUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableUserRequest method.
+//	req, resp := client.DisableUserRequest(params)
 //
-//    // Example sending a request using the DisableUserRequest method.
-//    req, resp := client.DisableUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisableUser
 func (c *AppStream) DisableUserRequest(input *DisableUserInput) (req *request.Request, output *DisableUserOutput) {
@@ -4009,8 +3999,8 @@ func (c *AppStream) DisableUserRequest(input *DisableUserInput) (req *request.Re
 // API operation DisableUser for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisableUser
 func (c *AppStream) DisableUser(input *DisableUserInput) (*DisableUserOutput, error) {
@@ -4050,14 +4040,13 @@ const opDisassociateApplicationFleet = "DisassociateApplicationFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateApplicationFleetRequest method.
+//	req, resp := client.DisassociateApplicationFleetRequest(params)
 //
-//    // Example sending a request using the DisassociateApplicationFleetRequest method.
-//    req, resp := client.DisassociateApplicationFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateApplicationFleet
 func (c *AppStream) DisassociateApplicationFleetRequest(input *DisassociateApplicationFleetInput) (req *request.Request, output *DisassociateApplicationFleetOutput) {
@@ -4089,14 +4078,15 @@ func (c *AppStream) DisassociateApplicationFleetRequest(input *DisassociateAppli
 // API operation DisassociateApplicationFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateApplicationFleet
 func (c *AppStream) DisassociateApplicationFleet(input *DisassociateApplicationFleetInput) (*DisassociateApplicationFleetOutput, error) {
@@ -4136,14 +4126,13 @@ const opDisassociateApplicationFromEntitlement = "DisassociateApplicationFromEnt
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateApplicationFromEntitlementRequest method.
+//	req, resp := client.DisassociateApplicationFromEntitlementRequest(params)
 //
-//    // Example sending a request using the DisassociateApplicationFromEntitlementRequest method.
-//    req, resp := client.DisassociateApplicationFromEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateApplicationFromEntitlement
 func (c *AppStream) DisassociateApplicationFromEntitlementRequest(input *DisassociateApplicationFromEntitlementInput) (req *request.Request, output *DisassociateApplicationFromEntitlementOutput) {
@@ -4175,17 +4164,18 @@ func (c *AppStream) DisassociateApplicationFromEntitlementRequest(input *Disasso
 // API operation DisassociateApplicationFromEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateApplicationFromEntitlement
 func (c *AppStream) DisassociateApplicationFromEntitlement(input *DisassociateApplicationFromEntitlementInput) (*DisassociateApplicationFromEntitlementOutput, error) {
@@ -4225,14 +4215,13 @@ const opDisassociateFleet = "DisassociateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateFleetRequest method.
+//	req, resp := client.DisassociateFleetRequest(params)
 //
-//    // Example sending a request using the DisassociateFleetRequest method.
-//    req, resp := client.DisassociateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateFleet
 func (c *AppStream) DisassociateFleetRequest(input *DisassociateFleetInput) (req *request.Request, output *DisassociateFleetOutput) {
@@ -4264,17 +4253,18 @@ func (c *AppStream) DisassociateFleetRequest(input *DisassociateFleetInput) (req
 // API operation DisassociateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/DisassociateFleet
 func (c *AppStream) DisassociateFleet(input *DisassociateFleetInput) (*DisassociateFleetOutput, error) {
@@ -4314,14 +4304,13 @@ const opEnableUser = "EnableUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableUserRequest method.
+//	req, resp := client.EnableUserRequest(params)
 //
-//    // Example sending a request using the EnableUserRequest method.
-//    req, resp := client.EnableUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/EnableUser
 func (c *AppStream) EnableUserRequest(input *EnableUserInput) (req *request.Request, output *EnableUserOutput) {
@@ -4354,12 +4343,13 @@ func (c *AppStream) EnableUserRequest(input *EnableUserInput) (req *request.Requ
 // API operation EnableUser for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/EnableUser
 func (c *AppStream) EnableUser(input *EnableUserInput) (*EnableUserOutput, error) {
@@ -4399,14 +4389,13 @@ const opExpireSession = "ExpireSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExpireSessionRequest method.
+//	req, resp := client.ExpireSessionRequest(params)
 //
-//    // Example sending a request using the ExpireSessionRequest method.
-//    req, resp := client.ExpireSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ExpireSession
 func (c *AppStream) ExpireSessionRequest(input *ExpireSessionInput) (req *request.Request, output *ExpireSessionOutput) {
@@ -4474,14 +4463,13 @@ const opListAssociatedFleets = "ListAssociatedFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociatedFleetsRequest method.
+//	req, resp := client.ListAssociatedFleetsRequest(params)
 //
-//    // Example sending a request using the ListAssociatedFleetsRequest method.
-//    req, resp := client.ListAssociatedFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListAssociatedFleets
 func (c *AppStream) ListAssociatedFleetsRequest(input *ListAssociatedFleetsInput) (req *request.Request, output *ListAssociatedFleetsOutput) {
@@ -4548,14 +4536,13 @@ const opListAssociatedStacks = "ListAssociatedStacks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociatedStacksRequest method.
+//	req, resp := client.ListAssociatedStacksRequest(params)
 //
-//    // Example sending a request using the ListAssociatedStacksRequest method.
-//    req, resp := client.ListAssociatedStacksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListAssociatedStacks
 func (c *AppStream) ListAssociatedStacksRequest(input *ListAssociatedStacksInput) (req *request.Request, output *ListAssociatedStacksOutput) {
@@ -4622,14 +4609,13 @@ const opListEntitledApplications = "ListEntitledApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitledApplicationsRequest method.
+//	req, resp := client.ListEntitledApplicationsRequest(params)
 //
-//    // Example sending a request using the ListEntitledApplicationsRequest method.
-//    req, resp := client.ListEntitledApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListEntitledApplications
 func (c *AppStream) ListEntitledApplicationsRequest(input *ListEntitledApplicationsInput) (req *request.Request, output *ListEntitledApplicationsOutput) {
@@ -4660,14 +4646,15 @@ func (c *AppStream) ListEntitledApplicationsRequest(input *ListEntitledApplicati
 // API operation ListEntitledApplications for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListEntitledApplications
 func (c *AppStream) ListEntitledApplications(input *ListEntitledApplicationsInput) (*ListEntitledApplicationsOutput, error) {
@@ -4707,14 +4694,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListTagsForResource
 func (c *AppStream) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4749,8 +4735,8 @@ func (c *AppStream) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/ListTagsForResource
 func (c *AppStream) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4790,14 +4776,13 @@ const opStartFleet = "StartFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFleetRequest method.
+//	req, resp := client.StartFleetRequest(params)
 //
-//    // Example sending a request using the StartFleetRequest method.
-//    req, resp := client.StartFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartFleet
 func (c *AppStream) StartFleetRequest(input *StartFleetInput) (req *request.Request, output *StartFleetOutput) {
@@ -4829,32 +4814,33 @@ func (c *AppStream) StartFleetRequest(input *StartFleetInput) (req *request.Requ
 // API operation StartFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * RequestLimitExceededException
-//   AppStream 2.0 can’t process the request right now because the Describe
-//   calls from your AWS account are being throttled by Amazon EC2. Try again
-//   later.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartFleet
 func (c *AppStream) StartFleet(input *StartFleetInput) (*StartFleetOutput, error) {
@@ -4894,14 +4880,13 @@ const opStartImageBuilder = "StartImageBuilder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImageBuilderRequest method.
+//	req, resp := client.StartImageBuilderRequest(params)
 //
-//    // Example sending a request using the StartImageBuilderRequest method.
-//    req, resp := client.StartImageBuilderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartImageBuilder
 func (c *AppStream) StartImageBuilderRequest(input *StartImageBuilderInput) (req *request.Request, output *StartImageBuilderOutput) {
@@ -4932,21 +4917,22 @@ func (c *AppStream) StartImageBuilderRequest(input *StartImageBuilderInput) (req
 // API operation StartImageBuilder for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StartImageBuilder
 func (c *AppStream) StartImageBuilder(input *StartImageBuilderInput) (*StartImageBuilderOutput, error) {
@@ -4986,14 +4972,13 @@ const opStopFleet = "StopFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopFleetRequest method.
+//	req, resp := client.StopFleetRequest(params)
 //
-//    // Example sending a request using the StopFleetRequest method.
-//    req, resp := client.StopFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopFleet
 func (c *AppStream) StopFleetRequest(input *StopFleetInput) (req *request.Request, output *StopFleetOutput) {
@@ -5025,11 +5010,12 @@ func (c *AppStream) StopFleetRequest(input *StopFleetInput) (req *request.Reques
 // API operation StopFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopFleet
 func (c *AppStream) StopFleet(input *StopFleetInput) (*StopFleetOutput, error) {
@@ -5069,14 +5055,13 @@ const opStopImageBuilder = "StopImageBuilder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopImageBuilderRequest method.
+//	req, resp := client.StopImageBuilderRequest(params)
 //
-//    // Example sending a request using the StopImageBuilderRequest method.
-//    req, resp := client.StopImageBuilderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopImageBuilder
 func (c *AppStream) StopImageBuilderRequest(input *StopImageBuilderInput) (req *request.Request, output *StopImageBuilderOutput) {
@@ -5107,14 +5092,15 @@ func (c *AppStream) StopImageBuilderRequest(input *StopImageBuilderInput) (req *
 // API operation StopImageBuilder for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/StopImageBuilder
 func (c *AppStream) StopImageBuilder(input *StopImageBuilderInput) (*StopImageBuilderOutput, error) {
@@ -5154,14 +5140,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/TagResource
 func (c *AppStream) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5203,15 +5188,16 @@ func (c *AppStream) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/TagResource
 func (c *AppStream) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5251,14 +5237,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UntagResource
 func (c *AppStream) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5296,8 +5281,8 @@ func (c *AppStream) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UntagResource
 func (c *AppStream) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5337,14 +5322,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateApplication
 func (c *AppStream) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
@@ -5375,14 +5359,15 @@ func (c *AppStream) UpdateApplicationRequest(input *UpdateApplicationInput) (req
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateApplication
 func (c *AppStream) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
@@ -5422,14 +5407,13 @@ const opUpdateDirectoryConfig = "UpdateDirectoryConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDirectoryConfigRequest method.
+//	req, resp := client.UpdateDirectoryConfigRequest(params)
 //
-//    // Example sending a request using the UpdateDirectoryConfigRequest method.
-//    req, resp := client.UpdateDirectoryConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateDirectoryConfig
 func (c *AppStream) UpdateDirectoryConfigRequest(input *UpdateDirectoryConfigInput) (req *request.Request, output *UpdateDirectoryConfigOutput) {
@@ -5462,20 +5446,21 @@ func (c *AppStream) UpdateDirectoryConfigRequest(input *UpdateDirectoryConfigInp
 // API operation UpdateDirectoryConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateDirectoryConfig
 func (c *AppStream) UpdateDirectoryConfig(input *UpdateDirectoryConfigInput) (*UpdateDirectoryConfigOutput, error) {
@@ -5515,14 +5500,13 @@ const opUpdateEntitlement = "UpdateEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEntitlementRequest method.
+//	req, resp := client.UpdateEntitlementRequest(params)
 //
-//    // Example sending a request using the UpdateEntitlementRequest method.
-//    req, resp := client.UpdateEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateEntitlement
 func (c *AppStream) UpdateEntitlementRequest(input *UpdateEntitlementInput) (req *request.Request, output *UpdateEntitlementOutput) {
@@ -5553,17 +5537,18 @@ func (c *AppStream) UpdateEntitlementRequest(input *UpdateEntitlementInput) (req
 // API operation UpdateEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
-//   * EntitlementNotFoundException
-//   The entitlement can't be found.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - EntitlementNotFoundException
+//     The entitlement can't be found.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateEntitlement
 func (c *AppStream) UpdateEntitlement(input *UpdateEntitlementInput) (*UpdateEntitlementOutput, error) {
@@ -5603,14 +5588,13 @@ const opUpdateFleet = "UpdateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFleetRequest method.
+//	req, resp := client.UpdateFleetRequest(params)
 //
-//    // Example sending a request using the UpdateFleetRequest method.
-//    req, resp := client.UpdateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateFleet
 func (c *AppStream) UpdateFleetRequest(input *UpdateFleetInput) (req *request.Request, output *UpdateFleetOutput) {
@@ -5639,13 +5623,13 @@ func (c *AppStream) UpdateFleetRequest(input *UpdateFleetInput) (req *request.Re
 // If the fleet is in the RUNNING state, you can update the following based
 // on the fleet type:
 //
-//    * Always-On and On-Demand fleet types You can update the DisplayName,
-//    ComputeCapacity, ImageARN, ImageName, IdleDisconnectTimeoutInSeconds,
-//    and DisconnectTimeoutInSeconds attributes.
+//   - Always-On and On-Demand fleet types You can update the DisplayName,
+//     ComputeCapacity, ImageARN, ImageName, IdleDisconnectTimeoutInSeconds,
+//     and DisconnectTimeoutInSeconds attributes.
 //
-//    * Elastic fleet type You can update the DisplayName, IdleDisconnectTimeoutInSeconds,
-//    DisconnectTimeoutInSeconds, MaxConcurrentSessions, and UsbDeviceFilterStrings
-//    attributes.
+//   - Elastic fleet type You can update the DisplayName, IdleDisconnectTimeoutInSeconds,
+//     DisconnectTimeoutInSeconds, MaxConcurrentSessions, and UsbDeviceFilterStrings
+//     attributes.
 //
 // If the fleet is in the STARTING or STOPPED state, you can't update it.
 //
@@ -5657,41 +5641,42 @@ func (c *AppStream) UpdateFleetRequest(input *UpdateFleetInput) (req *request.Re
 // API operation UpdateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The specified resource is in use.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * RequestLimitExceededException
-//   AppStream 2.0 can’t process the request right now because the Describe
-//   calls from your AWS account are being throttled by Amazon EC2. Try again
-//   later.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - RequestLimitExceededException
+//     AppStream 2.0 can’t process the request right now because the Describe
+//     calls from your AWS account are being throttled by Amazon EC2. Try again
+//     later.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
+//
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateFleet
 func (c *AppStream) UpdateFleet(input *UpdateFleetInput) (*UpdateFleetOutput, error) {
@@ -5731,14 +5716,13 @@ const opUpdateImagePermissions = "UpdateImagePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateImagePermissionsRequest method.
+//	req, resp := client.UpdateImagePermissionsRequest(params)
 //
-//    // Example sending a request using the UpdateImagePermissionsRequest method.
-//    req, resp := client.UpdateImagePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateImagePermissions
 func (c *AppStream) UpdateImagePermissionsRequest(input *UpdateImagePermissionsInput) (req *request.Request, output *UpdateImagePermissionsOutput) {
@@ -5770,14 +5754,15 @@ func (c *AppStream) UpdateImagePermissionsRequest(input *UpdateImagePermissionsI
 // API operation UpdateImagePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ResourceNotAvailableException
-//   The specified resource exists and is not in use, but isn't available.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - ResourceNotAvailableException
+//     The specified resource exists and is not in use, but isn't available.
+//
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateImagePermissions
 func (c *AppStream) UpdateImagePermissions(input *UpdateImagePermissionsInput) (*UpdateImagePermissionsOutput, error) {
@@ -5817,14 +5802,13 @@ const opUpdateStack = "UpdateStack"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStackRequest method.
+//	req, resp := client.UpdateStackRequest(params)
 //
-//    // Example sending a request using the UpdateStackRequest method.
-//    req, resp := client.UpdateStackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateStack
 func (c *AppStream) UpdateStackRequest(input *UpdateStackInput) (req *request.Request, output *UpdateStackOutput) {
@@ -5855,33 +5839,34 @@ func (c *AppStream) UpdateStackRequest(input *UpdateStackInput) (req *request.Re
 // API operation UpdateStack for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource was not found.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * InvalidRoleException
-//   The specified role is invalid.
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
-//   * InvalidParameterCombinationException
-//   Indicates an incorrect combination of parameters, or a missing parameter.
+//   - InvalidRoleException
+//     The specified role is invalid.
 //
-//   * LimitExceededException
-//   The requested limit exceeds the permitted limit for an account.
+//   - InvalidParameterCombinationException
+//     Indicates an incorrect combination of parameters, or a missing parameter.
 //
-//   * InvalidAccountStatusException
-//   The resource cannot be created because your AWS account is suspended. For
-//   assistance, contact AWS Support.
+//   - LimitExceededException
+//     The requested limit exceeds the permitted limit for an account.
 //
-//   * IncompatibleImageException
-//   The image can't be updated because it's not compatible for updates.
+//   - InvalidAccountStatusException
+//     The resource cannot be created because your AWS account is suspended. For
+//     assistance, contact AWS Support.
 //
-//   * OperationNotPermittedException
-//   The attempted operation is not permitted.
+//   - IncompatibleImageException
+//     The image can't be updated because it's not compatible for updates.
 //
-//   * ConcurrentModificationException
-//   An API error occurred. Wait a few minutes and try again.
+//   - OperationNotPermittedException
+//     The attempted operation is not permitted.
+//
+//   - ConcurrentModificationException
+//     An API error occurred. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appstream-2016-12-01/UpdateStack
 func (c *AppStream) UpdateStack(input *UpdateStackInput) (*UpdateStackOutput, error) {

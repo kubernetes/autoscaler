@@ -8,14 +8,14 @@
 //
 // Additional Resources:
 //
-//    * Amazon Braket Developer Guide (https://docs.aws.amazon.com/braket/latest/developerguide/what-is-braket.html)
+//   - Amazon Braket Developer Guide (https://docs.aws.amazon.com/braket/latest/developerguide/what-is-braket.html)
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/braket-2019-09-01 for more information on this service.
 //
 // See braket package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/braket/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Braket with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

@@ -352,8 +352,10 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 // garbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
 // AggregateCollectionState is obsolete in following situations:
 // 1) It has no samples and there are no more contributive pods - a pod is contributive in any of following situations:
-//    a) It is in an active state - i.e. not PodSucceeded nor PodFailed.
-//    b) Its associated controller (e.g. Deployment) still exists.
+//
+//	a) It is in an active state - i.e. not PodSucceeded nor PodFailed.
+//	b) Its associated controller (e.g. Deployment) still exists.
+//
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
@@ -384,8 +386,10 @@ func (cluster *ClusterState) garbageCollectAggregateCollectionStates(now time.Ti
 // It performs clean up only if more than `gcInterval` passed since the last time it performed a clean up.
 // AggregateCollectionState is obsolete in following situations:
 // 1) It has no samples and there are no more contributive pods - a pod is contributive in any of following situations:
-//    a) It is in an active state - i.e. not PodSucceeded nor PodFailed.
-//    b) Its associated controller (e.g. Deployment) still exists.
+//
+//	a) It is in an active state - i.e. not PodSucceeded nor PodFailed.
+//	b) Its associated controller (e.g. Deployment) still exists.
+//
 // 2) The last sample is too old to give meaningful recommendation (>8 days),
 // 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) RateLimitedGarbageCollectAggregateCollectionStates(now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {

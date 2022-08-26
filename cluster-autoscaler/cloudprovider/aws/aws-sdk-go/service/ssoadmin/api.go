@@ -29,14 +29,13 @@ const opAttachManagedPolicyToPermissionSet = "AttachManagedPolicyToPermissionSet
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AttachManagedPolicyToPermissionSetRequest method.
+//	req, resp := client.AttachManagedPolicyToPermissionSetRequest(params)
 //
-//    // Example sending a request using the AttachManagedPolicyToPermissionSetRequest method.
-//    req, resp := client.AttachManagedPolicyToPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/AttachManagedPolicyToPermissionSet
 func (c *SSOAdmin) AttachManagedPolicyToPermissionSetRequest(input *AttachManagedPolicyToPermissionSetInput) (req *request.Request, output *AttachManagedPolicyToPermissionSetOutput) {
@@ -73,32 +72,33 @@ func (c *SSOAdmin) AttachManagedPolicyToPermissionSetRequest(input *AttachManage
 // API operation AttachManagedPolicyToPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ServiceQuotaExceededException
-//   Indicates that the principal has crossed the permitted number of resources
-//   that can be created.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/AttachManagedPolicyToPermissionSet
 func (c *SSOAdmin) AttachManagedPolicyToPermissionSet(input *AttachManagedPolicyToPermissionSetInput) (*AttachManagedPolicyToPermissionSetOutput, error) {
@@ -138,14 +138,13 @@ const opCreateAccountAssignment = "CreateAccountAssignment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccountAssignmentRequest method.
+//	req, resp := client.CreateAccountAssignmentRequest(params)
 //
-//    // Example sending a request using the CreateAccountAssignmentRequest method.
-//    req, resp := client.CreateAccountAssignmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateAccountAssignment
 func (c *SSOAdmin) CreateAccountAssignmentRequest(input *CreateAccountAssignmentInput) (req *request.Request, output *CreateAccountAssignmentOutput) {
@@ -187,32 +186,33 @@ func (c *SSOAdmin) CreateAccountAssignmentRequest(input *CreateAccountAssignment
 // API operation CreateAccountAssignment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ServiceQuotaExceededException
-//   Indicates that the principal has crossed the permitted number of resources
-//   that can be created.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateAccountAssignment
 func (c *SSOAdmin) CreateAccountAssignment(input *CreateAccountAssignmentInput) (*CreateAccountAssignmentOutput, error) {
@@ -252,14 +252,13 @@ const opCreateInstanceAccessControlAttributeConfiguration = "CreateInstanceAcces
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInstanceAccessControlAttributeConfigurationRequest method.
+//	req, resp := client.CreateInstanceAccessControlAttributeConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateInstanceAccessControlAttributeConfigurationRequest method.
-//    req, resp := client.CreateInstanceAccessControlAttributeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) CreateInstanceAccessControlAttributeConfigurationRequest(input *CreateInstanceAccessControlAttributeConfigurationInput) (req *request.Request, output *CreateInstanceAccessControlAttributeConfigurationOutput) {
@@ -295,28 +294,29 @@ func (c *SSOAdmin) CreateInstanceAccessControlAttributeConfigurationRequest(inpu
 // API operation CreateInstanceAccessControlAttributeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) CreateInstanceAccessControlAttributeConfiguration(input *CreateInstanceAccessControlAttributeConfigurationInput) (*CreateInstanceAccessControlAttributeConfigurationOutput, error) {
@@ -356,14 +356,13 @@ const opCreatePermissionSet = "CreatePermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePermissionSetRequest method.
+//	req, resp := client.CreatePermissionSetRequest(params)
 //
-//    // Example sending a request using the CreatePermissionSetRequest method.
-//    req, resp := client.CreatePermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreatePermissionSet
 func (c *SSOAdmin) CreatePermissionSetRequest(input *CreatePermissionSetInput) (req *request.Request, output *CreatePermissionSetOutput) {
@@ -397,32 +396,33 @@ func (c *SSOAdmin) CreatePermissionSetRequest(input *CreatePermissionSetInput) (
 // API operation CreatePermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ServiceQuotaExceededException
-//   Indicates that the principal has crossed the permitted number of resources
-//   that can be created.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreatePermissionSet
 func (c *SSOAdmin) CreatePermissionSet(input *CreatePermissionSetInput) (*CreatePermissionSetOutput, error) {
@@ -462,14 +462,13 @@ const opDeleteAccountAssignment = "DeleteAccountAssignment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccountAssignmentRequest method.
+//	req, resp := client.DeleteAccountAssignmentRequest(params)
 //
-//    // Example sending a request using the DeleteAccountAssignmentRequest method.
-//    req, resp := client.DeleteAccountAssignmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteAccountAssignment
 func (c *SSOAdmin) DeleteAccountAssignmentRequest(input *DeleteAccountAssignmentInput) (req *request.Request, output *DeleteAccountAssignmentOutput) {
@@ -501,28 +500,29 @@ func (c *SSOAdmin) DeleteAccountAssignmentRequest(input *DeleteAccountAssignment
 // API operation DeleteAccountAssignment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteAccountAssignment
 func (c *SSOAdmin) DeleteAccountAssignment(input *DeleteAccountAssignmentInput) (*DeleteAccountAssignmentOutput, error) {
@@ -562,14 +562,13 @@ const opDeleteInlinePolicyFromPermissionSet = "DeleteInlinePolicyFromPermissionS
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInlinePolicyFromPermissionSetRequest method.
+//	req, resp := client.DeleteInlinePolicyFromPermissionSetRequest(params)
 //
-//    // Example sending a request using the DeleteInlinePolicyFromPermissionSetRequest method.
-//    req, resp := client.DeleteInlinePolicyFromPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInlinePolicyFromPermissionSet
 func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSetRequest(input *DeleteInlinePolicyFromPermissionSetInput) (req *request.Request, output *DeleteInlinePolicyFromPermissionSetOutput) {
@@ -601,28 +600,29 @@ func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSetRequest(input *DeleteInlin
 // API operation DeleteInlinePolicyFromPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInlinePolicyFromPermissionSet
 func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSet(input *DeleteInlinePolicyFromPermissionSetInput) (*DeleteInlinePolicyFromPermissionSetOutput, error) {
@@ -662,14 +662,13 @@ const opDeleteInstanceAccessControlAttributeConfiguration = "DeleteInstanceAcces
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInstanceAccessControlAttributeConfigurationRequest method.
+//	req, resp := client.DeleteInstanceAccessControlAttributeConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteInstanceAccessControlAttributeConfigurationRequest method.
-//    req, resp := client.DeleteInstanceAccessControlAttributeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) DeleteInstanceAccessControlAttributeConfigurationRequest(input *DeleteInstanceAccessControlAttributeConfigurationInput) (req *request.Request, output *DeleteInstanceAccessControlAttributeConfigurationOutput) {
@@ -707,28 +706,29 @@ func (c *SSOAdmin) DeleteInstanceAccessControlAttributeConfigurationRequest(inpu
 // API operation DeleteInstanceAccessControlAttributeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) DeleteInstanceAccessControlAttributeConfiguration(input *DeleteInstanceAccessControlAttributeConfigurationInput) (*DeleteInstanceAccessControlAttributeConfigurationOutput, error) {
@@ -768,14 +768,13 @@ const opDeletePermissionSet = "DeletePermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePermissionSetRequest method.
+//	req, resp := client.DeletePermissionSetRequest(params)
 //
-//    // Example sending a request using the DeletePermissionSetRequest method.
-//    req, resp := client.DeletePermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeletePermissionSet
 func (c *SSOAdmin) DeletePermissionSetRequest(input *DeletePermissionSetInput) (req *request.Request, output *DeletePermissionSetOutput) {
@@ -807,28 +806,29 @@ func (c *SSOAdmin) DeletePermissionSetRequest(input *DeletePermissionSetInput) (
 // API operation DeletePermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeletePermissionSet
 func (c *SSOAdmin) DeletePermissionSet(input *DeletePermissionSetInput) (*DeletePermissionSetOutput, error) {
@@ -868,14 +868,13 @@ const opDescribeAccountAssignmentCreationStatus = "DescribeAccountAssignmentCrea
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAssignmentCreationStatusRequest method.
+//	req, resp := client.DescribeAccountAssignmentCreationStatusRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAssignmentCreationStatusRequest method.
-//    req, resp := client.DescribeAccountAssignmentCreationStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentCreationStatus
 func (c *SSOAdmin) DescribeAccountAssignmentCreationStatusRequest(input *DescribeAccountAssignmentCreationStatusInput) (req *request.Request, output *DescribeAccountAssignmentCreationStatusOutput) {
@@ -906,22 +905,23 @@ func (c *SSOAdmin) DescribeAccountAssignmentCreationStatusRequest(input *Describ
 // API operation DescribeAccountAssignmentCreationStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentCreationStatus
 func (c *SSOAdmin) DescribeAccountAssignmentCreationStatus(input *DescribeAccountAssignmentCreationStatusInput) (*DescribeAccountAssignmentCreationStatusOutput, error) {
@@ -961,14 +961,13 @@ const opDescribeAccountAssignmentDeletionStatus = "DescribeAccountAssignmentDele
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAssignmentDeletionStatusRequest method.
+//	req, resp := client.DescribeAccountAssignmentDeletionStatusRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAssignmentDeletionStatusRequest method.
-//    req, resp := client.DescribeAccountAssignmentDeletionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentDeletionStatus
 func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatusRequest(input *DescribeAccountAssignmentDeletionStatusInput) (req *request.Request, output *DescribeAccountAssignmentDeletionStatusOutput) {
@@ -999,22 +998,23 @@ func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatusRequest(input *Describ
 // API operation DescribeAccountAssignmentDeletionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentDeletionStatus
 func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatus(input *DescribeAccountAssignmentDeletionStatusInput) (*DescribeAccountAssignmentDeletionStatusOutput, error) {
@@ -1054,14 +1054,13 @@ const opDescribeInstanceAccessControlAttributeConfiguration = "DescribeInstanceA
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceAccessControlAttributeConfigurationRequest method.
+//	req, resp := client.DescribeInstanceAccessControlAttributeConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceAccessControlAttributeConfigurationRequest method.
-//    req, resp := client.DescribeInstanceAccessControlAttributeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) DescribeInstanceAccessControlAttributeConfigurationRequest(input *DescribeInstanceAccessControlAttributeConfigurationInput) (req *request.Request, output *DescribeInstanceAccessControlAttributeConfigurationOutput) {
@@ -1097,22 +1096,23 @@ func (c *SSOAdmin) DescribeInstanceAccessControlAttributeConfigurationRequest(in
 // API operation DescribeInstanceAccessControlAttributeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) DescribeInstanceAccessControlAttributeConfiguration(input *DescribeInstanceAccessControlAttributeConfigurationInput) (*DescribeInstanceAccessControlAttributeConfigurationOutput, error) {
@@ -1152,14 +1152,13 @@ const opDescribePermissionSet = "DescribePermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePermissionSetRequest method.
+//	req, resp := client.DescribePermissionSetRequest(params)
 //
-//    // Example sending a request using the DescribePermissionSetRequest method.
-//    req, resp := client.DescribePermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSet
 func (c *SSOAdmin) DescribePermissionSetRequest(input *DescribePermissionSetInput) (req *request.Request, output *DescribePermissionSetOutput) {
@@ -1190,22 +1189,23 @@ func (c *SSOAdmin) DescribePermissionSetRequest(input *DescribePermissionSetInpu
 // API operation DescribePermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSet
 func (c *SSOAdmin) DescribePermissionSet(input *DescribePermissionSetInput) (*DescribePermissionSetOutput, error) {
@@ -1245,14 +1245,13 @@ const opDescribePermissionSetProvisioningStatus = "DescribePermissionSetProvisio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePermissionSetProvisioningStatusRequest method.
+//	req, resp := client.DescribePermissionSetProvisioningStatusRequest(params)
 //
-//    // Example sending a request using the DescribePermissionSetProvisioningStatusRequest method.
-//    req, resp := client.DescribePermissionSetProvisioningStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSetProvisioningStatus
 func (c *SSOAdmin) DescribePermissionSetProvisioningStatusRequest(input *DescribePermissionSetProvisioningStatusInput) (req *request.Request, output *DescribePermissionSetProvisioningStatusOutput) {
@@ -1283,22 +1282,23 @@ func (c *SSOAdmin) DescribePermissionSetProvisioningStatusRequest(input *Describ
 // API operation DescribePermissionSetProvisioningStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSetProvisioningStatus
 func (c *SSOAdmin) DescribePermissionSetProvisioningStatus(input *DescribePermissionSetProvisioningStatusInput) (*DescribePermissionSetProvisioningStatusOutput, error) {
@@ -1338,14 +1338,13 @@ const opDetachManagedPolicyFromPermissionSet = "DetachManagedPolicyFromPermissio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetachManagedPolicyFromPermissionSetRequest method.
+//	req, resp := client.DetachManagedPolicyFromPermissionSetRequest(params)
 //
-//    // Example sending a request using the DetachManagedPolicyFromPermissionSetRequest method.
-//    req, resp := client.DetachManagedPolicyFromPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DetachManagedPolicyFromPermissionSet
 func (c *SSOAdmin) DetachManagedPolicyFromPermissionSetRequest(input *DetachManagedPolicyFromPermissionSetInput) (req *request.Request, output *DetachManagedPolicyFromPermissionSetOutput) {
@@ -1378,28 +1377,29 @@ func (c *SSOAdmin) DetachManagedPolicyFromPermissionSetRequest(input *DetachMana
 // API operation DetachManagedPolicyFromPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DetachManagedPolicyFromPermissionSet
 func (c *SSOAdmin) DetachManagedPolicyFromPermissionSet(input *DetachManagedPolicyFromPermissionSetInput) (*DetachManagedPolicyFromPermissionSetOutput, error) {
@@ -1439,14 +1439,13 @@ const opGetInlinePolicyForPermissionSet = "GetInlinePolicyForPermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInlinePolicyForPermissionSetRequest method.
+//	req, resp := client.GetInlinePolicyForPermissionSetRequest(params)
 //
-//    // Example sending a request using the GetInlinePolicyForPermissionSetRequest method.
-//    req, resp := client.GetInlinePolicyForPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetInlinePolicyForPermissionSet
 func (c *SSOAdmin) GetInlinePolicyForPermissionSetRequest(input *GetInlinePolicyForPermissionSetInput) (req *request.Request, output *GetInlinePolicyForPermissionSetOutput) {
@@ -1477,22 +1476,23 @@ func (c *SSOAdmin) GetInlinePolicyForPermissionSetRequest(input *GetInlinePolicy
 // API operation GetInlinePolicyForPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetInlinePolicyForPermissionSet
 func (c *SSOAdmin) GetInlinePolicyForPermissionSet(input *GetInlinePolicyForPermissionSetInput) (*GetInlinePolicyForPermissionSetOutput, error) {
@@ -1532,14 +1532,13 @@ const opListAccountAssignmentCreationStatus = "ListAccountAssignmentCreationStat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountAssignmentCreationStatusRequest method.
+//	req, resp := client.ListAccountAssignmentCreationStatusRequest(params)
 //
-//    // Example sending a request using the ListAccountAssignmentCreationStatusRequest method.
-//    req, resp := client.ListAccountAssignmentCreationStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentCreationStatus
 func (c *SSOAdmin) ListAccountAssignmentCreationStatusRequest(input *ListAccountAssignmentCreationStatusInput) (req *request.Request, output *ListAccountAssignmentCreationStatusOutput) {
@@ -1577,22 +1576,23 @@ func (c *SSOAdmin) ListAccountAssignmentCreationStatusRequest(input *ListAccount
 // API operation ListAccountAssignmentCreationStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentCreationStatus
 func (c *SSOAdmin) ListAccountAssignmentCreationStatus(input *ListAccountAssignmentCreationStatusInput) (*ListAccountAssignmentCreationStatusOutput, error) {
@@ -1624,15 +1624,14 @@ func (c *SSOAdmin) ListAccountAssignmentCreationStatusWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountAssignmentCreationStatus operation.
-//    pageNum := 0
-//    err := client.ListAccountAssignmentCreationStatusPages(params,
-//        func(page *ssoadmin.ListAccountAssignmentCreationStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountAssignmentCreationStatus operation.
+//	pageNum := 0
+//	err := client.ListAccountAssignmentCreationStatusPages(params,
+//	    func(page *ssoadmin.ListAccountAssignmentCreationStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListAccountAssignmentCreationStatusPages(input *ListAccountAssignmentCreationStatusInput, fn func(*ListAccountAssignmentCreationStatusOutput, bool) bool) error {
 	return c.ListAccountAssignmentCreationStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1684,14 +1683,13 @@ const opListAccountAssignmentDeletionStatus = "ListAccountAssignmentDeletionStat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountAssignmentDeletionStatusRequest method.
+//	req, resp := client.ListAccountAssignmentDeletionStatusRequest(params)
 //
-//    // Example sending a request using the ListAccountAssignmentDeletionStatusRequest method.
-//    req, resp := client.ListAccountAssignmentDeletionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentDeletionStatus
 func (c *SSOAdmin) ListAccountAssignmentDeletionStatusRequest(input *ListAccountAssignmentDeletionStatusInput) (req *request.Request, output *ListAccountAssignmentDeletionStatusOutput) {
@@ -1729,22 +1727,23 @@ func (c *SSOAdmin) ListAccountAssignmentDeletionStatusRequest(input *ListAccount
 // API operation ListAccountAssignmentDeletionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentDeletionStatus
 func (c *SSOAdmin) ListAccountAssignmentDeletionStatus(input *ListAccountAssignmentDeletionStatusInput) (*ListAccountAssignmentDeletionStatusOutput, error) {
@@ -1776,15 +1775,14 @@ func (c *SSOAdmin) ListAccountAssignmentDeletionStatusWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountAssignmentDeletionStatus operation.
-//    pageNum := 0
-//    err := client.ListAccountAssignmentDeletionStatusPages(params,
-//        func(page *ssoadmin.ListAccountAssignmentDeletionStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountAssignmentDeletionStatus operation.
+//	pageNum := 0
+//	err := client.ListAccountAssignmentDeletionStatusPages(params,
+//	    func(page *ssoadmin.ListAccountAssignmentDeletionStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListAccountAssignmentDeletionStatusPages(input *ListAccountAssignmentDeletionStatusInput, fn func(*ListAccountAssignmentDeletionStatusOutput, bool) bool) error {
 	return c.ListAccountAssignmentDeletionStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1836,14 +1834,13 @@ const opListAccountAssignments = "ListAccountAssignments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountAssignmentsRequest method.
+//	req, resp := client.ListAccountAssignmentsRequest(params)
 //
-//    // Example sending a request using the ListAccountAssignmentsRequest method.
-//    req, resp := client.ListAccountAssignmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignments
 func (c *SSOAdmin) ListAccountAssignmentsRequest(input *ListAccountAssignmentsInput) (req *request.Request, output *ListAccountAssignmentsOutput) {
@@ -1881,22 +1878,23 @@ func (c *SSOAdmin) ListAccountAssignmentsRequest(input *ListAccountAssignmentsIn
 // API operation ListAccountAssignments for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignments
 func (c *SSOAdmin) ListAccountAssignments(input *ListAccountAssignmentsInput) (*ListAccountAssignmentsOutput, error) {
@@ -1928,15 +1926,14 @@ func (c *SSOAdmin) ListAccountAssignmentsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountAssignments operation.
-//    pageNum := 0
-//    err := client.ListAccountAssignmentsPages(params,
-//        func(page *ssoadmin.ListAccountAssignmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountAssignments operation.
+//	pageNum := 0
+//	err := client.ListAccountAssignmentsPages(params,
+//	    func(page *ssoadmin.ListAccountAssignmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListAccountAssignmentsPages(input *ListAccountAssignmentsInput, fn func(*ListAccountAssignmentsOutput, bool) bool) error {
 	return c.ListAccountAssignmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1988,14 +1985,13 @@ const opListAccountsForProvisionedPermissionSet = "ListAccountsForProvisionedPer
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountsForProvisionedPermissionSetRequest method.
+//	req, resp := client.ListAccountsForProvisionedPermissionSetRequest(params)
 //
-//    // Example sending a request using the ListAccountsForProvisionedPermissionSetRequest method.
-//    req, resp := client.ListAccountsForProvisionedPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountsForProvisionedPermissionSet
 func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetRequest(input *ListAccountsForProvisionedPermissionSetInput) (req *request.Request, output *ListAccountsForProvisionedPermissionSetOutput) {
@@ -2033,22 +2029,23 @@ func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetRequest(input *ListAcc
 // API operation ListAccountsForProvisionedPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountsForProvisionedPermissionSet
 func (c *SSOAdmin) ListAccountsForProvisionedPermissionSet(input *ListAccountsForProvisionedPermissionSetInput) (*ListAccountsForProvisionedPermissionSetOutput, error) {
@@ -2080,15 +2077,14 @@ func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccountsForProvisionedPermissionSet operation.
-//    pageNum := 0
-//    err := client.ListAccountsForProvisionedPermissionSetPages(params,
-//        func(page *ssoadmin.ListAccountsForProvisionedPermissionSetOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccountsForProvisionedPermissionSet operation.
+//	pageNum := 0
+//	err := client.ListAccountsForProvisionedPermissionSetPages(params,
+//	    func(page *ssoadmin.ListAccountsForProvisionedPermissionSetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetPages(input *ListAccountsForProvisionedPermissionSetInput, fn func(*ListAccountsForProvisionedPermissionSetOutput, bool) bool) error {
 	return c.ListAccountsForProvisionedPermissionSetPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2140,14 +2136,13 @@ const opListInstances = "ListInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstancesRequest method.
+//	req, resp := client.ListInstancesRequest(params)
 //
-//    // Example sending a request using the ListInstancesRequest method.
-//    req, resp := client.ListInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListInstances
 func (c *SSOAdmin) ListInstancesRequest(input *ListInstancesInput) (req *request.Request, output *ListInstancesOutput) {
@@ -2184,19 +2179,20 @@ func (c *SSOAdmin) ListInstancesRequest(input *ListInstancesInput) (req *request
 // API operation ListInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListInstances
 func (c *SSOAdmin) ListInstances(input *ListInstancesInput) (*ListInstancesOutput, error) {
@@ -2228,15 +2224,14 @@ func (c *SSOAdmin) ListInstancesWithContext(ctx aws.Context, input *ListInstance
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstances operation.
-//    pageNum := 0
-//    err := client.ListInstancesPages(params,
-//        func(page *ssoadmin.ListInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstances operation.
+//	pageNum := 0
+//	err := client.ListInstancesPages(params,
+//	    func(page *ssoadmin.ListInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListInstancesPages(input *ListInstancesInput, fn func(*ListInstancesOutput, bool) bool) error {
 	return c.ListInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2288,14 +2283,13 @@ const opListManagedPoliciesInPermissionSet = "ListManagedPoliciesInPermissionSet
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListManagedPoliciesInPermissionSetRequest method.
+//	req, resp := client.ListManagedPoliciesInPermissionSetRequest(params)
 //
-//    // Example sending a request using the ListManagedPoliciesInPermissionSetRequest method.
-//    req, resp := client.ListManagedPoliciesInPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListManagedPoliciesInPermissionSet
 func (c *SSOAdmin) ListManagedPoliciesInPermissionSetRequest(input *ListManagedPoliciesInPermissionSetInput) (req *request.Request, output *ListManagedPoliciesInPermissionSetOutput) {
@@ -2332,22 +2326,23 @@ func (c *SSOAdmin) ListManagedPoliciesInPermissionSetRequest(input *ListManagedP
 // API operation ListManagedPoliciesInPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListManagedPoliciesInPermissionSet
 func (c *SSOAdmin) ListManagedPoliciesInPermissionSet(input *ListManagedPoliciesInPermissionSetInput) (*ListManagedPoliciesInPermissionSetOutput, error) {
@@ -2379,15 +2374,14 @@ func (c *SSOAdmin) ListManagedPoliciesInPermissionSetWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListManagedPoliciesInPermissionSet operation.
-//    pageNum := 0
-//    err := client.ListManagedPoliciesInPermissionSetPages(params,
-//        func(page *ssoadmin.ListManagedPoliciesInPermissionSetOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListManagedPoliciesInPermissionSet operation.
+//	pageNum := 0
+//	err := client.ListManagedPoliciesInPermissionSetPages(params,
+//	    func(page *ssoadmin.ListManagedPoliciesInPermissionSetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListManagedPoliciesInPermissionSetPages(input *ListManagedPoliciesInPermissionSetInput, fn func(*ListManagedPoliciesInPermissionSetOutput, bool) bool) error {
 	return c.ListManagedPoliciesInPermissionSetPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2439,14 +2433,13 @@ const opListPermissionSetProvisioningStatus = "ListPermissionSetProvisioningStat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionSetProvisioningStatusRequest method.
+//	req, resp := client.ListPermissionSetProvisioningStatusRequest(params)
 //
-//    // Example sending a request using the ListPermissionSetProvisioningStatusRequest method.
-//    req, resp := client.ListPermissionSetProvisioningStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetProvisioningStatus
 func (c *SSOAdmin) ListPermissionSetProvisioningStatusRequest(input *ListPermissionSetProvisioningStatusInput) (req *request.Request, output *ListPermissionSetProvisioningStatusOutput) {
@@ -2484,22 +2477,23 @@ func (c *SSOAdmin) ListPermissionSetProvisioningStatusRequest(input *ListPermiss
 // API operation ListPermissionSetProvisioningStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetProvisioningStatus
 func (c *SSOAdmin) ListPermissionSetProvisioningStatus(input *ListPermissionSetProvisioningStatusInput) (*ListPermissionSetProvisioningStatusOutput, error) {
@@ -2531,15 +2525,14 @@ func (c *SSOAdmin) ListPermissionSetProvisioningStatusWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissionSetProvisioningStatus operation.
-//    pageNum := 0
-//    err := client.ListPermissionSetProvisioningStatusPages(params,
-//        func(page *ssoadmin.ListPermissionSetProvisioningStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissionSetProvisioningStatus operation.
+//	pageNum := 0
+//	err := client.ListPermissionSetProvisioningStatusPages(params,
+//	    func(page *ssoadmin.ListPermissionSetProvisioningStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListPermissionSetProvisioningStatusPages(input *ListPermissionSetProvisioningStatusInput, fn func(*ListPermissionSetProvisioningStatusOutput, bool) bool) error {
 	return c.ListPermissionSetProvisioningStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2591,14 +2584,13 @@ const opListPermissionSets = "ListPermissionSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionSetsRequest method.
+//	req, resp := client.ListPermissionSetsRequest(params)
 //
-//    // Example sending a request using the ListPermissionSetsRequest method.
-//    req, resp := client.ListPermissionSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSets
 func (c *SSOAdmin) ListPermissionSetsRequest(input *ListPermissionSetsInput) (req *request.Request, output *ListPermissionSetsOutput) {
@@ -2635,22 +2627,23 @@ func (c *SSOAdmin) ListPermissionSetsRequest(input *ListPermissionSetsInput) (re
 // API operation ListPermissionSets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSets
 func (c *SSOAdmin) ListPermissionSets(input *ListPermissionSetsInput) (*ListPermissionSetsOutput, error) {
@@ -2682,15 +2675,14 @@ func (c *SSOAdmin) ListPermissionSetsWithContext(ctx aws.Context, input *ListPer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissionSets operation.
-//    pageNum := 0
-//    err := client.ListPermissionSetsPages(params,
-//        func(page *ssoadmin.ListPermissionSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissionSets operation.
+//	pageNum := 0
+//	err := client.ListPermissionSetsPages(params,
+//	    func(page *ssoadmin.ListPermissionSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListPermissionSetsPages(input *ListPermissionSetsInput, fn func(*ListPermissionSetsOutput, bool) bool) error {
 	return c.ListPermissionSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2742,14 +2734,13 @@ const opListPermissionSetsProvisionedToAccount = "ListPermissionSetsProvisionedT
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionSetsProvisionedToAccountRequest method.
+//	req, resp := client.ListPermissionSetsProvisionedToAccountRequest(params)
 //
-//    // Example sending a request using the ListPermissionSetsProvisionedToAccountRequest method.
-//    req, resp := client.ListPermissionSetsProvisionedToAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetsProvisionedToAccount
 func (c *SSOAdmin) ListPermissionSetsProvisionedToAccountRequest(input *ListPermissionSetsProvisionedToAccountInput) (req *request.Request, output *ListPermissionSetsProvisionedToAccountOutput) {
@@ -2787,22 +2778,23 @@ func (c *SSOAdmin) ListPermissionSetsProvisionedToAccountRequest(input *ListPerm
 // API operation ListPermissionSetsProvisionedToAccount for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetsProvisionedToAccount
 func (c *SSOAdmin) ListPermissionSetsProvisionedToAccount(input *ListPermissionSetsProvisionedToAccountInput) (*ListPermissionSetsProvisionedToAccountOutput, error) {
@@ -2834,15 +2826,14 @@ func (c *SSOAdmin) ListPermissionSetsProvisionedToAccountWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissionSetsProvisionedToAccount operation.
-//    pageNum := 0
-//    err := client.ListPermissionSetsProvisionedToAccountPages(params,
-//        func(page *ssoadmin.ListPermissionSetsProvisionedToAccountOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissionSetsProvisionedToAccount operation.
+//	pageNum := 0
+//	err := client.ListPermissionSetsProvisionedToAccountPages(params,
+//	    func(page *ssoadmin.ListPermissionSetsProvisionedToAccountOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListPermissionSetsProvisionedToAccountPages(input *ListPermissionSetsProvisionedToAccountInput, fn func(*ListPermissionSetsProvisionedToAccountOutput, bool) bool) error {
 	return c.ListPermissionSetsProvisionedToAccountPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2894,14 +2885,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListTagsForResource
 func (c *SSOAdmin) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2938,22 +2928,23 @@ func (c *SSOAdmin) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListTagsForResource
 func (c *SSOAdmin) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2985,15 +2976,14 @@ func (c *SSOAdmin) ListTagsForResourceWithContext(ctx aws.Context, input *ListTa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *ssoadmin.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *ssoadmin.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SSOAdmin) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3045,14 +3035,13 @@ const opProvisionPermissionSet = "ProvisionPermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ProvisionPermissionSetRequest method.
+//	req, resp := client.ProvisionPermissionSetRequest(params)
 //
-//    // Example sending a request using the ProvisionPermissionSetRequest method.
-//    req, resp := client.ProvisionPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ProvisionPermissionSet
 func (c *SSOAdmin) ProvisionPermissionSetRequest(input *ProvisionPermissionSetInput) (req *request.Request, output *ProvisionPermissionSetOutput) {
@@ -3084,28 +3073,29 @@ func (c *SSOAdmin) ProvisionPermissionSetRequest(input *ProvisionPermissionSetIn
 // API operation ProvisionPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ProvisionPermissionSet
 func (c *SSOAdmin) ProvisionPermissionSet(input *ProvisionPermissionSetInput) (*ProvisionPermissionSetOutput, error) {
@@ -3145,14 +3135,13 @@ const opPutInlinePolicyToPermissionSet = "PutInlinePolicyToPermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutInlinePolicyToPermissionSetRequest method.
+//	req, resp := client.PutInlinePolicyToPermissionSetRequest(params)
 //
-//    // Example sending a request using the PutInlinePolicyToPermissionSetRequest method.
-//    req, resp := client.PutInlinePolicyToPermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutInlinePolicyToPermissionSet
 func (c *SSOAdmin) PutInlinePolicyToPermissionSetRequest(input *PutInlinePolicyToPermissionSetInput) (req *request.Request, output *PutInlinePolicyToPermissionSetOutput) {
@@ -3188,32 +3177,33 @@ func (c *SSOAdmin) PutInlinePolicyToPermissionSetRequest(input *PutInlinePolicyT
 // API operation PutInlinePolicyToPermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ServiceQuotaExceededException
-//   Indicates that the principal has crossed the permitted number of resources
-//   that can be created.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutInlinePolicyToPermissionSet
 func (c *SSOAdmin) PutInlinePolicyToPermissionSet(input *PutInlinePolicyToPermissionSetInput) (*PutInlinePolicyToPermissionSetOutput, error) {
@@ -3253,14 +3243,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/TagResource
 func (c *SSOAdmin) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3292,32 +3281,33 @@ func (c *SSOAdmin) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ServiceQuotaExceededException
-//   Indicates that the principal has crossed the permitted number of resources
-//   that can be created.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/TagResource
 func (c *SSOAdmin) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3357,14 +3347,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UntagResource
 func (c *SSOAdmin) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3396,28 +3385,29 @@ func (c *SSOAdmin) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UntagResource
 func (c *SSOAdmin) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3457,14 +3447,13 @@ const opUpdateInstanceAccessControlAttributeConfiguration = "UpdateInstanceAcces
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInstanceAccessControlAttributeConfigurationRequest method.
+//	req, resp := client.UpdateInstanceAccessControlAttributeConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateInstanceAccessControlAttributeConfigurationRequest method.
-//    req, resp := client.UpdateInstanceAccessControlAttributeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) UpdateInstanceAccessControlAttributeConfigurationRequest(input *UpdateInstanceAccessControlAttributeConfigurationInput) (req *request.Request, output *UpdateInstanceAccessControlAttributeConfigurationOutput) {
@@ -3504,28 +3493,29 @@ func (c *SSOAdmin) UpdateInstanceAccessControlAttributeConfigurationRequest(inpu
 // API operation UpdateInstanceAccessControlAttributeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateInstanceAccessControlAttributeConfiguration
 func (c *SSOAdmin) UpdateInstanceAccessControlAttributeConfiguration(input *UpdateInstanceAccessControlAttributeConfigurationInput) (*UpdateInstanceAccessControlAttributeConfigurationOutput, error) {
@@ -3565,14 +3555,13 @@ const opUpdatePermissionSet = "UpdatePermissionSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePermissionSetRequest method.
+//	req, resp := client.UpdatePermissionSetRequest(params)
 //
-//    // Example sending a request using the UpdatePermissionSetRequest method.
-//    req, resp := client.UpdatePermissionSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdatePermissionSet
 func (c *SSOAdmin) UpdatePermissionSetRequest(input *UpdatePermissionSetInput) (req *request.Request, output *UpdatePermissionSetOutput) {
@@ -3604,28 +3593,29 @@ func (c *SSOAdmin) UpdatePermissionSetRequest(input *UpdatePermissionSetInput) (
 // API operation UpdatePermissionSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Indicates that a requested resource is not found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception,
-//   or failure with an internal server.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
-//   * ThrottlingException
-//   Indicates that the principal has crossed the throttling limits of the API
-//   operations.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
-//   * ValidationException
-//   The request failed because it contains a syntax error.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdatePermissionSet
 func (c *SSOAdmin) UpdatePermissionSet(input *UpdatePermissionSetInput) (*UpdatePermissionSetOutput, error) {

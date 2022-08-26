@@ -11,7 +11,7 @@ import (
 
 // GetClusterRequest wrapper for the GetCluster operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/GetCluster.go.html to see an example of how to use GetClusterRequest.
 type GetClusterRequest struct {

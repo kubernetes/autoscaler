@@ -29,14 +29,13 @@ const opCreateApiKey = "CreateApiKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApiKeyRequest method.
+//	req, resp := client.CreateApiKeyRequest(params)
 //
-//    // Example sending a request using the CreateApiKeyRequest method.
-//    req, resp := client.CreateApiKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateApiKeyRequest(input *CreateApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opCreateApiKey,
@@ -65,27 +64,27 @@ func (c *APIGateway) CreateApiKeyRequest(input *CreateApiKeyInput) (req *request
 // API operation CreateApiKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateApiKey(input *CreateApiKeyInput) (*ApiKey, error) {
 	req, out := c.CreateApiKeyRequest(input)
 	return out, req.Send()
@@ -123,14 +122,13 @@ const opCreateAuthorizer = "CreateAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAuthorizerRequest method.
+//	req, resp := client.CreateAuthorizerRequest(params)
 //
-//    // Example sending a request using the CreateAuthorizerRequest method.
-//    req, resp := client.CreateAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateAuthorizerRequest(input *CreateAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opCreateAuthorizer,
@@ -159,27 +157,27 @@ func (c *APIGateway) CreateAuthorizerRequest(input *CreateAuthorizerInput) (req 
 // API operation CreateAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateAuthorizer(input *CreateAuthorizerInput) (*Authorizer, error) {
 	req, out := c.CreateAuthorizerRequest(input)
 	return out, req.Send()
@@ -217,14 +215,13 @@ const opCreateBasePathMapping = "CreateBasePathMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBasePathMappingRequest method.
+//	req, resp := client.CreateBasePathMappingRequest(params)
 //
-//    // Example sending a request using the CreateBasePathMappingRequest method.
-//    req, resp := client.CreateBasePathMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateBasePathMappingRequest(input *CreateBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opCreateBasePathMapping,
@@ -253,27 +250,27 @@ func (c *APIGateway) CreateBasePathMappingRequest(input *CreateBasePathMappingIn
 // API operation CreateBasePathMapping for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateBasePathMapping(input *CreateBasePathMappingInput) (*BasePathMapping, error) {
 	req, out := c.CreateBasePathMappingRequest(input)
 	return out, req.Send()
@@ -311,14 +308,13 @@ const opCreateDeployment = "CreateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentRequest method.
+//	req, resp := client.CreateDeploymentRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentRequest method.
-//    req, resp := client.CreateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opCreateDeployment,
@@ -348,31 +344,31 @@ func (c *APIGateway) CreateDeploymentRequest(input *CreateDeploymentInput) (req 
 // API operation CreateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ServiceUnavailableException
-//   The requested service is not available. For details see the accompanying
-//   error message. Retry after the specified time period.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
+//   - ServiceUnavailableException
+//     The requested service is not available. For details see the accompanying
+//     error message. Retry after the specified time period.
 func (c *APIGateway) CreateDeployment(input *CreateDeploymentInput) (*Deployment, error) {
 	req, out := c.CreateDeploymentRequest(input)
 	return out, req.Send()
@@ -410,14 +406,13 @@ const opCreateDocumentationPart = "CreateDocumentationPart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDocumentationPartRequest method.
+//	req, resp := client.CreateDocumentationPartRequest(params)
 //
-//    // Example sending a request using the CreateDocumentationPartRequest method.
-//    req, resp := client.CreateDocumentationPartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateDocumentationPartRequest(input *CreateDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
 	op := &request.Operation{
 		Name:       opCreateDocumentationPart,
@@ -446,27 +441,27 @@ func (c *APIGateway) CreateDocumentationPartRequest(input *CreateDocumentationPa
 // API operation CreateDocumentationPart for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateDocumentationPart(input *CreateDocumentationPartInput) (*DocumentationPart, error) {
 	req, out := c.CreateDocumentationPartRequest(input)
 	return out, req.Send()
@@ -504,14 +499,13 @@ const opCreateDocumentationVersion = "CreateDocumentationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDocumentationVersionRequest method.
+//	req, resp := client.CreateDocumentationVersionRequest(params)
 //
-//    // Example sending a request using the CreateDocumentationVersionRequest method.
-//    req, resp := client.CreateDocumentationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateDocumentationVersionRequest(input *CreateDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
 	op := &request.Operation{
 		Name:       opCreateDocumentationVersion,
@@ -530,7 +524,7 @@ func (c *APIGateway) CreateDocumentationVersionRequest(input *CreateDocumentatio
 
 // CreateDocumentationVersion API operation for Amazon API Gateway.
 //
-// Creates a documentation version
+// # Creates a documentation version
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -540,27 +534,27 @@ func (c *APIGateway) CreateDocumentationVersionRequest(input *CreateDocumentatio
 // API operation CreateDocumentationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateDocumentationVersion(input *CreateDocumentationVersionInput) (*DocumentationVersion, error) {
 	req, out := c.CreateDocumentationVersionRequest(input)
 	return out, req.Send()
@@ -598,14 +592,13 @@ const opCreateDomainName = "CreateDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainNameRequest method.
+//	req, resp := client.CreateDomainNameRequest(params)
 //
-//    // Example sending a request using the CreateDomainNameRequest method.
-//    req, resp := client.CreateDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateDomainNameRequest(input *CreateDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opCreateDomainName,
@@ -634,24 +627,24 @@ func (c *APIGateway) CreateDomainNameRequest(input *CreateDomainNameInput) (req 
 // API operation CreateDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateDomainName(input *CreateDomainNameInput) (*DomainName, error) {
 	req, out := c.CreateDomainNameRequest(input)
 	return out, req.Send()
@@ -689,14 +682,13 @@ const opCreateModel = "CreateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateModelRequest method.
+//	req, resp := client.CreateModelRequest(params)
 //
-//    // Example sending a request using the CreateModelRequest method.
-//    req, resp := client.CreateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateModelRequest(input *CreateModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opCreateModel,
@@ -725,27 +717,27 @@ func (c *APIGateway) CreateModelRequest(input *CreateModelInput) (req *request.R
 // API operation CreateModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateModel(input *CreateModelInput) (*Model, error) {
 	req, out := c.CreateModelRequest(input)
 	return out, req.Send()
@@ -783,14 +775,13 @@ const opCreateRequestValidator = "CreateRequestValidator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRequestValidatorRequest method.
+//	req, resp := client.CreateRequestValidatorRequest(params)
 //
-//    // Example sending a request using the CreateRequestValidatorRequest method.
-//    req, resp := client.CreateRequestValidatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateRequestValidatorRequest(input *CreateRequestValidatorInput) (req *request.Request, output *UpdateRequestValidatorOutput) {
 	op := &request.Operation{
 		Name:       opCreateRequestValidator,
@@ -819,27 +810,27 @@ func (c *APIGateway) CreateRequestValidatorRequest(input *CreateRequestValidator
 // API operation CreateRequestValidator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateRequestValidator(input *CreateRequestValidatorInput) (*UpdateRequestValidatorOutput, error) {
 	req, out := c.CreateRequestValidatorRequest(input)
 	return out, req.Send()
@@ -877,14 +868,13 @@ const opCreateResource = "CreateResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourceRequest method.
+//	req, resp := client.CreateResourceRequest(params)
 //
-//    // Example sending a request using the CreateResourceRequest method.
-//    req, resp := client.CreateResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateResourceRequest(input *CreateResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opCreateResource,
@@ -913,27 +903,27 @@ func (c *APIGateway) CreateResourceRequest(input *CreateResourceInput) (req *req
 // API operation CreateResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateResource(input *CreateResourceInput) (*Resource, error) {
 	req, out := c.CreateResourceRequest(input)
 	return out, req.Send()
@@ -971,14 +961,13 @@ const opCreateRestApi = "CreateRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRestApiRequest method.
+//	req, resp := client.CreateRestApiRequest(params)
 //
-//    // Example sending a request using the CreateRestApiRequest method.
-//    req, resp := client.CreateRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateRestApiRequest(input *CreateRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opCreateRestApi,
@@ -1007,24 +996,24 @@ func (c *APIGateway) CreateRestApiRequest(input *CreateRestApiInput) (req *reque
 // API operation CreateRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateRestApi(input *CreateRestApiInput) (*RestApi, error) {
 	req, out := c.CreateRestApiRequest(input)
 	return out, req.Send()
@@ -1062,14 +1051,13 @@ const opCreateStage = "CreateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStageRequest method.
+//	req, resp := client.CreateStageRequest(params)
 //
-//    // Example sending a request using the CreateStageRequest method.
-//    req, resp := client.CreateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateStageRequest(input *CreateStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opCreateStage,
@@ -1099,27 +1087,27 @@ func (c *APIGateway) CreateStageRequest(input *CreateStageInput) (req *request.R
 // API operation CreateStage for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateStage(input *CreateStageInput) (*Stage, error) {
 	req, out := c.CreateStageRequest(input)
 	return out, req.Send()
@@ -1157,14 +1145,13 @@ const opCreateUsagePlan = "CreateUsagePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUsagePlanRequest method.
+//	req, resp := client.CreateUsagePlanRequest(params)
 //
-//    // Example sending a request using the CreateUsagePlanRequest method.
-//    req, resp := client.CreateUsagePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateUsagePlanRequest(input *CreateUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opCreateUsagePlan,
@@ -1194,27 +1181,27 @@ func (c *APIGateway) CreateUsagePlanRequest(input *CreateUsagePlanInput) (req *r
 // API operation CreateUsagePlan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateUsagePlan(input *CreateUsagePlanInput) (*UsagePlan, error) {
 	req, out := c.CreateUsagePlanRequest(input)
 	return out, req.Send()
@@ -1252,14 +1239,13 @@ const opCreateUsagePlanKey = "CreateUsagePlanKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUsagePlanKeyRequest method.
+//	req, resp := client.CreateUsagePlanKeyRequest(params)
 //
-//    // Example sending a request using the CreateUsagePlanKeyRequest method.
-//    req, resp := client.CreateUsagePlanKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateUsagePlanKeyRequest(input *CreateUsagePlanKeyInput) (req *request.Request, output *UsagePlanKey) {
 	op := &request.Operation{
 		Name:       opCreateUsagePlanKey,
@@ -1288,27 +1274,27 @@ func (c *APIGateway) CreateUsagePlanKeyRequest(input *CreateUsagePlanKeyInput) (
 // API operation CreateUsagePlanKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateUsagePlanKey(input *CreateUsagePlanKeyInput) (*UsagePlanKey, error) {
 	req, out := c.CreateUsagePlanKeyRequest(input)
 	return out, req.Send()
@@ -1346,14 +1332,13 @@ const opCreateVpcLink = "CreateVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcLinkRequest method.
+//	req, resp := client.CreateVpcLinkRequest(params)
 //
-//    // Example sending a request using the CreateVpcLinkRequest method.
-//    req, resp := client.CreateVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) CreateVpcLinkRequest(input *CreateVpcLinkInput) (req *request.Request, output *UpdateVpcLinkOutput) {
 	op := &request.Operation{
 		Name:       opCreateVpcLink,
@@ -1385,24 +1370,24 @@ func (c *APIGateway) CreateVpcLinkRequest(input *CreateVpcLinkInput) (req *reque
 // API operation CreateVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) CreateVpcLink(input *CreateVpcLinkInput) (*UpdateVpcLinkOutput, error) {
 	req, out := c.CreateVpcLinkRequest(input)
 	return out, req.Send()
@@ -1440,14 +1425,13 @@ const opDeleteApiKey = "DeleteApiKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApiKeyRequest method.
+//	req, resp := client.DeleteApiKeyRequest(params)
 //
-//    // Example sending a request using the DeleteApiKeyRequest method.
-//    req, resp := client.DeleteApiKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteApiKeyRequest(input *DeleteApiKeyInput) (req *request.Request, output *DeleteApiKeyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteApiKey,
@@ -1477,24 +1461,24 @@ func (c *APIGateway) DeleteApiKeyRequest(input *DeleteApiKeyInput) (req *request
 // API operation DeleteApiKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteApiKey(input *DeleteApiKeyInput) (*DeleteApiKeyOutput, error) {
 	req, out := c.DeleteApiKeyRequest(input)
 	return out, req.Send()
@@ -1532,14 +1516,13 @@ const opDeleteAuthorizer = "DeleteAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAuthorizerRequest method.
+//	req, resp := client.DeleteAuthorizerRequest(params)
 //
-//    // Example sending a request using the DeleteAuthorizerRequest method.
-//    req, resp := client.DeleteAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req *request.Request, output *DeleteAuthorizerOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAuthorizer,
@@ -1569,24 +1552,24 @@ func (c *APIGateway) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req 
 // API operation DeleteAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteAuthorizer(input *DeleteAuthorizerInput) (*DeleteAuthorizerOutput, error) {
 	req, out := c.DeleteAuthorizerRequest(input)
 	return out, req.Send()
@@ -1624,14 +1607,13 @@ const opDeleteBasePathMapping = "DeleteBasePathMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBasePathMappingRequest method.
+//	req, resp := client.DeleteBasePathMappingRequest(params)
 //
-//    // Example sending a request using the DeleteBasePathMappingRequest method.
-//    req, resp := client.DeleteBasePathMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteBasePathMappingRequest(input *DeleteBasePathMappingInput) (req *request.Request, output *DeleteBasePathMappingOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBasePathMapping,
@@ -1661,24 +1643,24 @@ func (c *APIGateway) DeleteBasePathMappingRequest(input *DeleteBasePathMappingIn
 // API operation DeleteBasePathMapping for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteBasePathMapping(input *DeleteBasePathMappingInput) (*DeleteBasePathMappingOutput, error) {
 	req, out := c.DeleteBasePathMappingRequest(input)
 	return out, req.Send()
@@ -1716,14 +1698,13 @@ const opDeleteClientCertificate = "DeleteClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClientCertificateRequest method.
+//	req, resp := client.DeleteClientCertificateRequest(params)
 //
-//    // Example sending a request using the DeleteClientCertificateRequest method.
-//    req, resp := client.DeleteClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteClientCertificateRequest(input *DeleteClientCertificateInput) (req *request.Request, output *DeleteClientCertificateOutput) {
 	op := &request.Operation{
 		Name:       opDeleteClientCertificate,
@@ -1753,24 +1734,24 @@ func (c *APIGateway) DeleteClientCertificateRequest(input *DeleteClientCertifica
 // API operation DeleteClientCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteClientCertificate(input *DeleteClientCertificateInput) (*DeleteClientCertificateOutput, error) {
 	req, out := c.DeleteClientCertificateRequest(input)
 	return out, req.Send()
@@ -1808,14 +1789,13 @@ const opDeleteDeployment = "DeleteDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeploymentRequest method.
+//	req, resp := client.DeleteDeploymentRequest(params)
 //
-//    // Example sending a request using the DeleteDeploymentRequest method.
-//    req, resp := client.DeleteDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req *request.Request, output *DeleteDeploymentOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDeployment,
@@ -1846,27 +1826,27 @@ func (c *APIGateway) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req 
 // API operation DeleteDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteDeployment(input *DeleteDeploymentInput) (*DeleteDeploymentOutput, error) {
 	req, out := c.DeleteDeploymentRequest(input)
 	return out, req.Send()
@@ -1904,14 +1884,13 @@ const opDeleteDocumentationPart = "DeleteDocumentationPart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDocumentationPartRequest method.
+//	req, resp := client.DeleteDocumentationPartRequest(params)
 //
-//    // Example sending a request using the DeleteDocumentationPartRequest method.
-//    req, resp := client.DeleteDocumentationPartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteDocumentationPartRequest(input *DeleteDocumentationPartInput) (req *request.Request, output *DeleteDocumentationPartOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDocumentationPart,
@@ -1931,7 +1910,7 @@ func (c *APIGateway) DeleteDocumentationPartRequest(input *DeleteDocumentationPa
 
 // DeleteDocumentationPart API operation for Amazon API Gateway.
 //
-// Deletes a documentation part
+// # Deletes a documentation part
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1941,24 +1920,24 @@ func (c *APIGateway) DeleteDocumentationPartRequest(input *DeleteDocumentationPa
 // API operation DeleteDocumentationPart for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteDocumentationPart(input *DeleteDocumentationPartInput) (*DeleteDocumentationPartOutput, error) {
 	req, out := c.DeleteDocumentationPartRequest(input)
 	return out, req.Send()
@@ -1996,14 +1975,13 @@ const opDeleteDocumentationVersion = "DeleteDocumentationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDocumentationVersionRequest method.
+//	req, resp := client.DeleteDocumentationVersionRequest(params)
 //
-//    // Example sending a request using the DeleteDocumentationVersionRequest method.
-//    req, resp := client.DeleteDocumentationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteDocumentationVersionRequest(input *DeleteDocumentationVersionInput) (req *request.Request, output *DeleteDocumentationVersionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDocumentationVersion,
@@ -2033,24 +2011,24 @@ func (c *APIGateway) DeleteDocumentationVersionRequest(input *DeleteDocumentatio
 // API operation DeleteDocumentationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteDocumentationVersion(input *DeleteDocumentationVersionInput) (*DeleteDocumentationVersionOutput, error) {
 	req, out := c.DeleteDocumentationVersionRequest(input)
 	return out, req.Send()
@@ -2088,14 +2066,13 @@ const opDeleteDomainName = "DeleteDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainNameRequest method.
+//	req, resp := client.DeleteDomainNameRequest(params)
 //
-//    // Example sending a request using the DeleteDomainNameRequest method.
-//    req, resp := client.DeleteDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req *request.Request, output *DeleteDomainNameOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDomainName,
@@ -2125,24 +2102,24 @@ func (c *APIGateway) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req 
 // API operation DeleteDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteDomainName(input *DeleteDomainNameInput) (*DeleteDomainNameOutput, error) {
 	req, out := c.DeleteDomainNameRequest(input)
 	return out, req.Send()
@@ -2180,14 +2157,13 @@ const opDeleteGatewayResponse = "DeleteGatewayResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGatewayResponseRequest method.
+//	req, resp := client.DeleteGatewayResponseRequest(params)
 //
-//    // Example sending a request using the DeleteGatewayResponseRequest method.
-//    req, resp := client.DeleteGatewayResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteGatewayResponseRequest(input *DeleteGatewayResponseInput) (req *request.Request, output *DeleteGatewayResponseOutput) {
 	op := &request.Operation{
 		Name:       opDeleteGatewayResponse,
@@ -2218,24 +2194,24 @@ func (c *APIGateway) DeleteGatewayResponseRequest(input *DeleteGatewayResponseIn
 // API operation DeleteGatewayResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteGatewayResponse(input *DeleteGatewayResponseInput) (*DeleteGatewayResponseOutput, error) {
 	req, out := c.DeleteGatewayResponseRequest(input)
 	return out, req.Send()
@@ -2273,14 +2249,13 @@ const opDeleteIntegration = "DeleteIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntegrationRequest method.
+//	req, resp := client.DeleteIntegrationRequest(params)
 //
-//    // Example sending a request using the DeleteIntegrationRequest method.
-//    req, resp := client.DeleteIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteIntegrationRequest(input *DeleteIntegrationInput) (req *request.Request, output *DeleteIntegrationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntegration,
@@ -2310,24 +2285,24 @@ func (c *APIGateway) DeleteIntegrationRequest(input *DeleteIntegrationInput) (re
 // API operation DeleteIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteIntegration(input *DeleteIntegrationInput) (*DeleteIntegrationOutput, error) {
 	req, out := c.DeleteIntegrationRequest(input)
 	return out, req.Send()
@@ -2365,14 +2340,13 @@ const opDeleteIntegrationResponse = "DeleteIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntegrationResponseRequest method.
+//	req, resp := client.DeleteIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the DeleteIntegrationResponseRequest method.
-//    req, resp := client.DeleteIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteIntegrationResponseRequest(input *DeleteIntegrationResponseInput) (req *request.Request, output *DeleteIntegrationResponseOutput) {
 	op := &request.Operation{
 		Name:       opDeleteIntegrationResponse,
@@ -2402,24 +2376,24 @@ func (c *APIGateway) DeleteIntegrationResponseRequest(input *DeleteIntegrationRe
 // API operation DeleteIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteIntegrationResponse(input *DeleteIntegrationResponseInput) (*DeleteIntegrationResponseOutput, error) {
 	req, out := c.DeleteIntegrationResponseRequest(input)
 	return out, req.Send()
@@ -2457,14 +2431,13 @@ const opDeleteMethod = "DeleteMethod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMethodRequest method.
+//	req, resp := client.DeleteMethodRequest(params)
 //
-//    // Example sending a request using the DeleteMethodRequest method.
-//    req, resp := client.DeleteMethodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteMethodRequest(input *DeleteMethodInput) (req *request.Request, output *DeleteMethodOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMethod,
@@ -2494,20 +2467,20 @@ func (c *APIGateway) DeleteMethodRequest(input *DeleteMethodInput) (req *request
 // API operation DeleteMethod for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 func (c *APIGateway) DeleteMethod(input *DeleteMethodInput) (*DeleteMethodOutput, error) {
 	req, out := c.DeleteMethodRequest(input)
 	return out, req.Send()
@@ -2545,14 +2518,13 @@ const opDeleteMethodResponse = "DeleteMethodResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMethodResponseRequest method.
+//	req, resp := client.DeleteMethodResponseRequest(params)
 //
-//    // Example sending a request using the DeleteMethodResponseRequest method.
-//    req, resp := client.DeleteMethodResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteMethodResponseRequest(input *DeleteMethodResponseInput) (req *request.Request, output *DeleteMethodResponseOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMethodResponse,
@@ -2582,24 +2554,24 @@ func (c *APIGateway) DeleteMethodResponseRequest(input *DeleteMethodResponseInpu
 // API operation DeleteMethodResponse for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 func (c *APIGateway) DeleteMethodResponse(input *DeleteMethodResponseInput) (*DeleteMethodResponseOutput, error) {
 	req, out := c.DeleteMethodResponseRequest(input)
 	return out, req.Send()
@@ -2637,14 +2609,13 @@ const opDeleteModel = "DeleteModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteModelRequest method.
+//	req, resp := client.DeleteModelRequest(params)
 //
-//    // Example sending a request using the DeleteModelRequest method.
-//    req, resp := client.DeleteModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteModelRequest(input *DeleteModelInput) (req *request.Request, output *DeleteModelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteModel,
@@ -2674,24 +2645,24 @@ func (c *APIGateway) DeleteModelRequest(input *DeleteModelInput) (req *request.R
 // API operation DeleteModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteModel(input *DeleteModelInput) (*DeleteModelOutput, error) {
 	req, out := c.DeleteModelRequest(input)
 	return out, req.Send()
@@ -2729,14 +2700,13 @@ const opDeleteRequestValidator = "DeleteRequestValidator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRequestValidatorRequest method.
+//	req, resp := client.DeleteRequestValidatorRequest(params)
 //
-//    // Example sending a request using the DeleteRequestValidatorRequest method.
-//    req, resp := client.DeleteRequestValidatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteRequestValidatorRequest(input *DeleteRequestValidatorInput) (req *request.Request, output *DeleteRequestValidatorOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRequestValidator,
@@ -2766,24 +2736,24 @@ func (c *APIGateway) DeleteRequestValidatorRequest(input *DeleteRequestValidator
 // API operation DeleteRequestValidator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteRequestValidator(input *DeleteRequestValidatorInput) (*DeleteRequestValidatorOutput, error) {
 	req, out := c.DeleteRequestValidatorRequest(input)
 	return out, req.Send()
@@ -2821,14 +2791,13 @@ const opDeleteResource = "DeleteResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourceRequest method.
+//	req, resp := client.DeleteResourceRequest(params)
 //
-//    // Example sending a request using the DeleteResourceRequest method.
-//    req, resp := client.DeleteResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteResourceRequest(input *DeleteResourceInput) (req *request.Request, output *DeleteResourceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteResource,
@@ -2858,24 +2827,24 @@ func (c *APIGateway) DeleteResourceRequest(input *DeleteResourceInput) (req *req
 // API operation DeleteResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteResource(input *DeleteResourceInput) (*DeleteResourceOutput, error) {
 	req, out := c.DeleteResourceRequest(input)
 	return out, req.Send()
@@ -2913,14 +2882,13 @@ const opDeleteRestApi = "DeleteRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRestApiRequest method.
+//	req, resp := client.DeleteRestApiRequest(params)
 //
-//    // Example sending a request using the DeleteRestApiRequest method.
-//    req, resp := client.DeleteRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteRestApiRequest(input *DeleteRestApiInput) (req *request.Request, output *DeleteRestApiOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRestApi,
@@ -2950,24 +2918,24 @@ func (c *APIGateway) DeleteRestApiRequest(input *DeleteRestApiInput) (req *reque
 // API operation DeleteRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteRestApi(input *DeleteRestApiInput) (*DeleteRestApiOutput, error) {
 	req, out := c.DeleteRestApiRequest(input)
 	return out, req.Send()
@@ -3005,14 +2973,13 @@ const opDeleteStage = "DeleteStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStageRequest method.
+//	req, resp := client.DeleteStageRequest(params)
 //
-//    // Example sending a request using the DeleteStageRequest method.
-//    req, resp := client.DeleteStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteStageRequest(input *DeleteStageInput) (req *request.Request, output *DeleteStageOutput) {
 	op := &request.Operation{
 		Name:       opDeleteStage,
@@ -3042,27 +3009,27 @@ func (c *APIGateway) DeleteStageRequest(input *DeleteStageInput) (req *request.R
 // API operation DeleteStage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteStage(input *DeleteStageInput) (*DeleteStageOutput, error) {
 	req, out := c.DeleteStageRequest(input)
 	return out, req.Send()
@@ -3100,14 +3067,13 @@ const opDeleteUsagePlan = "DeleteUsagePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUsagePlanRequest method.
+//	req, resp := client.DeleteUsagePlanRequest(params)
 //
-//    // Example sending a request using the DeleteUsagePlanRequest method.
-//    req, resp := client.DeleteUsagePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteUsagePlanRequest(input *DeleteUsagePlanInput) (req *request.Request, output *DeleteUsagePlanOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUsagePlan,
@@ -3137,24 +3103,24 @@ func (c *APIGateway) DeleteUsagePlanRequest(input *DeleteUsagePlanInput) (req *r
 // API operation DeleteUsagePlan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteUsagePlan(input *DeleteUsagePlanInput) (*DeleteUsagePlanOutput, error) {
 	req, out := c.DeleteUsagePlanRequest(input)
 	return out, req.Send()
@@ -3192,14 +3158,13 @@ const opDeleteUsagePlanKey = "DeleteUsagePlanKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUsagePlanKeyRequest method.
+//	req, resp := client.DeleteUsagePlanKeyRequest(params)
 //
-//    // Example sending a request using the DeleteUsagePlanKeyRequest method.
-//    req, resp := client.DeleteUsagePlanKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteUsagePlanKeyRequest(input *DeleteUsagePlanKeyInput) (req *request.Request, output *DeleteUsagePlanKeyOutput) {
 	op := &request.Operation{
 		Name:       opDeleteUsagePlanKey,
@@ -3230,24 +3195,24 @@ func (c *APIGateway) DeleteUsagePlanKeyRequest(input *DeleteUsagePlanKeyInput) (
 // API operation DeleteUsagePlanKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteUsagePlanKey(input *DeleteUsagePlanKeyInput) (*DeleteUsagePlanKeyOutput, error) {
 	req, out := c.DeleteUsagePlanKeyRequest(input)
 	return out, req.Send()
@@ -3285,14 +3250,13 @@ const opDeleteVpcLink = "DeleteVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcLinkRequest method.
+//	req, resp := client.DeleteVpcLinkRequest(params)
 //
-//    // Example sending a request using the DeleteVpcLinkRequest method.
-//    req, resp := client.DeleteVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) DeleteVpcLinkRequest(input *DeleteVpcLinkInput) (req *request.Request, output *DeleteVpcLinkOutput) {
 	op := &request.Operation{
 		Name:       opDeleteVpcLink,
@@ -3322,24 +3286,24 @@ func (c *APIGateway) DeleteVpcLinkRequest(input *DeleteVpcLinkInput) (req *reque
 // API operation DeleteVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) DeleteVpcLink(input *DeleteVpcLinkInput) (*DeleteVpcLinkOutput, error) {
 	req, out := c.DeleteVpcLinkRequest(input)
 	return out, req.Send()
@@ -3377,14 +3341,13 @@ const opFlushStageAuthorizersCache = "FlushStageAuthorizersCache"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the FlushStageAuthorizersCacheRequest method.
+//	req, resp := client.FlushStageAuthorizersCacheRequest(params)
 //
-//    // Example sending a request using the FlushStageAuthorizersCacheRequest method.
-//    req, resp := client.FlushStageAuthorizersCacheRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) FlushStageAuthorizersCacheRequest(input *FlushStageAuthorizersCacheInput) (req *request.Request, output *FlushStageAuthorizersCacheOutput) {
 	op := &request.Operation{
 		Name:       opFlushStageAuthorizersCache,
@@ -3414,27 +3377,27 @@ func (c *APIGateway) FlushStageAuthorizersCacheRequest(input *FlushStageAuthoriz
 // API operation FlushStageAuthorizersCache for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) FlushStageAuthorizersCache(input *FlushStageAuthorizersCacheInput) (*FlushStageAuthorizersCacheOutput, error) {
 	req, out := c.FlushStageAuthorizersCacheRequest(input)
 	return out, req.Send()
@@ -3472,14 +3435,13 @@ const opFlushStageCache = "FlushStageCache"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the FlushStageCacheRequest method.
+//	req, resp := client.FlushStageCacheRequest(params)
 //
-//    // Example sending a request using the FlushStageCacheRequest method.
-//    req, resp := client.FlushStageCacheRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) FlushStageCacheRequest(input *FlushStageCacheInput) (req *request.Request, output *FlushStageCacheOutput) {
 	op := &request.Operation{
 		Name:       opFlushStageCache,
@@ -3509,27 +3471,27 @@ func (c *APIGateway) FlushStageCacheRequest(input *FlushStageCacheInput) (req *r
 // API operation FlushStageCache for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) FlushStageCache(input *FlushStageCacheInput) (*FlushStageCacheOutput, error) {
 	req, out := c.FlushStageCacheRequest(input)
 	return out, req.Send()
@@ -3567,14 +3529,13 @@ const opGenerateClientCertificate = "GenerateClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateClientCertificateRequest method.
+//	req, resp := client.GenerateClientCertificateRequest(params)
 //
-//    // Example sending a request using the GenerateClientCertificateRequest method.
-//    req, resp := client.GenerateClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GenerateClientCertificateRequest(input *GenerateClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opGenerateClientCertificate,
@@ -3603,24 +3564,24 @@ func (c *APIGateway) GenerateClientCertificateRequest(input *GenerateClientCerti
 // API operation GenerateClientCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GenerateClientCertificate(input *GenerateClientCertificateInput) (*ClientCertificate, error) {
 	req, out := c.GenerateClientCertificateRequest(input)
 	return out, req.Send()
@@ -3658,14 +3619,13 @@ const opGetAccount = "GetAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountRequest method.
+//	req, resp := client.GetAccountRequest(params)
 //
-//    // Example sending a request using the GetAccountRequest method.
-//    req, resp := client.GetAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetAccountRequest(input *GetAccountInput) (req *request.Request, output *Account) {
 	op := &request.Operation{
 		Name:       opGetAccount,
@@ -3694,20 +3654,20 @@ func (c *APIGateway) GetAccountRequest(input *GetAccountInput) (req *request.Req
 // API operation GetAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetAccount(input *GetAccountInput) (*Account, error) {
 	req, out := c.GetAccountRequest(input)
 	return out, req.Send()
@@ -3745,14 +3705,13 @@ const opGetApiKey = "GetApiKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApiKeyRequest method.
+//	req, resp := client.GetApiKeyRequest(params)
 //
-//    // Example sending a request using the GetApiKeyRequest method.
-//    req, resp := client.GetApiKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetApiKeyRequest(input *GetApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opGetApiKey,
@@ -3781,20 +3740,20 @@ func (c *APIGateway) GetApiKeyRequest(input *GetApiKeyInput) (req *request.Reque
 // API operation GetApiKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetApiKey(input *GetApiKeyInput) (*ApiKey, error) {
 	req, out := c.GetApiKeyRequest(input)
 	return out, req.Send()
@@ -3832,14 +3791,13 @@ const opGetApiKeys = "GetApiKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApiKeysRequest method.
+//	req, resp := client.GetApiKeysRequest(params)
 //
-//    // Example sending a request using the GetApiKeysRequest method.
-//    req, resp := client.GetApiKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetApiKeysRequest(input *GetApiKeysInput) (req *request.Request, output *GetApiKeysOutput) {
 	op := &request.Operation{
 		Name:       opGetApiKeys,
@@ -3874,20 +3832,20 @@ func (c *APIGateway) GetApiKeysRequest(input *GetApiKeysInput) (req *request.Req
 // API operation GetApiKeys for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetApiKeys(input *GetApiKeysInput) (*GetApiKeysOutput, error) {
 	req, out := c.GetApiKeysRequest(input)
 	return out, req.Send()
@@ -3917,15 +3875,14 @@ func (c *APIGateway) GetApiKeysWithContext(ctx aws.Context, input *GetApiKeysInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetApiKeys operation.
-//    pageNum := 0
-//    err := client.GetApiKeysPages(params,
-//        func(page *apigateway.GetApiKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetApiKeys operation.
+//	pageNum := 0
+//	err := client.GetApiKeysPages(params,
+//	    func(page *apigateway.GetApiKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetApiKeysPages(input *GetApiKeysInput, fn func(*GetApiKeysOutput, bool) bool) error {
 	return c.GetApiKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3977,14 +3934,13 @@ const opGetAuthorizer = "GetAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAuthorizerRequest method.
+//	req, resp := client.GetAuthorizerRequest(params)
 //
-//    // Example sending a request using the GetAuthorizerRequest method.
-//    req, resp := client.GetAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetAuthorizerRequest(input *GetAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opGetAuthorizer,
@@ -4013,20 +3969,20 @@ func (c *APIGateway) GetAuthorizerRequest(input *GetAuthorizerInput) (req *reque
 // API operation GetAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetAuthorizer(input *GetAuthorizerInput) (*Authorizer, error) {
 	req, out := c.GetAuthorizerRequest(input)
 	return out, req.Send()
@@ -4064,14 +4020,13 @@ const opGetAuthorizers = "GetAuthorizers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAuthorizersRequest method.
+//	req, resp := client.GetAuthorizersRequest(params)
 //
-//    // Example sending a request using the GetAuthorizersRequest method.
-//    req, resp := client.GetAuthorizersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetAuthorizersRequest(input *GetAuthorizersInput) (req *request.Request, output *GetAuthorizersOutput) {
 	op := &request.Operation{
 		Name:       opGetAuthorizers,
@@ -4100,20 +4055,20 @@ func (c *APIGateway) GetAuthorizersRequest(input *GetAuthorizersInput) (req *req
 // API operation GetAuthorizers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetAuthorizers(input *GetAuthorizersInput) (*GetAuthorizersOutput, error) {
 	req, out := c.GetAuthorizersRequest(input)
 	return out, req.Send()
@@ -4151,14 +4106,13 @@ const opGetBasePathMapping = "GetBasePathMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBasePathMappingRequest method.
+//	req, resp := client.GetBasePathMappingRequest(params)
 //
-//    // Example sending a request using the GetBasePathMappingRequest method.
-//    req, resp := client.GetBasePathMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetBasePathMappingRequest(input *GetBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opGetBasePathMapping,
@@ -4187,20 +4141,20 @@ func (c *APIGateway) GetBasePathMappingRequest(input *GetBasePathMappingInput) (
 // API operation GetBasePathMapping for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetBasePathMapping(input *GetBasePathMappingInput) (*BasePathMapping, error) {
 	req, out := c.GetBasePathMappingRequest(input)
 	return out, req.Send()
@@ -4238,14 +4192,13 @@ const opGetBasePathMappings = "GetBasePathMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBasePathMappingsRequest method.
+//	req, resp := client.GetBasePathMappingsRequest(params)
 //
-//    // Example sending a request using the GetBasePathMappingsRequest method.
-//    req, resp := client.GetBasePathMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetBasePathMappingsRequest(input *GetBasePathMappingsInput) (req *request.Request, output *GetBasePathMappingsOutput) {
 	op := &request.Operation{
 		Name:       opGetBasePathMappings,
@@ -4280,20 +4233,20 @@ func (c *APIGateway) GetBasePathMappingsRequest(input *GetBasePathMappingsInput)
 // API operation GetBasePathMappings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetBasePathMappings(input *GetBasePathMappingsInput) (*GetBasePathMappingsOutput, error) {
 	req, out := c.GetBasePathMappingsRequest(input)
 	return out, req.Send()
@@ -4323,15 +4276,14 @@ func (c *APIGateway) GetBasePathMappingsWithContext(ctx aws.Context, input *GetB
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBasePathMappings operation.
-//    pageNum := 0
-//    err := client.GetBasePathMappingsPages(params,
-//        func(page *apigateway.GetBasePathMappingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBasePathMappings operation.
+//	pageNum := 0
+//	err := client.GetBasePathMappingsPages(params,
+//	    func(page *apigateway.GetBasePathMappingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetBasePathMappingsPages(input *GetBasePathMappingsInput, fn func(*GetBasePathMappingsOutput, bool) bool) error {
 	return c.GetBasePathMappingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4383,14 +4335,13 @@ const opGetClientCertificate = "GetClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetClientCertificateRequest method.
+//	req, resp := client.GetClientCertificateRequest(params)
 //
-//    // Example sending a request using the GetClientCertificateRequest method.
-//    req, resp := client.GetClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetClientCertificateRequest(input *GetClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opGetClientCertificate,
@@ -4419,20 +4370,20 @@ func (c *APIGateway) GetClientCertificateRequest(input *GetClientCertificateInpu
 // API operation GetClientCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetClientCertificate(input *GetClientCertificateInput) (*ClientCertificate, error) {
 	req, out := c.GetClientCertificateRequest(input)
 	return out, req.Send()
@@ -4470,14 +4421,13 @@ const opGetClientCertificates = "GetClientCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetClientCertificatesRequest method.
+//	req, resp := client.GetClientCertificatesRequest(params)
 //
-//    // Example sending a request using the GetClientCertificatesRequest method.
-//    req, resp := client.GetClientCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetClientCertificatesRequest(input *GetClientCertificatesInput) (req *request.Request, output *GetClientCertificatesOutput) {
 	op := &request.Operation{
 		Name:       opGetClientCertificates,
@@ -4512,20 +4462,20 @@ func (c *APIGateway) GetClientCertificatesRequest(input *GetClientCertificatesIn
 // API operation GetClientCertificates for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetClientCertificates(input *GetClientCertificatesInput) (*GetClientCertificatesOutput, error) {
 	req, out := c.GetClientCertificatesRequest(input)
 	return out, req.Send()
@@ -4555,15 +4505,14 @@ func (c *APIGateway) GetClientCertificatesWithContext(ctx aws.Context, input *Ge
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetClientCertificates operation.
-//    pageNum := 0
-//    err := client.GetClientCertificatesPages(params,
-//        func(page *apigateway.GetClientCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetClientCertificates operation.
+//	pageNum := 0
+//	err := client.GetClientCertificatesPages(params,
+//	    func(page *apigateway.GetClientCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetClientCertificatesPages(input *GetClientCertificatesInput, fn func(*GetClientCertificatesOutput, bool) bool) error {
 	return c.GetClientCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4615,14 +4564,13 @@ const opGetDeployment = "GetDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentRequest method.
+//	req, resp := client.GetDeploymentRequest(params)
 //
-//    // Example sending a request using the GetDeploymentRequest method.
-//    req, resp := client.GetDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDeploymentRequest(input *GetDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opGetDeployment,
@@ -4651,24 +4599,24 @@ func (c *APIGateway) GetDeploymentRequest(input *GetDeploymentInput) (req *reque
 // API operation GetDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ServiceUnavailableException
-//   The requested service is not available. For details see the accompanying
-//   error message. Retry after the specified time period.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
+//   - ServiceUnavailableException
+//     The requested service is not available. For details see the accompanying
+//     error message. Retry after the specified time period.
 func (c *APIGateway) GetDeployment(input *GetDeploymentInput) (*Deployment, error) {
 	req, out := c.GetDeploymentRequest(input)
 	return out, req.Send()
@@ -4706,14 +4654,13 @@ const opGetDeployments = "GetDeployments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentsRequest method.
+//	req, resp := client.GetDeploymentsRequest(params)
 //
-//    // Example sending a request using the GetDeploymentsRequest method.
-//    req, resp := client.GetDeploymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDeploymentsRequest(input *GetDeploymentsInput) (req *request.Request, output *GetDeploymentsOutput) {
 	op := &request.Operation{
 		Name:       opGetDeployments,
@@ -4748,24 +4695,24 @@ func (c *APIGateway) GetDeploymentsRequest(input *GetDeploymentsInput) (req *req
 // API operation GetDeployments for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ServiceUnavailableException
-//   The requested service is not available. For details see the accompanying
-//   error message. Retry after the specified time period.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
+//   - ServiceUnavailableException
+//     The requested service is not available. For details see the accompanying
+//     error message. Retry after the specified time period.
 func (c *APIGateway) GetDeployments(input *GetDeploymentsInput) (*GetDeploymentsOutput, error) {
 	req, out := c.GetDeploymentsRequest(input)
 	return out, req.Send()
@@ -4795,15 +4742,14 @@ func (c *APIGateway) GetDeploymentsWithContext(ctx aws.Context, input *GetDeploy
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDeployments operation.
-//    pageNum := 0
-//    err := client.GetDeploymentsPages(params,
-//        func(page *apigateway.GetDeploymentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDeployments operation.
+//	pageNum := 0
+//	err := client.GetDeploymentsPages(params,
+//	    func(page *apigateway.GetDeploymentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetDeploymentsPages(input *GetDeploymentsInput, fn func(*GetDeploymentsOutput, bool) bool) error {
 	return c.GetDeploymentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4855,14 +4801,13 @@ const opGetDocumentationPart = "GetDocumentationPart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDocumentationPartRequest method.
+//	req, resp := client.GetDocumentationPartRequest(params)
 //
-//    // Example sending a request using the GetDocumentationPartRequest method.
-//    req, resp := client.GetDocumentationPartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDocumentationPartRequest(input *GetDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
 	op := &request.Operation{
 		Name:       opGetDocumentationPart,
@@ -4891,20 +4836,20 @@ func (c *APIGateway) GetDocumentationPartRequest(input *GetDocumentationPartInpu
 // API operation GetDocumentationPart for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDocumentationPart(input *GetDocumentationPartInput) (*DocumentationPart, error) {
 	req, out := c.GetDocumentationPartRequest(input)
 	return out, req.Send()
@@ -4942,14 +4887,13 @@ const opGetDocumentationParts = "GetDocumentationParts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDocumentationPartsRequest method.
+//	req, resp := client.GetDocumentationPartsRequest(params)
 //
-//    // Example sending a request using the GetDocumentationPartsRequest method.
-//    req, resp := client.GetDocumentationPartsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDocumentationPartsRequest(input *GetDocumentationPartsInput) (req *request.Request, output *GetDocumentationPartsOutput) {
 	op := &request.Operation{
 		Name:       opGetDocumentationParts,
@@ -4978,20 +4922,20 @@ func (c *APIGateway) GetDocumentationPartsRequest(input *GetDocumentationPartsIn
 // API operation GetDocumentationParts for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDocumentationParts(input *GetDocumentationPartsInput) (*GetDocumentationPartsOutput, error) {
 	req, out := c.GetDocumentationPartsRequest(input)
 	return out, req.Send()
@@ -5029,14 +4973,13 @@ const opGetDocumentationVersion = "GetDocumentationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDocumentationVersionRequest method.
+//	req, resp := client.GetDocumentationVersionRequest(params)
 //
-//    // Example sending a request using the GetDocumentationVersionRequest method.
-//    req, resp := client.GetDocumentationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDocumentationVersionRequest(input *GetDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
 	op := &request.Operation{
 		Name:       opGetDocumentationVersion,
@@ -5065,16 +5008,16 @@ func (c *APIGateway) GetDocumentationVersionRequest(input *GetDocumentationVersi
 // API operation GetDocumentationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDocumentationVersion(input *GetDocumentationVersionInput) (*DocumentationVersion, error) {
 	req, out := c.GetDocumentationVersionRequest(input)
 	return out, req.Send()
@@ -5112,14 +5055,13 @@ const opGetDocumentationVersions = "GetDocumentationVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDocumentationVersionsRequest method.
+//	req, resp := client.GetDocumentationVersionsRequest(params)
 //
-//    // Example sending a request using the GetDocumentationVersionsRequest method.
-//    req, resp := client.GetDocumentationVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDocumentationVersionsRequest(input *GetDocumentationVersionsInput) (req *request.Request, output *GetDocumentationVersionsOutput) {
 	op := &request.Operation{
 		Name:       opGetDocumentationVersions,
@@ -5148,20 +5090,20 @@ func (c *APIGateway) GetDocumentationVersionsRequest(input *GetDocumentationVers
 // API operation GetDocumentationVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDocumentationVersions(input *GetDocumentationVersionsInput) (*GetDocumentationVersionsOutput, error) {
 	req, out := c.GetDocumentationVersionsRequest(input)
 	return out, req.Send()
@@ -5199,14 +5141,13 @@ const opGetDomainName = "GetDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainNameRequest method.
+//	req, resp := client.GetDomainNameRequest(params)
 //
-//    // Example sending a request using the GetDomainNameRequest method.
-//    req, resp := client.GetDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDomainNameRequest(input *GetDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opGetDomainName,
@@ -5236,20 +5177,20 @@ func (c *APIGateway) GetDomainNameRequest(input *GetDomainNameInput) (req *reque
 // API operation GetDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDomainName(input *GetDomainNameInput) (*DomainName, error) {
 	req, out := c.GetDomainNameRequest(input)
 	return out, req.Send()
@@ -5287,14 +5228,13 @@ const opGetDomainNames = "GetDomainNames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainNamesRequest method.
+//	req, resp := client.GetDomainNamesRequest(params)
 //
-//    // Example sending a request using the GetDomainNamesRequest method.
-//    req, resp := client.GetDomainNamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetDomainNamesRequest(input *GetDomainNamesInput) (req *request.Request, output *GetDomainNamesOutput) {
 	op := &request.Operation{
 		Name:       opGetDomainNames,
@@ -5329,20 +5269,20 @@ func (c *APIGateway) GetDomainNamesRequest(input *GetDomainNamesInput) (req *req
 // API operation GetDomainNames for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetDomainNames(input *GetDomainNamesInput) (*GetDomainNamesOutput, error) {
 	req, out := c.GetDomainNamesRequest(input)
 	return out, req.Send()
@@ -5372,15 +5312,14 @@ func (c *APIGateway) GetDomainNamesWithContext(ctx aws.Context, input *GetDomain
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDomainNames operation.
-//    pageNum := 0
-//    err := client.GetDomainNamesPages(params,
-//        func(page *apigateway.GetDomainNamesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDomainNames operation.
+//	pageNum := 0
+//	err := client.GetDomainNamesPages(params,
+//	    func(page *apigateway.GetDomainNamesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetDomainNamesPages(input *GetDomainNamesInput, fn func(*GetDomainNamesOutput, bool) bool) error {
 	return c.GetDomainNamesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5432,14 +5371,13 @@ const opGetExport = "GetExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExportRequest method.
+//	req, resp := client.GetExportRequest(params)
 //
-//    // Example sending a request using the GetExportRequest method.
-//    req, resp := client.GetExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetExportRequest(input *GetExportInput) (req *request.Request, output *GetExportOutput) {
 	op := &request.Operation{
 		Name:       opGetExport,
@@ -5468,27 +5406,27 @@ func (c *APIGateway) GetExportRequest(input *GetExportInput) (req *request.Reque
 // API operation GetExport for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetExport(input *GetExportInput) (*GetExportOutput, error) {
 	req, out := c.GetExportRequest(input)
 	return out, req.Send()
@@ -5526,14 +5464,13 @@ const opGetGatewayResponse = "GetGatewayResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGatewayResponseRequest method.
+//	req, resp := client.GetGatewayResponseRequest(params)
 //
-//    // Example sending a request using the GetGatewayResponseRequest method.
-//    req, resp := client.GetGatewayResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetGatewayResponseRequest(input *GetGatewayResponseInput) (req *request.Request, output *UpdateGatewayResponseOutput) {
 	op := &request.Operation{
 		Name:       opGetGatewayResponse,
@@ -5562,20 +5499,20 @@ func (c *APIGateway) GetGatewayResponseRequest(input *GetGatewayResponseInput) (
 // API operation GetGatewayResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetGatewayResponse(input *GetGatewayResponseInput) (*UpdateGatewayResponseOutput, error) {
 	req, out := c.GetGatewayResponseRequest(input)
 	return out, req.Send()
@@ -5613,14 +5550,13 @@ const opGetGatewayResponses = "GetGatewayResponses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGatewayResponsesRequest method.
+//	req, resp := client.GetGatewayResponsesRequest(params)
 //
-//    // Example sending a request using the GetGatewayResponsesRequest method.
-//    req, resp := client.GetGatewayResponsesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetGatewayResponsesRequest(input *GetGatewayResponsesInput) (req *request.Request, output *GetGatewayResponsesOutput) {
 	op := &request.Operation{
 		Name:       opGetGatewayResponses,
@@ -5652,20 +5588,20 @@ func (c *APIGateway) GetGatewayResponsesRequest(input *GetGatewayResponsesInput)
 // API operation GetGatewayResponses for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetGatewayResponses(input *GetGatewayResponsesInput) (*GetGatewayResponsesOutput, error) {
 	req, out := c.GetGatewayResponsesRequest(input)
 	return out, req.Send()
@@ -5703,14 +5639,13 @@ const opGetIntegration = "GetIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationRequest method.
+//	req, resp := client.GetIntegrationRequest(params)
 //
-//    // Example sending a request using the GetIntegrationRequest method.
-//    req, resp := client.GetIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetIntegrationRequest(input *GetIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opGetIntegration,
@@ -5739,20 +5674,20 @@ func (c *APIGateway) GetIntegrationRequest(input *GetIntegrationInput) (req *req
 // API operation GetIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetIntegration(input *GetIntegrationInput) (*Integration, error) {
 	req, out := c.GetIntegrationRequest(input)
 	return out, req.Send()
@@ -5790,14 +5725,13 @@ const opGetIntegrationResponse = "GetIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationResponseRequest method.
+//	req, resp := client.GetIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the GetIntegrationResponseRequest method.
-//    req, resp := client.GetIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetIntegrationResponseRequest(input *GetIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opGetIntegrationResponse,
@@ -5826,20 +5760,20 @@ func (c *APIGateway) GetIntegrationResponseRequest(input *GetIntegrationResponse
 // API operation GetIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetIntegrationResponse(input *GetIntegrationResponseInput) (*IntegrationResponse, error) {
 	req, out := c.GetIntegrationResponseRequest(input)
 	return out, req.Send()
@@ -5877,14 +5811,13 @@ const opGetMethod = "GetMethod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMethodRequest method.
+//	req, resp := client.GetMethodRequest(params)
 //
-//    // Example sending a request using the GetMethodRequest method.
-//    req, resp := client.GetMethodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetMethodRequest(input *GetMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opGetMethod,
@@ -5913,16 +5846,16 @@ func (c *APIGateway) GetMethodRequest(input *GetMethodInput) (req *request.Reque
 // API operation GetMethod for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetMethod(input *GetMethodInput) (*Method, error) {
 	req, out := c.GetMethodRequest(input)
 	return out, req.Send()
@@ -5960,14 +5893,13 @@ const opGetMethodResponse = "GetMethodResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMethodResponseRequest method.
+//	req, resp := client.GetMethodResponseRequest(params)
 //
-//    // Example sending a request using the GetMethodResponseRequest method.
-//    req, resp := client.GetMethodResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetMethodResponseRequest(input *GetMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opGetMethodResponse,
@@ -5996,16 +5928,16 @@ func (c *APIGateway) GetMethodResponseRequest(input *GetMethodResponseInput) (re
 // API operation GetMethodResponse for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetMethodResponse(input *GetMethodResponseInput) (*MethodResponse, error) {
 	req, out := c.GetMethodResponseRequest(input)
 	return out, req.Send()
@@ -6043,14 +5975,13 @@ const opGetModel = "GetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelRequest method.
+//	req, resp := client.GetModelRequest(params)
 //
-//    // Example sending a request using the GetModelRequest method.
-//    req, resp := client.GetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetModelRequest(input *GetModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opGetModel,
@@ -6079,20 +6010,20 @@ func (c *APIGateway) GetModelRequest(input *GetModelInput) (req *request.Request
 // API operation GetModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetModel(input *GetModelInput) (*Model, error) {
 	req, out := c.GetModelRequest(input)
 	return out, req.Send()
@@ -6130,14 +6061,13 @@ const opGetModelTemplate = "GetModelTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelTemplateRequest method.
+//	req, resp := client.GetModelTemplateRequest(params)
 //
-//    // Example sending a request using the GetModelTemplateRequest method.
-//    req, resp := client.GetModelTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetModelTemplateRequest(input *GetModelTemplateInput) (req *request.Request, output *GetModelTemplateOutput) {
 	op := &request.Operation{
 		Name:       opGetModelTemplate,
@@ -6167,20 +6097,20 @@ func (c *APIGateway) GetModelTemplateRequest(input *GetModelTemplateInput) (req 
 // API operation GetModelTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetModelTemplate(input *GetModelTemplateInput) (*GetModelTemplateOutput, error) {
 	req, out := c.GetModelTemplateRequest(input)
 	return out, req.Send()
@@ -6218,14 +6148,13 @@ const opGetModels = "GetModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelsRequest method.
+//	req, resp := client.GetModelsRequest(params)
 //
-//    // Example sending a request using the GetModelsRequest method.
-//    req, resp := client.GetModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetModelsRequest(input *GetModelsInput) (req *request.Request, output *GetModelsOutput) {
 	op := &request.Operation{
 		Name:       opGetModels,
@@ -6260,20 +6189,20 @@ func (c *APIGateway) GetModelsRequest(input *GetModelsInput) (req *request.Reque
 // API operation GetModels for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetModels(input *GetModelsInput) (*GetModelsOutput, error) {
 	req, out := c.GetModelsRequest(input)
 	return out, req.Send()
@@ -6303,15 +6232,14 @@ func (c *APIGateway) GetModelsWithContext(ctx aws.Context, input *GetModelsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetModels operation.
-//    pageNum := 0
-//    err := client.GetModelsPages(params,
-//        func(page *apigateway.GetModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetModels operation.
+//	pageNum := 0
+//	err := client.GetModelsPages(params,
+//	    func(page *apigateway.GetModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetModelsPages(input *GetModelsInput, fn func(*GetModelsOutput, bool) bool) error {
 	return c.GetModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6363,14 +6291,13 @@ const opGetRequestValidator = "GetRequestValidator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRequestValidatorRequest method.
+//	req, resp := client.GetRequestValidatorRequest(params)
 //
-//    // Example sending a request using the GetRequestValidatorRequest method.
-//    req, resp := client.GetRequestValidatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetRequestValidatorRequest(input *GetRequestValidatorInput) (req *request.Request, output *UpdateRequestValidatorOutput) {
 	op := &request.Operation{
 		Name:       opGetRequestValidator,
@@ -6399,20 +6326,20 @@ func (c *APIGateway) GetRequestValidatorRequest(input *GetRequestValidatorInput)
 // API operation GetRequestValidator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetRequestValidator(input *GetRequestValidatorInput) (*UpdateRequestValidatorOutput, error) {
 	req, out := c.GetRequestValidatorRequest(input)
 	return out, req.Send()
@@ -6450,14 +6377,13 @@ const opGetRequestValidators = "GetRequestValidators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRequestValidatorsRequest method.
+//	req, resp := client.GetRequestValidatorsRequest(params)
 //
-//    // Example sending a request using the GetRequestValidatorsRequest method.
-//    req, resp := client.GetRequestValidatorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetRequestValidatorsRequest(input *GetRequestValidatorsInput) (req *request.Request, output *GetRequestValidatorsOutput) {
 	op := &request.Operation{
 		Name:       opGetRequestValidators,
@@ -6486,20 +6412,20 @@ func (c *APIGateway) GetRequestValidatorsRequest(input *GetRequestValidatorsInpu
 // API operation GetRequestValidators for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetRequestValidators(input *GetRequestValidatorsInput) (*GetRequestValidatorsOutput, error) {
 	req, out := c.GetRequestValidatorsRequest(input)
 	return out, req.Send()
@@ -6537,14 +6463,13 @@ const opGetResource = "GetResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceRequest method.
+//	req, resp := client.GetResourceRequest(params)
 //
-//    // Example sending a request using the GetResourceRequest method.
-//    req, resp := client.GetResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetResourceRequest(input *GetResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opGetResource,
@@ -6573,16 +6498,16 @@ func (c *APIGateway) GetResourceRequest(input *GetResourceInput) (req *request.R
 // API operation GetResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetResource(input *GetResourceInput) (*Resource, error) {
 	req, out := c.GetResourceRequest(input)
 	return out, req.Send()
@@ -6620,14 +6545,13 @@ const opGetResources = "GetResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcesRequest method.
+//	req, resp := client.GetResourcesRequest(params)
 //
-//    // Example sending a request using the GetResourcesRequest method.
-//    req, resp := client.GetResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetResourcesRequest(input *GetResourcesInput) (req *request.Request, output *GetResourcesOutput) {
 	op := &request.Operation{
 		Name:       opGetResources,
@@ -6662,20 +6586,20 @@ func (c *APIGateway) GetResourcesRequest(input *GetResourcesInput) (req *request
 // API operation GetResources for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetResources(input *GetResourcesInput) (*GetResourcesOutput, error) {
 	req, out := c.GetResourcesRequest(input)
 	return out, req.Send()
@@ -6705,15 +6629,14 @@ func (c *APIGateway) GetResourcesWithContext(ctx aws.Context, input *GetResource
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResources operation.
-//    pageNum := 0
-//    err := client.GetResourcesPages(params,
-//        func(page *apigateway.GetResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResources operation.
+//	pageNum := 0
+//	err := client.GetResourcesPages(params,
+//	    func(page *apigateway.GetResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetResourcesPages(input *GetResourcesInput, fn func(*GetResourcesOutput, bool) bool) error {
 	return c.GetResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6765,14 +6688,13 @@ const opGetRestApi = "GetRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRestApiRequest method.
+//	req, resp := client.GetRestApiRequest(params)
 //
-//    // Example sending a request using the GetRestApiRequest method.
-//    req, resp := client.GetRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetRestApiRequest(input *GetRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opGetRestApi,
@@ -6801,20 +6723,20 @@ func (c *APIGateway) GetRestApiRequest(input *GetRestApiInput) (req *request.Req
 // API operation GetRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetRestApi(input *GetRestApiInput) (*RestApi, error) {
 	req, out := c.GetRestApiRequest(input)
 	return out, req.Send()
@@ -6852,14 +6774,13 @@ const opGetRestApis = "GetRestApis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRestApisRequest method.
+//	req, resp := client.GetRestApisRequest(params)
 //
-//    // Example sending a request using the GetRestApisRequest method.
-//    req, resp := client.GetRestApisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetRestApisRequest(input *GetRestApisInput) (req *request.Request, output *GetRestApisOutput) {
 	op := &request.Operation{
 		Name:       opGetRestApis,
@@ -6894,20 +6815,20 @@ func (c *APIGateway) GetRestApisRequest(input *GetRestApisInput) (req *request.R
 // API operation GetRestApis for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetRestApis(input *GetRestApisInput) (*GetRestApisOutput, error) {
 	req, out := c.GetRestApisRequest(input)
 	return out, req.Send()
@@ -6937,15 +6858,14 @@ func (c *APIGateway) GetRestApisWithContext(ctx aws.Context, input *GetRestApisI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetRestApis operation.
-//    pageNum := 0
-//    err := client.GetRestApisPages(params,
-//        func(page *apigateway.GetRestApisOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetRestApis operation.
+//	pageNum := 0
+//	err := client.GetRestApisPages(params,
+//	    func(page *apigateway.GetRestApisOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetRestApisPages(input *GetRestApisInput, fn func(*GetRestApisOutput, bool) bool) error {
 	return c.GetRestApisPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6997,14 +6917,13 @@ const opGetSdk = "GetSdk"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSdkRequest method.
+//	req, resp := client.GetSdkRequest(params)
 //
-//    // Example sending a request using the GetSdkRequest method.
-//    req, resp := client.GetSdkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetSdkRequest(input *GetSdkInput) (req *request.Request, output *GetSdkOutput) {
 	op := &request.Operation{
 		Name:       opGetSdk,
@@ -7033,27 +6952,27 @@ func (c *APIGateway) GetSdkRequest(input *GetSdkInput) (req *request.Request, ou
 // API operation GetSdk for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetSdk(input *GetSdkInput) (*GetSdkOutput, error) {
 	req, out := c.GetSdkRequest(input)
 	return out, req.Send()
@@ -7091,14 +7010,13 @@ const opGetSdkType = "GetSdkType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSdkTypeRequest method.
+//	req, resp := client.GetSdkTypeRequest(params)
 //
-//    // Example sending a request using the GetSdkTypeRequest method.
-//    req, resp := client.GetSdkTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetSdkTypeRequest(input *GetSdkTypeInput) (req *request.Request, output *SdkType) {
 	op := &request.Operation{
 		Name:       opGetSdkType,
@@ -7127,20 +7045,20 @@ func (c *APIGateway) GetSdkTypeRequest(input *GetSdkTypeInput) (req *request.Req
 // API operation GetSdkType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetSdkType(input *GetSdkTypeInput) (*SdkType, error) {
 	req, out := c.GetSdkTypeRequest(input)
 	return out, req.Send()
@@ -7178,14 +7096,13 @@ const opGetSdkTypes = "GetSdkTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSdkTypesRequest method.
+//	req, resp := client.GetSdkTypesRequest(params)
 //
-//    // Example sending a request using the GetSdkTypesRequest method.
-//    req, resp := client.GetSdkTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetSdkTypesRequest(input *GetSdkTypesInput) (req *request.Request, output *GetSdkTypesOutput) {
 	op := &request.Operation{
 		Name:       opGetSdkTypes,
@@ -7204,7 +7121,7 @@ func (c *APIGateway) GetSdkTypesRequest(input *GetSdkTypesInput) (req *request.R
 
 // GetSdkTypes API operation for Amazon API Gateway.
 //
-// Gets SDK types
+// # Gets SDK types
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7214,20 +7131,20 @@ func (c *APIGateway) GetSdkTypesRequest(input *GetSdkTypesInput) (req *request.R
 // API operation GetSdkTypes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetSdkTypes(input *GetSdkTypesInput) (*GetSdkTypesOutput, error) {
 	req, out := c.GetSdkTypesRequest(input)
 	return out, req.Send()
@@ -7265,14 +7182,13 @@ const opGetStage = "GetStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStageRequest method.
+//	req, resp := client.GetStageRequest(params)
 //
-//    // Example sending a request using the GetStageRequest method.
-//    req, resp := client.GetStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetStageRequest(input *GetStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opGetStage,
@@ -7301,27 +7217,27 @@ func (c *APIGateway) GetStageRequest(input *GetStageInput) (req *request.Request
 // API operation GetStage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetStage(input *GetStageInput) (*Stage, error) {
 	req, out := c.GetStageRequest(input)
 	return out, req.Send()
@@ -7359,14 +7275,13 @@ const opGetStages = "GetStages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStagesRequest method.
+//	req, resp := client.GetStagesRequest(params)
 //
-//    // Example sending a request using the GetStagesRequest method.
-//    req, resp := client.GetStagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetStagesRequest(input *GetStagesInput) (req *request.Request, output *GetStagesOutput) {
 	op := &request.Operation{
 		Name:       opGetStages,
@@ -7395,27 +7310,27 @@ func (c *APIGateway) GetStagesRequest(input *GetStagesInput) (req *request.Reque
 // API operation GetStages for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetStages(input *GetStagesInput) (*GetStagesOutput, error) {
 	req, out := c.GetStagesRequest(input)
 	return out, req.Send()
@@ -7453,14 +7368,13 @@ const opGetTags = "GetTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagsRequest method.
+//	req, resp := client.GetTagsRequest(params)
 //
-//    // Example sending a request using the GetTagsRequest method.
-//    req, resp := client.GetTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetTagsRequest(input *GetTagsInput) (req *request.Request, output *GetTagsOutput) {
 	op := &request.Operation{
 		Name:       opGetTags,
@@ -7489,20 +7403,20 @@ func (c *APIGateway) GetTagsRequest(input *GetTagsInput) (req *request.Request, 
 // API operation GetTags for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetTags(input *GetTagsInput) (*GetTagsOutput, error) {
 	req, out := c.GetTagsRequest(input)
 	return out, req.Send()
@@ -7540,14 +7454,13 @@ const opGetUsage = "GetUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsageRequest method.
+//	req, resp := client.GetUsageRequest(params)
 //
-//    // Example sending a request using the GetUsageRequest method.
-//    req, resp := client.GetUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetUsageRequest(input *GetUsageInput) (req *request.Request, output *Usage) {
 	op := &request.Operation{
 		Name:       opGetUsage,
@@ -7582,20 +7495,20 @@ func (c *APIGateway) GetUsageRequest(input *GetUsageInput) (req *request.Request
 // API operation GetUsage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetUsage(input *GetUsageInput) (*Usage, error) {
 	req, out := c.GetUsageRequest(input)
 	return out, req.Send()
@@ -7625,15 +7538,14 @@ func (c *APIGateway) GetUsageWithContext(ctx aws.Context, input *GetUsageInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUsage operation.
-//    pageNum := 0
-//    err := client.GetUsagePages(params,
-//        func(page *apigateway.Usage, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUsage operation.
+//	pageNum := 0
+//	err := client.GetUsagePages(params,
+//	    func(page *apigateway.Usage, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetUsagePages(input *GetUsageInput, fn func(*Usage, bool) bool) error {
 	return c.GetUsagePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7685,14 +7597,13 @@ const opGetUsagePlan = "GetUsagePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsagePlanRequest method.
+//	req, resp := client.GetUsagePlanRequest(params)
 //
-//    // Example sending a request using the GetUsagePlanRequest method.
-//    req, resp := client.GetUsagePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetUsagePlanRequest(input *GetUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opGetUsagePlan,
@@ -7721,20 +7632,20 @@ func (c *APIGateway) GetUsagePlanRequest(input *GetUsagePlanInput) (req *request
 // API operation GetUsagePlan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetUsagePlan(input *GetUsagePlanInput) (*UsagePlan, error) {
 	req, out := c.GetUsagePlanRequest(input)
 	return out, req.Send()
@@ -7772,14 +7683,13 @@ const opGetUsagePlanKey = "GetUsagePlanKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsagePlanKeyRequest method.
+//	req, resp := client.GetUsagePlanKeyRequest(params)
 //
-//    // Example sending a request using the GetUsagePlanKeyRequest method.
-//    req, resp := client.GetUsagePlanKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetUsagePlanKeyRequest(input *GetUsagePlanKeyInput) (req *request.Request, output *UsagePlanKey) {
 	op := &request.Operation{
 		Name:       opGetUsagePlanKey,
@@ -7808,20 +7718,20 @@ func (c *APIGateway) GetUsagePlanKeyRequest(input *GetUsagePlanKeyInput) (req *r
 // API operation GetUsagePlanKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetUsagePlanKey(input *GetUsagePlanKeyInput) (*UsagePlanKey, error) {
 	req, out := c.GetUsagePlanKeyRequest(input)
 	return out, req.Send()
@@ -7859,14 +7769,13 @@ const opGetUsagePlanKeys = "GetUsagePlanKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsagePlanKeysRequest method.
+//	req, resp := client.GetUsagePlanKeysRequest(params)
 //
-//    // Example sending a request using the GetUsagePlanKeysRequest method.
-//    req, resp := client.GetUsagePlanKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetUsagePlanKeysRequest(input *GetUsagePlanKeysInput) (req *request.Request, output *GetUsagePlanKeysOutput) {
 	op := &request.Operation{
 		Name:       opGetUsagePlanKeys,
@@ -7902,20 +7811,20 @@ func (c *APIGateway) GetUsagePlanKeysRequest(input *GetUsagePlanKeysInput) (req 
 // API operation GetUsagePlanKeys for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetUsagePlanKeys(input *GetUsagePlanKeysInput) (*GetUsagePlanKeysOutput, error) {
 	req, out := c.GetUsagePlanKeysRequest(input)
 	return out, req.Send()
@@ -7945,15 +7854,14 @@ func (c *APIGateway) GetUsagePlanKeysWithContext(ctx aws.Context, input *GetUsag
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUsagePlanKeys operation.
-//    pageNum := 0
-//    err := client.GetUsagePlanKeysPages(params,
-//        func(page *apigateway.GetUsagePlanKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUsagePlanKeys operation.
+//	pageNum := 0
+//	err := client.GetUsagePlanKeysPages(params,
+//	    func(page *apigateway.GetUsagePlanKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetUsagePlanKeysPages(input *GetUsagePlanKeysInput, fn func(*GetUsagePlanKeysOutput, bool) bool) error {
 	return c.GetUsagePlanKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8005,14 +7913,13 @@ const opGetUsagePlans = "GetUsagePlans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUsagePlansRequest method.
+//	req, resp := client.GetUsagePlansRequest(params)
 //
-//    // Example sending a request using the GetUsagePlansRequest method.
-//    req, resp := client.GetUsagePlansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetUsagePlansRequest(input *GetUsagePlansInput) (req *request.Request, output *GetUsagePlansOutput) {
 	op := &request.Operation{
 		Name:       opGetUsagePlans,
@@ -8047,20 +7954,20 @@ func (c *APIGateway) GetUsagePlansRequest(input *GetUsagePlansInput) (req *reque
 // API operation GetUsagePlans for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetUsagePlans(input *GetUsagePlansInput) (*GetUsagePlansOutput, error) {
 	req, out := c.GetUsagePlansRequest(input)
 	return out, req.Send()
@@ -8090,15 +7997,14 @@ func (c *APIGateway) GetUsagePlansWithContext(ctx aws.Context, input *GetUsagePl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUsagePlans operation.
-//    pageNum := 0
-//    err := client.GetUsagePlansPages(params,
-//        func(page *apigateway.GetUsagePlansOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUsagePlans operation.
+//	pageNum := 0
+//	err := client.GetUsagePlansPages(params,
+//	    func(page *apigateway.GetUsagePlansOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetUsagePlansPages(input *GetUsagePlansInput, fn func(*GetUsagePlansOutput, bool) bool) error {
 	return c.GetUsagePlansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8150,14 +8056,13 @@ const opGetVpcLink = "GetVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpcLinkRequest method.
+//	req, resp := client.GetVpcLinkRequest(params)
 //
-//    // Example sending a request using the GetVpcLinkRequest method.
-//    req, resp := client.GetVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetVpcLinkRequest(input *GetVpcLinkInput) (req *request.Request, output *UpdateVpcLinkOutput) {
 	op := &request.Operation{
 		Name:       opGetVpcLink,
@@ -8186,20 +8091,20 @@ func (c *APIGateway) GetVpcLinkRequest(input *GetVpcLinkInput) (req *request.Req
 // API operation GetVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetVpcLink(input *GetVpcLinkInput) (*UpdateVpcLinkOutput, error) {
 	req, out := c.GetVpcLinkRequest(input)
 	return out, req.Send()
@@ -8237,14 +8142,13 @@ const opGetVpcLinks = "GetVpcLinks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpcLinksRequest method.
+//	req, resp := client.GetVpcLinksRequest(params)
 //
-//    // Example sending a request using the GetVpcLinksRequest method.
-//    req, resp := client.GetVpcLinksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) GetVpcLinksRequest(input *GetVpcLinksInput) (req *request.Request, output *GetVpcLinksOutput) {
 	op := &request.Operation{
 		Name:       opGetVpcLinks,
@@ -8279,20 +8183,20 @@ func (c *APIGateway) GetVpcLinksRequest(input *GetVpcLinksInput) (req *request.R
 // API operation GetVpcLinks for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) GetVpcLinks(input *GetVpcLinksInput) (*GetVpcLinksOutput, error) {
 	req, out := c.GetVpcLinksRequest(input)
 	return out, req.Send()
@@ -8322,15 +8226,14 @@ func (c *APIGateway) GetVpcLinksWithContext(ctx aws.Context, input *GetVpcLinksI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetVpcLinks operation.
-//    pageNum := 0
-//    err := client.GetVpcLinksPages(params,
-//        func(page *apigateway.GetVpcLinksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetVpcLinks operation.
+//	pageNum := 0
+//	err := client.GetVpcLinksPages(params,
+//	    func(page *apigateway.GetVpcLinksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *APIGateway) GetVpcLinksPages(input *GetVpcLinksInput, fn func(*GetVpcLinksOutput, bool) bool) error {
 	return c.GetVpcLinksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8382,14 +8285,13 @@ const opImportApiKeys = "ImportApiKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportApiKeysRequest method.
+//	req, resp := client.ImportApiKeysRequest(params)
 //
-//    // Example sending a request using the ImportApiKeysRequest method.
-//    req, resp := client.ImportApiKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) ImportApiKeysRequest(input *ImportApiKeysInput) (req *request.Request, output *ImportApiKeysOutput) {
 	op := &request.Operation{
 		Name:       opImportApiKeys,
@@ -8418,27 +8320,27 @@ func (c *APIGateway) ImportApiKeysRequest(input *ImportApiKeysInput) (req *reque
 // API operation ImportApiKeys for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) ImportApiKeys(input *ImportApiKeysInput) (*ImportApiKeysOutput, error) {
 	req, out := c.ImportApiKeysRequest(input)
 	return out, req.Send()
@@ -8476,14 +8378,13 @@ const opImportDocumentationParts = "ImportDocumentationParts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportDocumentationPartsRequest method.
+//	req, resp := client.ImportDocumentationPartsRequest(params)
 //
-//    // Example sending a request using the ImportDocumentationPartsRequest method.
-//    req, resp := client.ImportDocumentationPartsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) ImportDocumentationPartsRequest(input *ImportDocumentationPartsInput) (req *request.Request, output *ImportDocumentationPartsOutput) {
 	op := &request.Operation{
 		Name:       opImportDocumentationParts,
@@ -8502,7 +8403,7 @@ func (c *APIGateway) ImportDocumentationPartsRequest(input *ImportDocumentationP
 
 // ImportDocumentationParts API operation for Amazon API Gateway.
 //
-// Imports documentation parts
+// # Imports documentation parts
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8512,27 +8413,27 @@ func (c *APIGateway) ImportDocumentationPartsRequest(input *ImportDocumentationP
 // API operation ImportDocumentationParts for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) ImportDocumentationParts(input *ImportDocumentationPartsInput) (*ImportDocumentationPartsOutput, error) {
 	req, out := c.ImportDocumentationPartsRequest(input)
 	return out, req.Send()
@@ -8570,14 +8471,13 @@ const opImportRestApi = "ImportRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportRestApiRequest method.
+//	req, resp := client.ImportRestApiRequest(params)
 //
-//    // Example sending a request using the ImportRestApiRequest method.
-//    req, resp := client.ImportRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) ImportRestApiRequest(input *ImportRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opImportRestApi,
@@ -8607,27 +8507,27 @@ func (c *APIGateway) ImportRestApiRequest(input *ImportRestApiInput) (req *reque
 // API operation ImportRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) ImportRestApi(input *ImportRestApiInput) (*RestApi, error) {
 	req, out := c.ImportRestApiRequest(input)
 	return out, req.Send()
@@ -8665,14 +8565,13 @@ const opPutGatewayResponse = "PutGatewayResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutGatewayResponseRequest method.
+//	req, resp := client.PutGatewayResponseRequest(params)
 //
-//    // Example sending a request using the PutGatewayResponseRequest method.
-//    req, resp := client.PutGatewayResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutGatewayResponseRequest(input *PutGatewayResponseInput) (req *request.Request, output *UpdateGatewayResponseOutput) {
 	op := &request.Operation{
 		Name:       opPutGatewayResponse,
@@ -8702,27 +8601,27 @@ func (c *APIGateway) PutGatewayResponseRequest(input *PutGatewayResponseInput) (
 // API operation PutGatewayResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutGatewayResponse(input *PutGatewayResponseInput) (*UpdateGatewayResponseOutput, error) {
 	req, out := c.PutGatewayResponseRequest(input)
 	return out, req.Send()
@@ -8760,14 +8659,13 @@ const opPutIntegration = "PutIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutIntegrationRequest method.
+//	req, resp := client.PutIntegrationRequest(params)
 //
-//    // Example sending a request using the PutIntegrationRequest method.
-//    req, resp := client.PutIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutIntegrationRequest(input *PutIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opPutIntegration,
@@ -8796,27 +8694,27 @@ func (c *APIGateway) PutIntegrationRequest(input *PutIntegrationInput) (req *req
 // API operation PutIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutIntegration(input *PutIntegrationInput) (*Integration, error) {
 	req, out := c.PutIntegrationRequest(input)
 	return out, req.Send()
@@ -8854,14 +8752,13 @@ const opPutIntegrationResponse = "PutIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutIntegrationResponseRequest method.
+//	req, resp := client.PutIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the PutIntegrationResponseRequest method.
-//    req, resp := client.PutIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutIntegrationResponseRequest(input *PutIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opPutIntegrationResponse,
@@ -8890,27 +8787,27 @@ func (c *APIGateway) PutIntegrationResponseRequest(input *PutIntegrationResponse
 // API operation PutIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutIntegrationResponse(input *PutIntegrationResponseInput) (*IntegrationResponse, error) {
 	req, out := c.PutIntegrationResponseRequest(input)
 	return out, req.Send()
@@ -8948,14 +8845,13 @@ const opPutMethod = "PutMethod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMethodRequest method.
+//	req, resp := client.PutMethodRequest(params)
 //
-//    // Example sending a request using the PutMethodRequest method.
-//    req, resp := client.PutMethodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutMethodRequest(input *PutMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opPutMethod,
@@ -8984,27 +8880,27 @@ func (c *APIGateway) PutMethodRequest(input *PutMethodInput) (req *request.Reque
 // API operation PutMethod for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutMethod(input *PutMethodInput) (*Method, error) {
 	req, out := c.PutMethodRequest(input)
 	return out, req.Send()
@@ -9042,14 +8938,13 @@ const opPutMethodResponse = "PutMethodResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMethodResponseRequest method.
+//	req, resp := client.PutMethodResponseRequest(params)
 //
-//    // Example sending a request using the PutMethodResponseRequest method.
-//    req, resp := client.PutMethodResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutMethodResponseRequest(input *PutMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opPutMethodResponse,
@@ -9078,27 +8973,27 @@ func (c *APIGateway) PutMethodResponseRequest(input *PutMethodResponseInput) (re
 // API operation PutMethodResponse for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutMethodResponse(input *PutMethodResponseInput) (*MethodResponse, error) {
 	req, out := c.PutMethodResponseRequest(input)
 	return out, req.Send()
@@ -9136,14 +9031,13 @@ const opPutRestApi = "PutRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRestApiRequest method.
+//	req, resp := client.PutRestApiRequest(params)
 //
-//    // Example sending a request using the PutRestApiRequest method.
-//    req, resp := client.PutRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) PutRestApiRequest(input *PutRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opPutRestApi,
@@ -9175,27 +9069,27 @@ func (c *APIGateway) PutRestApiRequest(input *PutRestApiInput) (req *request.Req
 // API operation PutRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) PutRestApi(input *PutRestApiInput) (*RestApi, error) {
 	req, out := c.PutRestApiRequest(input)
 	return out, req.Send()
@@ -9233,14 +9127,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
 	op := &request.Operation{
 		Name:       opTagResource,
@@ -9270,27 +9163,27 @@ func (c *APIGateway) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	return out, req.Send()
@@ -9328,14 +9221,13 @@ const opTestInvokeAuthorizer = "TestInvokeAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestInvokeAuthorizerRequest method.
+//	req, resp := client.TestInvokeAuthorizerRequest(params)
 //
-//    // Example sending a request using the TestInvokeAuthorizerRequest method.
-//    req, resp := client.TestInvokeAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) TestInvokeAuthorizerRequest(input *TestInvokeAuthorizerInput) (req *request.Request, output *TestInvokeAuthorizerOutput) {
 	op := &request.Operation{
 		Name:       opTestInvokeAuthorizer,
@@ -9365,20 +9257,20 @@ func (c *APIGateway) TestInvokeAuthorizerRequest(input *TestInvokeAuthorizerInpu
 // API operation TestInvokeAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) TestInvokeAuthorizer(input *TestInvokeAuthorizerInput) (*TestInvokeAuthorizerOutput, error) {
 	req, out := c.TestInvokeAuthorizerRequest(input)
 	return out, req.Send()
@@ -9416,14 +9308,13 @@ const opTestInvokeMethod = "TestInvokeMethod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestInvokeMethodRequest method.
+//	req, resp := client.TestInvokeMethodRequest(params)
 //
-//    // Example sending a request using the TestInvokeMethodRequest method.
-//    req, resp := client.TestInvokeMethodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) TestInvokeMethodRequest(input *TestInvokeMethodInput) (req *request.Request, output *TestInvokeMethodOutput) {
 	op := &request.Operation{
 		Name:       opTestInvokeMethod,
@@ -9453,20 +9344,20 @@ func (c *APIGateway) TestInvokeMethodRequest(input *TestInvokeMethodInput) (req 
 // API operation TestInvokeMethod for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) TestInvokeMethod(input *TestInvokeMethodInput) (*TestInvokeMethodOutput, error) {
 	req, out := c.TestInvokeMethodRequest(input)
 	return out, req.Send()
@@ -9504,14 +9395,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
 	op := &request.Operation{
 		Name:       opUntagResource,
@@ -9541,27 +9431,27 @@ func (c *APIGateway) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	return out, req.Send()
@@ -9599,14 +9489,13 @@ const opUpdateAccount = "UpdateAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccountRequest method.
+//	req, resp := client.UpdateAccountRequest(params)
 //
-//    // Example sending a request using the UpdateAccountRequest method.
-//    req, resp := client.UpdateAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateAccountRequest(input *UpdateAccountInput) (req *request.Request, output *Account) {
 	op := &request.Operation{
 		Name:       opUpdateAccount,
@@ -9635,27 +9524,27 @@ func (c *APIGateway) UpdateAccountRequest(input *UpdateAccountInput) (req *reque
 // API operation UpdateAccount for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateAccount(input *UpdateAccountInput) (*Account, error) {
 	req, out := c.UpdateAccountRequest(input)
 	return out, req.Send()
@@ -9693,14 +9582,13 @@ const opUpdateApiKey = "UpdateApiKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApiKeyRequest method.
+//	req, resp := client.UpdateApiKeyRequest(params)
 //
-//    // Example sending a request using the UpdateApiKeyRequest method.
-//    req, resp := client.UpdateApiKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateApiKeyRequest(input *UpdateApiKeyInput) (req *request.Request, output *ApiKey) {
 	op := &request.Operation{
 		Name:       opUpdateApiKey,
@@ -9729,27 +9617,27 @@ func (c *APIGateway) UpdateApiKeyRequest(input *UpdateApiKeyInput) (req *request
 // API operation UpdateApiKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateApiKey(input *UpdateApiKeyInput) (*ApiKey, error) {
 	req, out := c.UpdateApiKeyRequest(input)
 	return out, req.Send()
@@ -9787,14 +9675,13 @@ const opUpdateAuthorizer = "UpdateAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAuthorizerRequest method.
+//	req, resp := client.UpdateAuthorizerRequest(params)
 //
-//    // Example sending a request using the UpdateAuthorizerRequest method.
-//    req, resp := client.UpdateAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (req *request.Request, output *Authorizer) {
 	op := &request.Operation{
 		Name:       opUpdateAuthorizer,
@@ -9823,27 +9710,27 @@ func (c *APIGateway) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (req 
 // API operation UpdateAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateAuthorizer(input *UpdateAuthorizerInput) (*Authorizer, error) {
 	req, out := c.UpdateAuthorizerRequest(input)
 	return out, req.Send()
@@ -9881,14 +9768,13 @@ const opUpdateBasePathMapping = "UpdateBasePathMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBasePathMappingRequest method.
+//	req, resp := client.UpdateBasePathMappingRequest(params)
 //
-//    // Example sending a request using the UpdateBasePathMappingRequest method.
-//    req, resp := client.UpdateBasePathMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateBasePathMappingRequest(input *UpdateBasePathMappingInput) (req *request.Request, output *BasePathMapping) {
 	op := &request.Operation{
 		Name:       opUpdateBasePathMapping,
@@ -9917,27 +9803,27 @@ func (c *APIGateway) UpdateBasePathMappingRequest(input *UpdateBasePathMappingIn
 // API operation UpdateBasePathMapping for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateBasePathMapping(input *UpdateBasePathMappingInput) (*BasePathMapping, error) {
 	req, out := c.UpdateBasePathMappingRequest(input)
 	return out, req.Send()
@@ -9975,14 +9861,13 @@ const opUpdateClientCertificate = "UpdateClientCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClientCertificateRequest method.
+//	req, resp := client.UpdateClientCertificateRequest(params)
 //
-//    // Example sending a request using the UpdateClientCertificateRequest method.
-//    req, resp := client.UpdateClientCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateClientCertificateRequest(input *UpdateClientCertificateInput) (req *request.Request, output *ClientCertificate) {
 	op := &request.Operation{
 		Name:       opUpdateClientCertificate,
@@ -10011,27 +9896,27 @@ func (c *APIGateway) UpdateClientCertificateRequest(input *UpdateClientCertifica
 // API operation UpdateClientCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateClientCertificate(input *UpdateClientCertificateInput) (*ClientCertificate, error) {
 	req, out := c.UpdateClientCertificateRequest(input)
 	return out, req.Send()
@@ -10069,14 +9954,13 @@ const opUpdateDeployment = "UpdateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeploymentRequest method.
+//	req, resp := client.UpdateDeploymentRequest(params)
 //
-//    // Example sending a request using the UpdateDeploymentRequest method.
-//    req, resp := client.UpdateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateDeploymentRequest(input *UpdateDeploymentInput) (req *request.Request, output *Deployment) {
 	op := &request.Operation{
 		Name:       opUpdateDeployment,
@@ -10105,31 +9989,31 @@ func (c *APIGateway) UpdateDeploymentRequest(input *UpdateDeploymentInput) (req 
 // API operation UpdateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ServiceUnavailableException
-//   The requested service is not available. For details see the accompanying
-//   error message. Retry after the specified time period.
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 //
+//   - ServiceUnavailableException
+//     The requested service is not available. For details see the accompanying
+//     error message. Retry after the specified time period.
 func (c *APIGateway) UpdateDeployment(input *UpdateDeploymentInput) (*Deployment, error) {
 	req, out := c.UpdateDeploymentRequest(input)
 	return out, req.Send()
@@ -10167,14 +10051,13 @@ const opUpdateDocumentationPart = "UpdateDocumentationPart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDocumentationPartRequest method.
+//	req, resp := client.UpdateDocumentationPartRequest(params)
 //
-//    // Example sending a request using the UpdateDocumentationPartRequest method.
-//    req, resp := client.UpdateDocumentationPartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateDocumentationPartRequest(input *UpdateDocumentationPartInput) (req *request.Request, output *DocumentationPart) {
 	op := &request.Operation{
 		Name:       opUpdateDocumentationPart,
@@ -10203,27 +10086,27 @@ func (c *APIGateway) UpdateDocumentationPartRequest(input *UpdateDocumentationPa
 // API operation UpdateDocumentationPart for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateDocumentationPart(input *UpdateDocumentationPartInput) (*DocumentationPart, error) {
 	req, out := c.UpdateDocumentationPartRequest(input)
 	return out, req.Send()
@@ -10261,14 +10144,13 @@ const opUpdateDocumentationVersion = "UpdateDocumentationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDocumentationVersionRequest method.
+//	req, resp := client.UpdateDocumentationVersionRequest(params)
 //
-//    // Example sending a request using the UpdateDocumentationVersionRequest method.
-//    req, resp := client.UpdateDocumentationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateDocumentationVersionRequest(input *UpdateDocumentationVersionInput) (req *request.Request, output *DocumentationVersion) {
 	op := &request.Operation{
 		Name:       opUpdateDocumentationVersion,
@@ -10297,27 +10179,27 @@ func (c *APIGateway) UpdateDocumentationVersionRequest(input *UpdateDocumentatio
 // API operation UpdateDocumentationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateDocumentationVersion(input *UpdateDocumentationVersionInput) (*DocumentationVersion, error) {
 	req, out := c.UpdateDocumentationVersionRequest(input)
 	return out, req.Send()
@@ -10355,14 +10237,13 @@ const opUpdateDomainName = "UpdateDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainNameRequest method.
+//	req, resp := client.UpdateDomainNameRequest(params)
 //
-//    // Example sending a request using the UpdateDomainNameRequest method.
-//    req, resp := client.UpdateDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateDomainNameRequest(input *UpdateDomainNameInput) (req *request.Request, output *DomainName) {
 	op := &request.Operation{
 		Name:       opUpdateDomainName,
@@ -10391,27 +10272,27 @@ func (c *APIGateway) UpdateDomainNameRequest(input *UpdateDomainNameInput) (req 
 // API operation UpdateDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateDomainName(input *UpdateDomainNameInput) (*DomainName, error) {
 	req, out := c.UpdateDomainNameRequest(input)
 	return out, req.Send()
@@ -10449,14 +10330,13 @@ const opUpdateGatewayResponse = "UpdateGatewayResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayResponseRequest method.
+//	req, resp := client.UpdateGatewayResponseRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayResponseRequest method.
-//    req, resp := client.UpdateGatewayResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateGatewayResponseRequest(input *UpdateGatewayResponseInput) (req *request.Request, output *UpdateGatewayResponseOutput) {
 	op := &request.Operation{
 		Name:       opUpdateGatewayResponse,
@@ -10485,27 +10365,27 @@ func (c *APIGateway) UpdateGatewayResponseRequest(input *UpdateGatewayResponseIn
 // API operation UpdateGatewayResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateGatewayResponse(input *UpdateGatewayResponseInput) (*UpdateGatewayResponseOutput, error) {
 	req, out := c.UpdateGatewayResponseRequest(input)
 	return out, req.Send()
@@ -10543,14 +10423,13 @@ const opUpdateIntegration = "UpdateIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIntegrationRequest method.
+//	req, resp := client.UpdateIntegrationRequest(params)
 //
-//    // Example sending a request using the UpdateIntegrationRequest method.
-//    req, resp := client.UpdateIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateIntegrationRequest(input *UpdateIntegrationInput) (req *request.Request, output *Integration) {
 	op := &request.Operation{
 		Name:       opUpdateIntegration,
@@ -10579,27 +10458,27 @@ func (c *APIGateway) UpdateIntegrationRequest(input *UpdateIntegrationInput) (re
 // API operation UpdateIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateIntegration(input *UpdateIntegrationInput) (*Integration, error) {
 	req, out := c.UpdateIntegrationRequest(input)
 	return out, req.Send()
@@ -10637,14 +10516,13 @@ const opUpdateIntegrationResponse = "UpdateIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIntegrationResponseRequest method.
+//	req, resp := client.UpdateIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the UpdateIntegrationResponseRequest method.
-//    req, resp := client.UpdateIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateIntegrationResponseRequest(input *UpdateIntegrationResponseInput) (req *request.Request, output *IntegrationResponse) {
 	op := &request.Operation{
 		Name:       opUpdateIntegrationResponse,
@@ -10673,27 +10551,27 @@ func (c *APIGateway) UpdateIntegrationResponseRequest(input *UpdateIntegrationRe
 // API operation UpdateIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateIntegrationResponse(input *UpdateIntegrationResponseInput) (*IntegrationResponse, error) {
 	req, out := c.UpdateIntegrationResponseRequest(input)
 	return out, req.Send()
@@ -10731,14 +10609,13 @@ const opUpdateMethod = "UpdateMethod"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMethodRequest method.
+//	req, resp := client.UpdateMethodRequest(params)
 //
-//    // Example sending a request using the UpdateMethodRequest method.
-//    req, resp := client.UpdateMethodRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateMethodRequest(input *UpdateMethodInput) (req *request.Request, output *Method) {
 	op := &request.Operation{
 		Name:       opUpdateMethod,
@@ -10767,24 +10644,24 @@ func (c *APIGateway) UpdateMethodRequest(input *UpdateMethodInput) (req *request
 // API operation UpdateMethod for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateMethod(input *UpdateMethodInput) (*Method, error) {
 	req, out := c.UpdateMethodRequest(input)
 	return out, req.Send()
@@ -10822,14 +10699,13 @@ const opUpdateMethodResponse = "UpdateMethodResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMethodResponseRequest method.
+//	req, resp := client.UpdateMethodResponseRequest(params)
 //
-//    // Example sending a request using the UpdateMethodResponseRequest method.
-//    req, resp := client.UpdateMethodResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateMethodResponseRequest(input *UpdateMethodResponseInput) (req *request.Request, output *MethodResponse) {
 	op := &request.Operation{
 		Name:       opUpdateMethodResponse,
@@ -10858,27 +10734,27 @@ func (c *APIGateway) UpdateMethodResponseRequest(input *UpdateMethodResponseInpu
 // API operation UpdateMethodResponse for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateMethodResponse(input *UpdateMethodResponseInput) (*MethodResponse, error) {
 	req, out := c.UpdateMethodResponseRequest(input)
 	return out, req.Send()
@@ -10916,14 +10792,13 @@ const opUpdateModel = "UpdateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateModelRequest method.
+//	req, resp := client.UpdateModelRequest(params)
 //
-//    // Example sending a request using the UpdateModelRequest method.
-//    req, resp := client.UpdateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateModelRequest(input *UpdateModelInput) (req *request.Request, output *Model) {
 	op := &request.Operation{
 		Name:       opUpdateModel,
@@ -10952,27 +10827,27 @@ func (c *APIGateway) UpdateModelRequest(input *UpdateModelInput) (req *request.R
 // API operation UpdateModel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateModel(input *UpdateModelInput) (*Model, error) {
 	req, out := c.UpdateModelRequest(input)
 	return out, req.Send()
@@ -11010,14 +10885,13 @@ const opUpdateRequestValidator = "UpdateRequestValidator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRequestValidatorRequest method.
+//	req, resp := client.UpdateRequestValidatorRequest(params)
 //
-//    // Example sending a request using the UpdateRequestValidatorRequest method.
-//    req, resp := client.UpdateRequestValidatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateRequestValidatorRequest(input *UpdateRequestValidatorInput) (req *request.Request, output *UpdateRequestValidatorOutput) {
 	op := &request.Operation{
 		Name:       opUpdateRequestValidator,
@@ -11046,27 +10920,27 @@ func (c *APIGateway) UpdateRequestValidatorRequest(input *UpdateRequestValidator
 // API operation UpdateRequestValidator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateRequestValidator(input *UpdateRequestValidatorInput) (*UpdateRequestValidatorOutput, error) {
 	req, out := c.UpdateRequestValidatorRequest(input)
 	return out, req.Send()
@@ -11104,14 +10978,13 @@ const opUpdateResource = "UpdateResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourceRequest method.
+//	req, resp := client.UpdateResourceRequest(params)
 //
-//    // Example sending a request using the UpdateResourceRequest method.
-//    req, resp := client.UpdateResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateResourceRequest(input *UpdateResourceInput) (req *request.Request, output *Resource) {
 	op := &request.Operation{
 		Name:       opUpdateResource,
@@ -11140,24 +11013,24 @@ func (c *APIGateway) UpdateResourceRequest(input *UpdateResourceInput) (req *req
 // API operation UpdateResource for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateResource(input *UpdateResourceInput) (*Resource, error) {
 	req, out := c.UpdateResourceRequest(input)
 	return out, req.Send()
@@ -11195,14 +11068,13 @@ const opUpdateRestApi = "UpdateRestApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRestApiRequest method.
+//	req, resp := client.UpdateRestApiRequest(params)
 //
-//    // Example sending a request using the UpdateRestApiRequest method.
-//    req, resp := client.UpdateRestApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateRestApiRequest(input *UpdateRestApiInput) (req *request.Request, output *RestApi) {
 	op := &request.Operation{
 		Name:       opUpdateRestApi,
@@ -11231,27 +11103,27 @@ func (c *APIGateway) UpdateRestApiRequest(input *UpdateRestApiInput) (req *reque
 // API operation UpdateRestApi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateRestApi(input *UpdateRestApiInput) (*RestApi, error) {
 	req, out := c.UpdateRestApiRequest(input)
 	return out, req.Send()
@@ -11289,14 +11161,13 @@ const opUpdateStage = "UpdateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStageRequest method.
+//	req, resp := client.UpdateStageRequest(params)
 //
-//    // Example sending a request using the UpdateStageRequest method.
-//    req, resp := client.UpdateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateStageRequest(input *UpdateStageInput) (req *request.Request, output *Stage) {
 	op := &request.Operation{
 		Name:       opUpdateStage,
@@ -11325,27 +11196,27 @@ func (c *APIGateway) UpdateStageRequest(input *UpdateStageInput) (req *request.R
 // API operation UpdateStage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateStage(input *UpdateStageInput) (*Stage, error) {
 	req, out := c.UpdateStageRequest(input)
 	return out, req.Send()
@@ -11383,14 +11254,13 @@ const opUpdateUsage = "UpdateUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUsageRequest method.
+//	req, resp := client.UpdateUsageRequest(params)
 //
-//    // Example sending a request using the UpdateUsageRequest method.
-//    req, resp := client.UpdateUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateUsageRequest(input *UpdateUsageInput) (req *request.Request, output *Usage) {
 	op := &request.Operation{
 		Name:       opUpdateUsage,
@@ -11420,27 +11290,27 @@ func (c *APIGateway) UpdateUsageRequest(input *UpdateUsageInput) (req *request.R
 // API operation UpdateUsage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateUsage(input *UpdateUsageInput) (*Usage, error) {
 	req, out := c.UpdateUsageRequest(input)
 	return out, req.Send()
@@ -11478,14 +11348,13 @@ const opUpdateUsagePlan = "UpdateUsagePlan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUsagePlanRequest method.
+//	req, resp := client.UpdateUsagePlanRequest(params)
 //
-//    // Example sending a request using the UpdateUsagePlanRequest method.
-//    req, resp := client.UpdateUsagePlanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateUsagePlanRequest(input *UpdateUsagePlanInput) (req *request.Request, output *UsagePlan) {
 	op := &request.Operation{
 		Name:       opUpdateUsagePlan,
@@ -11514,27 +11383,27 @@ func (c *APIGateway) UpdateUsagePlanRequest(input *UpdateUsagePlanInput) (req *r
 // API operation UpdateUsagePlan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateUsagePlan(input *UpdateUsagePlanInput) (*UsagePlan, error) {
 	req, out := c.UpdateUsagePlanRequest(input)
 	return out, req.Send()
@@ -11572,14 +11441,13 @@ const opUpdateVpcLink = "UpdateVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVpcLinkRequest method.
+//	req, resp := client.UpdateVpcLinkRequest(params)
 //
-//    // Example sending a request using the UpdateVpcLinkRequest method.
-//    req, resp := client.UpdateVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *APIGateway) UpdateVpcLinkRequest(input *UpdateVpcLinkInput) (req *request.Request, output *UpdateVpcLinkOutput) {
 	op := &request.Operation{
 		Name:       opUpdateVpcLink,
@@ -11608,27 +11476,27 @@ func (c *APIGateway) UpdateVpcLinkRequest(input *UpdateVpcLinkInput) (req *reque
 // API operation UpdateVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The submitted request is not valid, for example, the input is incomplete
-//   or incorrect. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The request configuration has conflicts. For details, see the accompanying
-//   error message.
+//   - BadRequestException
+//     The submitted request is not valid, for example, the input is incomplete
+//     or incorrect. See the accompanying error message for details.
 //
-//   * LimitExceededException
-//   The request exceeded the rate limit. Retry after the specified time period.
+//   - ConflictException
+//     The request configuration has conflicts. For details, see the accompanying
+//     error message.
 //
-//   * NotFoundException
-//   The requested resource is not found. Make sure that the request URI is correct.
+//   - LimitExceededException
+//     The request exceeded the rate limit. Retry after the specified time period.
 //
-//   * UnauthorizedException
-//   The request is denied because the caller has insufficient permissions.
+//   - NotFoundException
+//     The requested resource is not found. Make sure that the request URI is correct.
 //
-//   * TooManyRequestsException
-//   The request has reached its throttling limit. Retry after the specified time
-//   period.
+//   - UnauthorizedException
+//     The request is denied because the caller has insufficient permissions.
 //
+//   - TooManyRequestsException
+//     The request has reached its throttling limit. Retry after the specified time
+//     period.
 func (c *APIGateway) UpdateVpcLink(input *UpdateVpcLinkInput) (*UpdateVpcLinkOutput, error) {
 	req, out := c.UpdateVpcLinkRequest(input)
 	return out, req.Send()
