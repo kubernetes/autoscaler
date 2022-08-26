@@ -31,14 +31,13 @@ const opDeleteObject = "DeleteObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteObjectRequest method.
+//	req, resp := client.DeleteObjectRequest(params)
 //
-//    // Example sending a request using the DeleteObjectRequest method.
-//    req, resp := client.DeleteObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/DeleteObject
 func (c *MediaStoreData) DeleteObjectRequest(input *DeleteObjectInput) (req *request.Request, output *DeleteObjectOutput) {
@@ -70,14 +69,15 @@ func (c *MediaStoreData) DeleteObjectRequest(input *DeleteObjectInput) (req *req
 // API operation DeleteObject for usage and error information.
 //
 // Returned Error Types:
-//   * ContainerNotFoundException
-//   The specified container was not found for the specified account.
 //
-//   * ObjectNotFoundException
-//   Could not perform an operation on an object that does not exist.
+//   - ContainerNotFoundException
+//     The specified container was not found for the specified account.
 //
-//   * InternalServerError
-//   The service is temporarily unavailable.
+//   - ObjectNotFoundException
+//     Could not perform an operation on an object that does not exist.
+//
+//   - InternalServerError
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/DeleteObject
 func (c *MediaStoreData) DeleteObject(input *DeleteObjectInput) (*DeleteObjectOutput, error) {
@@ -117,14 +117,13 @@ const opDescribeObject = "DescribeObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeObjectRequest method.
+//	req, resp := client.DescribeObjectRequest(params)
 //
-//    // Example sending a request using the DescribeObjectRequest method.
-//    req, resp := client.DescribeObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/DescribeObject
 func (c *MediaStoreData) DescribeObjectRequest(input *DescribeObjectInput) (req *request.Request, output *DescribeObjectOutput) {
@@ -155,14 +154,15 @@ func (c *MediaStoreData) DescribeObjectRequest(input *DescribeObjectInput) (req 
 // API operation DescribeObject for usage and error information.
 //
 // Returned Error Types:
-//   * ContainerNotFoundException
-//   The specified container was not found for the specified account.
 //
-//   * ObjectNotFoundException
-//   Could not perform an operation on an object that does not exist.
+//   - ContainerNotFoundException
+//     The specified container was not found for the specified account.
 //
-//   * InternalServerError
-//   The service is temporarily unavailable.
+//   - ObjectNotFoundException
+//     Could not perform an operation on an object that does not exist.
+//
+//   - InternalServerError
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/DescribeObject
 func (c *MediaStoreData) DescribeObject(input *DescribeObjectInput) (*DescribeObjectOutput, error) {
@@ -202,14 +202,13 @@ const opGetObject = "GetObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetObjectRequest method.
+//	req, resp := client.GetObjectRequest(params)
 //
-//    // Example sending a request using the GetObjectRequest method.
-//    req, resp := client.GetObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/GetObject
 func (c *MediaStoreData) GetObjectRequest(input *GetObjectInput) (req *request.Request, output *GetObjectOutput) {
@@ -242,17 +241,18 @@ func (c *MediaStoreData) GetObjectRequest(input *GetObjectInput) (req *request.R
 // API operation GetObject for usage and error information.
 //
 // Returned Error Types:
-//   * ContainerNotFoundException
-//   The specified container was not found for the specified account.
 //
-//   * ObjectNotFoundException
-//   Could not perform an operation on an object that does not exist.
+//   - ContainerNotFoundException
+//     The specified container was not found for the specified account.
 //
-//   * RequestedRangeNotSatisfiableException
-//   The requested content range is not valid.
+//   - ObjectNotFoundException
+//     Could not perform an operation on an object that does not exist.
 //
-//   * InternalServerError
-//   The service is temporarily unavailable.
+//   - RequestedRangeNotSatisfiableException
+//     The requested content range is not valid.
+//
+//   - InternalServerError
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/GetObject
 func (c *MediaStoreData) GetObject(input *GetObjectInput) (*GetObjectOutput, error) {
@@ -292,14 +292,13 @@ const opListItems = "ListItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListItemsRequest method.
+//	req, resp := client.ListItemsRequest(params)
 //
-//    // Example sending a request using the ListItemsRequest method.
-//    req, resp := client.ListItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/ListItems
 func (c *MediaStoreData) ListItemsRequest(input *ListItemsInput) (req *request.Request, output *ListItemsOutput) {
@@ -337,11 +336,12 @@ func (c *MediaStoreData) ListItemsRequest(input *ListItemsInput) (req *request.R
 // API operation ListItems for usage and error information.
 //
 // Returned Error Types:
-//   * ContainerNotFoundException
-//   The specified container was not found for the specified account.
 //
-//   * InternalServerError
-//   The service is temporarily unavailable.
+//   - ContainerNotFoundException
+//     The specified container was not found for the specified account.
+//
+//   - InternalServerError
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/ListItems
 func (c *MediaStoreData) ListItems(input *ListItemsInput) (*ListItemsOutput, error) {
@@ -373,15 +373,14 @@ func (c *MediaStoreData) ListItemsWithContext(ctx aws.Context, input *ListItemsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListItems operation.
-//    pageNum := 0
-//    err := client.ListItemsPages(params,
-//        func(page *mediastoredata.ListItemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListItems operation.
+//	pageNum := 0
+//	err := client.ListItemsPages(params,
+//	    func(page *mediastoredata.ListItemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaStoreData) ListItemsPages(input *ListItemsInput, fn func(*ListItemsOutput, bool) bool) error {
 	return c.ListItemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -433,14 +432,13 @@ const opPutObject = "PutObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutObjectRequest method.
+//	req, resp := client.PutObjectRequest(params)
 //
-//    // Example sending a request using the PutObjectRequest method.
-//    req, resp := client.PutObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/PutObject
 func (c *MediaStoreData) PutObjectRequest(input *PutObjectInput) (req *request.Request, output *PutObjectOutput) {
@@ -475,11 +473,12 @@ func (c *MediaStoreData) PutObjectRequest(input *PutObjectInput) (req *request.R
 // API operation PutObject for usage and error information.
 //
 // Returned Error Types:
-//   * ContainerNotFoundException
-//   The specified container was not found for the specified account.
 //
-//   * InternalServerError
-//   The service is temporarily unavailable.
+//   - ContainerNotFoundException
+//     The specified container was not found for the specified account.
+//
+//   - InternalServerError
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediastore-data-2017-09-01/PutObject
 func (c *MediaStoreData) PutObject(input *PutObjectInput) (*PutObjectOutput, error) {

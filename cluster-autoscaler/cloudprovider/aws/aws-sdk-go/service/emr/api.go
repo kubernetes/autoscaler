@@ -29,14 +29,13 @@ const opAddInstanceFleet = "AddInstanceFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddInstanceFleetRequest method.
+//	req, resp := client.AddInstanceFleetRequest(params)
 //
-//    // Example sending a request using the AddInstanceFleetRequest method.
-//    req, resp := client.AddInstanceFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddInstanceFleet
 func (c *EMR) AddInstanceFleetRequest(input *AddInstanceFleetInput) (req *request.Request, output *AddInstanceFleetOutput) {
@@ -70,12 +69,13 @@ func (c *EMR) AddInstanceFleetRequest(input *AddInstanceFleetInput) (req *reques
 // API operation AddInstanceFleet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddInstanceFleet
 func (c *EMR) AddInstanceFleet(input *AddInstanceFleetInput) (*AddInstanceFleetOutput, error) {
@@ -115,14 +115,13 @@ const opAddInstanceGroups = "AddInstanceGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddInstanceGroupsRequest method.
+//	req, resp := client.AddInstanceGroupsRequest(params)
 //
-//    // Example sending a request using the AddInstanceGroupsRequest method.
-//    req, resp := client.AddInstanceGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddInstanceGroups
 func (c *EMR) AddInstanceGroupsRequest(input *AddInstanceGroupsInput) (req *request.Request, output *AddInstanceGroupsOutput) {
@@ -153,9 +152,9 @@ func (c *EMR) AddInstanceGroupsRequest(input *AddInstanceGroupsInput) (req *requ
 // API operation AddInstanceGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddInstanceGroups
 func (c *EMR) AddInstanceGroups(input *AddInstanceGroupsInput) (*AddInstanceGroupsOutput, error) {
@@ -195,14 +194,13 @@ const opAddJobFlowSteps = "AddJobFlowSteps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddJobFlowStepsRequest method.
+//	req, resp := client.AddJobFlowStepsRequest(params)
 //
-//    // Example sending a request using the AddJobFlowStepsRequest method.
-//    req, resp := client.AddJobFlowStepsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddJobFlowSteps
 func (c *EMR) AddJobFlowStepsRequest(input *AddJobFlowStepsInput) (req *request.Request, output *AddJobFlowStepsOutput) {
@@ -258,9 +256,9 @@ func (c *EMR) AddJobFlowStepsRequest(input *AddJobFlowStepsInput) (req *request.
 // API operation AddJobFlowSteps for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddJobFlowSteps
 func (c *EMR) AddJobFlowSteps(input *AddJobFlowStepsInput) (*AddJobFlowStepsOutput, error) {
@@ -300,14 +298,13 @@ const opAddTags = "AddTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsRequest method.
+//	req, resp := client.AddTagsRequest(params)
 //
-//    // Example sending a request using the AddTagsRequest method.
-//    req, resp := client.AddTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddTags
 func (c *EMR) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
@@ -342,12 +339,13 @@ func (c *EMR) AddTagsRequest(input *AddTagsInput) (req *request.Request, output 
 // API operation AddTags for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/AddTags
 func (c *EMR) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
@@ -387,14 +385,13 @@ const opCancelSteps = "CancelSteps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelStepsRequest method.
+//	req, resp := client.CancelStepsRequest(params)
 //
-//    // Example sending a request using the CancelStepsRequest method.
-//    req, resp := client.CancelStepsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CancelSteps
 func (c *EMR) CancelStepsRequest(input *CancelStepsInput) (req *request.Request, output *CancelStepsOutput) {
@@ -431,12 +428,13 @@ func (c *EMR) CancelStepsRequest(input *CancelStepsInput) (req *request.Request,
 // API operation CancelSteps for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CancelSteps
 func (c *EMR) CancelSteps(input *CancelStepsInput) (*CancelStepsOutput, error) {
@@ -476,14 +474,13 @@ const opCreateSecurityConfiguration = "CreateSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSecurityConfigurationRequest method.
+//	req, resp := client.CreateSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateSecurityConfigurationRequest method.
-//    req, resp := client.CreateSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateSecurityConfiguration
 func (c *EMR) CreateSecurityConfigurationRequest(input *CreateSecurityConfigurationInput) (req *request.Request, output *CreateSecurityConfigurationOutput) {
@@ -515,12 +512,13 @@ func (c *EMR) CreateSecurityConfigurationRequest(input *CreateSecurityConfigurat
 // API operation CreateSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateSecurityConfiguration
 func (c *EMR) CreateSecurityConfiguration(input *CreateSecurityConfigurationInput) (*CreateSecurityConfigurationOutput, error) {
@@ -560,14 +558,13 @@ const opCreateStudio = "CreateStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStudioRequest method.
+//	req, resp := client.CreateStudioRequest(params)
 //
-//    // Example sending a request using the CreateStudioRequest method.
-//    req, resp := client.CreateStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateStudio
 func (c *EMR) CreateStudioRequest(input *CreateStudioInput) (req *request.Request, output *CreateStudioOutput) {
@@ -598,12 +595,13 @@ func (c *EMR) CreateStudioRequest(input *CreateStudioInput) (req *request.Reques
 // API operation CreateStudio for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateStudio
 func (c *EMR) CreateStudio(input *CreateStudioInput) (*CreateStudioOutput, error) {
@@ -643,14 +641,13 @@ const opCreateStudioSessionMapping = "CreateStudioSessionMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStudioSessionMappingRequest method.
+//	req, resp := client.CreateStudioSessionMappingRequest(params)
 //
-//    // Example sending a request using the CreateStudioSessionMappingRequest method.
-//    req, resp := client.CreateStudioSessionMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateStudioSessionMapping
 func (c *EMR) CreateStudioSessionMappingRequest(input *CreateStudioSessionMappingInput) (req *request.Request, output *CreateStudioSessionMappingOutput) {
@@ -687,12 +684,13 @@ func (c *EMR) CreateStudioSessionMappingRequest(input *CreateStudioSessionMappin
 // API operation CreateStudioSessionMapping for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/CreateStudioSessionMapping
 func (c *EMR) CreateStudioSessionMapping(input *CreateStudioSessionMappingInput) (*CreateStudioSessionMappingOutput, error) {
@@ -732,14 +730,13 @@ const opDeleteSecurityConfiguration = "DeleteSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSecurityConfigurationRequest method.
+//	req, resp := client.DeleteSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteSecurityConfigurationRequest method.
-//    req, resp := client.DeleteSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteSecurityConfiguration
 func (c *EMR) DeleteSecurityConfigurationRequest(input *DeleteSecurityConfigurationInput) (req *request.Request, output *DeleteSecurityConfigurationOutput) {
@@ -771,12 +768,13 @@ func (c *EMR) DeleteSecurityConfigurationRequest(input *DeleteSecurityConfigurat
 // API operation DeleteSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteSecurityConfiguration
 func (c *EMR) DeleteSecurityConfiguration(input *DeleteSecurityConfigurationInput) (*DeleteSecurityConfigurationOutput, error) {
@@ -816,14 +814,13 @@ const opDeleteStudio = "DeleteStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStudioRequest method.
+//	req, resp := client.DeleteStudioRequest(params)
 //
-//    // Example sending a request using the DeleteStudioRequest method.
-//    req, resp := client.DeleteStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteStudio
 func (c *EMR) DeleteStudioRequest(input *DeleteStudioInput) (req *request.Request, output *DeleteStudioOutput) {
@@ -855,12 +852,13 @@ func (c *EMR) DeleteStudioRequest(input *DeleteStudioInput) (req *request.Reques
 // API operation DeleteStudio for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteStudio
 func (c *EMR) DeleteStudio(input *DeleteStudioInput) (*DeleteStudioOutput, error) {
@@ -900,14 +898,13 @@ const opDeleteStudioSessionMapping = "DeleteStudioSessionMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStudioSessionMappingRequest method.
+//	req, resp := client.DeleteStudioSessionMappingRequest(params)
 //
-//    // Example sending a request using the DeleteStudioSessionMappingRequest method.
-//    req, resp := client.DeleteStudioSessionMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteStudioSessionMapping
 func (c *EMR) DeleteStudioSessionMappingRequest(input *DeleteStudioSessionMappingInput) (req *request.Request, output *DeleteStudioSessionMappingOutput) {
@@ -939,12 +936,13 @@ func (c *EMR) DeleteStudioSessionMappingRequest(input *DeleteStudioSessionMappin
 // API operation DeleteStudioSessionMapping for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DeleteStudioSessionMapping
 func (c *EMR) DeleteStudioSessionMapping(input *DeleteStudioSessionMappingInput) (*DeleteStudioSessionMappingOutput, error) {
@@ -984,14 +982,13 @@ const opDescribeCluster = "DescribeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterRequest method.
+//	req, resp := client.DescribeClusterRequest(params)
 //
-//    // Example sending a request using the DescribeClusterRequest method.
-//    req, resp := client.DescribeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeCluster
 func (c *EMR) DescribeClusterRequest(input *DescribeClusterInput) (req *request.Request, output *DescribeClusterOutput) {
@@ -1023,12 +1020,13 @@ func (c *EMR) DescribeClusterRequest(input *DescribeClusterInput) (req *request.
 // API operation DescribeCluster for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeCluster
 func (c *EMR) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutput, error) {
@@ -1068,14 +1066,13 @@ const opDescribeJobFlows = "DescribeJobFlows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobFlowsRequest method.
+//	req, resp := client.DescribeJobFlowsRequest(params)
 //
-//    // Example sending a request using the DescribeJobFlowsRequest method.
-//    req, resp := client.DescribeJobFlowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeJobFlows
 //
@@ -1115,10 +1112,10 @@ func (c *EMR) DescribeJobFlowsRequest(input *DescribeJobFlowsInput) (req *reques
 // If no parameters are supplied, then job flows matching either of the following
 // criteria are returned:
 //
-//    * Job flows created and completed in the last two weeks
+//   - Job flows created and completed in the last two weeks
 //
-//    * Job flows created within the last two months that are in one of the
-//    following states: RUNNING, WAITING, SHUTTING_DOWN, STARTING
+//   - Job flows created within the last two months that are in one of the
+//     following states: RUNNING, WAITING, SHUTTING_DOWN, STARTING
 //
 // Amazon EMR can return a maximum of 512 job flow descriptions.
 //
@@ -1130,9 +1127,9 @@ func (c *EMR) DescribeJobFlowsRequest(input *DescribeJobFlowsInput) (req *reques
 // API operation DescribeJobFlows for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeJobFlows
 //
@@ -1176,14 +1173,13 @@ const opDescribeNotebookExecution = "DescribeNotebookExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNotebookExecutionRequest method.
+//	req, resp := client.DescribeNotebookExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeNotebookExecutionRequest method.
-//    req, resp := client.DescribeNotebookExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeNotebookExecution
 func (c *EMR) DescribeNotebookExecutionRequest(input *DescribeNotebookExecutionInput) (req *request.Request, output *DescribeNotebookExecutionOutput) {
@@ -1214,12 +1210,13 @@ func (c *EMR) DescribeNotebookExecutionRequest(input *DescribeNotebookExecutionI
 // API operation DescribeNotebookExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeNotebookExecution
 func (c *EMR) DescribeNotebookExecution(input *DescribeNotebookExecutionInput) (*DescribeNotebookExecutionOutput, error) {
@@ -1259,14 +1256,13 @@ const opDescribeReleaseLabel = "DescribeReleaseLabel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReleaseLabelRequest method.
+//	req, resp := client.DescribeReleaseLabelRequest(params)
 //
-//    // Example sending a request using the DescribeReleaseLabelRequest method.
-//    req, resp := client.DescribeReleaseLabelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeReleaseLabel
 func (c *EMR) DescribeReleaseLabelRequest(input *DescribeReleaseLabelInput) (req *request.Request, output *DescribeReleaseLabelOutput) {
@@ -1300,12 +1296,13 @@ func (c *EMR) DescribeReleaseLabelRequest(input *DescribeReleaseLabelInput) (req
 // API operation DescribeReleaseLabel for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeReleaseLabel
 func (c *EMR) DescribeReleaseLabel(input *DescribeReleaseLabelInput) (*DescribeReleaseLabelOutput, error) {
@@ -1345,14 +1342,13 @@ const opDescribeSecurityConfiguration = "DescribeSecurityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSecurityConfigurationRequest method.
+//	req, resp := client.DescribeSecurityConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeSecurityConfigurationRequest method.
-//    req, resp := client.DescribeSecurityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeSecurityConfiguration
 func (c *EMR) DescribeSecurityConfigurationRequest(input *DescribeSecurityConfigurationInput) (req *request.Request, output *DescribeSecurityConfigurationOutput) {
@@ -1384,12 +1380,13 @@ func (c *EMR) DescribeSecurityConfigurationRequest(input *DescribeSecurityConfig
 // API operation DescribeSecurityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeSecurityConfiguration
 func (c *EMR) DescribeSecurityConfiguration(input *DescribeSecurityConfigurationInput) (*DescribeSecurityConfigurationOutput, error) {
@@ -1429,14 +1426,13 @@ const opDescribeStep = "DescribeStep"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStepRequest method.
+//	req, resp := client.DescribeStepRequest(params)
 //
-//    // Example sending a request using the DescribeStepRequest method.
-//    req, resp := client.DescribeStepRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeStep
 func (c *EMR) DescribeStepRequest(input *DescribeStepInput) (req *request.Request, output *DescribeStepOutput) {
@@ -1467,12 +1463,13 @@ func (c *EMR) DescribeStepRequest(input *DescribeStepInput) (req *request.Reques
 // API operation DescribeStep for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeStep
 func (c *EMR) DescribeStep(input *DescribeStepInput) (*DescribeStepOutput, error) {
@@ -1512,14 +1509,13 @@ const opDescribeStudio = "DescribeStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStudioRequest method.
+//	req, resp := client.DescribeStudioRequest(params)
 //
-//    // Example sending a request using the DescribeStudioRequest method.
-//    req, resp := client.DescribeStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeStudio
 func (c *EMR) DescribeStudioRequest(input *DescribeStudioInput) (req *request.Request, output *DescribeStudioOutput) {
@@ -1551,12 +1547,13 @@ func (c *EMR) DescribeStudioRequest(input *DescribeStudioInput) (req *request.Re
 // API operation DescribeStudio for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/DescribeStudio
 func (c *EMR) DescribeStudio(input *DescribeStudioInput) (*DescribeStudioOutput, error) {
@@ -1596,14 +1593,13 @@ const opGetAutoTerminationPolicy = "GetAutoTerminationPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAutoTerminationPolicyRequest method.
+//	req, resp := client.GetAutoTerminationPolicyRequest(params)
 //
-//    // Example sending a request using the GetAutoTerminationPolicyRequest method.
-//    req, resp := client.GetAutoTerminationPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetAutoTerminationPolicy
 func (c *EMR) GetAutoTerminationPolicyRequest(input *GetAutoTerminationPolicyInput) (req *request.Request, output *GetAutoTerminationPolicyOutput) {
@@ -1670,14 +1666,13 @@ const opGetBlockPublicAccessConfiguration = "GetBlockPublicAccessConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlockPublicAccessConfigurationRequest method.
+//	req, resp := client.GetBlockPublicAccessConfigurationRequest(params)
 //
-//    // Example sending a request using the GetBlockPublicAccessConfigurationRequest method.
-//    req, resp := client.GetBlockPublicAccessConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetBlockPublicAccessConfiguration
 func (c *EMR) GetBlockPublicAccessConfigurationRequest(input *GetBlockPublicAccessConfigurationInput) (req *request.Request, output *GetBlockPublicAccessConfigurationOutput) {
@@ -1711,12 +1706,13 @@ func (c *EMR) GetBlockPublicAccessConfigurationRequest(input *GetBlockPublicAcce
 // API operation GetBlockPublicAccessConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetBlockPublicAccessConfiguration
 func (c *EMR) GetBlockPublicAccessConfiguration(input *GetBlockPublicAccessConfigurationInput) (*GetBlockPublicAccessConfigurationOutput, error) {
@@ -1756,14 +1752,13 @@ const opGetManagedScalingPolicy = "GetManagedScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetManagedScalingPolicyRequest method.
+//	req, resp := client.GetManagedScalingPolicyRequest(params)
 //
-//    // Example sending a request using the GetManagedScalingPolicyRequest method.
-//    req, resp := client.GetManagedScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetManagedScalingPolicy
 func (c *EMR) GetManagedScalingPolicyRequest(input *GetManagedScalingPolicyInput) (req *request.Request, output *GetManagedScalingPolicyOutput) {
@@ -1830,14 +1825,13 @@ const opGetStudioSessionMapping = "GetStudioSessionMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStudioSessionMappingRequest method.
+//	req, resp := client.GetStudioSessionMappingRequest(params)
 //
-//    // Example sending a request using the GetStudioSessionMappingRequest method.
-//    req, resp := client.GetStudioSessionMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetStudioSessionMapping
 func (c *EMR) GetStudioSessionMappingRequest(input *GetStudioSessionMappingInput) (req *request.Request, output *GetStudioSessionMappingOutput) {
@@ -1869,12 +1863,13 @@ func (c *EMR) GetStudioSessionMappingRequest(input *GetStudioSessionMappingInput
 // API operation GetStudioSessionMapping for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/GetStudioSessionMapping
 func (c *EMR) GetStudioSessionMapping(input *GetStudioSessionMappingInput) (*GetStudioSessionMappingOutput, error) {
@@ -1914,14 +1909,13 @@ const opListBootstrapActions = "ListBootstrapActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBootstrapActionsRequest method.
+//	req, resp := client.ListBootstrapActionsRequest(params)
 //
-//    // Example sending a request using the ListBootstrapActionsRequest method.
-//    req, resp := client.ListBootstrapActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListBootstrapActions
 func (c *EMR) ListBootstrapActionsRequest(input *ListBootstrapActionsInput) (req *request.Request, output *ListBootstrapActionsOutput) {
@@ -1958,12 +1952,13 @@ func (c *EMR) ListBootstrapActionsRequest(input *ListBootstrapActionsInput) (req
 // API operation ListBootstrapActions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListBootstrapActions
 func (c *EMR) ListBootstrapActions(input *ListBootstrapActionsInput) (*ListBootstrapActionsOutput, error) {
@@ -1995,15 +1990,14 @@ func (c *EMR) ListBootstrapActionsWithContext(ctx aws.Context, input *ListBootst
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBootstrapActions operation.
-//    pageNum := 0
-//    err := client.ListBootstrapActionsPages(params,
-//        func(page *emr.ListBootstrapActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBootstrapActions operation.
+//	pageNum := 0
+//	err := client.ListBootstrapActionsPages(params,
+//	    func(page *emr.ListBootstrapActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListBootstrapActionsPages(input *ListBootstrapActionsInput, fn func(*ListBootstrapActionsOutput, bool) bool) error {
 	return c.ListBootstrapActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2055,14 +2049,13 @@ const opListClusters = "ListClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersRequest method.
+//	req, resp := client.ListClustersRequest(params)
 //
-//    // Example sending a request using the ListClustersRequest method.
-//    req, resp := client.ListClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListClusters
 func (c *EMR) ListClustersRequest(input *ListClustersInput) (req *request.Request, output *ListClustersOutput) {
@@ -2104,12 +2097,13 @@ func (c *EMR) ListClustersRequest(input *ListClustersInput) (req *request.Reques
 // API operation ListClusters for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListClusters
 func (c *EMR) ListClusters(input *ListClustersInput) (*ListClustersOutput, error) {
@@ -2141,15 +2135,14 @@ func (c *EMR) ListClustersWithContext(ctx aws.Context, input *ListClustersInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusters operation.
-//    pageNum := 0
-//    err := client.ListClustersPages(params,
-//        func(page *emr.ListClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusters operation.
+//	pageNum := 0
+//	err := client.ListClustersPages(params,
+//	    func(page *emr.ListClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListClustersPages(input *ListClustersInput, fn func(*ListClustersOutput, bool) bool) error {
 	return c.ListClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2201,14 +2194,13 @@ const opListInstanceFleets = "ListInstanceFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceFleetsRequest method.
+//	req, resp := client.ListInstanceFleetsRequest(params)
 //
-//    // Example sending a request using the ListInstanceFleetsRequest method.
-//    req, resp := client.ListInstanceFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstanceFleets
 func (c *EMR) ListInstanceFleetsRequest(input *ListInstanceFleetsInput) (req *request.Request, output *ListInstanceFleetsOutput) {
@@ -2248,12 +2240,13 @@ func (c *EMR) ListInstanceFleetsRequest(input *ListInstanceFleetsInput) (req *re
 // API operation ListInstanceFleets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstanceFleets
 func (c *EMR) ListInstanceFleets(input *ListInstanceFleetsInput) (*ListInstanceFleetsOutput, error) {
@@ -2285,15 +2278,14 @@ func (c *EMR) ListInstanceFleetsWithContext(ctx aws.Context, input *ListInstance
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstanceFleets operation.
-//    pageNum := 0
-//    err := client.ListInstanceFleetsPages(params,
-//        func(page *emr.ListInstanceFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstanceFleets operation.
+//	pageNum := 0
+//	err := client.ListInstanceFleetsPages(params,
+//	    func(page *emr.ListInstanceFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListInstanceFleetsPages(input *ListInstanceFleetsInput, fn func(*ListInstanceFleetsOutput, bool) bool) error {
 	return c.ListInstanceFleetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2345,14 +2337,13 @@ const opListInstanceGroups = "ListInstanceGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceGroupsRequest method.
+//	req, resp := client.ListInstanceGroupsRequest(params)
 //
-//    // Example sending a request using the ListInstanceGroupsRequest method.
-//    req, resp := client.ListInstanceGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstanceGroups
 func (c *EMR) ListInstanceGroupsRequest(input *ListInstanceGroupsInput) (req *request.Request, output *ListInstanceGroupsOutput) {
@@ -2389,12 +2380,13 @@ func (c *EMR) ListInstanceGroupsRequest(input *ListInstanceGroupsInput) (req *re
 // API operation ListInstanceGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstanceGroups
 func (c *EMR) ListInstanceGroups(input *ListInstanceGroupsInput) (*ListInstanceGroupsOutput, error) {
@@ -2426,15 +2418,14 @@ func (c *EMR) ListInstanceGroupsWithContext(ctx aws.Context, input *ListInstance
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstanceGroups operation.
-//    pageNum := 0
-//    err := client.ListInstanceGroupsPages(params,
-//        func(page *emr.ListInstanceGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstanceGroups operation.
+//	pageNum := 0
+//	err := client.ListInstanceGroupsPages(params,
+//	    func(page *emr.ListInstanceGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListInstanceGroupsPages(input *ListInstanceGroupsInput, fn func(*ListInstanceGroupsOutput, bool) bool) error {
 	return c.ListInstanceGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2486,14 +2477,13 @@ const opListInstances = "ListInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstancesRequest method.
+//	req, resp := client.ListInstancesRequest(params)
 //
-//    // Example sending a request using the ListInstancesRequest method.
-//    req, resp := client.ListInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstances
 func (c *EMR) ListInstancesRequest(input *ListInstancesInput) (req *request.Request, output *ListInstancesOutput) {
@@ -2533,12 +2523,13 @@ func (c *EMR) ListInstancesRequest(input *ListInstancesInput) (req *request.Requ
 // API operation ListInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListInstances
 func (c *EMR) ListInstances(input *ListInstancesInput) (*ListInstancesOutput, error) {
@@ -2570,15 +2561,14 @@ func (c *EMR) ListInstancesWithContext(ctx aws.Context, input *ListInstancesInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstances operation.
-//    pageNum := 0
-//    err := client.ListInstancesPages(params,
-//        func(page *emr.ListInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstances operation.
+//	pageNum := 0
+//	err := client.ListInstancesPages(params,
+//	    func(page *emr.ListInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListInstancesPages(input *ListInstancesInput, fn func(*ListInstancesOutput, bool) bool) error {
 	return c.ListInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2630,14 +2620,13 @@ const opListNotebookExecutions = "ListNotebookExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNotebookExecutionsRequest method.
+//	req, resp := client.ListNotebookExecutionsRequest(params)
 //
-//    // Example sending a request using the ListNotebookExecutionsRequest method.
-//    req, resp := client.ListNotebookExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListNotebookExecutions
 func (c *EMR) ListNotebookExecutionsRequest(input *ListNotebookExecutionsInput) (req *request.Request, output *ListNotebookExecutionsOutput) {
@@ -2677,12 +2666,13 @@ func (c *EMR) ListNotebookExecutionsRequest(input *ListNotebookExecutionsInput) 
 // API operation ListNotebookExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListNotebookExecutions
 func (c *EMR) ListNotebookExecutions(input *ListNotebookExecutionsInput) (*ListNotebookExecutionsOutput, error) {
@@ -2714,15 +2704,14 @@ func (c *EMR) ListNotebookExecutionsWithContext(ctx aws.Context, input *ListNote
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNotebookExecutions operation.
-//    pageNum := 0
-//    err := client.ListNotebookExecutionsPages(params,
-//        func(page *emr.ListNotebookExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNotebookExecutions operation.
+//	pageNum := 0
+//	err := client.ListNotebookExecutionsPages(params,
+//	    func(page *emr.ListNotebookExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListNotebookExecutionsPages(input *ListNotebookExecutionsInput, fn func(*ListNotebookExecutionsOutput, bool) bool) error {
 	return c.ListNotebookExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2774,14 +2763,13 @@ const opListReleaseLabels = "ListReleaseLabels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReleaseLabelsRequest method.
+//	req, resp := client.ListReleaseLabelsRequest(params)
 //
-//    // Example sending a request using the ListReleaseLabelsRequest method.
-//    req, resp := client.ListReleaseLabelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListReleaseLabels
 func (c *EMR) ListReleaseLabelsRequest(input *ListReleaseLabelsInput) (req *request.Request, output *ListReleaseLabelsOutput) {
@@ -2818,12 +2806,13 @@ func (c *EMR) ListReleaseLabelsRequest(input *ListReleaseLabelsInput) (req *requ
 // API operation ListReleaseLabels for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListReleaseLabels
 func (c *EMR) ListReleaseLabels(input *ListReleaseLabelsInput) (*ListReleaseLabelsOutput, error) {
@@ -2855,15 +2844,14 @@ func (c *EMR) ListReleaseLabelsWithContext(ctx aws.Context, input *ListReleaseLa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReleaseLabels operation.
-//    pageNum := 0
-//    err := client.ListReleaseLabelsPages(params,
-//        func(page *emr.ListReleaseLabelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReleaseLabels operation.
+//	pageNum := 0
+//	err := client.ListReleaseLabelsPages(params,
+//	    func(page *emr.ListReleaseLabelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListReleaseLabelsPages(input *ListReleaseLabelsInput, fn func(*ListReleaseLabelsOutput, bool) bool) error {
 	return c.ListReleaseLabelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2915,14 +2903,13 @@ const opListSecurityConfigurations = "ListSecurityConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSecurityConfigurationsRequest method.
+//	req, resp := client.ListSecurityConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListSecurityConfigurationsRequest method.
-//    req, resp := client.ListSecurityConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListSecurityConfigurations
 func (c *EMR) ListSecurityConfigurationsRequest(input *ListSecurityConfigurationsInput) (req *request.Request, output *ListSecurityConfigurationsOutput) {
@@ -2962,12 +2949,13 @@ func (c *EMR) ListSecurityConfigurationsRequest(input *ListSecurityConfiguration
 // API operation ListSecurityConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListSecurityConfigurations
 func (c *EMR) ListSecurityConfigurations(input *ListSecurityConfigurationsInput) (*ListSecurityConfigurationsOutput, error) {
@@ -2999,15 +2987,14 @@ func (c *EMR) ListSecurityConfigurationsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSecurityConfigurations operation.
-//    pageNum := 0
-//    err := client.ListSecurityConfigurationsPages(params,
-//        func(page *emr.ListSecurityConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSecurityConfigurations operation.
+//	pageNum := 0
+//	err := client.ListSecurityConfigurationsPages(params,
+//	    func(page *emr.ListSecurityConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListSecurityConfigurationsPages(input *ListSecurityConfigurationsInput, fn func(*ListSecurityConfigurationsOutput, bool) bool) error {
 	return c.ListSecurityConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3059,14 +3046,13 @@ const opListSteps = "ListSteps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStepsRequest method.
+//	req, resp := client.ListStepsRequest(params)
 //
-//    // Example sending a request using the ListStepsRequest method.
-//    req, resp := client.ListStepsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListSteps
 func (c *EMR) ListStepsRequest(input *ListStepsInput) (req *request.Request, output *ListStepsOutput) {
@@ -3107,12 +3093,13 @@ func (c *EMR) ListStepsRequest(input *ListStepsInput) (req *request.Request, out
 // API operation ListSteps for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListSteps
 func (c *EMR) ListSteps(input *ListStepsInput) (*ListStepsOutput, error) {
@@ -3144,15 +3131,14 @@ func (c *EMR) ListStepsWithContext(ctx aws.Context, input *ListStepsInput, opts 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSteps operation.
-//    pageNum := 0
-//    err := client.ListStepsPages(params,
-//        func(page *emr.ListStepsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSteps operation.
+//	pageNum := 0
+//	err := client.ListStepsPages(params,
+//	    func(page *emr.ListStepsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListStepsPages(input *ListStepsInput, fn func(*ListStepsOutput, bool) bool) error {
 	return c.ListStepsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3204,14 +3190,13 @@ const opListStudioSessionMappings = "ListStudioSessionMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStudioSessionMappingsRequest method.
+//	req, resp := client.ListStudioSessionMappingsRequest(params)
 //
-//    // Example sending a request using the ListStudioSessionMappingsRequest method.
-//    req, resp := client.ListStudioSessionMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListStudioSessionMappings
 func (c *EMR) ListStudioSessionMappingsRequest(input *ListStudioSessionMappingsInput) (req *request.Request, output *ListStudioSessionMappingsOutput) {
@@ -3249,12 +3234,13 @@ func (c *EMR) ListStudioSessionMappingsRequest(input *ListStudioSessionMappingsI
 // API operation ListStudioSessionMappings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListStudioSessionMappings
 func (c *EMR) ListStudioSessionMappings(input *ListStudioSessionMappingsInput) (*ListStudioSessionMappingsOutput, error) {
@@ -3286,15 +3272,14 @@ func (c *EMR) ListStudioSessionMappingsWithContext(ctx aws.Context, input *ListS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStudioSessionMappings operation.
-//    pageNum := 0
-//    err := client.ListStudioSessionMappingsPages(params,
-//        func(page *emr.ListStudioSessionMappingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStudioSessionMappings operation.
+//	pageNum := 0
+//	err := client.ListStudioSessionMappingsPages(params,
+//	    func(page *emr.ListStudioSessionMappingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListStudioSessionMappingsPages(input *ListStudioSessionMappingsInput, fn func(*ListStudioSessionMappingsOutput, bool) bool) error {
 	return c.ListStudioSessionMappingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3346,14 +3331,13 @@ const opListStudios = "ListStudios"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStudiosRequest method.
+//	req, resp := client.ListStudiosRequest(params)
 //
-//    // Example sending a request using the ListStudiosRequest method.
-//    req, resp := client.ListStudiosRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListStudios
 func (c *EMR) ListStudiosRequest(input *ListStudiosInput) (req *request.Request, output *ListStudiosOutput) {
@@ -3392,12 +3376,13 @@ func (c *EMR) ListStudiosRequest(input *ListStudiosInput) (req *request.Request,
 // API operation ListStudios for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ListStudios
 func (c *EMR) ListStudios(input *ListStudiosInput) (*ListStudiosOutput, error) {
@@ -3429,15 +3414,14 @@ func (c *EMR) ListStudiosWithContext(ctx aws.Context, input *ListStudiosInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStudios operation.
-//    pageNum := 0
-//    err := client.ListStudiosPages(params,
-//        func(page *emr.ListStudiosOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStudios operation.
+//	pageNum := 0
+//	err := client.ListStudiosPages(params,
+//	    func(page *emr.ListStudiosOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *EMR) ListStudiosPages(input *ListStudiosInput, fn func(*ListStudiosOutput, bool) bool) error {
 	return c.ListStudiosPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3489,14 +3473,13 @@ const opModifyCluster = "ModifyCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClusterRequest method.
+//	req, resp := client.ModifyClusterRequest(params)
 //
-//    // Example sending a request using the ModifyClusterRequest method.
-//    req, resp := client.ModifyClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyCluster
 func (c *EMR) ModifyClusterRequest(input *ModifyClusterInput) (req *request.Request, output *ModifyClusterOutput) {
@@ -3528,12 +3511,13 @@ func (c *EMR) ModifyClusterRequest(input *ModifyClusterInput) (req *request.Requ
 // API operation ModifyCluster for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyCluster
 func (c *EMR) ModifyCluster(input *ModifyClusterInput) (*ModifyClusterOutput, error) {
@@ -3573,14 +3557,13 @@ const opModifyInstanceFleet = "ModifyInstanceFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceFleetRequest method.
+//	req, resp := client.ModifyInstanceFleetRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceFleetRequest method.
-//    req, resp := client.ModifyInstanceFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyInstanceFleet
 func (c *EMR) ModifyInstanceFleetRequest(input *ModifyInstanceFleetInput) (req *request.Request, output *ModifyInstanceFleetOutput) {
@@ -3617,12 +3600,13 @@ func (c *EMR) ModifyInstanceFleetRequest(input *ModifyInstanceFleetInput) (req *
 // API operation ModifyInstanceFleet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyInstanceFleet
 func (c *EMR) ModifyInstanceFleet(input *ModifyInstanceFleetInput) (*ModifyInstanceFleetOutput, error) {
@@ -3662,14 +3646,13 @@ const opModifyInstanceGroups = "ModifyInstanceGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyInstanceGroupsRequest method.
+//	req, resp := client.ModifyInstanceGroupsRequest(params)
 //
-//    // Example sending a request using the ModifyInstanceGroupsRequest method.
-//    req, resp := client.ModifyInstanceGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyInstanceGroups
 func (c *EMR) ModifyInstanceGroupsRequest(input *ModifyInstanceGroupsInput) (req *request.Request, output *ModifyInstanceGroupsOutput) {
@@ -3704,9 +3687,9 @@ func (c *EMR) ModifyInstanceGroupsRequest(input *ModifyInstanceGroupsInput) (req
 // API operation ModifyInstanceGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/ModifyInstanceGroups
 func (c *EMR) ModifyInstanceGroups(input *ModifyInstanceGroupsInput) (*ModifyInstanceGroupsOutput, error) {
@@ -3746,14 +3729,13 @@ const opPutAutoScalingPolicy = "PutAutoScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAutoScalingPolicyRequest method.
+//	req, resp := client.PutAutoScalingPolicyRequest(params)
 //
-//    // Example sending a request using the PutAutoScalingPolicyRequest method.
-//    req, resp := client.PutAutoScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/PutAutoScalingPolicy
 func (c *EMR) PutAutoScalingPolicyRequest(input *PutAutoScalingPolicyInput) (req *request.Request, output *PutAutoScalingPolicyOutput) {
@@ -3823,14 +3805,13 @@ const opPutAutoTerminationPolicy = "PutAutoTerminationPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAutoTerminationPolicyRequest method.
+//	req, resp := client.PutAutoTerminationPolicyRequest(params)
 //
-//    // Example sending a request using the PutAutoTerminationPolicyRequest method.
-//    req, resp := client.PutAutoTerminationPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/PutAutoTerminationPolicy
 func (c *EMR) PutAutoTerminationPolicyRequest(input *PutAutoTerminationPolicyInput) (req *request.Request, output *PutAutoTerminationPolicyOutput) {
@@ -3851,7 +3832,6 @@ func (c *EMR) PutAutoTerminationPolicyRequest(input *PutAutoTerminationPolicyInp
 }
 
 // PutAutoTerminationPolicy API operation for Amazon EMR.
-//
 //
 // Auto-termination is supported in Amazon EMR versions 5.30.0 and 6.1.0 and
 // later. For more information, see Using an auto-termination policy (https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-auto-termination-policy.html).
@@ -3905,14 +3885,13 @@ const opPutBlockPublicAccessConfiguration = "PutBlockPublicAccessConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBlockPublicAccessConfigurationRequest method.
+//	req, resp := client.PutBlockPublicAccessConfigurationRequest(params)
 //
-//    // Example sending a request using the PutBlockPublicAccessConfigurationRequest method.
-//    req, resp := client.PutBlockPublicAccessConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/PutBlockPublicAccessConfiguration
 func (c *EMR) PutBlockPublicAccessConfigurationRequest(input *PutBlockPublicAccessConfigurationInput) (req *request.Request, output *PutBlockPublicAccessConfigurationOutput) {
@@ -3947,12 +3926,13 @@ func (c *EMR) PutBlockPublicAccessConfigurationRequest(input *PutBlockPublicAcce
 // API operation PutBlockPublicAccessConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/PutBlockPublicAccessConfiguration
 func (c *EMR) PutBlockPublicAccessConfiguration(input *PutBlockPublicAccessConfigurationInput) (*PutBlockPublicAccessConfigurationOutput, error) {
@@ -3992,14 +3972,13 @@ const opPutManagedScalingPolicy = "PutManagedScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutManagedScalingPolicyRequest method.
+//	req, resp := client.PutManagedScalingPolicyRequest(params)
 //
-//    // Example sending a request using the PutManagedScalingPolicyRequest method.
-//    req, resp := client.PutManagedScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/PutManagedScalingPolicy
 func (c *EMR) PutManagedScalingPolicyRequest(input *PutManagedScalingPolicyInput) (req *request.Request, output *PutManagedScalingPolicyOutput) {
@@ -4070,14 +4049,13 @@ const opRemoveAutoScalingPolicy = "RemoveAutoScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveAutoScalingPolicyRequest method.
+//	req, resp := client.RemoveAutoScalingPolicyRequest(params)
 //
-//    // Example sending a request using the RemoveAutoScalingPolicyRequest method.
-//    req, resp := client.RemoveAutoScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RemoveAutoScalingPolicy
 func (c *EMR) RemoveAutoScalingPolicyRequest(input *RemoveAutoScalingPolicyInput) (req *request.Request, output *RemoveAutoScalingPolicyOutput) {
@@ -4146,14 +4124,13 @@ const opRemoveAutoTerminationPolicy = "RemoveAutoTerminationPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveAutoTerminationPolicyRequest method.
+//	req, resp := client.RemoveAutoTerminationPolicyRequest(params)
 //
-//    // Example sending a request using the RemoveAutoTerminationPolicyRequest method.
-//    req, resp := client.RemoveAutoTerminationPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RemoveAutoTerminationPolicy
 func (c *EMR) RemoveAutoTerminationPolicyRequest(input *RemoveAutoTerminationPolicyInput) (req *request.Request, output *RemoveAutoTerminationPolicyOutput) {
@@ -4221,14 +4198,13 @@ const opRemoveManagedScalingPolicy = "RemoveManagedScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveManagedScalingPolicyRequest method.
+//	req, resp := client.RemoveManagedScalingPolicyRequest(params)
 //
-//    // Example sending a request using the RemoveManagedScalingPolicyRequest method.
-//    req, resp := client.RemoveManagedScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RemoveManagedScalingPolicy
 func (c *EMR) RemoveManagedScalingPolicyRequest(input *RemoveManagedScalingPolicyInput) (req *request.Request, output *RemoveManagedScalingPolicyOutput) {
@@ -4296,14 +4272,13 @@ const opRemoveTags = "RemoveTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsRequest method.
+//	req, resp := client.RemoveTagsRequest(params)
 //
-//    // Example sending a request using the RemoveTagsRequest method.
-//    req, resp := client.RemoveTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RemoveTags
 func (c *EMR) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request, output *RemoveTagsOutput) {
@@ -4340,12 +4315,13 @@ func (c *EMR) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request, o
 // API operation RemoveTags for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RemoveTags
 func (c *EMR) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
@@ -4385,14 +4361,13 @@ const opRunJobFlow = "RunJobFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RunJobFlowRequest method.
+//	req, resp := client.RunJobFlowRequest(params)
 //
-//    // Example sending a request using the RunJobFlowRequest method.
-//    req, resp := client.RunJobFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RunJobFlow
 func (c *EMR) RunJobFlowRequest(input *RunJobFlowInput) (req *request.Request, output *RunJobFlowOutput) {
@@ -4449,9 +4424,9 @@ func (c *EMR) RunJobFlowRequest(input *RunJobFlowInput) (req *request.Request, o
 // API operation RunJobFlow for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/RunJobFlow
 func (c *EMR) RunJobFlow(input *RunJobFlowInput) (*RunJobFlowOutput, error) {
@@ -4491,14 +4466,13 @@ const opSetTerminationProtection = "SetTerminationProtection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetTerminationProtectionRequest method.
+//	req, resp := client.SetTerminationProtectionRequest(params)
 //
-//    // Example sending a request using the SetTerminationProtectionRequest method.
-//    req, resp := client.SetTerminationProtectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/SetTerminationProtection
 func (c *EMR) SetTerminationProtectionRequest(input *SetTerminationProtectionInput) (req *request.Request, output *SetTerminationProtectionOutput) {
@@ -4546,9 +4520,9 @@ func (c *EMR) SetTerminationProtectionRequest(input *SetTerminationProtectionInp
 // API operation SetTerminationProtection for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/SetTerminationProtection
 func (c *EMR) SetTerminationProtection(input *SetTerminationProtectionInput) (*SetTerminationProtectionOutput, error) {
@@ -4588,14 +4562,13 @@ const opSetVisibleToAllUsers = "SetVisibleToAllUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetVisibleToAllUsersRequest method.
+//	req, resp := client.SetVisibleToAllUsersRequest(params)
 //
-//    // Example sending a request using the SetVisibleToAllUsersRequest method.
-//    req, resp := client.SetVisibleToAllUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/SetVisibleToAllUsers
 func (c *EMR) SetVisibleToAllUsersRequest(input *SetVisibleToAllUsersInput) (req *request.Request, output *SetVisibleToAllUsersOutput) {
@@ -4616,7 +4589,6 @@ func (c *EMR) SetVisibleToAllUsersRequest(input *SetVisibleToAllUsersInput) (req
 }
 
 // SetVisibleToAllUsers API operation for Amazon EMR.
-//
 //
 // The SetVisibleToAllUsers parameter is no longer supported. Your cluster may
 // be visible to all users in your account. To restrict cluster access using
@@ -4644,9 +4616,9 @@ func (c *EMR) SetVisibleToAllUsersRequest(input *SetVisibleToAllUsersInput) (req
 // API operation SetVisibleToAllUsers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/SetVisibleToAllUsers
 func (c *EMR) SetVisibleToAllUsers(input *SetVisibleToAllUsersInput) (*SetVisibleToAllUsersOutput, error) {
@@ -4686,14 +4658,13 @@ const opStartNotebookExecution = "StartNotebookExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartNotebookExecutionRequest method.
+//	req, resp := client.StartNotebookExecutionRequest(params)
 //
-//    // Example sending a request using the StartNotebookExecutionRequest method.
-//    req, resp := client.StartNotebookExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/StartNotebookExecution
 func (c *EMR) StartNotebookExecutionRequest(input *StartNotebookExecutionInput) (req *request.Request, output *StartNotebookExecutionOutput) {
@@ -4724,12 +4695,13 @@ func (c *EMR) StartNotebookExecutionRequest(input *StartNotebookExecutionInput) 
 // API operation StartNotebookExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/StartNotebookExecution
 func (c *EMR) StartNotebookExecution(input *StartNotebookExecutionInput) (*StartNotebookExecutionOutput, error) {
@@ -4769,14 +4741,13 @@ const opStopNotebookExecution = "StopNotebookExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopNotebookExecutionRequest method.
+//	req, resp := client.StopNotebookExecutionRequest(params)
 //
-//    // Example sending a request using the StopNotebookExecutionRequest method.
-//    req, resp := client.StopNotebookExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/StopNotebookExecution
 func (c *EMR) StopNotebookExecutionRequest(input *StopNotebookExecutionInput) (req *request.Request, output *StopNotebookExecutionOutput) {
@@ -4808,12 +4779,13 @@ func (c *EMR) StopNotebookExecutionRequest(input *StopNotebookExecutionInput) (r
 // API operation StopNotebookExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/StopNotebookExecution
 func (c *EMR) StopNotebookExecution(input *StopNotebookExecutionInput) (*StopNotebookExecutionOutput, error) {
@@ -4853,14 +4825,13 @@ const opTerminateJobFlows = "TerminateJobFlows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateJobFlowsRequest method.
+//	req, resp := client.TerminateJobFlowsRequest(params)
 //
-//    // Example sending a request using the TerminateJobFlowsRequest method.
-//    req, resp := client.TerminateJobFlowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/TerminateJobFlows
 func (c *EMR) TerminateJobFlowsRequest(input *TerminateJobFlowsInput) (req *request.Request, output *TerminateJobFlowsOutput) {
@@ -4901,9 +4872,9 @@ func (c *EMR) TerminateJobFlowsRequest(input *TerminateJobFlowsInput) (req *requ
 // API operation TerminateJobFlows for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/TerminateJobFlows
 func (c *EMR) TerminateJobFlows(input *TerminateJobFlowsInput) (*TerminateJobFlowsOutput, error) {
@@ -4943,14 +4914,13 @@ const opUpdateStudio = "UpdateStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStudioRequest method.
+//	req, resp := client.UpdateStudioRequest(params)
 //
-//    // Example sending a request using the UpdateStudioRequest method.
-//    req, resp := client.UpdateStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/UpdateStudio
 func (c *EMR) UpdateStudioRequest(input *UpdateStudioInput) (req *request.Request, output *UpdateStudioOutput) {
@@ -4983,12 +4953,13 @@ func (c *EMR) UpdateStudioRequest(input *UpdateStudioInput) (req *request.Reques
 // API operation UpdateStudio for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon EMR
-//   service.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon EMR
+//     service.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/UpdateStudio
 func (c *EMR) UpdateStudio(input *UpdateStudioInput) (*UpdateStudioOutput, error) {
@@ -5028,14 +4999,13 @@ const opUpdateStudioSessionMapping = "UpdateStudioSessionMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStudioSessionMappingRequest method.
+//	req, resp := client.UpdateStudioSessionMappingRequest(params)
 //
-//    // Example sending a request using the UpdateStudioSessionMappingRequest method.
-//    req, resp := client.UpdateStudioSessionMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/UpdateStudioSessionMapping
 func (c *EMR) UpdateStudioSessionMappingRequest(input *UpdateStudioSessionMappingInput) (req *request.Request, output *UpdateStudioSessionMappingOutput) {
@@ -5068,12 +5038,13 @@ func (c *EMR) UpdateStudioSessionMappingRequest(input *UpdateStudioSessionMappin
 // API operation UpdateStudioSessionMapping for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Indicates that an error occurred while processing the request and that the
-//   request was not completed.
 //
-//   * InvalidRequestException
-//   This exception occurs when there is something wrong with user input.
+//   - InternalServerError
+//     Indicates that an error occurred while processing the request and that the
+//     request was not completed.
+//
+//   - InvalidRequestException
+//     This exception occurs when there is something wrong with user input.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticmapreduce-2009-03-31/UpdateStudioSessionMapping
 func (c *EMR) UpdateStudioSessionMapping(input *UpdateStudioSessionMappingInput) (*UpdateStudioSessionMappingOutput, error) {
@@ -7123,7 +7094,6 @@ func (s *ComputeLimits) SetUnitType(v string) *ComputeLimits {
 	return s
 }
 
-//
 // Amazon EMR releases 4.x or later.
 //
 // An optional configuration specification to be used when provisioning cluster

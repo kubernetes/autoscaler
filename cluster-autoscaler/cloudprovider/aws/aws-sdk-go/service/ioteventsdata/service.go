@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTEventsData client from just a session.
-//     svc := ioteventsdata.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTEventsData client with additional configuration
-//     svc := ioteventsdata.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoTEventsData client from just a session.
+//	svc := ioteventsdata.New(mySession)
+//
+//	// Create a IoTEventsData client with additional configuration
+//	svc := ioteventsdata.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoTEventsData {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

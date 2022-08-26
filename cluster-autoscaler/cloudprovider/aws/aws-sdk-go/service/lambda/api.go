@@ -30,14 +30,13 @@ const opAddLayerVersionPermission = "AddLayerVersionPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddLayerVersionPermissionRequest method.
+//	req, resp := client.AddLayerVersionPermissionRequest(params)
 //
-//    // Example sending a request using the AddLayerVersionPermissionRequest method.
-//    req, resp := client.AddLayerVersionPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddLayerVersionPermission
 func (c *Lambda) AddLayerVersionPermissionRequest(input *AddLayerVersionPermissionInput) (req *request.Request, output *AddLayerVersionPermissionOutput) {
@@ -75,28 +74,29 @@ func (c *Lambda) AddLayerVersionPermissionRequest(input *AddLayerVersionPermissi
 // API operation AddLayerVersionPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * PolicyLengthExceededException
-//   The permissions policy for the resource is too large. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - PolicyLengthExceededException
+//     The permissions policy for the resource is too large. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddLayerVersionPermission
 func (c *Lambda) AddLayerVersionPermission(input *AddLayerVersionPermissionInput) (*AddLayerVersionPermissionOutput, error) {
@@ -136,14 +136,13 @@ const opAddPermission = "AddPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddPermissionRequest method.
+//	req, resp := client.AddPermissionRequest(params)
 //
-//    // Example sending a request using the AddPermissionRequest method.
-//    req, resp := client.AddPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermission
 func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.Request, output *AddPermissionOutput) {
@@ -192,28 +191,29 @@ func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.R
 // API operation AddPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * PolicyLengthExceededException
-//   The permissions policy for the resource is too large. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - PolicyLengthExceededException
+//     The permissions policy for the resource is too large. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermission
 func (c *Lambda) AddPermission(input *AddPermissionInput) (*AddPermissionOutput, error) {
@@ -253,14 +253,13 @@ const opCreateAlias = "CreateAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAliasRequest method.
+//	req, resp := client.CreateAliasRequest(params)
 //
-//    // Example sending a request using the CreateAliasRequest method.
-//    req, resp := client.CreateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateAlias
 func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *AliasConfiguration) {
@@ -297,20 +296,21 @@ func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Reque
 // API operation CreateAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateAlias
 func (c *Lambda) CreateAlias(input *CreateAliasInput) (*AliasConfiguration, error) {
@@ -350,14 +350,13 @@ const opCreateCodeSigningConfig = "CreateCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCodeSigningConfigRequest method.
+//	req, resp := client.CreateCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the CreateCodeSigningConfigRequest method.
-//    req, resp := client.CreateCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateCodeSigningConfig
 func (c *Lambda) CreateCodeSigningConfigRequest(input *CreateCodeSigningConfigInput) (req *request.Request, output *CreateCodeSigningConfigOutput) {
@@ -390,11 +389,12 @@ func (c *Lambda) CreateCodeSigningConfigRequest(input *CreateCodeSigningConfigIn
 // API operation CreateCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateCodeSigningConfig
 func (c *Lambda) CreateCodeSigningConfig(input *CreateCodeSigningConfigInput) (*CreateCodeSigningConfigOutput, error) {
@@ -434,14 +434,13 @@ const opCreateEventSourceMapping = "CreateEventSourceMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventSourceMappingRequest method.
+//	req, resp := client.CreateEventSourceMappingRequest(params)
 //
-//    // Example sending a request using the CreateEventSourceMappingRequest method.
-//    req, resp := client.CreateEventSourceMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateEventSourceMapping
 func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
@@ -468,51 +467,51 @@ func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMapping
 // For details about how to configure different event sources, see the following
 // topics.
 //
-//    * Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-dynamodb-eventsourcemapping)
+//   - Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-dynamodb-eventsourcemapping)
 //
-//    * Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-eventsourcemapping)
+//   - Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-eventsourcemapping)
 //
-//    * Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-eventsource)
+//   - Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-eventsource)
 //
-//    * Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-eventsourcemapping)
+//   - Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-eventsourcemapping)
 //
-//    * Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html)
+//   - Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html)
 //
-//    * Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/kafka-smaa.html)
+//   - Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/kafka-smaa.html)
 //
 // The following error handling options are only available for stream sources
 // (DynamoDB and Kinesis):
 //
-//    * BisectBatchOnFunctionError - If the function returns an error, split
-//    the batch in two and retry.
+//   - BisectBatchOnFunctionError - If the function returns an error, split
+//     the batch in two and retry.
 //
-//    * DestinationConfig - Send discarded records to an Amazon SQS queue or
-//    Amazon SNS topic.
+//   - DestinationConfig - Send discarded records to an Amazon SQS queue or
+//     Amazon SNS topic.
 //
-//    * MaximumRecordAgeInSeconds - Discard records older than the specified
-//    age. The default value is infinite (-1). When set to infinite (-1), failed
-//    records are retried until the record expires
+//   - MaximumRecordAgeInSeconds - Discard records older than the specified
+//     age. The default value is infinite (-1). When set to infinite (-1), failed
+//     records are retried until the record expires
 //
-//    * MaximumRetryAttempts - Discard records after the specified number of
-//    retries. The default value is infinite (-1). When set to infinite (-1),
-//    failed records are retried until the record expires.
+//   - MaximumRetryAttempts - Discard records after the specified number of
+//     retries. The default value is infinite (-1). When set to infinite (-1),
+//     failed records are retried until the record expires.
 //
-//    * ParallelizationFactor - Process multiple batches from each shard concurrently.
+//   - ParallelizationFactor - Process multiple batches from each shard concurrently.
 //
 // For information about which configuration parameters apply to each event
 // source, see the following topics.
 //
-//    * Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-params)
+//   - Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-params)
 //
-//    * Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-params)
+//   - Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-params)
 //
-//    * Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-params)
+//   - Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-params)
 //
-//    * Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-params)
+//   - Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-params)
 //
-//    * Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html#services-msk-parms)
+//   - Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html#services-msk-parms)
 //
-//    * Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html#services-kafka-parms)
+//   - Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html#services-kafka-parms)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -522,20 +521,21 @@ func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMapping
 // API operation CreateEventSourceMapping for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateEventSourceMapping
 func (c *Lambda) CreateEventSourceMapping(input *CreateEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
@@ -575,14 +575,13 @@ const opCreateFunction = "CreateFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFunctionRequest method.
+//	req, resp := client.CreateFunctionRequest(params)
 //
-//    // Example sending a request using the CreateFunctionRequest method.
-//    req, resp := client.CreateFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunction
 func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request.Request, output *FunctionConfiguration) {
@@ -670,35 +669,36 @@ func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request
 // API operation CreateFunction for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * CodeStorageExceededException
-//   You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * CodeVerificationFailedException
-//   The code signature failed one or more of the validation checks for signature
-//   mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
-//   blocks the deployment.
+//   - CodeStorageExceededException
+//     You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
-//   * InvalidCodeSignatureException
-//   The code signature failed the integrity check. Lambda always blocks deployment
-//   if the integrity check fails, even if code signing policy is set to WARN.
+//   - CodeVerificationFailedException
+//     The code signature failed one or more of the validation checks for signature
+//     mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
+//     blocks the deployment.
 //
-//   * CodeSigningConfigNotFoundException
-//   The specified code signing configuration does not exist.
+//   - InvalidCodeSignatureException
+//     The code signature failed the integrity check. Lambda always blocks deployment
+//     if the integrity check fails, even if code signing policy is set to WARN.
+//
+//   - CodeSigningConfigNotFoundException
+//     The specified code signing configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunction
 func (c *Lambda) CreateFunction(input *CreateFunctionInput) (*FunctionConfiguration, error) {
@@ -738,14 +738,13 @@ const opCreateFunctionUrlConfig = "CreateFunctionUrlConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFunctionUrlConfigRequest method.
+//	req, resp := client.CreateFunctionUrlConfigRequest(params)
 //
-//    // Example sending a request using the CreateFunctionUrlConfigRequest method.
-//    req, resp := client.CreateFunctionUrlConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunctionUrlConfig
 func (c *Lambda) CreateFunctionUrlConfigRequest(input *CreateFunctionUrlConfigInput) (req *request.Request, output *CreateFunctionUrlConfigOutput) {
@@ -778,20 +777,21 @@ func (c *Lambda) CreateFunctionUrlConfigRequest(input *CreateFunctionUrlConfigIn
 // API operation CreateFunctionUrlConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunctionUrlConfig
 func (c *Lambda) CreateFunctionUrlConfig(input *CreateFunctionUrlConfigInput) (*CreateFunctionUrlConfigOutput, error) {
@@ -831,14 +831,13 @@ const opDeleteAlias = "DeleteAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAliasRequest method.
+//	req, resp := client.DeleteAliasRequest(params)
 //
-//    // Example sending a request using the DeleteAliasRequest method.
-//    req, resp := client.DeleteAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAlias
 func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request, output *DeleteAliasOutput) {
@@ -870,17 +869,18 @@ func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Reque
 // API operation DeleteAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAlias
 func (c *Lambda) DeleteAlias(input *DeleteAliasInput) (*DeleteAliasOutput, error) {
@@ -920,14 +920,13 @@ const opDeleteCodeSigningConfig = "DeleteCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCodeSigningConfigRequest method.
+//	req, resp := client.DeleteCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the DeleteCodeSigningConfigRequest method.
-//    req, resp := client.DeleteCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteCodeSigningConfig
 func (c *Lambda) DeleteCodeSigningConfigRequest(input *DeleteCodeSigningConfigInput) (req *request.Request, output *DeleteCodeSigningConfigOutput) {
@@ -960,17 +959,18 @@ func (c *Lambda) DeleteCodeSigningConfigRequest(input *DeleteCodeSigningConfigIn
 // API operation DeleteCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteCodeSigningConfig
 func (c *Lambda) DeleteCodeSigningConfig(input *DeleteCodeSigningConfigInput) (*DeleteCodeSigningConfigOutput, error) {
@@ -1010,14 +1010,13 @@ const opDeleteEventSourceMapping = "DeleteEventSourceMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventSourceMappingRequest method.
+//	req, resp := client.DeleteEventSourceMappingRequest(params)
 //
-//    // Example sending a request using the DeleteEventSourceMappingRequest method.
-//    req, resp := client.DeleteEventSourceMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteEventSourceMapping
 func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
@@ -1052,22 +1051,23 @@ func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMapping
 // API operation DeleteEventSourceMapping for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceInUseException
-//   The operation conflicts with the resource's availability. For example, you
-//   attempted to update an EventSource Mapping in CREATING, or tried to delete
-//   a EventSource mapping currently in the UPDATING state.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceInUseException
+//     The operation conflicts with the resource's availability. For example, you
+//     attempted to update an EventSource Mapping in CREATING, or tried to delete
+//     a EventSource mapping currently in the UPDATING state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteEventSourceMapping
 func (c *Lambda) DeleteEventSourceMapping(input *DeleteEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
@@ -1107,14 +1107,13 @@ const opDeleteFunction = "DeleteFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionRequest method.
+//	req, resp := client.DeleteFunctionRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionRequest method.
-//    req, resp := client.DeleteFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunction
 func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request.Request, output *DeleteFunctionOutput) {
@@ -1152,20 +1151,21 @@ func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request
 // API operation DeleteFunction for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunction
 func (c *Lambda) DeleteFunction(input *DeleteFunctionInput) (*DeleteFunctionOutput, error) {
@@ -1205,14 +1205,13 @@ const opDeleteFunctionCodeSigningConfig = "DeleteFunctionCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionCodeSigningConfigRequest method.
+//	req, resp := client.DeleteFunctionCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionCodeSigningConfigRequest method.
-//    req, resp := client.DeleteFunctionCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionCodeSigningConfig
 func (c *Lambda) DeleteFunctionCodeSigningConfigRequest(input *DeleteFunctionCodeSigningConfigInput) (req *request.Request, output *DeleteFunctionCodeSigningConfigOutput) {
@@ -1244,23 +1243,24 @@ func (c *Lambda) DeleteFunctionCodeSigningConfigRequest(input *DeleteFunctionCod
 // API operation DeleteFunctionCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * CodeSigningConfigNotFoundException
-//   The specified code signing configuration does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - CodeSigningConfigNotFoundException
+//     The specified code signing configuration does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionCodeSigningConfig
 func (c *Lambda) DeleteFunctionCodeSigningConfig(input *DeleteFunctionCodeSigningConfigInput) (*DeleteFunctionCodeSigningConfigOutput, error) {
@@ -1300,14 +1300,13 @@ const opDeleteFunctionConcurrency = "DeleteFunctionConcurrency"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionConcurrencyRequest method.
+//	req, resp := client.DeleteFunctionConcurrencyRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionConcurrencyRequest method.
-//    req, resp := client.DeleteFunctionConcurrencyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrency
 func (c *Lambda) DeleteFunctionConcurrencyRequest(input *DeleteFunctionConcurrencyInput) (req *request.Request, output *DeleteFunctionConcurrencyOutput) {
@@ -1339,20 +1338,21 @@ func (c *Lambda) DeleteFunctionConcurrencyRequest(input *DeleteFunctionConcurren
 // API operation DeleteFunctionConcurrency for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrency
 func (c *Lambda) DeleteFunctionConcurrency(input *DeleteFunctionConcurrencyInput) (*DeleteFunctionConcurrencyOutput, error) {
@@ -1392,14 +1392,13 @@ const opDeleteFunctionEventInvokeConfig = "DeleteFunctionEventInvokeConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionEventInvokeConfigRequest method.
+//	req, resp := client.DeleteFunctionEventInvokeConfigRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionEventInvokeConfigRequest method.
-//    req, resp := client.DeleteFunctionEventInvokeConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionEventInvokeConfig
 func (c *Lambda) DeleteFunctionEventInvokeConfigRequest(input *DeleteFunctionEventInvokeConfigInput) (req *request.Request, output *DeleteFunctionEventInvokeConfigOutput) {
@@ -1434,20 +1433,21 @@ func (c *Lambda) DeleteFunctionEventInvokeConfigRequest(input *DeleteFunctionEve
 // API operation DeleteFunctionEventInvokeConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionEventInvokeConfig
 func (c *Lambda) DeleteFunctionEventInvokeConfig(input *DeleteFunctionEventInvokeConfigInput) (*DeleteFunctionEventInvokeConfigOutput, error) {
@@ -1487,14 +1487,13 @@ const opDeleteFunctionUrlConfig = "DeleteFunctionUrlConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionUrlConfigRequest method.
+//	req, resp := client.DeleteFunctionUrlConfigRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionUrlConfigRequest method.
-//    req, resp := client.DeleteFunctionUrlConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionUrlConfig
 func (c *Lambda) DeleteFunctionUrlConfigRequest(input *DeleteFunctionUrlConfigInput) (req *request.Request, output *DeleteFunctionUrlConfigOutput) {
@@ -1527,17 +1526,18 @@ func (c *Lambda) DeleteFunctionUrlConfigRequest(input *DeleteFunctionUrlConfigIn
 // API operation DeleteFunctionUrlConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionUrlConfig
 func (c *Lambda) DeleteFunctionUrlConfig(input *DeleteFunctionUrlConfigInput) (*DeleteFunctionUrlConfigOutput, error) {
@@ -1577,14 +1577,13 @@ const opDeleteLayerVersion = "DeleteLayerVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLayerVersionRequest method.
+//	req, resp := client.DeleteLayerVersionRequest(params)
 //
-//    // Example sending a request using the DeleteLayerVersionRequest method.
-//    req, resp := client.DeleteLayerVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteLayerVersion
 func (c *Lambda) DeleteLayerVersionRequest(input *DeleteLayerVersionInput) (req *request.Request, output *DeleteLayerVersionOutput) {
@@ -1619,11 +1618,12 @@ func (c *Lambda) DeleteLayerVersionRequest(input *DeleteLayerVersionInput) (req 
 // API operation DeleteLayerVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteLayerVersion
 func (c *Lambda) DeleteLayerVersion(input *DeleteLayerVersionInput) (*DeleteLayerVersionOutput, error) {
@@ -1663,14 +1663,13 @@ const opDeleteProvisionedConcurrencyConfig = "DeleteProvisionedConcurrencyConfig
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProvisionedConcurrencyConfigRequest method.
+//	req, resp := client.DeleteProvisionedConcurrencyConfigRequest(params)
 //
-//    // Example sending a request using the DeleteProvisionedConcurrencyConfigRequest method.
-//    req, resp := client.DeleteProvisionedConcurrencyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteProvisionedConcurrencyConfig
 func (c *Lambda) DeleteProvisionedConcurrencyConfigRequest(input *DeleteProvisionedConcurrencyConfigInput) (req *request.Request, output *DeleteProvisionedConcurrencyConfigOutput) {
@@ -1702,20 +1701,21 @@ func (c *Lambda) DeleteProvisionedConcurrencyConfigRequest(input *DeleteProvisio
 // API operation DeleteProvisionedConcurrencyConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteProvisionedConcurrencyConfig
 func (c *Lambda) DeleteProvisionedConcurrencyConfig(input *DeleteProvisionedConcurrencyConfigInput) (*DeleteProvisionedConcurrencyConfigOutput, error) {
@@ -1755,14 +1755,13 @@ const opGetAccountSettings = "GetAccountSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountSettingsRequest method.
+//	req, resp := client.GetAccountSettingsRequest(params)
 //
-//    // Example sending a request using the GetAccountSettingsRequest method.
-//    req, resp := client.GetAccountSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettings
 func (c *Lambda) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req *request.Request, output *GetAccountSettingsOutput) {
@@ -1794,11 +1793,12 @@ func (c *Lambda) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req 
 // API operation GetAccountSettings for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettings
 func (c *Lambda) GetAccountSettings(input *GetAccountSettingsInput) (*GetAccountSettingsOutput, error) {
@@ -1838,14 +1838,13 @@ const opGetAlias = "GetAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAliasRequest method.
+//	req, resp := client.GetAliasRequest(params)
 //
-//    // Example sending a request using the GetAliasRequest method.
-//    req, resp := client.GetAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAlias
 func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, output *AliasConfiguration) {
@@ -1876,17 +1875,18 @@ func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, ou
 // API operation GetAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAlias
 func (c *Lambda) GetAlias(input *GetAliasInput) (*AliasConfiguration, error) {
@@ -1926,14 +1926,13 @@ const opGetCodeSigningConfig = "GetCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCodeSigningConfigRequest method.
+//	req, resp := client.GetCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the GetCodeSigningConfigRequest method.
-//    req, resp := client.GetCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetCodeSigningConfig
 func (c *Lambda) GetCodeSigningConfigRequest(input *GetCodeSigningConfigInput) (req *request.Request, output *GetCodeSigningConfigOutput) {
@@ -1964,14 +1963,15 @@ func (c *Lambda) GetCodeSigningConfigRequest(input *GetCodeSigningConfigInput) (
 // API operation GetCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetCodeSigningConfig
 func (c *Lambda) GetCodeSigningConfig(input *GetCodeSigningConfigInput) (*GetCodeSigningConfigOutput, error) {
@@ -2011,14 +2011,13 @@ const opGetEventSourceMapping = "GetEventSourceMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEventSourceMappingRequest method.
+//	req, resp := client.GetEventSourceMappingRequest(params)
 //
-//    // Example sending a request using the GetEventSourceMappingRequest method.
-//    req, resp := client.GetEventSourceMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetEventSourceMapping
 func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
@@ -2050,17 +2049,18 @@ func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput)
 // API operation GetEventSourceMapping for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetEventSourceMapping
 func (c *Lambda) GetEventSourceMapping(input *GetEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
@@ -2100,14 +2100,13 @@ const opGetFunction = "GetFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionRequest method.
+//	req, resp := client.GetFunctionRequest(params)
 //
-//    // Example sending a request using the GetFunctionRequest method.
-//    req, resp := client.GetFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunction
 func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Request, output *GetFunctionOutput) {
@@ -2140,17 +2139,18 @@ func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Reque
 // API operation GetFunction for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunction
 func (c *Lambda) GetFunction(input *GetFunctionInput) (*GetFunctionOutput, error) {
@@ -2190,14 +2190,13 @@ const opGetFunctionCodeSigningConfig = "GetFunctionCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionCodeSigningConfigRequest method.
+//	req, resp := client.GetFunctionCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the GetFunctionCodeSigningConfigRequest method.
-//    req, resp := client.GetFunctionCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionCodeSigningConfig
 func (c *Lambda) GetFunctionCodeSigningConfigRequest(input *GetFunctionCodeSigningConfigInput) (req *request.Request, output *GetFunctionCodeSigningConfigOutput) {
@@ -2228,17 +2227,18 @@ func (c *Lambda) GetFunctionCodeSigningConfigRequest(input *GetFunctionCodeSigni
 // API operation GetFunctionCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionCodeSigningConfig
 func (c *Lambda) GetFunctionCodeSigningConfig(input *GetFunctionCodeSigningConfigInput) (*GetFunctionCodeSigningConfigOutput, error) {
@@ -2278,14 +2278,13 @@ const opGetFunctionConcurrency = "GetFunctionConcurrency"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionConcurrencyRequest method.
+//	req, resp := client.GetFunctionConcurrencyRequest(params)
 //
-//    // Example sending a request using the GetFunctionConcurrencyRequest method.
-//    req, resp := client.GetFunctionConcurrencyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConcurrency
 func (c *Lambda) GetFunctionConcurrencyRequest(input *GetFunctionConcurrencyInput) (req *request.Request, output *GetFunctionConcurrencyOutput) {
@@ -2317,17 +2316,18 @@ func (c *Lambda) GetFunctionConcurrencyRequest(input *GetFunctionConcurrencyInpu
 // API operation GetFunctionConcurrency for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConcurrency
 func (c *Lambda) GetFunctionConcurrency(input *GetFunctionConcurrencyInput) (*GetFunctionConcurrencyOutput, error) {
@@ -2367,14 +2367,13 @@ const opGetFunctionConfiguration = "GetFunctionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionConfigurationRequest method.
+//	req, resp := client.GetFunctionConfigurationRequest(params)
 //
-//    // Example sending a request using the GetFunctionConfigurationRequest method.
-//    req, resp := client.GetFunctionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConfiguration
 func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
@@ -2410,17 +2409,18 @@ func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfiguration
 // API operation GetFunctionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConfiguration
 func (c *Lambda) GetFunctionConfiguration(input *GetFunctionConfigurationInput) (*FunctionConfiguration, error) {
@@ -2460,14 +2460,13 @@ const opGetFunctionEventInvokeConfig = "GetFunctionEventInvokeConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionEventInvokeConfigRequest method.
+//	req, resp := client.GetFunctionEventInvokeConfigRequest(params)
 //
-//    // Example sending a request using the GetFunctionEventInvokeConfigRequest method.
-//    req, resp := client.GetFunctionEventInvokeConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionEventInvokeConfig
 func (c *Lambda) GetFunctionEventInvokeConfigRequest(input *GetFunctionEventInvokeConfigInput) (req *request.Request, output *GetFunctionEventInvokeConfigOutput) {
@@ -2501,17 +2500,18 @@ func (c *Lambda) GetFunctionEventInvokeConfigRequest(input *GetFunctionEventInvo
 // API operation GetFunctionEventInvokeConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionEventInvokeConfig
 func (c *Lambda) GetFunctionEventInvokeConfig(input *GetFunctionEventInvokeConfigInput) (*GetFunctionEventInvokeConfigOutput, error) {
@@ -2551,14 +2551,13 @@ const opGetFunctionUrlConfig = "GetFunctionUrlConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionUrlConfigRequest method.
+//	req, resp := client.GetFunctionUrlConfigRequest(params)
 //
-//    // Example sending a request using the GetFunctionUrlConfigRequest method.
-//    req, resp := client.GetFunctionUrlConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionUrlConfig
 func (c *Lambda) GetFunctionUrlConfigRequest(input *GetFunctionUrlConfigInput) (req *request.Request, output *GetFunctionUrlConfigOutput) {
@@ -2589,17 +2588,18 @@ func (c *Lambda) GetFunctionUrlConfigRequest(input *GetFunctionUrlConfigInput) (
 // API operation GetFunctionUrlConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionUrlConfig
 func (c *Lambda) GetFunctionUrlConfig(input *GetFunctionUrlConfigInput) (*GetFunctionUrlConfigOutput, error) {
@@ -2639,14 +2639,13 @@ const opGetLayerVersion = "GetLayerVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLayerVersionRequest method.
+//	req, resp := client.GetLayerVersionRequest(params)
 //
-//    // Example sending a request using the GetLayerVersionRequest method.
-//    req, resp := client.GetLayerVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersion
 func (c *Lambda) GetLayerVersionRequest(input *GetLayerVersionInput) (req *request.Request, output *GetLayerVersionOutput) {
@@ -2678,17 +2677,18 @@ func (c *Lambda) GetLayerVersionRequest(input *GetLayerVersionInput) (req *reque
 // API operation GetLayerVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersion
 func (c *Lambda) GetLayerVersion(input *GetLayerVersionInput) (*GetLayerVersionOutput, error) {
@@ -2728,14 +2728,13 @@ const opGetLayerVersionByArn = "GetLayerVersionByArn"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLayerVersionByArnRequest method.
+//	req, resp := client.GetLayerVersionByArnRequest(params)
 //
-//    // Example sending a request using the GetLayerVersionByArnRequest method.
-//    req, resp := client.GetLayerVersionByArnRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersionByArn
 func (c *Lambda) GetLayerVersionByArnRequest(input *GetLayerVersionByArnInput) (req *request.Request, output *GetLayerVersionByArnOutput) {
@@ -2767,17 +2766,18 @@ func (c *Lambda) GetLayerVersionByArnRequest(input *GetLayerVersionByArnInput) (
 // API operation GetLayerVersionByArn for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersionByArn
 func (c *Lambda) GetLayerVersionByArn(input *GetLayerVersionByArnInput) (*GetLayerVersionByArnOutput, error) {
@@ -2817,14 +2817,13 @@ const opGetLayerVersionPolicy = "GetLayerVersionPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLayerVersionPolicyRequest method.
+//	req, resp := client.GetLayerVersionPolicyRequest(params)
 //
-//    // Example sending a request using the GetLayerVersionPolicyRequest method.
-//    req, resp := client.GetLayerVersionPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersionPolicy
 func (c *Lambda) GetLayerVersionPolicyRequest(input *GetLayerVersionPolicyInput) (req *request.Request, output *GetLayerVersionPolicyOutput) {
@@ -2856,17 +2855,18 @@ func (c *Lambda) GetLayerVersionPolicyRequest(input *GetLayerVersionPolicyInput)
 // API operation GetLayerVersionPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetLayerVersionPolicy
 func (c *Lambda) GetLayerVersionPolicy(input *GetLayerVersionPolicyInput) (*GetLayerVersionPolicyOutput, error) {
@@ -2906,14 +2906,13 @@ const opGetPolicy = "GetPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPolicyRequest method.
+//	req, resp := client.GetPolicyRequest(params)
 //
-//    // Example sending a request using the GetPolicyRequest method.
-//    req, resp := client.GetPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicy
 func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
@@ -2945,17 +2944,18 @@ func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, 
 // API operation GetPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicy
 func (c *Lambda) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
@@ -2995,14 +2995,13 @@ const opGetProvisionedConcurrencyConfig = "GetProvisionedConcurrencyConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProvisionedConcurrencyConfigRequest method.
+//	req, resp := client.GetProvisionedConcurrencyConfigRequest(params)
 //
-//    // Example sending a request using the GetProvisionedConcurrencyConfigRequest method.
-//    req, resp := client.GetProvisionedConcurrencyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetProvisionedConcurrencyConfig
 func (c *Lambda) GetProvisionedConcurrencyConfigRequest(input *GetProvisionedConcurrencyConfigInput) (req *request.Request, output *GetProvisionedConcurrencyConfigOutput) {
@@ -3034,20 +3033,21 @@ func (c *Lambda) GetProvisionedConcurrencyConfigRequest(input *GetProvisionedCon
 // API operation GetProvisionedConcurrencyConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * ProvisionedConcurrencyConfigNotFoundException
-//   The specified configuration does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - ProvisionedConcurrencyConfigNotFoundException
+//     The specified configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetProvisionedConcurrencyConfig
 func (c *Lambda) GetProvisionedConcurrencyConfig(input *GetProvisionedConcurrencyConfigInput) (*GetProvisionedConcurrencyConfigOutput, error) {
@@ -3087,14 +3087,13 @@ const opInvoke = "Invoke"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvokeRequest method.
+//	req, resp := client.InvokeRequest(params)
 //
-//    // Example sending a request using the InvokeRequest method.
-//    req, resp := client.InvokeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Invoke
 func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output *InvokeOutput) {
@@ -3162,97 +3161,98 @@ func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output
 // API operation Invoke for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidRequestContentException
-//   The request body could not be parsed as JSON.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * RequestTooLargeException
-//   The request payload exceeded the Invoke request body JSON input limit. For
-//   more information, see Limits (https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
+//   - InvalidRequestContentException
+//     The request body could not be parsed as JSON.
 //
-//   * UnsupportedMediaTypeException
-//   The content type of the Invoke request body is not JSON.
+//   - RequestTooLargeException
+//     The request payload exceeded the Invoke request body JSON input limit. For
+//     more information, see Limits (https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - UnsupportedMediaTypeException
+//     The content type of the Invoke request body is not JSON.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * EC2UnexpectedException
-//   Lambda received an unexpected EC2 client exception while setting up for the
-//   Lambda function.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * SubnetIPAddressLimitReachedException
-//   Lambda was not able to set up VPC access for the Lambda function because
-//   one or more configured subnets has no available IP addresses.
+//   - EC2UnexpectedException
+//     Lambda received an unexpected EC2 client exception while setting up for the
+//     Lambda function.
 //
-//   * ENILimitReachedException
-//   Lambda was not able to create an elastic network interface in the VPC, specified
-//   as part of Lambda function configuration, because the limit for network interfaces
-//   has been reached.
+//   - SubnetIPAddressLimitReachedException
+//     Lambda was not able to set up VPC access for the Lambda function because
+//     one or more configured subnets has no available IP addresses.
 //
-//   * EFSMountConnectivityException
-//   The function couldn't make a network connection to the configured file system.
+//   - ENILimitReachedException
+//     Lambda was not able to create an elastic network interface in the VPC, specified
+//     as part of Lambda function configuration, because the limit for network interfaces
+//     has been reached.
 //
-//   * EFSMountFailureException
-//   The function couldn't mount the configured file system due to a permission
-//   or configuration issue.
+//   - EFSMountConnectivityException
+//     The function couldn't make a network connection to the configured file system.
 //
-//   * EFSMountTimeoutException
-//   The function was able to make a network connection to the configured file
-//   system, but the mount operation timed out.
+//   - EFSMountFailureException
+//     The function couldn't mount the configured file system due to a permission
+//     or configuration issue.
 //
-//   * EFSIOException
-//   An error occurred when reading from or writing to a connected file system.
+//   - EFSMountTimeoutException
+//     The function was able to make a network connection to the configured file
+//     system, but the mount operation timed out.
 //
-//   * EC2ThrottledException
-//   Lambda was throttled by Amazon EC2 during Lambda function initialization
-//   using the execution role provided for the Lambda function.
+//   - EFSIOException
+//     An error occurred when reading from or writing to a connected file system.
 //
-//   * EC2AccessDeniedException
-//   Need additional permissions to configure VPC settings.
+//   - EC2ThrottledException
+//     Lambda was throttled by Amazon EC2 during Lambda function initialization
+//     using the execution role provided for the Lambda function.
 //
-//   * InvalidSubnetIDException
-//   The Subnet ID provided in the Lambda function VPC configuration is invalid.
+//   - EC2AccessDeniedException
+//     Need additional permissions to configure VPC settings.
 //
-//   * InvalidSecurityGroupIDException
-//   The Security Group ID provided in the Lambda function VPC configuration is
-//   invalid.
+//   - InvalidSubnetIDException
+//     The Subnet ID provided in the Lambda function VPC configuration is invalid.
 //
-//   * InvalidZipFileException
-//   Lambda could not unzip the deployment package.
+//   - InvalidSecurityGroupIDException
+//     The Security Group ID provided in the Lambda function VPC configuration is
+//     invalid.
 //
-//   * KMSDisabledException
-//   Lambda was unable to decrypt the environment variables because the KMS key
-//   used is disabled. Check the Lambda function's KMS key settings.
+//   - InvalidZipFileException
+//     Lambda could not unzip the deployment package.
 //
-//   * KMSInvalidStateException
-//   Lambda was unable to decrypt the environment variables because the KMS key
-//   used is in an invalid state for Decrypt. Check the function's KMS key settings.
+//   - KMSDisabledException
+//     Lambda was unable to decrypt the environment variables because the KMS key
+//     used is disabled. Check the Lambda function's KMS key settings.
 //
-//   * KMSAccessDeniedException
-//   Lambda was unable to decrypt the environment variables because KMS access
-//   was denied. Check the Lambda function's KMS permissions.
+//   - KMSInvalidStateException
+//     Lambda was unable to decrypt the environment variables because the KMS key
+//     used is in an invalid state for Decrypt. Check the function's KMS key settings.
 //
-//   * KMSNotFoundException
-//   Lambda was unable to decrypt the environment variables because the KMS key
-//   was not found. Check the function's KMS key settings.
+//   - KMSAccessDeniedException
+//     Lambda was unable to decrypt the environment variables because KMS access
+//     was denied. Check the Lambda function's KMS permissions.
 //
-//   * InvalidRuntimeException
-//   The runtime or runtime version specified is not supported.
+//   - KMSNotFoundException
+//     Lambda was unable to decrypt the environment variables because the KMS key
+//     was not found. Check the function's KMS key settings.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidRuntimeException
+//     The runtime or runtime version specified is not supported.
 //
-//   * ResourceNotReadyException
-//   The function is inactive and its VPC connection is no longer available. Wait
-//   for the VPC connection to reestablish and try again.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
+//
+//   - ResourceNotReadyException
+//     The function is inactive and its VPC connection is no longer available. Wait
+//     for the VPC connection to reestablish and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Invoke
 func (c *Lambda) Invoke(input *InvokeInput) (*InvokeOutput, error) {
@@ -3292,14 +3292,13 @@ const opInvokeAsync = "InvokeAsync"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvokeAsyncRequest method.
+//	req, resp := client.InvokeAsyncRequest(params)
 //
-//    // Example sending a request using the InvokeAsyncRequest method.
-//    req, resp := client.InvokeAsyncRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsync
 //
@@ -3325,7 +3324,6 @@ func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Reque
 
 // InvokeAsync API operation for AWS Lambda.
 //
-//
 // For asynchronous function invocation, use Invoke.
 //
 // Invokes a function asynchronously.
@@ -3338,20 +3336,21 @@ func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Reque
 // API operation InvokeAsync for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidRequestContentException
-//   The request body could not be parsed as JSON.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidRuntimeException
-//   The runtime or runtime version specified is not supported.
+//   - InvalidRequestContentException
+//     The request body could not be parsed as JSON.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - InvalidRuntimeException
+//     The runtime or runtime version specified is not supported.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsync
 //
@@ -3395,14 +3394,13 @@ const opListAliases = "ListAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAliasesRequest method.
+//	req, resp := client.ListAliasesRequest(params)
 //
-//    // Example sending a request using the ListAliasesRequest method.
-//    req, resp := client.ListAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliases
 func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Request, output *ListAliasesOutput) {
@@ -3440,17 +3438,18 @@ func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Reque
 // API operation ListAliases for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliases
 func (c *Lambda) ListAliases(input *ListAliasesInput) (*ListAliasesOutput, error) {
@@ -3482,15 +3481,14 @@ func (c *Lambda) ListAliasesWithContext(ctx aws.Context, input *ListAliasesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAliases operation.
-//    pageNum := 0
-//    err := client.ListAliasesPages(params,
-//        func(page *lambda.ListAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAliases operation.
+//	pageNum := 0
+//	err := client.ListAliasesPages(params,
+//	    func(page *lambda.ListAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListAliasesPages(input *ListAliasesInput, fn func(*ListAliasesOutput, bool) bool) error {
 	return c.ListAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3542,14 +3540,13 @@ const opListCodeSigningConfigs = "ListCodeSigningConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCodeSigningConfigsRequest method.
+//	req, resp := client.ListCodeSigningConfigsRequest(params)
 //
-//    // Example sending a request using the ListCodeSigningConfigsRequest method.
-//    req, resp := client.ListCodeSigningConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListCodeSigningConfigs
 func (c *Lambda) ListCodeSigningConfigsRequest(input *ListCodeSigningConfigsInput) (req *request.Request, output *ListCodeSigningConfigsOutput) {
@@ -3588,11 +3585,12 @@ func (c *Lambda) ListCodeSigningConfigsRequest(input *ListCodeSigningConfigsInpu
 // API operation ListCodeSigningConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListCodeSigningConfigs
 func (c *Lambda) ListCodeSigningConfigs(input *ListCodeSigningConfigsInput) (*ListCodeSigningConfigsOutput, error) {
@@ -3624,15 +3622,14 @@ func (c *Lambda) ListCodeSigningConfigsWithContext(ctx aws.Context, input *ListC
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCodeSigningConfigs operation.
-//    pageNum := 0
-//    err := client.ListCodeSigningConfigsPages(params,
-//        func(page *lambda.ListCodeSigningConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCodeSigningConfigs operation.
+//	pageNum := 0
+//	err := client.ListCodeSigningConfigsPages(params,
+//	    func(page *lambda.ListCodeSigningConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListCodeSigningConfigsPages(input *ListCodeSigningConfigsInput, fn func(*ListCodeSigningConfigsOutput, bool) bool) error {
 	return c.ListCodeSigningConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3684,14 +3681,13 @@ const opListEventSourceMappings = "ListEventSourceMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventSourceMappingsRequest method.
+//	req, resp := client.ListEventSourceMappingsRequest(params)
 //
-//    // Example sending a request using the ListEventSourceMappingsRequest method.
-//    req, resp := client.ListEventSourceMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappings
 func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsInput) (req *request.Request, output *ListEventSourceMappingsOutput) {
@@ -3729,17 +3725,18 @@ func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsIn
 // API operation ListEventSourceMappings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappings
 func (c *Lambda) ListEventSourceMappings(input *ListEventSourceMappingsInput) (*ListEventSourceMappingsOutput, error) {
@@ -3771,15 +3768,14 @@ func (c *Lambda) ListEventSourceMappingsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEventSourceMappings operation.
-//    pageNum := 0
-//    err := client.ListEventSourceMappingsPages(params,
-//        func(page *lambda.ListEventSourceMappingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEventSourceMappings operation.
+//	pageNum := 0
+//	err := client.ListEventSourceMappingsPages(params,
+//	    func(page *lambda.ListEventSourceMappingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListEventSourceMappingsPages(input *ListEventSourceMappingsInput, fn func(*ListEventSourceMappingsOutput, bool) bool) error {
 	return c.ListEventSourceMappingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3831,14 +3827,13 @@ const opListFunctionEventInvokeConfigs = "ListFunctionEventInvokeConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFunctionEventInvokeConfigsRequest method.
+//	req, resp := client.ListFunctionEventInvokeConfigsRequest(params)
 //
-//    // Example sending a request using the ListFunctionEventInvokeConfigsRequest method.
-//    req, resp := client.ListFunctionEventInvokeConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionEventInvokeConfigs
 func (c *Lambda) ListFunctionEventInvokeConfigsRequest(input *ListFunctionEventInvokeConfigsInput) (req *request.Request, output *ListFunctionEventInvokeConfigsOutput) {
@@ -3877,17 +3872,18 @@ func (c *Lambda) ListFunctionEventInvokeConfigsRequest(input *ListFunctionEventI
 // API operation ListFunctionEventInvokeConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionEventInvokeConfigs
 func (c *Lambda) ListFunctionEventInvokeConfigs(input *ListFunctionEventInvokeConfigsInput) (*ListFunctionEventInvokeConfigsOutput, error) {
@@ -3919,15 +3915,14 @@ func (c *Lambda) ListFunctionEventInvokeConfigsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFunctionEventInvokeConfigs operation.
-//    pageNum := 0
-//    err := client.ListFunctionEventInvokeConfigsPages(params,
-//        func(page *lambda.ListFunctionEventInvokeConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFunctionEventInvokeConfigs operation.
+//	pageNum := 0
+//	err := client.ListFunctionEventInvokeConfigsPages(params,
+//	    func(page *lambda.ListFunctionEventInvokeConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListFunctionEventInvokeConfigsPages(input *ListFunctionEventInvokeConfigsInput, fn func(*ListFunctionEventInvokeConfigsOutput, bool) bool) error {
 	return c.ListFunctionEventInvokeConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3979,14 +3974,13 @@ const opListFunctionUrlConfigs = "ListFunctionUrlConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFunctionUrlConfigsRequest method.
+//	req, resp := client.ListFunctionUrlConfigsRequest(params)
 //
-//    // Example sending a request using the ListFunctionUrlConfigsRequest method.
-//    req, resp := client.ListFunctionUrlConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionUrlConfigs
 func (c *Lambda) ListFunctionUrlConfigsRequest(input *ListFunctionUrlConfigsInput) (req *request.Request, output *ListFunctionUrlConfigsOutput) {
@@ -4023,17 +4017,18 @@ func (c *Lambda) ListFunctionUrlConfigsRequest(input *ListFunctionUrlConfigsInpu
 // API operation ListFunctionUrlConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionUrlConfigs
 func (c *Lambda) ListFunctionUrlConfigs(input *ListFunctionUrlConfigsInput) (*ListFunctionUrlConfigsOutput, error) {
@@ -4065,15 +4060,14 @@ func (c *Lambda) ListFunctionUrlConfigsWithContext(ctx aws.Context, input *ListF
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFunctionUrlConfigs operation.
-//    pageNum := 0
-//    err := client.ListFunctionUrlConfigsPages(params,
-//        func(page *lambda.ListFunctionUrlConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFunctionUrlConfigs operation.
+//	pageNum := 0
+//	err := client.ListFunctionUrlConfigsPages(params,
+//	    func(page *lambda.ListFunctionUrlConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListFunctionUrlConfigsPages(input *ListFunctionUrlConfigsInput, fn func(*ListFunctionUrlConfigsOutput, bool) bool) error {
 	return c.ListFunctionUrlConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4125,14 +4119,13 @@ const opListFunctions = "ListFunctions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFunctionsRequest method.
+//	req, resp := client.ListFunctionsRequest(params)
 //
-//    // Example sending a request using the ListFunctionsRequest method.
-//    req, resp := client.ListFunctionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctions
 func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.Request, output *ListFunctionsOutput) {
@@ -4178,14 +4171,15 @@ func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.R
 // API operation ListFunctions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctions
 func (c *Lambda) ListFunctions(input *ListFunctionsInput) (*ListFunctionsOutput, error) {
@@ -4217,15 +4211,14 @@ func (c *Lambda) ListFunctionsWithContext(ctx aws.Context, input *ListFunctionsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFunctions operation.
-//    pageNum := 0
-//    err := client.ListFunctionsPages(params,
-//        func(page *lambda.ListFunctionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFunctions operation.
+//	pageNum := 0
+//	err := client.ListFunctionsPages(params,
+//	    func(page *lambda.ListFunctionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListFunctionsPages(input *ListFunctionsInput, fn func(*ListFunctionsOutput, bool) bool) error {
 	return c.ListFunctionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4277,14 +4270,13 @@ const opListFunctionsByCodeSigningConfig = "ListFunctionsByCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFunctionsByCodeSigningConfigRequest method.
+//	req, resp := client.ListFunctionsByCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the ListFunctionsByCodeSigningConfigRequest method.
-//    req, resp := client.ListFunctionsByCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionsByCodeSigningConfig
 func (c *Lambda) ListFunctionsByCodeSigningConfigRequest(input *ListFunctionsByCodeSigningConfigInput) (req *request.Request, output *ListFunctionsByCodeSigningConfigOutput) {
@@ -4323,14 +4315,15 @@ func (c *Lambda) ListFunctionsByCodeSigningConfigRequest(input *ListFunctionsByC
 // API operation ListFunctionsByCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionsByCodeSigningConfig
 func (c *Lambda) ListFunctionsByCodeSigningConfig(input *ListFunctionsByCodeSigningConfigInput) (*ListFunctionsByCodeSigningConfigOutput, error) {
@@ -4362,15 +4355,14 @@ func (c *Lambda) ListFunctionsByCodeSigningConfigWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFunctionsByCodeSigningConfig operation.
-//    pageNum := 0
-//    err := client.ListFunctionsByCodeSigningConfigPages(params,
-//        func(page *lambda.ListFunctionsByCodeSigningConfigOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFunctionsByCodeSigningConfig operation.
+//	pageNum := 0
+//	err := client.ListFunctionsByCodeSigningConfigPages(params,
+//	    func(page *lambda.ListFunctionsByCodeSigningConfigOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListFunctionsByCodeSigningConfigPages(input *ListFunctionsByCodeSigningConfigInput, fn func(*ListFunctionsByCodeSigningConfigOutput, bool) bool) error {
 	return c.ListFunctionsByCodeSigningConfigPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4422,14 +4414,13 @@ const opListLayerVersions = "ListLayerVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLayerVersionsRequest method.
+//	req, resp := client.ListLayerVersionsRequest(params)
 //
-//    // Example sending a request using the ListLayerVersionsRequest method.
-//    req, resp := client.ListLayerVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListLayerVersions
 func (c *Lambda) ListLayerVersionsRequest(input *ListLayerVersionsInput) (req *request.Request, output *ListLayerVersionsOutput) {
@@ -4471,17 +4462,18 @@ func (c *Lambda) ListLayerVersionsRequest(input *ListLayerVersionsInput) (req *r
 // API operation ListLayerVersions for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListLayerVersions
 func (c *Lambda) ListLayerVersions(input *ListLayerVersionsInput) (*ListLayerVersionsOutput, error) {
@@ -4513,15 +4505,14 @@ func (c *Lambda) ListLayerVersionsWithContext(ctx aws.Context, input *ListLayerV
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLayerVersions operation.
-//    pageNum := 0
-//    err := client.ListLayerVersionsPages(params,
-//        func(page *lambda.ListLayerVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLayerVersions operation.
+//	pageNum := 0
+//	err := client.ListLayerVersionsPages(params,
+//	    func(page *lambda.ListLayerVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListLayerVersionsPages(input *ListLayerVersionsInput, fn func(*ListLayerVersionsOutput, bool) bool) error {
 	return c.ListLayerVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4573,14 +4564,13 @@ const opListLayers = "ListLayers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLayersRequest method.
+//	req, resp := client.ListLayersRequest(params)
 //
-//    // Example sending a request using the ListLayersRequest method.
-//    req, resp := client.ListLayersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListLayers
 func (c *Lambda) ListLayersRequest(input *ListLayersInput) (req *request.Request, output *ListLayersOutput) {
@@ -4622,14 +4612,15 @@ func (c *Lambda) ListLayersRequest(input *ListLayersInput) (req *request.Request
 // API operation ListLayers for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListLayers
 func (c *Lambda) ListLayers(input *ListLayersInput) (*ListLayersOutput, error) {
@@ -4661,15 +4652,14 @@ func (c *Lambda) ListLayersWithContext(ctx aws.Context, input *ListLayersInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLayers operation.
-//    pageNum := 0
-//    err := client.ListLayersPages(params,
-//        func(page *lambda.ListLayersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLayers operation.
+//	pageNum := 0
+//	err := client.ListLayersPages(params,
+//	    func(page *lambda.ListLayersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListLayersPages(input *ListLayersInput, fn func(*ListLayersOutput, bool) bool) error {
 	return c.ListLayersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4721,14 +4711,13 @@ const opListProvisionedConcurrencyConfigs = "ListProvisionedConcurrencyConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProvisionedConcurrencyConfigsRequest method.
+//	req, resp := client.ListProvisionedConcurrencyConfigsRequest(params)
 //
-//    // Example sending a request using the ListProvisionedConcurrencyConfigsRequest method.
-//    req, resp := client.ListProvisionedConcurrencyConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListProvisionedConcurrencyConfigs
 func (c *Lambda) ListProvisionedConcurrencyConfigsRequest(input *ListProvisionedConcurrencyConfigsInput) (req *request.Request, output *ListProvisionedConcurrencyConfigsOutput) {
@@ -4765,17 +4754,18 @@ func (c *Lambda) ListProvisionedConcurrencyConfigsRequest(input *ListProvisioned
 // API operation ListProvisionedConcurrencyConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListProvisionedConcurrencyConfigs
 func (c *Lambda) ListProvisionedConcurrencyConfigs(input *ListProvisionedConcurrencyConfigsInput) (*ListProvisionedConcurrencyConfigsOutput, error) {
@@ -4807,15 +4797,14 @@ func (c *Lambda) ListProvisionedConcurrencyConfigsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProvisionedConcurrencyConfigs operation.
-//    pageNum := 0
-//    err := client.ListProvisionedConcurrencyConfigsPages(params,
-//        func(page *lambda.ListProvisionedConcurrencyConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProvisionedConcurrencyConfigs operation.
+//	pageNum := 0
+//	err := client.ListProvisionedConcurrencyConfigsPages(params,
+//	    func(page *lambda.ListProvisionedConcurrencyConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListProvisionedConcurrencyConfigsPages(input *ListProvisionedConcurrencyConfigsInput, fn func(*ListProvisionedConcurrencyConfigsOutput, bool) bool) error {
 	return c.ListProvisionedConcurrencyConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4867,14 +4856,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTags
 func (c *Lambda) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -4906,17 +4894,18 @@ func (c *Lambda) ListTagsRequest(input *ListTagsInput) (req *request.Request, ou
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTags
 func (c *Lambda) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -4956,14 +4945,13 @@ const opListVersionsByFunction = "ListVersionsByFunction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVersionsByFunctionRequest method.
+//	req, resp := client.ListVersionsByFunctionRequest(params)
 //
-//    // Example sending a request using the ListVersionsByFunctionRequest method.
-//    req, resp := client.ListVersionsByFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunction
 func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInput) (req *request.Request, output *ListVersionsByFunctionOutput) {
@@ -5002,17 +4990,18 @@ func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInpu
 // API operation ListVersionsByFunction for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunction
 func (c *Lambda) ListVersionsByFunction(input *ListVersionsByFunctionInput) (*ListVersionsByFunctionOutput, error) {
@@ -5044,15 +5033,14 @@ func (c *Lambda) ListVersionsByFunctionWithContext(ctx aws.Context, input *ListV
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVersionsByFunction operation.
-//    pageNum := 0
-//    err := client.ListVersionsByFunctionPages(params,
-//        func(page *lambda.ListVersionsByFunctionOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVersionsByFunction operation.
+//	pageNum := 0
+//	err := client.ListVersionsByFunctionPages(params,
+//	    func(page *lambda.ListVersionsByFunctionOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Lambda) ListVersionsByFunctionPages(input *ListVersionsByFunctionInput, fn func(*ListVersionsByFunctionOutput, bool) bool) error {
 	return c.ListVersionsByFunctionPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5104,14 +5092,13 @@ const opPublishLayerVersion = "PublishLayerVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishLayerVersionRequest method.
+//	req, resp := client.PublishLayerVersionRequest(params)
 //
-//    // Example sending a request using the PublishLayerVersionRequest method.
-//    req, resp := client.PublishLayerVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishLayerVersion
 func (c *Lambda) PublishLayerVersionRequest(input *PublishLayerVersionInput) (req *request.Request, output *PublishLayerVersionOutput) {
@@ -5146,20 +5133,21 @@ func (c *Lambda) PublishLayerVersionRequest(input *PublishLayerVersionInput) (re
 // API operation PublishLayerVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * CodeStorageExceededException
-//   You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - CodeStorageExceededException
+//     You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishLayerVersion
 func (c *Lambda) PublishLayerVersion(input *PublishLayerVersionInput) (*PublishLayerVersionOutput, error) {
@@ -5199,14 +5187,13 @@ const opPublishVersion = "PublishVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishVersionRequest method.
+//	req, resp := client.PublishVersionRequest(params)
 //
-//    // Example sending a request using the PublishVersionRequest method.
-//    req, resp := client.PublishVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishVersion
 func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request.Request, output *FunctionConfiguration) {
@@ -5246,28 +5233,29 @@ func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request
 // API operation PublishVersion for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * CodeStorageExceededException
-//   You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - CodeStorageExceededException
+//     You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishVersion
 func (c *Lambda) PublishVersion(input *PublishVersionInput) (*FunctionConfiguration, error) {
@@ -5307,14 +5295,13 @@ const opPutFunctionCodeSigningConfig = "PutFunctionCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFunctionCodeSigningConfigRequest method.
+//	req, resp := client.PutFunctionCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the PutFunctionCodeSigningConfigRequest method.
-//    req, resp := client.PutFunctionCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionCodeSigningConfig
 func (c *Lambda) PutFunctionCodeSigningConfigRequest(input *PutFunctionCodeSigningConfigInput) (req *request.Request, output *PutFunctionCodeSigningConfigOutput) {
@@ -5347,23 +5334,24 @@ func (c *Lambda) PutFunctionCodeSigningConfigRequest(input *PutFunctionCodeSigni
 // API operation PutFunctionCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * CodeSigningConfigNotFoundException
-//   The specified code signing configuration does not exist.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
+//
+//   - CodeSigningConfigNotFoundException
+//     The specified code signing configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionCodeSigningConfig
 func (c *Lambda) PutFunctionCodeSigningConfig(input *PutFunctionCodeSigningConfigInput) (*PutFunctionCodeSigningConfigOutput, error) {
@@ -5403,14 +5391,13 @@ const opPutFunctionConcurrency = "PutFunctionConcurrency"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFunctionConcurrencyRequest method.
+//	req, resp := client.PutFunctionConcurrencyRequest(params)
 //
-//    // Example sending a request using the PutFunctionConcurrencyRequest method.
-//    req, resp := client.PutFunctionConcurrencyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionConcurrency
 func (c *Lambda) PutFunctionConcurrencyRequest(input *PutFunctionConcurrencyInput) (req *request.Request, output *PutFunctionConcurrencyOutput) {
@@ -5454,20 +5441,21 @@ func (c *Lambda) PutFunctionConcurrencyRequest(input *PutFunctionConcurrencyInpu
 // API operation PutFunctionConcurrency for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionConcurrency
 func (c *Lambda) PutFunctionConcurrency(input *PutFunctionConcurrencyInput) (*PutFunctionConcurrencyOutput, error) {
@@ -5507,14 +5495,13 @@ const opPutFunctionEventInvokeConfig = "PutFunctionEventInvokeConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFunctionEventInvokeConfigRequest method.
+//	req, resp := client.PutFunctionEventInvokeConfigRequest(params)
 //
-//    // Example sending a request using the PutFunctionEventInvokeConfigRequest method.
-//    req, resp := client.PutFunctionEventInvokeConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionEventInvokeConfig
 func (c *Lambda) PutFunctionEventInvokeConfigRequest(input *PutFunctionEventInvokeConfigInput) (req *request.Request, output *PutFunctionEventInvokeConfigOutput) {
@@ -5561,20 +5548,21 @@ func (c *Lambda) PutFunctionEventInvokeConfigRequest(input *PutFunctionEventInvo
 // API operation PutFunctionEventInvokeConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionEventInvokeConfig
 func (c *Lambda) PutFunctionEventInvokeConfig(input *PutFunctionEventInvokeConfigInput) (*PutFunctionEventInvokeConfigOutput, error) {
@@ -5614,14 +5602,13 @@ const opPutProvisionedConcurrencyConfig = "PutProvisionedConcurrencyConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutProvisionedConcurrencyConfigRequest method.
+//	req, resp := client.PutProvisionedConcurrencyConfigRequest(params)
 //
-//    // Example sending a request using the PutProvisionedConcurrencyConfigRequest method.
-//    req, resp := client.PutProvisionedConcurrencyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutProvisionedConcurrencyConfig
 func (c *Lambda) PutProvisionedConcurrencyConfigRequest(input *PutProvisionedConcurrencyConfigInput) (req *request.Request, output *PutProvisionedConcurrencyConfigOutput) {
@@ -5652,20 +5639,21 @@ func (c *Lambda) PutProvisionedConcurrencyConfigRequest(input *PutProvisionedCon
 // API operation PutProvisionedConcurrencyConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutProvisionedConcurrencyConfig
 func (c *Lambda) PutProvisionedConcurrencyConfig(input *PutProvisionedConcurrencyConfigInput) (*PutProvisionedConcurrencyConfigOutput, error) {
@@ -5705,14 +5693,13 @@ const opRemoveLayerVersionPermission = "RemoveLayerVersionPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveLayerVersionPermissionRequest method.
+//	req, resp := client.RemoveLayerVersionPermissionRequest(params)
 //
-//    // Example sending a request using the RemoveLayerVersionPermissionRequest method.
-//    req, resp := client.RemoveLayerVersionPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemoveLayerVersionPermission
 func (c *Lambda) RemoveLayerVersionPermissionRequest(input *RemoveLayerVersionPermissionInput) (req *request.Request, output *RemoveLayerVersionPermissionOutput) {
@@ -5746,22 +5733,23 @@ func (c *Lambda) RemoveLayerVersionPermissionRequest(input *RemoveLayerVersionPe
 // API operation RemoveLayerVersionPermission for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemoveLayerVersionPermission
 func (c *Lambda) RemoveLayerVersionPermission(input *RemoveLayerVersionPermissionInput) (*RemoveLayerVersionPermissionOutput, error) {
@@ -5801,14 +5789,13 @@ const opRemovePermission = "RemovePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemovePermissionRequest method.
+//	req, resp := client.RemovePermissionRequest(params)
 //
-//    // Example sending a request using the RemovePermissionRequest method.
-//    req, resp := client.RemovePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermission
 func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
@@ -5841,22 +5828,23 @@ func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *req
 // API operation RemovePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermission
 func (c *Lambda) RemovePermission(input *RemovePermissionInput) (*RemovePermissionOutput, error) {
@@ -5896,14 +5884,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResource
 func (c *Lambda) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5936,20 +5923,21 @@ func (c *Lambda) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResource
 func (c *Lambda) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5989,14 +5977,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResource
 func (c *Lambda) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -6029,20 +6016,21 @@ func (c *Lambda) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResource
 func (c *Lambda) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -6082,14 +6070,13 @@ const opUpdateAlias = "UpdateAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAliasRequest method.
+//	req, resp := client.UpdateAliasRequest(params)
 //
-//    // Example sending a request using the UpdateAliasRequest method.
-//    req, resp := client.UpdateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateAlias
 func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request, output *AliasConfiguration) {
@@ -6120,25 +6107,26 @@ func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Reque
 // API operation UpdateAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateAlias
 func (c *Lambda) UpdateAlias(input *UpdateAliasInput) (*AliasConfiguration, error) {
@@ -6178,14 +6166,13 @@ const opUpdateCodeSigningConfig = "UpdateCodeSigningConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCodeSigningConfigRequest method.
+//	req, resp := client.UpdateCodeSigningConfigRequest(params)
 //
-//    // Example sending a request using the UpdateCodeSigningConfigRequest method.
-//    req, resp := client.UpdateCodeSigningConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateCodeSigningConfig
 func (c *Lambda) UpdateCodeSigningConfigRequest(input *UpdateCodeSigningConfigInput) (req *request.Request, output *UpdateCodeSigningConfigOutput) {
@@ -6217,14 +6204,15 @@ func (c *Lambda) UpdateCodeSigningConfigRequest(input *UpdateCodeSigningConfigIn
 // API operation UpdateCodeSigningConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateCodeSigningConfig
 func (c *Lambda) UpdateCodeSigningConfig(input *UpdateCodeSigningConfigInput) (*UpdateCodeSigningConfigOutput, error) {
@@ -6264,14 +6252,13 @@ const opUpdateEventSourceMapping = "UpdateEventSourceMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEventSourceMappingRequest method.
+//	req, resp := client.UpdateEventSourceMappingRequest(params)
 //
-//    // Example sending a request using the UpdateEventSourceMappingRequest method.
-//    req, resp := client.UpdateEventSourceMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateEventSourceMapping
 func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
@@ -6298,51 +6285,51 @@ func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMapping
 // For details about how to configure different event sources, see the following
 // topics.
 //
-//    * Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-dynamodb-eventsourcemapping)
+//   - Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-dynamodb-eventsourcemapping)
 //
-//    * Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-eventsourcemapping)
+//   - Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-eventsourcemapping)
 //
-//    * Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-eventsource)
+//   - Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#events-sqs-eventsource)
 //
-//    * Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-eventsourcemapping)
+//   - Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-eventsourcemapping)
 //
-//    * Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html)
+//   - Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html)
 //
-//    * Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/kafka-smaa.html)
+//   - Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/kafka-smaa.html)
 //
 // The following error handling options are only available for stream sources
 // (DynamoDB and Kinesis):
 //
-//    * BisectBatchOnFunctionError - If the function returns an error, split
-//    the batch in two and retry.
+//   - BisectBatchOnFunctionError - If the function returns an error, split
+//     the batch in two and retry.
 //
-//    * DestinationConfig - Send discarded records to an Amazon SQS queue or
-//    Amazon SNS topic.
+//   - DestinationConfig - Send discarded records to an Amazon SQS queue or
+//     Amazon SNS topic.
 //
-//    * MaximumRecordAgeInSeconds - Discard records older than the specified
-//    age. The default value is infinite (-1). When set to infinite (-1), failed
-//    records are retried until the record expires
+//   - MaximumRecordAgeInSeconds - Discard records older than the specified
+//     age. The default value is infinite (-1). When set to infinite (-1), failed
+//     records are retried until the record expires
 //
-//    * MaximumRetryAttempts - Discard records after the specified number of
-//    retries. The default value is infinite (-1). When set to infinite (-1),
-//    failed records are retried until the record expires.
+//   - MaximumRetryAttempts - Discard records after the specified number of
+//     retries. The default value is infinite (-1). When set to infinite (-1),
+//     failed records are retried until the record expires.
 //
-//    * ParallelizationFactor - Process multiple batches from each shard concurrently.
+//   - ParallelizationFactor - Process multiple batches from each shard concurrently.
 //
 // For information about which configuration parameters apply to each event
 // source, see the following topics.
 //
-//    * Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-params)
+//   - Amazon DynamoDB Streams (https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-params)
 //
-//    * Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-params)
+//   - Amazon Kinesis (https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-params)
 //
-//    * Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-params)
+//   - Amazon SQS (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-params)
 //
-//    * Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-params)
+//   - Amazon MQ and RabbitMQ (https://docs.aws.amazon.com/lambda/latest/dg/with-mq.html#services-mq-params)
 //
-//    * Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html#services-msk-parms)
+//   - Amazon MSK (https://docs.aws.amazon.com/lambda/latest/dg/with-msk.html#services-msk-parms)
 //
-//    * Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html#services-kafka-parms)
+//   - Apache Kafka (https://docs.aws.amazon.com/lambda/latest/dg/with-kafka.html#services-kafka-parms)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6352,25 +6339,26 @@ func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMapping
 // API operation UpdateEventSourceMapping for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * ResourceInUseException
-//   The operation conflicts with the resource's availability. For example, you
-//   attempted to update an EventSource Mapping in CREATING, or tried to delete
-//   a EventSource mapping currently in the UPDATING state.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
+//
+//   - ResourceInUseException
+//     The operation conflicts with the resource's availability. For example, you
+//     attempted to update an EventSource Mapping in CREATING, or tried to delete
+//     a EventSource mapping currently in the UPDATING state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateEventSourceMapping
 func (c *Lambda) UpdateEventSourceMapping(input *UpdateEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
@@ -6410,14 +6398,13 @@ const opUpdateFunctionCode = "UpdateFunctionCode"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFunctionCodeRequest method.
+//	req, resp := client.UpdateFunctionCodeRequest(params)
 //
-//    // Example sending a request using the UpdateFunctionCodeRequest method.
-//    req, resp := client.UpdateFunctionCodeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionCode
 func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req *request.Request, output *FunctionConfiguration) {
@@ -6469,40 +6456,41 @@ func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req 
 // API operation UpdateFunctionCode for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * CodeStorageExceededException
-//   You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - CodeStorageExceededException
+//     You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
-//   * CodeVerificationFailedException
-//   The code signature failed one or more of the validation checks for signature
-//   mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
-//   blocks the deployment.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InvalidCodeSignatureException
-//   The code signature failed the integrity check. Lambda always blocks deployment
-//   if the integrity check fails, even if code signing policy is set to WARN.
+//   - CodeVerificationFailedException
+//     The code signature failed one or more of the validation checks for signature
+//     mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
+//     blocks the deployment.
 //
-//   * CodeSigningConfigNotFoundException
-//   The specified code signing configuration does not exist.
+//   - InvalidCodeSignatureException
+//     The code signature failed the integrity check. Lambda always blocks deployment
+//     if the integrity check fails, even if code signing policy is set to WARN.
+//
+//   - CodeSigningConfigNotFoundException
+//     The specified code signing configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionCode
 func (c *Lambda) UpdateFunctionCode(input *UpdateFunctionCodeInput) (*FunctionConfiguration, error) {
@@ -6542,14 +6530,13 @@ const opUpdateFunctionConfiguration = "UpdateFunctionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFunctionConfigurationRequest method.
+//	req, resp := client.UpdateFunctionConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateFunctionConfigurationRequest method.
-//    req, resp := client.UpdateFunctionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionConfiguration
 func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
@@ -6595,37 +6582,38 @@ func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigu
 // API operation UpdateFunctionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
-//   * PreconditionFailedException
-//   The RevisionId provided does not match the latest RevisionId for the Lambda
-//   function or alias. Call the GetFunction or the GetAlias API to retrieve the
-//   latest RevisionId for your resource.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * CodeVerificationFailedException
-//   The code signature failed one or more of the validation checks for signature
-//   mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
-//   blocks the deployment.
+//   - PreconditionFailedException
+//     The RevisionId provided does not match the latest RevisionId for the Lambda
+//     function or alias. Call the GetFunction or the GetAlias API to retrieve the
+//     latest RevisionId for your resource.
 //
-//   * InvalidCodeSignatureException
-//   The code signature failed the integrity check. Lambda always blocks deployment
-//   if the integrity check fails, even if code signing policy is set to WARN.
+//   - CodeVerificationFailedException
+//     The code signature failed one or more of the validation checks for signature
+//     mismatch or expiry, and the code signing policy is set to ENFORCE. Lambda
+//     blocks the deployment.
 //
-//   * CodeSigningConfigNotFoundException
-//   The specified code signing configuration does not exist.
+//   - InvalidCodeSignatureException
+//     The code signature failed the integrity check. Lambda always blocks deployment
+//     if the integrity check fails, even if code signing policy is set to WARN.
+//
+//   - CodeSigningConfigNotFoundException
+//     The specified code signing configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionConfiguration
 func (c *Lambda) UpdateFunctionConfiguration(input *UpdateFunctionConfigurationInput) (*FunctionConfiguration, error) {
@@ -6665,14 +6653,13 @@ const opUpdateFunctionEventInvokeConfig = "UpdateFunctionEventInvokeConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFunctionEventInvokeConfigRequest method.
+//	req, resp := client.UpdateFunctionEventInvokeConfigRequest(params)
 //
-//    // Example sending a request using the UpdateFunctionEventInvokeConfigRequest method.
-//    req, resp := client.UpdateFunctionEventInvokeConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionEventInvokeConfig
 func (c *Lambda) UpdateFunctionEventInvokeConfigRequest(input *UpdateFunctionEventInvokeConfigInput) (req *request.Request, output *UpdateFunctionEventInvokeConfigOutput) {
@@ -6706,20 +6693,21 @@ func (c *Lambda) UpdateFunctionEventInvokeConfigRequest(input *UpdateFunctionEve
 // API operation UpdateFunctionEventInvokeConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceException
-//   The Lambda service encountered an internal error.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
+//
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionEventInvokeConfig
 func (c *Lambda) UpdateFunctionEventInvokeConfig(input *UpdateFunctionEventInvokeConfigInput) (*UpdateFunctionEventInvokeConfigOutput, error) {
@@ -6759,14 +6747,13 @@ const opUpdateFunctionUrlConfig = "UpdateFunctionUrlConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFunctionUrlConfigRequest method.
+//	req, resp := client.UpdateFunctionUrlConfigRequest(params)
 //
-//    // Example sending a request using the UpdateFunctionUrlConfigRequest method.
-//    req, resp := client.UpdateFunctionUrlConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionUrlConfig
 func (c *Lambda) UpdateFunctionUrlConfigRequest(input *UpdateFunctionUrlConfigInput) (req *request.Request, output *UpdateFunctionUrlConfigOutput) {
@@ -6797,20 +6784,21 @@ func (c *Lambda) UpdateFunctionUrlConfigRequest(input *UpdateFunctionUrlConfigIn
 // API operation UpdateFunctionUrlConfig for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceConflictException
-//   The resource already exists, or another operation is in progress.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request does not exist.
+//   - ResourceConflictException
+//     The resource already exists, or another operation is in progress.
 //
-//   * InvalidParameterValueException
-//   One of the parameters in the request is invalid.
+//   - ResourceNotFoundException
+//     The resource specified in the request does not exist.
 //
-//   * ServiceException
-//   The Lambda service encountered an internal error.
+//   - InvalidParameterValueException
+//     One of the parameters in the request is invalid.
 //
-//   * TooManyRequestsException
-//   The request throughput limit was exceeded.
+//   - ServiceException
+//     The Lambda service encountered an internal error.
+//
+//   - TooManyRequestsException
+//     The request throughput limit was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionUrlConfig
 func (c *Lambda) UpdateFunctionUrlConfig(input *UpdateFunctionUrlConfigInput) (*UpdateFunctionUrlConfigOutput, error) {

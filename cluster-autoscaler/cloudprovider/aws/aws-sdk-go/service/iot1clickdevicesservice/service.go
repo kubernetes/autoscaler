@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoT1ClickDevicesService client from just a session.
-//     svc := iot1clickdevicesservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoT1ClickDevicesService client with additional configuration
-//     svc := iot1clickdevicesservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoT1ClickDevicesService client from just a session.
+//	svc := iot1clickdevicesservice.New(mySession)
+//
+//	// Create a IoT1ClickDevicesService client with additional configuration
+//	svc := iot1clickdevicesservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoT1ClickDevicesService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

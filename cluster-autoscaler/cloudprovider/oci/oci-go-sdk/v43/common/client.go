@@ -204,7 +204,7 @@ func defaultBaseClient(provider KeyProvider) BaseClient {
 	return newBaseClient(signer, &dispatcher)
 }
 
-//DefaultBaseClientWithSigner creates a default base client with a given signer
+// DefaultBaseClientWithSigner creates a default base client with a given signer
 func DefaultBaseClientWithSigner(signer HTTPRequestSigner) BaseClient {
 	dispatcher := defaultHTTPDispatcher()
 	return newBaseClient(signer, &dispatcher)
@@ -518,7 +518,7 @@ type OCIResponse interface {
 // OCIOperation is the generalization of a request-response cycle undergone by an OCI service.
 type OCIOperation func(context.Context, OCIRequest, *OCIReadSeekCloser) (OCIResponse, error)
 
-//ClientCallDetails a set of settings used by the a single Call operation of the http Client
+// ClientCallDetails a set of settings used by the a single Call operation of the http Client
 type ClientCallDetails struct {
 	Signer HTTPRequestSigner
 }
@@ -576,7 +576,7 @@ func (client BaseClient) CallWithDetails(ctx context.Context, request *http.Requ
 	return
 }
 
-//CloseBodyIfValid closes the body of an http response if the response and the body are valid
+// CloseBodyIfValid closes the body of an http response if the response and the body are valid
 func CloseBodyIfValid(httpResponse *http.Response) {
 	if httpResponse != nil && httpResponse.Body != nil {
 		httpResponse.Body.Close()

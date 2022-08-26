@@ -50,10 +50,11 @@ func validateV1EncryptionClientConstruction(c *EncryptionClient) error {
 // NewEncryptionClient instantiates a new S3 crypto client
 //
 // Example:
-//	cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
-//  sess := session.Must(session.NewSession())
-//	handler := s3crypto.NewKMSKeyGenerator(kms.New(sess), cmkID)
-//	svc := s3crypto.NewEncryptionClient(sess, s3crypto.AESGCMContentCipherBuilder(handler))
+//
+//		cmkID := "arn:aws:kms:region:000000000000:key/00000000-0000-0000-0000-000000000000"
+//	 sess := session.Must(session.NewSession())
+//		handler := s3crypto.NewKMSKeyGenerator(kms.New(sess), cmkID)
+//		svc := s3crypto.NewEncryptionClient(sess, s3crypto.AESGCMContentCipherBuilder(handler))
 //
 // deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewEncryptionClient(prov client.ConfigProvider, builder ContentCipherBuilder, options ...func(*EncryptionClient)) *EncryptionClient {
@@ -81,6 +82,7 @@ func NewEncryptionClient(prov client.ConfigProvider, builder ContentCipherBuilde
 // that data to S3.
 //
 // Example:
+//
 //	svc := s3crypto.NewEncryptionClient(session.Must(session.NewSession()), s3crypto.AESGCMContentCipherBuilder(handler))
 //	req, out := svc.PutObjectRequest(&s3.PutObjectInput {
 //	  Key: aws.String("testKey"),

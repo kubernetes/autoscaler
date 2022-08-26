@@ -30,14 +30,13 @@ const opAddLFTagsToResource = "AddLFTagsToResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddLFTagsToResourceRequest method.
+//	req, resp := client.AddLFTagsToResourceRequest(params)
 //
-//    // Example sending a request using the AddLFTagsToResourceRequest method.
-//    req, resp := client.AddLFTagsToResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/AddLFTagsToResource
 func (c *LakeFormation) AddLFTagsToResourceRequest(input *AddLFTagsToResourceInput) (req *request.Request, output *AddLFTagsToResourceOutput) {
@@ -68,23 +67,24 @@ func (c *LakeFormation) AddLFTagsToResourceRequest(input *AddLFTagsToResourceInp
 // API operation AddLFTagsToResource for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/AddLFTagsToResource
 func (c *LakeFormation) AddLFTagsToResource(input *AddLFTagsToResourceInput) (*AddLFTagsToResourceOutput, error) {
@@ -124,14 +124,13 @@ const opBatchGrantPermissions = "BatchGrantPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGrantPermissionsRequest method.
+//	req, resp := client.BatchGrantPermissionsRequest(params)
 //
-//    // Example sending a request using the BatchGrantPermissionsRequest method.
-//    req, resp := client.BatchGrantPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/BatchGrantPermissions
 func (c *LakeFormation) BatchGrantPermissionsRequest(input *BatchGrantPermissionsInput) (req *request.Request, output *BatchGrantPermissionsOutput) {
@@ -162,11 +161,12 @@ func (c *LakeFormation) BatchGrantPermissionsRequest(input *BatchGrantPermission
 // API operation BatchGrantPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/BatchGrantPermissions
 func (c *LakeFormation) BatchGrantPermissions(input *BatchGrantPermissionsInput) (*BatchGrantPermissionsOutput, error) {
@@ -206,14 +206,13 @@ const opBatchRevokePermissions = "BatchRevokePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchRevokePermissionsRequest method.
+//	req, resp := client.BatchRevokePermissionsRequest(params)
 //
-//    // Example sending a request using the BatchRevokePermissionsRequest method.
-//    req, resp := client.BatchRevokePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/BatchRevokePermissions
 func (c *LakeFormation) BatchRevokePermissionsRequest(input *BatchRevokePermissionsInput) (req *request.Request, output *BatchRevokePermissionsOutput) {
@@ -244,11 +243,12 @@ func (c *LakeFormation) BatchRevokePermissionsRequest(input *BatchRevokePermissi
 // API operation BatchRevokePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/BatchRevokePermissions
 func (c *LakeFormation) BatchRevokePermissions(input *BatchRevokePermissionsInput) (*BatchRevokePermissionsOutput, error) {
@@ -288,14 +288,13 @@ const opCancelTransaction = "CancelTransaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelTransactionRequest method.
+//	req, resp := client.CancelTransactionRequest(params)
 //
-//    // Example sending a request using the CancelTransactionRequest method.
-//    req, resp := client.CancelTransactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CancelTransaction
 func (c *LakeFormation) CancelTransactionRequest(input *CancelTransactionInput) (req *request.Request, output *CancelTransactionOutput) {
@@ -328,28 +327,29 @@ func (c *LakeFormation) CancelTransactionRequest(input *CancelTransactionInput) 
 // API operation CancelTransaction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * TransactionCommittedException
-//   Contains details about an error where the specified transaction has already
-//   been committed and cannot be used for UpdateTableObjects.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * TransactionCommitInProgressException
-//   Contains details about an error related to a transaction commit that was
-//   in progress.
+//   - TransactionCommittedException
+//     Contains details about an error where the specified transaction has already
+//     been committed and cannot be used for UpdateTableObjects.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - TransactionCommitInProgressException
+//     Contains details about an error related to a transaction commit that was
+//     in progress.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CancelTransaction
 func (c *LakeFormation) CancelTransaction(input *CancelTransactionInput) (*CancelTransactionOutput, error) {
@@ -389,14 +389,13 @@ const opCommitTransaction = "CommitTransaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CommitTransactionRequest method.
+//	req, resp := client.CommitTransactionRequest(params)
 //
-//    // Example sending a request using the CommitTransactionRequest method.
-//    req, resp := client.CommitTransactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CommitTransaction
 func (c *LakeFormation) CommitTransactionRequest(input *CommitTransactionInput) (req *request.Request, output *CommitTransactionOutput) {
@@ -429,23 +428,24 @@ func (c *LakeFormation) CommitTransactionRequest(input *CommitTransactionInput) 
 // API operation CommitTransaction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * TransactionCanceledException
-//   Contains details about an error related to a transaction that was cancelled.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - TransactionCanceledException
+//     Contains details about an error related to a transaction that was cancelled.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CommitTransaction
 func (c *LakeFormation) CommitTransaction(input *CommitTransactionInput) (*CommitTransactionOutput, error) {
@@ -485,14 +485,13 @@ const opCreateDataCellsFilter = "CreateDataCellsFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataCellsFilterRequest method.
+//	req, resp := client.CreateDataCellsFilterRequest(params)
 //
-//    // Example sending a request using the CreateDataCellsFilterRequest method.
-//    req, resp := client.CreateDataCellsFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CreateDataCellsFilter
 func (c *LakeFormation) CreateDataCellsFilterRequest(input *CreateDataCellsFilterInput) (req *request.Request, output *CreateDataCellsFilterOutput) {
@@ -525,26 +524,27 @@ func (c *LakeFormation) CreateDataCellsFilterRequest(input *CreateDataCellsFilte
 // API operation CreateDataCellsFilter for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CreateDataCellsFilter
 func (c *LakeFormation) CreateDataCellsFilter(input *CreateDataCellsFilterInput) (*CreateDataCellsFilterOutput, error) {
@@ -584,14 +584,13 @@ const opCreateLFTag = "CreateLFTag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLFTagRequest method.
+//	req, resp := client.CreateLFTagRequest(params)
 //
-//    // Example sending a request using the CreateLFTagRequest method.
-//    req, resp := client.CreateLFTagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CreateLFTag
 func (c *LakeFormation) CreateLFTagRequest(input *CreateLFTagInput) (req *request.Request, output *CreateLFTagOutput) {
@@ -623,23 +622,24 @@ func (c *LakeFormation) CreateLFTagRequest(input *CreateLFTagInput) (req *reques
 // API operation CreateLFTag for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/CreateLFTag
 func (c *LakeFormation) CreateLFTag(input *CreateLFTagInput) (*CreateLFTagOutput, error) {
@@ -679,14 +679,13 @@ const opDeleteDataCellsFilter = "DeleteDataCellsFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataCellsFilterRequest method.
+//	req, resp := client.DeleteDataCellsFilterRequest(params)
 //
-//    // Example sending a request using the DeleteDataCellsFilterRequest method.
-//    req, resp := client.DeleteDataCellsFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteDataCellsFilter
 func (c *LakeFormation) DeleteDataCellsFilterRequest(input *DeleteDataCellsFilterInput) (req *request.Request, output *DeleteDataCellsFilterOutput) {
@@ -718,20 +717,21 @@ func (c *LakeFormation) DeleteDataCellsFilterRequest(input *DeleteDataCellsFilte
 // API operation DeleteDataCellsFilter for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteDataCellsFilter
 func (c *LakeFormation) DeleteDataCellsFilter(input *DeleteDataCellsFilterInput) (*DeleteDataCellsFilterOutput, error) {
@@ -771,14 +771,13 @@ const opDeleteLFTag = "DeleteLFTag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLFTagRequest method.
+//	req, resp := client.DeleteLFTagRequest(params)
 //
-//    // Example sending a request using the DeleteLFTagRequest method.
-//    req, resp := client.DeleteLFTagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteLFTag
 func (c *LakeFormation) DeleteLFTagRequest(input *DeleteLFTagInput) (req *request.Request, output *DeleteLFTagOutput) {
@@ -815,20 +814,21 @@ func (c *LakeFormation) DeleteLFTagRequest(input *DeleteLFTagInput) (req *reques
 // API operation DeleteLFTag for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteLFTag
 func (c *LakeFormation) DeleteLFTag(input *DeleteLFTagInput) (*DeleteLFTagOutput, error) {
@@ -868,14 +868,13 @@ const opDeleteObjectsOnCancel = "DeleteObjectsOnCancel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteObjectsOnCancelRequest method.
+//	req, resp := client.DeleteObjectsOnCancelRequest(params)
 //
-//    // Example sending a request using the DeleteObjectsOnCancelRequest method.
-//    req, resp := client.DeleteObjectsOnCancelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteObjectsOnCancel
 func (c *LakeFormation) DeleteObjectsOnCancelRequest(input *DeleteObjectsOnCancelInput) (req *request.Request, output *DeleteObjectsOnCancelOutput) {
@@ -914,31 +913,32 @@ func (c *LakeFormation) DeleteObjectsOnCancelRequest(input *DeleteObjectsOnCance
 // API operation DeleteObjectsOnCancel for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * TransactionCommittedException
-//   Contains details about an error where the specified transaction has already
-//   been committed and cannot be used for UpdateTableObjects.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * TransactionCanceledException
-//   Contains details about an error related to a transaction that was cancelled.
+//   - TransactionCommittedException
+//     Contains details about an error where the specified transaction has already
+//     been committed and cannot be used for UpdateTableObjects.
 //
-//   * ResourceNotReadyException
-//   Contains details about an error related to a resource which is not ready
-//   for a transaction.
+//   - TransactionCanceledException
+//     Contains details about an error related to a transaction that was cancelled.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNotReadyException
+//     Contains details about an error related to a resource which is not ready
+//     for a transaction.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeleteObjectsOnCancel
 func (c *LakeFormation) DeleteObjectsOnCancel(input *DeleteObjectsOnCancelInput) (*DeleteObjectsOnCancelOutput, error) {
@@ -978,14 +978,13 @@ const opDeregisterResource = "DeregisterResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterResourceRequest method.
+//	req, resp := client.DeregisterResourceRequest(params)
 //
-//    // Example sending a request using the DeregisterResourceRequest method.
-//    req, resp := client.DeregisterResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeregisterResource
 func (c *LakeFormation) DeregisterResourceRequest(input *DeregisterResourceInput) (req *request.Request, output *DeregisterResourceOutput) {
@@ -1020,17 +1019,18 @@ func (c *LakeFormation) DeregisterResourceRequest(input *DeregisterResourceInput
 // API operation DeregisterResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DeregisterResource
 func (c *LakeFormation) DeregisterResource(input *DeregisterResourceInput) (*DeregisterResourceOutput, error) {
@@ -1070,14 +1070,13 @@ const opDescribeResource = "DescribeResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResourceRequest method.
+//	req, resp := client.DescribeResourceRequest(params)
 //
-//    // Example sending a request using the DescribeResourceRequest method.
-//    req, resp := client.DescribeResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DescribeResource
 func (c *LakeFormation) DescribeResourceRequest(input *DescribeResourceInput) (req *request.Request, output *DescribeResourceOutput) {
@@ -1109,17 +1108,18 @@ func (c *LakeFormation) DescribeResourceRequest(input *DescribeResourceInput) (r
 // API operation DescribeResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DescribeResource
 func (c *LakeFormation) DescribeResource(input *DescribeResourceInput) (*DescribeResourceOutput, error) {
@@ -1159,14 +1159,13 @@ const opDescribeTransaction = "DescribeTransaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTransactionRequest method.
+//	req, resp := client.DescribeTransactionRequest(params)
 //
-//    // Example sending a request using the DescribeTransactionRequest method.
-//    req, resp := client.DescribeTransactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DescribeTransaction
 func (c *LakeFormation) DescribeTransactionRequest(input *DescribeTransactionInput) (req *request.Request, output *DescribeTransactionOutput) {
@@ -1197,17 +1196,18 @@ func (c *LakeFormation) DescribeTransactionRequest(input *DescribeTransactionInp
 // API operation DescribeTransaction for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/DescribeTransaction
 func (c *LakeFormation) DescribeTransaction(input *DescribeTransactionInput) (*DescribeTransactionOutput, error) {
@@ -1247,14 +1247,13 @@ const opExtendTransaction = "ExtendTransaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExtendTransactionRequest method.
+//	req, resp := client.ExtendTransactionRequest(params)
 //
-//    // Example sending a request using the ExtendTransactionRequest method.
-//    req, resp := client.ExtendTransactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ExtendTransaction
 func (c *LakeFormation) ExtendTransactionRequest(input *ExtendTransactionInput) (req *request.Request, output *ExtendTransactionOutput) {
@@ -1290,28 +1289,29 @@ func (c *LakeFormation) ExtendTransactionRequest(input *ExtendTransactionInput) 
 // API operation ExtendTransaction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * TransactionCommittedException
-//   Contains details about an error where the specified transaction has already
-//   been committed and cannot be used for UpdateTableObjects.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * TransactionCanceledException
-//   Contains details about an error related to a transaction that was cancelled.
+//   - TransactionCommittedException
+//     Contains details about an error where the specified transaction has already
+//     been committed and cannot be used for UpdateTableObjects.
 //
-//   * TransactionCommitInProgressException
-//   Contains details about an error related to a transaction commit that was
-//   in progress.
+//   - TransactionCanceledException
+//     Contains details about an error related to a transaction that was cancelled.
+//
+//   - TransactionCommitInProgressException
+//     Contains details about an error related to a transaction commit that was
+//     in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ExtendTransaction
 func (c *LakeFormation) ExtendTransaction(input *ExtendTransactionInput) (*ExtendTransactionOutput, error) {
@@ -1351,14 +1351,13 @@ const opGetDataLakeSettings = "GetDataLakeSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataLakeSettingsRequest method.
+//	req, resp := client.GetDataLakeSettingsRequest(params)
 //
-//    // Example sending a request using the GetDataLakeSettingsRequest method.
-//    req, resp := client.GetDataLakeSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetDataLakeSettings
 func (c *LakeFormation) GetDataLakeSettingsRequest(input *GetDataLakeSettingsInput) (req *request.Request, output *GetDataLakeSettingsOutput) {
@@ -1390,14 +1389,15 @@ func (c *LakeFormation) GetDataLakeSettingsRequest(input *GetDataLakeSettingsInp
 // API operation GetDataLakeSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetDataLakeSettings
 func (c *LakeFormation) GetDataLakeSettings(input *GetDataLakeSettingsInput) (*GetDataLakeSettingsOutput, error) {
@@ -1437,14 +1437,13 @@ const opGetEffectivePermissionsForPath = "GetEffectivePermissionsForPath"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEffectivePermissionsForPathRequest method.
+//	req, resp := client.GetEffectivePermissionsForPathRequest(params)
 //
-//    // Example sending a request using the GetEffectivePermissionsForPathRequest method.
-//    req, resp := client.GetEffectivePermissionsForPathRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetEffectivePermissionsForPath
 func (c *LakeFormation) GetEffectivePermissionsForPathRequest(input *GetEffectivePermissionsForPathInput) (req *request.Request, output *GetEffectivePermissionsForPathOutput) {
@@ -1483,17 +1482,18 @@ func (c *LakeFormation) GetEffectivePermissionsForPathRequest(input *GetEffectiv
 // API operation GetEffectivePermissionsForPath for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetEffectivePermissionsForPath
 func (c *LakeFormation) GetEffectivePermissionsForPath(input *GetEffectivePermissionsForPathInput) (*GetEffectivePermissionsForPathOutput, error) {
@@ -1525,15 +1525,14 @@ func (c *LakeFormation) GetEffectivePermissionsForPathWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetEffectivePermissionsForPath operation.
-//    pageNum := 0
-//    err := client.GetEffectivePermissionsForPathPages(params,
-//        func(page *lakeformation.GetEffectivePermissionsForPathOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetEffectivePermissionsForPath operation.
+//	pageNum := 0
+//	err := client.GetEffectivePermissionsForPathPages(params,
+//	    func(page *lakeformation.GetEffectivePermissionsForPathOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) GetEffectivePermissionsForPathPages(input *GetEffectivePermissionsForPathInput, fn func(*GetEffectivePermissionsForPathOutput, bool) bool) error {
 	return c.GetEffectivePermissionsForPathPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1585,14 +1584,13 @@ const opGetLFTag = "GetLFTag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLFTagRequest method.
+//	req, resp := client.GetLFTagRequest(params)
 //
-//    // Example sending a request using the GetLFTagRequest method.
-//    req, resp := client.GetLFTagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetLFTag
 func (c *LakeFormation) GetLFTagRequest(input *GetLFTagInput) (req *request.Request, output *GetLFTagOutput) {
@@ -1623,20 +1621,21 @@ func (c *LakeFormation) GetLFTagRequest(input *GetLFTagInput) (req *request.Requ
 // API operation GetLFTag for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetLFTag
 func (c *LakeFormation) GetLFTag(input *GetLFTagInput) (*GetLFTagOutput, error) {
@@ -1676,14 +1675,13 @@ const opGetQueryState = "GetQueryState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetQueryStateRequest method.
+//	req, resp := client.GetQueryStateRequest(params)
 //
-//    // Example sending a request using the GetQueryStateRequest method.
-//    req, resp := client.GetQueryStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetQueryState
 func (c *LakeFormation) GetQueryStateRequest(input *GetQueryStateInput) (req *request.Request, output *GetQueryStateOutput) {
@@ -1719,14 +1717,15 @@ func (c *LakeFormation) GetQueryStateRequest(input *GetQueryStateInput) (req *re
 // API operation GetQueryState for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetQueryState
 func (c *LakeFormation) GetQueryState(input *GetQueryStateInput) (*GetQueryStateOutput, error) {
@@ -1766,14 +1765,13 @@ const opGetQueryStatistics = "GetQueryStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetQueryStatisticsRequest method.
+//	req, resp := client.GetQueryStatisticsRequest(params)
 //
-//    // Example sending a request using the GetQueryStatisticsRequest method.
-//    req, resp := client.GetQueryStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetQueryStatistics
 func (c *LakeFormation) GetQueryStatisticsRequest(input *GetQueryStatisticsInput) (req *request.Request, output *GetQueryStatisticsOutput) {
@@ -1806,23 +1804,24 @@ func (c *LakeFormation) GetQueryStatisticsRequest(input *GetQueryStatisticsInput
 // API operation GetQueryStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * StatisticsNotReadyYetException
-//   Contains details about an error related to statistics not being ready.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - StatisticsNotReadyYetException
+//     Contains details about an error related to statistics not being ready.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ExpiredException
-//   Contains details about an error where the query request expired.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ThrottledException
-//   Contains details about an error where the query request was throttled.
+//   - ExpiredException
+//     Contains details about an error where the query request expired.
+//
+//   - ThrottledException
+//     Contains details about an error where the query request was throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetQueryStatistics
 func (c *LakeFormation) GetQueryStatistics(input *GetQueryStatisticsInput) (*GetQueryStatisticsOutput, error) {
@@ -1862,14 +1861,13 @@ const opGetResourceLFTags = "GetResourceLFTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceLFTagsRequest method.
+//	req, resp := client.GetResourceLFTagsRequest(params)
 //
-//    // Example sending a request using the GetResourceLFTagsRequest method.
-//    req, resp := client.GetResourceLFTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetResourceLFTags
 func (c *LakeFormation) GetResourceLFTagsRequest(input *GetResourceLFTagsInput) (req *request.Request, output *GetResourceLFTagsOutput) {
@@ -1900,23 +1898,24 @@ func (c *LakeFormation) GetResourceLFTagsRequest(input *GetResourceLFTagsInput) 
 // API operation GetResourceLFTags for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * GlueEncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - GlueEncryptionException
+//     An encryption operation failed.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetResourceLFTags
 func (c *LakeFormation) GetResourceLFTags(input *GetResourceLFTagsInput) (*GetResourceLFTagsOutput, error) {
@@ -1956,14 +1955,13 @@ const opGetTableObjects = "GetTableObjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTableObjectsRequest method.
+//	req, resp := client.GetTableObjectsRequest(params)
 //
-//    // Example sending a request using the GetTableObjectsRequest method.
-//    req, resp := client.GetTableObjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTableObjects
 func (c *LakeFormation) GetTableObjectsRequest(input *GetTableObjectsInput) (req *request.Request, output *GetTableObjectsOutput) {
@@ -2001,28 +1999,29 @@ func (c *LakeFormation) GetTableObjectsRequest(input *GetTableObjectsInput) (req
 // API operation GetTableObjects for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * TransactionCommittedException
-//   Contains details about an error where the specified transaction has already
-//   been committed and cannot be used for UpdateTableObjects.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * TransactionCanceledException
-//   Contains details about an error related to a transaction that was cancelled.
+//   - TransactionCommittedException
+//     Contains details about an error where the specified transaction has already
+//     been committed and cannot be used for UpdateTableObjects.
 //
-//   * ResourceNotReadyException
-//   Contains details about an error related to a resource which is not ready
-//   for a transaction.
+//   - TransactionCanceledException
+//     Contains details about an error related to a transaction that was cancelled.
+//
+//   - ResourceNotReadyException
+//     Contains details about an error related to a resource which is not ready
+//     for a transaction.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTableObjects
 func (c *LakeFormation) GetTableObjects(input *GetTableObjectsInput) (*GetTableObjectsOutput, error) {
@@ -2054,15 +2053,14 @@ func (c *LakeFormation) GetTableObjectsWithContext(ctx aws.Context, input *GetTa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTableObjects operation.
-//    pageNum := 0
-//    err := client.GetTableObjectsPages(params,
-//        func(page *lakeformation.GetTableObjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTableObjects operation.
+//	pageNum := 0
+//	err := client.GetTableObjectsPages(params,
+//	    func(page *lakeformation.GetTableObjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) GetTableObjectsPages(input *GetTableObjectsInput, fn func(*GetTableObjectsOutput, bool) bool) error {
 	return c.GetTableObjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2114,14 +2112,13 @@ const opGetTemporaryGluePartitionCredentials = "GetTemporaryGluePartitionCredent
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTemporaryGluePartitionCredentialsRequest method.
+//	req, resp := client.GetTemporaryGluePartitionCredentialsRequest(params)
 //
-//    // Example sending a request using the GetTemporaryGluePartitionCredentialsRequest method.
-//    req, resp := client.GetTemporaryGluePartitionCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTemporaryGluePartitionCredentials
 func (c *LakeFormation) GetTemporaryGluePartitionCredentialsRequest(input *GetTemporaryGluePartitionCredentialsInput) (req *request.Request, output *GetTemporaryGluePartitionCredentialsOutput) {
@@ -2155,26 +2152,27 @@ func (c *LakeFormation) GetTemporaryGluePartitionCredentialsRequest(input *GetTe
 // API operation GetTemporaryGluePartitionCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * PermissionTypeMismatchException
-//   The engine does not support filtering data based on the enforced permissions.
-//   For example, if you call the GetTemporaryGlueTableCredentials operation with
-//   SupportedPermissionType equal to ColumnPermission, but cell-level permissions
-//   exist on the table, this exception is thrown.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - PermissionTypeMismatchException
+//     The engine does not support filtering data based on the enforced permissions.
+//     For example, if you call the GetTemporaryGlueTableCredentials operation with
+//     SupportedPermissionType equal to ColumnPermission, but cell-level permissions
+//     exist on the table, this exception is thrown.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTemporaryGluePartitionCredentials
 func (c *LakeFormation) GetTemporaryGluePartitionCredentials(input *GetTemporaryGluePartitionCredentialsInput) (*GetTemporaryGluePartitionCredentialsOutput, error) {
@@ -2214,14 +2212,13 @@ const opGetTemporaryGlueTableCredentials = "GetTemporaryGlueTableCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTemporaryGlueTableCredentialsRequest method.
+//	req, resp := client.GetTemporaryGlueTableCredentialsRequest(params)
 //
-//    // Example sending a request using the GetTemporaryGlueTableCredentialsRequest method.
-//    req, resp := client.GetTemporaryGlueTableCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTemporaryGlueTableCredentials
 func (c *LakeFormation) GetTemporaryGlueTableCredentialsRequest(input *GetTemporaryGlueTableCredentialsInput) (req *request.Request, output *GetTemporaryGlueTableCredentialsOutput) {
@@ -2255,26 +2252,27 @@ func (c *LakeFormation) GetTemporaryGlueTableCredentialsRequest(input *GetTempor
 // API operation GetTemporaryGlueTableCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * PermissionTypeMismatchException
-//   The engine does not support filtering data based on the enforced permissions.
-//   For example, if you call the GetTemporaryGlueTableCredentials operation with
-//   SupportedPermissionType equal to ColumnPermission, but cell-level permissions
-//   exist on the table, this exception is thrown.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - PermissionTypeMismatchException
+//     The engine does not support filtering data based on the enforced permissions.
+//     For example, if you call the GetTemporaryGlueTableCredentials operation with
+//     SupportedPermissionType equal to ColumnPermission, but cell-level permissions
+//     exist on the table, this exception is thrown.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetTemporaryGlueTableCredentials
 func (c *LakeFormation) GetTemporaryGlueTableCredentials(input *GetTemporaryGlueTableCredentialsInput) (*GetTemporaryGlueTableCredentialsOutput, error) {
@@ -2314,14 +2312,13 @@ const opGetWorkUnitResults = "GetWorkUnitResults"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkUnitResultsRequest method.
+//	req, resp := client.GetWorkUnitResultsRequest(params)
 //
-//    // Example sending a request using the GetWorkUnitResultsRequest method.
-//    req, resp := client.GetWorkUnitResultsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetWorkUnitResults
 func (c *LakeFormation) GetWorkUnitResultsRequest(input *GetWorkUnitResultsInput) (req *request.Request, output *GetWorkUnitResultsOutput) {
@@ -2355,20 +2352,21 @@ func (c *LakeFormation) GetWorkUnitResultsRequest(input *GetWorkUnitResultsInput
 // API operation GetWorkUnitResults for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ExpiredException
-//   Contains details about an error where the query request expired.
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
-//   * ThrottledException
-//   Contains details about an error where the query request was throttled.
+//   - ExpiredException
+//     Contains details about an error where the query request expired.
+//
+//   - ThrottledException
+//     Contains details about an error where the query request was throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetWorkUnitResults
 func (c *LakeFormation) GetWorkUnitResults(input *GetWorkUnitResultsInput) (*GetWorkUnitResultsOutput, error) {
@@ -2408,14 +2406,13 @@ const opGetWorkUnits = "GetWorkUnits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkUnitsRequest method.
+//	req, resp := client.GetWorkUnitsRequest(params)
 //
-//    // Example sending a request using the GetWorkUnitsRequest method.
-//    req, resp := client.GetWorkUnitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetWorkUnits
 func (c *LakeFormation) GetWorkUnitsRequest(input *GetWorkUnitsInput) (req *request.Request, output *GetWorkUnitsOutput) {
@@ -2454,20 +2451,21 @@ func (c *LakeFormation) GetWorkUnitsRequest(input *GetWorkUnitsInput) (req *requ
 // API operation GetWorkUnits for usage and error information.
 //
 // Returned Error Types:
-//   * WorkUnitsNotReadyYetException
-//   Contains details about an error related to work units not being ready.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - WorkUnitsNotReadyYetException
+//     Contains details about an error related to work units not being ready.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ExpiredException
-//   Contains details about an error where the query request expired.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ExpiredException
+//     Contains details about an error where the query request expired.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GetWorkUnits
 func (c *LakeFormation) GetWorkUnits(input *GetWorkUnitsInput) (*GetWorkUnitsOutput, error) {
@@ -2499,15 +2497,14 @@ func (c *LakeFormation) GetWorkUnitsWithContext(ctx aws.Context, input *GetWorkU
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetWorkUnits operation.
-//    pageNum := 0
-//    err := client.GetWorkUnitsPages(params,
-//        func(page *lakeformation.GetWorkUnitsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetWorkUnits operation.
+//	pageNum := 0
+//	err := client.GetWorkUnitsPages(params,
+//	    func(page *lakeformation.GetWorkUnitsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) GetWorkUnitsPages(input *GetWorkUnitsInput, fn func(*GetWorkUnitsOutput, bool) bool) error {
 	return c.GetWorkUnitsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2559,14 +2556,13 @@ const opGrantPermissions = "GrantPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GrantPermissionsRequest method.
+//	req, resp := client.GrantPermissionsRequest(params)
 //
-//    // Example sending a request using the GrantPermissionsRequest method.
-//    req, resp := client.GrantPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GrantPermissions
 func (c *LakeFormation) GrantPermissionsRequest(input *GrantPermissionsInput) (req *request.Request, output *GrantPermissionsOutput) {
@@ -2602,14 +2598,15 @@ func (c *LakeFormation) GrantPermissionsRequest(input *GrantPermissionsInput) (r
 // API operation GrantPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/GrantPermissions
 func (c *LakeFormation) GrantPermissions(input *GrantPermissionsInput) (*GrantPermissionsOutput, error) {
@@ -2649,14 +2646,13 @@ const opListDataCellsFilter = "ListDataCellsFilter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataCellsFilterRequest method.
+//	req, resp := client.ListDataCellsFilterRequest(params)
 //
-//    // Example sending a request using the ListDataCellsFilterRequest method.
-//    req, resp := client.ListDataCellsFilterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListDataCellsFilter
 func (c *LakeFormation) ListDataCellsFilterRequest(input *ListDataCellsFilterInput) (req *request.Request, output *ListDataCellsFilterOutput) {
@@ -2693,17 +2689,18 @@ func (c *LakeFormation) ListDataCellsFilterRequest(input *ListDataCellsFilterInp
 // API operation ListDataCellsFilter for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListDataCellsFilter
 func (c *LakeFormation) ListDataCellsFilter(input *ListDataCellsFilterInput) (*ListDataCellsFilterOutput, error) {
@@ -2735,15 +2732,14 @@ func (c *LakeFormation) ListDataCellsFilterWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataCellsFilter operation.
-//    pageNum := 0
-//    err := client.ListDataCellsFilterPages(params,
-//        func(page *lakeformation.ListDataCellsFilterOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataCellsFilter operation.
+//	pageNum := 0
+//	err := client.ListDataCellsFilterPages(params,
+//	    func(page *lakeformation.ListDataCellsFilterOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListDataCellsFilterPages(input *ListDataCellsFilterInput, fn func(*ListDataCellsFilterOutput, bool) bool) error {
 	return c.ListDataCellsFilterPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2795,14 +2791,13 @@ const opListLFTags = "ListLFTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLFTagsRequest method.
+//	req, resp := client.ListLFTagsRequest(params)
 //
-//    // Example sending a request using the ListLFTagsRequest method.
-//    req, resp := client.ListLFTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListLFTags
 func (c *LakeFormation) ListLFTagsRequest(input *ListLFTagsInput) (req *request.Request, output *ListLFTagsOutput) {
@@ -2839,20 +2834,21 @@ func (c *LakeFormation) ListLFTagsRequest(input *ListLFTagsInput) (req *request.
 // API operation ListLFTags for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListLFTags
 func (c *LakeFormation) ListLFTags(input *ListLFTagsInput) (*ListLFTagsOutput, error) {
@@ -2884,15 +2880,14 @@ func (c *LakeFormation) ListLFTagsWithContext(ctx aws.Context, input *ListLFTags
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLFTags operation.
-//    pageNum := 0
-//    err := client.ListLFTagsPages(params,
-//        func(page *lakeformation.ListLFTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLFTags operation.
+//	pageNum := 0
+//	err := client.ListLFTagsPages(params,
+//	    func(page *lakeformation.ListLFTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListLFTagsPages(input *ListLFTagsInput, fn func(*ListLFTagsOutput, bool) bool) error {
 	return c.ListLFTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2944,14 +2939,13 @@ const opListPermissions = "ListPermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionsRequest method.
+//	req, resp := client.ListPermissionsRequest(params)
 //
-//    // Example sending a request using the ListPermissionsRequest method.
-//    req, resp := client.ListPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListPermissions
 func (c *LakeFormation) ListPermissionsRequest(input *ListPermissionsInput) (req *request.Request, output *ListPermissionsOutput) {
@@ -2995,14 +2989,15 @@ func (c *LakeFormation) ListPermissionsRequest(input *ListPermissionsInput) (req
 // API operation ListPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListPermissions
 func (c *LakeFormation) ListPermissions(input *ListPermissionsInput) (*ListPermissionsOutput, error) {
@@ -3034,15 +3029,14 @@ func (c *LakeFormation) ListPermissionsWithContext(ctx aws.Context, input *ListP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissions operation.
-//    pageNum := 0
-//    err := client.ListPermissionsPages(params,
-//        func(page *lakeformation.ListPermissionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissions operation.
+//	pageNum := 0
+//	err := client.ListPermissionsPages(params,
+//	    func(page *lakeformation.ListPermissionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListPermissionsPages(input *ListPermissionsInput, fn func(*ListPermissionsOutput, bool) bool) error {
 	return c.ListPermissionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3094,14 +3088,13 @@ const opListResources = "ListResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourcesRequest method.
+//	req, resp := client.ListResourcesRequest(params)
 //
-//    // Example sending a request using the ListResourcesRequest method.
-//    req, resp := client.ListResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListResources
 func (c *LakeFormation) ListResourcesRequest(input *ListResourcesInput) (req *request.Request, output *ListResourcesOutput) {
@@ -3138,14 +3131,15 @@ func (c *LakeFormation) ListResourcesRequest(input *ListResourcesInput) (req *re
 // API operation ListResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListResources
 func (c *LakeFormation) ListResources(input *ListResourcesInput) (*ListResourcesOutput, error) {
@@ -3177,15 +3171,14 @@ func (c *LakeFormation) ListResourcesWithContext(ctx aws.Context, input *ListRes
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResources operation.
-//    pageNum := 0
-//    err := client.ListResourcesPages(params,
-//        func(page *lakeformation.ListResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResources operation.
+//	pageNum := 0
+//	err := client.ListResourcesPages(params,
+//	    func(page *lakeformation.ListResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListResourcesPages(input *ListResourcesInput, fn func(*ListResourcesOutput, bool) bool) error {
 	return c.ListResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3237,14 +3230,13 @@ const opListTableStorageOptimizers = "ListTableStorageOptimizers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTableStorageOptimizersRequest method.
+//	req, resp := client.ListTableStorageOptimizersRequest(params)
 //
-//    // Example sending a request using the ListTableStorageOptimizersRequest method.
-//    req, resp := client.ListTableStorageOptimizersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListTableStorageOptimizers
 func (c *LakeFormation) ListTableStorageOptimizersRequest(input *ListTableStorageOptimizersInput) (req *request.Request, output *ListTableStorageOptimizersOutput) {
@@ -3282,17 +3274,18 @@ func (c *LakeFormation) ListTableStorageOptimizersRequest(input *ListTableStorag
 // API operation ListTableStorageOptimizers for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListTableStorageOptimizers
 func (c *LakeFormation) ListTableStorageOptimizers(input *ListTableStorageOptimizersInput) (*ListTableStorageOptimizersOutput, error) {
@@ -3324,15 +3317,14 @@ func (c *LakeFormation) ListTableStorageOptimizersWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTableStorageOptimizers operation.
-//    pageNum := 0
-//    err := client.ListTableStorageOptimizersPages(params,
-//        func(page *lakeformation.ListTableStorageOptimizersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTableStorageOptimizers operation.
+//	pageNum := 0
+//	err := client.ListTableStorageOptimizersPages(params,
+//	    func(page *lakeformation.ListTableStorageOptimizersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListTableStorageOptimizersPages(input *ListTableStorageOptimizersInput, fn func(*ListTableStorageOptimizersOutput, bool) bool) error {
 	return c.ListTableStorageOptimizersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3384,14 +3376,13 @@ const opListTransactions = "ListTransactions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTransactionsRequest method.
+//	req, resp := client.ListTransactionsRequest(params)
 //
-//    // Example sending a request using the ListTransactionsRequest method.
-//    req, resp := client.ListTransactionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListTransactions
 func (c *LakeFormation) ListTransactionsRequest(input *ListTransactionsInput) (req *request.Request, output *ListTransactionsOutput) {
@@ -3433,14 +3424,15 @@ func (c *LakeFormation) ListTransactionsRequest(input *ListTransactionsInput) (r
 // API operation ListTransactions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/ListTransactions
 func (c *LakeFormation) ListTransactions(input *ListTransactionsInput) (*ListTransactionsOutput, error) {
@@ -3472,15 +3464,14 @@ func (c *LakeFormation) ListTransactionsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTransactions operation.
-//    pageNum := 0
-//    err := client.ListTransactionsPages(params,
-//        func(page *lakeformation.ListTransactionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTransactions operation.
+//	pageNum := 0
+//	err := client.ListTransactionsPages(params,
+//	    func(page *lakeformation.ListTransactionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) ListTransactionsPages(input *ListTransactionsInput, fn func(*ListTransactionsOutput, bool) bool) error {
 	return c.ListTransactionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3532,14 +3523,13 @@ const opPutDataLakeSettings = "PutDataLakeSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDataLakeSettingsRequest method.
+//	req, resp := client.PutDataLakeSettingsRequest(params)
 //
-//    // Example sending a request using the PutDataLakeSettingsRequest method.
-//    req, resp := client.PutDataLakeSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/PutDataLakeSettings
 func (c *LakeFormation) PutDataLakeSettingsRequest(input *PutDataLakeSettingsInput) (req *request.Request, output *PutDataLakeSettingsOutput) {
@@ -3577,11 +3567,12 @@ func (c *LakeFormation) PutDataLakeSettingsRequest(input *PutDataLakeSettingsInp
 // API operation PutDataLakeSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/PutDataLakeSettings
 func (c *LakeFormation) PutDataLakeSettings(input *PutDataLakeSettingsInput) (*PutDataLakeSettingsOutput, error) {
@@ -3621,14 +3612,13 @@ const opRegisterResource = "RegisterResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterResourceRequest method.
+//	req, resp := client.RegisterResourceRequest(params)
 //
-//    // Example sending a request using the RegisterResourceRequest method.
-//    req, resp := client.RegisterResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RegisterResource
 func (c *LakeFormation) RegisterResourceRequest(input *RegisterResourceInput) (req *request.Request, output *RegisterResourceOutput) {
@@ -3678,26 +3668,27 @@ func (c *LakeFormation) RegisterResourceRequest(input *RegisterResourceInput) (r
 // API operation RegisterResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AlreadyExistsException
-//   A resource to be created or added already exists.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - AlreadyExistsException
+//     A resource to be created or added already exists.
 //
-//   * ResourceNumberLimitExceededException
-//   A resource numerical limit was exceeded.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - ResourceNumberLimitExceededException
+//     A resource numerical limit was exceeded.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RegisterResource
 func (c *LakeFormation) RegisterResource(input *RegisterResourceInput) (*RegisterResourceOutput, error) {
@@ -3737,14 +3728,13 @@ const opRemoveLFTagsFromResource = "RemoveLFTagsFromResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveLFTagsFromResourceRequest method.
+//	req, resp := client.RemoveLFTagsFromResourceRequest(params)
 //
-//    // Example sending a request using the RemoveLFTagsFromResourceRequest method.
-//    req, resp := client.RemoveLFTagsFromResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RemoveLFTagsFromResource
 func (c *LakeFormation) RemoveLFTagsFromResourceRequest(input *RemoveLFTagsFromResourceInput) (req *request.Request, output *RemoveLFTagsFromResourceOutput) {
@@ -3777,26 +3767,27 @@ func (c *LakeFormation) RemoveLFTagsFromResourceRequest(input *RemoveLFTagsFromR
 // API operation RemoveLFTagsFromResource for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * GlueEncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - GlueEncryptionException
+//     An encryption operation failed.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RemoveLFTagsFromResource
 func (c *LakeFormation) RemoveLFTagsFromResource(input *RemoveLFTagsFromResourceInput) (*RemoveLFTagsFromResourceOutput, error) {
@@ -3836,14 +3827,13 @@ const opRevokePermissions = "RevokePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokePermissionsRequest method.
+//	req, resp := client.RevokePermissionsRequest(params)
 //
-//    // Example sending a request using the RevokePermissionsRequest method.
-//    req, resp := client.RevokePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RevokePermissions
 func (c *LakeFormation) RevokePermissionsRequest(input *RevokePermissionsInput) (req *request.Request, output *RevokePermissionsOutput) {
@@ -3876,14 +3866,15 @@ func (c *LakeFormation) RevokePermissionsRequest(input *RevokePermissionsInput) 
 // API operation RevokePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
+//
+//   - InvalidInputException
+//     The input provided was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/RevokePermissions
 func (c *LakeFormation) RevokePermissions(input *RevokePermissionsInput) (*RevokePermissionsOutput, error) {
@@ -3923,14 +3914,13 @@ const opSearchDatabasesByLFTags = "SearchDatabasesByLFTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchDatabasesByLFTagsRequest method.
+//	req, resp := client.SearchDatabasesByLFTagsRequest(params)
 //
-//    // Example sending a request using the SearchDatabasesByLFTagsRequest method.
-//    req, resp := client.SearchDatabasesByLFTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/SearchDatabasesByLFTags
 func (c *LakeFormation) SearchDatabasesByLFTagsRequest(input *SearchDatabasesByLFTagsInput) (req *request.Request, output *SearchDatabasesByLFTagsOutput) {
@@ -3971,23 +3961,24 @@ func (c *LakeFormation) SearchDatabasesByLFTagsRequest(input *SearchDatabasesByL
 // API operation SearchDatabasesByLFTags for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * GlueEncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - GlueEncryptionException
+//     An encryption operation failed.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/SearchDatabasesByLFTags
 func (c *LakeFormation) SearchDatabasesByLFTags(input *SearchDatabasesByLFTagsInput) (*SearchDatabasesByLFTagsOutput, error) {
@@ -4019,15 +4010,14 @@ func (c *LakeFormation) SearchDatabasesByLFTagsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchDatabasesByLFTags operation.
-//    pageNum := 0
-//    err := client.SearchDatabasesByLFTagsPages(params,
-//        func(page *lakeformation.SearchDatabasesByLFTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchDatabasesByLFTags operation.
+//	pageNum := 0
+//	err := client.SearchDatabasesByLFTagsPages(params,
+//	    func(page *lakeformation.SearchDatabasesByLFTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) SearchDatabasesByLFTagsPages(input *SearchDatabasesByLFTagsInput, fn func(*SearchDatabasesByLFTagsOutput, bool) bool) error {
 	return c.SearchDatabasesByLFTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4079,14 +4069,13 @@ const opSearchTablesByLFTags = "SearchTablesByLFTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchTablesByLFTagsRequest method.
+//	req, resp := client.SearchTablesByLFTagsRequest(params)
 //
-//    // Example sending a request using the SearchTablesByLFTagsRequest method.
-//    req, resp := client.SearchTablesByLFTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/SearchTablesByLFTags
 func (c *LakeFormation) SearchTablesByLFTagsRequest(input *SearchTablesByLFTagsInput) (req *request.Request, output *SearchTablesByLFTagsOutput) {
@@ -4127,23 +4116,24 @@ func (c *LakeFormation) SearchTablesByLFTagsRequest(input *SearchTablesByLFTagsI
 // API operation SearchTablesByLFTags for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * GlueEncryptionException
-//   An encryption operation failed.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - GlueEncryptionException
+//     An encryption operation failed.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/SearchTablesByLFTags
 func (c *LakeFormation) SearchTablesByLFTags(input *SearchTablesByLFTagsInput) (*SearchTablesByLFTagsOutput, error) {
@@ -4175,15 +4165,14 @@ func (c *LakeFormation) SearchTablesByLFTagsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchTablesByLFTags operation.
-//    pageNum := 0
-//    err := client.SearchTablesByLFTagsPages(params,
-//        func(page *lakeformation.SearchTablesByLFTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchTablesByLFTags operation.
+//	pageNum := 0
+//	err := client.SearchTablesByLFTagsPages(params,
+//	    func(page *lakeformation.SearchTablesByLFTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LakeFormation) SearchTablesByLFTagsPages(input *SearchTablesByLFTagsInput, fn func(*SearchTablesByLFTagsOutput, bool) bool) error {
 	return c.SearchTablesByLFTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4235,14 +4224,13 @@ const opStartQueryPlanning = "StartQueryPlanning"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartQueryPlanningRequest method.
+//	req, resp := client.StartQueryPlanningRequest(params)
 //
-//    // Example sending a request using the StartQueryPlanningRequest method.
-//    req, resp := client.StartQueryPlanningRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/StartQueryPlanning
 func (c *LakeFormation) StartQueryPlanningRequest(input *StartQueryPlanningInput) (req *request.Request, output *StartQueryPlanningOutput) {
@@ -4278,17 +4266,18 @@ func (c *LakeFormation) StartQueryPlanningRequest(input *StartQueryPlanningInput
 // API operation StartQueryPlanning for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * ThrottledException
-//   Contains details about an error where the query request was throttled.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - ThrottledException
+//     Contains details about an error where the query request was throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/StartQueryPlanning
 func (c *LakeFormation) StartQueryPlanning(input *StartQueryPlanningInput) (*StartQueryPlanningOutput, error) {
@@ -4328,14 +4317,13 @@ const opStartTransaction = "StartTransaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTransactionRequest method.
+//	req, resp := client.StartTransactionRequest(params)
 //
-//    // Example sending a request using the StartTransactionRequest method.
-//    req, resp := client.StartTransactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/StartTransaction
 func (c *LakeFormation) StartTransactionRequest(input *StartTransactionInput) (req *request.Request, output *StartTransactionOutput) {
@@ -4367,11 +4355,12 @@ func (c *LakeFormation) StartTransactionRequest(input *StartTransactionInput) (r
 // API operation StartTransaction for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
+//
+//   - OperationTimeoutException
+//     The operation timed out.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/StartTransaction
 func (c *LakeFormation) StartTransaction(input *StartTransactionInput) (*StartTransactionOutput, error) {
@@ -4411,14 +4400,13 @@ const opUpdateLFTag = "UpdateLFTag"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLFTagRequest method.
+//	req, resp := client.UpdateLFTagRequest(params)
 //
-//    // Example sending a request using the UpdateLFTagRequest method.
-//    req, resp := client.UpdateLFTagRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateLFTag
 func (c *LakeFormation) UpdateLFTagRequest(input *UpdateLFTagInput) (req *request.Request, output *UpdateLFTagOutput) {
@@ -4455,23 +4443,24 @@ func (c *LakeFormation) UpdateLFTagRequest(input *UpdateLFTagInput) (req *reques
 // API operation UpdateLFTag for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
+//
+//   - AccessDeniedException
+//     Access to a resource was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateLFTag
 func (c *LakeFormation) UpdateLFTag(input *UpdateLFTagInput) (*UpdateLFTagOutput, error) {
@@ -4511,14 +4500,13 @@ const opUpdateResource = "UpdateResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourceRequest method.
+//	req, resp := client.UpdateResourceRequest(params)
 //
-//    // Example sending a request using the UpdateResourceRequest method.
-//    req, resp := client.UpdateResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateResource
 func (c *LakeFormation) UpdateResourceRequest(input *UpdateResourceInput) (req *request.Request, output *UpdateResourceOutput) {
@@ -4551,17 +4539,18 @@ func (c *LakeFormation) UpdateResourceRequest(input *UpdateResourceInput) (req *
 // API operation UpdateResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
+//
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateResource
 func (c *LakeFormation) UpdateResource(input *UpdateResourceInput) (*UpdateResourceOutput, error) {
@@ -4601,14 +4590,13 @@ const opUpdateTableObjects = "UpdateTableObjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTableObjectsRequest method.
+//	req, resp := client.UpdateTableObjectsRequest(params)
 //
-//    // Example sending a request using the UpdateTableObjectsRequest method.
-//    req, resp := client.UpdateTableObjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateTableObjects
 func (c *LakeFormation) UpdateTableObjectsRequest(input *UpdateTableObjectsInput) (req *request.Request, output *UpdateTableObjectsOutput) {
@@ -4641,35 +4629,36 @@ func (c *LakeFormation) UpdateTableObjectsRequest(input *UpdateTableObjectsInput
 // API operation UpdateTableObjects for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal service error occurred.
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - InternalServiceException
+//     An internal service error occurred.
 //
-//   * OperationTimeoutException
-//   The operation timed out.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * EntityNotFoundException
-//   A specified entity does not exist
+//   - OperationTimeoutException
+//     The operation timed out.
 //
-//   * TransactionCommittedException
-//   Contains details about an error where the specified transaction has already
-//   been committed and cannot be used for UpdateTableObjects.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * TransactionCanceledException
-//   Contains details about an error related to a transaction that was cancelled.
+//   - TransactionCommittedException
+//     Contains details about an error where the specified transaction has already
+//     been committed and cannot be used for UpdateTableObjects.
 //
-//   * TransactionCommitInProgressException
-//   Contains details about an error related to a transaction commit that was
-//   in progress.
+//   - TransactionCanceledException
+//     Contains details about an error related to a transaction that was cancelled.
 //
-//   * ResourceNotReadyException
-//   Contains details about an error related to a resource which is not ready
-//   for a transaction.
+//   - TransactionCommitInProgressException
+//     Contains details about an error related to a transaction commit that was
+//     in progress.
 //
-//   * ConcurrentModificationException
-//   Two processes are trying to modify a resource simultaneously.
+//   - ResourceNotReadyException
+//     Contains details about an error related to a resource which is not ready
+//     for a transaction.
+//
+//   - ConcurrentModificationException
+//     Two processes are trying to modify a resource simultaneously.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateTableObjects
 func (c *LakeFormation) UpdateTableObjects(input *UpdateTableObjectsInput) (*UpdateTableObjectsOutput, error) {
@@ -4709,14 +4698,13 @@ const opUpdateTableStorageOptimizer = "UpdateTableStorageOptimizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTableStorageOptimizerRequest method.
+//	req, resp := client.UpdateTableStorageOptimizerRequest(params)
 //
-//    // Example sending a request using the UpdateTableStorageOptimizerRequest method.
-//    req, resp := client.UpdateTableStorageOptimizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateTableStorageOptimizer
 func (c *LakeFormation) UpdateTableStorageOptimizerRequest(input *UpdateTableStorageOptimizerInput) (req *request.Request, output *UpdateTableStorageOptimizerOutput) {
@@ -4747,17 +4735,18 @@ func (c *LakeFormation) UpdateTableStorageOptimizerRequest(input *UpdateTableSto
 // API operation UpdateTableStorageOptimizer for usage and error information.
 //
 // Returned Error Types:
-//   * EntityNotFoundException
-//   A specified entity does not exist
 //
-//   * InvalidInputException
-//   The input provided was not valid.
+//   - EntityNotFoundException
+//     A specified entity does not exist
 //
-//   * AccessDeniedException
-//   Access to a resource was denied.
+//   - InvalidInputException
+//     The input provided was not valid.
 //
-//   * InternalServiceException
-//   An internal service error occurred.
+//   - AccessDeniedException
+//     Access to a resource was denied.
+//
+//   - InternalServiceException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lakeformation-2017-03-31/UpdateTableStorageOptimizer
 func (c *LakeFormation) UpdateTableStorageOptimizer(input *UpdateTableStorageOptimizerInput) (*UpdateTableStorageOptimizerOutput, error) {

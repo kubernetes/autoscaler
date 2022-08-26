@@ -27,14 +27,13 @@ const opListRealtimeContactAnalysisSegments = "ListRealtimeContactAnalysisSegmen
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRealtimeContactAnalysisSegmentsRequest method.
+//	req, resp := client.ListRealtimeContactAnalysisSegmentsRequest(params)
 //
-//    // Example sending a request using the ListRealtimeContactAnalysisSegmentsRequest method.
-//    req, resp := client.ListRealtimeContactAnalysisSegmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connect-contact-lens-2020-08-21/ListRealtimeContactAnalysisSegments
 func (c *ConnectContactLens) ListRealtimeContactAnalysisSegmentsRequest(input *ListRealtimeContactAnalysisSegmentsInput) (req *request.Request, output *ListRealtimeContactAnalysisSegmentsOutput) {
@@ -71,20 +70,21 @@ func (c *ConnectContactLens) ListRealtimeContactAnalysisSegmentsRequest(input *L
 // API operation ListRealtimeContactAnalysisSegments for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServiceException
-//   Request processing failed due to an error or failure with the service.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
-//   * ThrottlingException
-//   The throttling limit has been exceeded.
+//   - InternalServiceException
+//     Request processing failed due to an error or failure with the service.
+//
+//   - ThrottlingException
+//     The throttling limit has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connect-contact-lens-2020-08-21/ListRealtimeContactAnalysisSegments
 func (c *ConnectContactLens) ListRealtimeContactAnalysisSegments(input *ListRealtimeContactAnalysisSegmentsInput) (*ListRealtimeContactAnalysisSegmentsOutput, error) {
@@ -116,15 +116,14 @@ func (c *ConnectContactLens) ListRealtimeContactAnalysisSegmentsWithContext(ctx 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRealtimeContactAnalysisSegments operation.
-//    pageNum := 0
-//    err := client.ListRealtimeContactAnalysisSegmentsPages(params,
-//        func(page *connectcontactlens.ListRealtimeContactAnalysisSegmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRealtimeContactAnalysisSegments operation.
+//	pageNum := 0
+//	err := client.ListRealtimeContactAnalysisSegmentsPages(params,
+//	    func(page *connectcontactlens.ListRealtimeContactAnalysisSegmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectContactLens) ListRealtimeContactAnalysisSegmentsPages(input *ListRealtimeContactAnalysisSegmentsInput, fn func(*ListRealtimeContactAnalysisSegmentsOutput, bool) bool) error {
 	return c.ListRealtimeContactAnalysisSegmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }

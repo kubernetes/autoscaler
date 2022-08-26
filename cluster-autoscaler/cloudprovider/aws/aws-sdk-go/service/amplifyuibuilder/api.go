@@ -29,14 +29,13 @@ const opCreateComponent = "CreateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateComponentRequest method.
+//	req, resp := client.CreateComponentRequest(params)
 //
-//    // Example sending a request using the CreateComponentRequest method.
-//    req, resp := client.CreateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateComponent
 func (c *AmplifyUIBuilder) CreateComponentRequest(input *CreateComponentInput) (req *request.Request, output *CreateComponentOutput) {
@@ -67,19 +66,20 @@ func (c *AmplifyUIBuilder) CreateComponentRequest(input *CreateComponentInput) (
 // API operation CreateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You exceeded your service quota. Service quotas, also referred to as limits,
-//   are the maximum number of service resources or operations for your Amazon
-//   Web Services account.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - ServiceQuotaExceededException
+//     You exceeded your service quota. Service quotas, also referred to as limits,
+//     are the maximum number of service resources or operations for your Amazon
+//     Web Services account.
 //
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateComponent
 func (c *AmplifyUIBuilder) CreateComponent(input *CreateComponentInput) (*CreateComponentOutput, error) {
@@ -119,14 +119,13 @@ const opCreateTheme = "CreateTheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateThemeRequest method.
+//	req, resp := client.CreateThemeRequest(params)
 //
-//    // Example sending a request using the CreateThemeRequest method.
-//    req, resp := client.CreateThemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateTheme
 func (c *AmplifyUIBuilder) CreateThemeRequest(input *CreateThemeInput) (req *request.Request, output *CreateThemeOutput) {
@@ -157,19 +156,20 @@ func (c *AmplifyUIBuilder) CreateThemeRequest(input *CreateThemeInput) (req *req
 // API operation CreateTheme for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   You exceeded your service quota. Service quotas, also referred to as limits,
-//   are the maximum number of service resources or operations for your Amazon
-//   Web Services account.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - ServiceQuotaExceededException
+//     You exceeded your service quota. Service quotas, also referred to as limits,
+//     are the maximum number of service resources or operations for your Amazon
+//     Web Services account.
 //
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateTheme
 func (c *AmplifyUIBuilder) CreateTheme(input *CreateThemeInput) (*CreateThemeOutput, error) {
@@ -209,14 +209,13 @@ const opDeleteComponent = "DeleteComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteComponentRequest method.
+//	req, resp := client.DeleteComponentRequest(params)
 //
-//    // Example sending a request using the DeleteComponentRequest method.
-//    req, resp := client.DeleteComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteComponent
 func (c *AmplifyUIBuilder) DeleteComponentRequest(input *DeleteComponentInput) (req *request.Request, output *DeleteComponentOutput) {
@@ -248,14 +247,15 @@ func (c *AmplifyUIBuilder) DeleteComponentRequest(input *DeleteComponentInput) (
 // API operation DeleteComponent for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteComponent
 func (c *AmplifyUIBuilder) DeleteComponent(input *DeleteComponentInput) (*DeleteComponentOutput, error) {
@@ -295,14 +295,13 @@ const opDeleteTheme = "DeleteTheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteThemeRequest method.
+//	req, resp := client.DeleteThemeRequest(params)
 //
-//    // Example sending a request using the DeleteThemeRequest method.
-//    req, resp := client.DeleteThemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteTheme
 func (c *AmplifyUIBuilder) DeleteThemeRequest(input *DeleteThemeInput) (req *request.Request, output *DeleteThemeOutput) {
@@ -334,14 +333,15 @@ func (c *AmplifyUIBuilder) DeleteThemeRequest(input *DeleteThemeInput) (req *req
 // API operation DeleteTheme for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteTheme
 func (c *AmplifyUIBuilder) DeleteTheme(input *DeleteThemeInput) (*DeleteThemeOutput, error) {
@@ -381,14 +381,13 @@ const opExchangeCodeForToken = "ExchangeCodeForToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExchangeCodeForTokenRequest method.
+//	req, resp := client.ExchangeCodeForTokenRequest(params)
 //
-//    // Example sending a request using the ExchangeCodeForTokenRequest method.
-//    req, resp := client.ExchangeCodeForTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExchangeCodeForToken
 func (c *AmplifyUIBuilder) ExchangeCodeForTokenRequest(input *ExchangeCodeForTokenInput) (req *request.Request, output *ExchangeCodeForTokenOutput) {
@@ -419,8 +418,8 @@ func (c *AmplifyUIBuilder) ExchangeCodeForTokenRequest(input *ExchangeCodeForTok
 // API operation ExchangeCodeForToken for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExchangeCodeForToken
 func (c *AmplifyUIBuilder) ExchangeCodeForToken(input *ExchangeCodeForTokenInput) (*ExchangeCodeForTokenOutput, error) {
@@ -460,14 +459,13 @@ const opExportComponents = "ExportComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportComponentsRequest method.
+//	req, resp := client.ExportComponentsRequest(params)
 //
-//    // Example sending a request using the ExportComponentsRequest method.
-//    req, resp := client.ExportComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportComponents
 func (c *AmplifyUIBuilder) ExportComponentsRequest(input *ExportComponentsInput) (req *request.Request, output *ExportComponentsOutput) {
@@ -505,11 +503,12 @@ func (c *AmplifyUIBuilder) ExportComponentsRequest(input *ExportComponentsInput)
 // API operation ExportComponents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportComponents
 func (c *AmplifyUIBuilder) ExportComponents(input *ExportComponentsInput) (*ExportComponentsOutput, error) {
@@ -541,15 +540,14 @@ func (c *AmplifyUIBuilder) ExportComponentsWithContext(ctx aws.Context, input *E
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ExportComponents operation.
-//    pageNum := 0
-//    err := client.ExportComponentsPages(params,
-//        func(page *amplifyuibuilder.ExportComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ExportComponents operation.
+//	pageNum := 0
+//	err := client.ExportComponentsPages(params,
+//	    func(page *amplifyuibuilder.ExportComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AmplifyUIBuilder) ExportComponentsPages(input *ExportComponentsInput, fn func(*ExportComponentsOutput, bool) bool) error {
 	return c.ExportComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -601,14 +599,13 @@ const opExportThemes = "ExportThemes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportThemesRequest method.
+//	req, resp := client.ExportThemesRequest(params)
 //
-//    // Example sending a request using the ExportThemesRequest method.
-//    req, resp := client.ExportThemesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportThemes
 func (c *AmplifyUIBuilder) ExportThemesRequest(input *ExportThemesInput) (req *request.Request, output *ExportThemesOutput) {
@@ -646,11 +643,12 @@ func (c *AmplifyUIBuilder) ExportThemesRequest(input *ExportThemesInput) (req *r
 // API operation ExportThemes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportThemes
 func (c *AmplifyUIBuilder) ExportThemes(input *ExportThemesInput) (*ExportThemesOutput, error) {
@@ -682,15 +680,14 @@ func (c *AmplifyUIBuilder) ExportThemesWithContext(ctx aws.Context, input *Expor
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ExportThemes operation.
-//    pageNum := 0
-//    err := client.ExportThemesPages(params,
-//        func(page *amplifyuibuilder.ExportThemesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ExportThemes operation.
+//	pageNum := 0
+//	err := client.ExportThemesPages(params,
+//	    func(page *amplifyuibuilder.ExportThemesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AmplifyUIBuilder) ExportThemesPages(input *ExportThemesInput, fn func(*ExportThemesOutput, bool) bool) error {
 	return c.ExportThemesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -742,14 +739,13 @@ const opGetComponent = "GetComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComponentRequest method.
+//	req, resp := client.GetComponentRequest(params)
 //
-//    // Example sending a request using the GetComponentRequest method.
-//    req, resp := client.GetComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetComponent
 func (c *AmplifyUIBuilder) GetComponentRequest(input *GetComponentInput) (req *request.Request, output *GetComponentOutput) {
@@ -780,14 +776,15 @@ func (c *AmplifyUIBuilder) GetComponentRequest(input *GetComponentInput) (req *r
 // API operation GetComponent for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetComponent
 func (c *AmplifyUIBuilder) GetComponent(input *GetComponentInput) (*GetComponentOutput, error) {
@@ -827,14 +824,13 @@ const opGetTheme = "GetTheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetThemeRequest method.
+//	req, resp := client.GetThemeRequest(params)
 //
-//    // Example sending a request using the GetThemeRequest method.
-//    req, resp := client.GetThemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetTheme
 func (c *AmplifyUIBuilder) GetThemeRequest(input *GetThemeInput) (req *request.Request, output *GetThemeOutput) {
@@ -865,14 +861,15 @@ func (c *AmplifyUIBuilder) GetThemeRequest(input *GetThemeInput) (req *request.R
 // API operation GetTheme for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetTheme
 func (c *AmplifyUIBuilder) GetTheme(input *GetThemeInput) (*GetThemeOutput, error) {
@@ -912,14 +909,13 @@ const opListComponents = "ListComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListComponentsRequest method.
+//	req, resp := client.ListComponentsRequest(params)
 //
-//    // Example sending a request using the ListComponentsRequest method.
-//    req, resp := client.ListComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListComponents
 func (c *AmplifyUIBuilder) ListComponentsRequest(input *ListComponentsInput) (req *request.Request, output *ListComponentsOutput) {
@@ -956,11 +952,12 @@ func (c *AmplifyUIBuilder) ListComponentsRequest(input *ListComponentsInput) (re
 // API operation ListComponents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListComponents
 func (c *AmplifyUIBuilder) ListComponents(input *ListComponentsInput) (*ListComponentsOutput, error) {
@@ -992,15 +989,14 @@ func (c *AmplifyUIBuilder) ListComponentsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListComponents operation.
-//    pageNum := 0
-//    err := client.ListComponentsPages(params,
-//        func(page *amplifyuibuilder.ListComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListComponents operation.
+//	pageNum := 0
+//	err := client.ListComponentsPages(params,
+//	    func(page *amplifyuibuilder.ListComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AmplifyUIBuilder) ListComponentsPages(input *ListComponentsInput, fn func(*ListComponentsOutput, bool) bool) error {
 	return c.ListComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1052,14 +1048,13 @@ const opListThemes = "ListThemes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListThemesRequest method.
+//	req, resp := client.ListThemesRequest(params)
 //
-//    // Example sending a request using the ListThemesRequest method.
-//    req, resp := client.ListThemesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListThemes
 func (c *AmplifyUIBuilder) ListThemesRequest(input *ListThemesInput) (req *request.Request, output *ListThemesOutput) {
@@ -1096,11 +1091,12 @@ func (c *AmplifyUIBuilder) ListThemesRequest(input *ListThemesInput) (req *reque
 // API operation ListThemes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListThemes
 func (c *AmplifyUIBuilder) ListThemes(input *ListThemesInput) (*ListThemesOutput, error) {
@@ -1132,15 +1128,14 @@ func (c *AmplifyUIBuilder) ListThemesWithContext(ctx aws.Context, input *ListThe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListThemes operation.
-//    pageNum := 0
-//    err := client.ListThemesPages(params,
-//        func(page *amplifyuibuilder.ListThemesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListThemes operation.
+//	pageNum := 0
+//	err := client.ListThemesPages(params,
+//	    func(page *amplifyuibuilder.ListThemesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AmplifyUIBuilder) ListThemesPages(input *ListThemesInput, fn func(*ListThemesOutput, bool) bool) error {
 	return c.ListThemesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1192,14 +1187,13 @@ const opRefreshToken = "RefreshToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RefreshTokenRequest method.
+//	req, resp := client.RefreshTokenRequest(params)
 //
-//    // Example sending a request using the RefreshTokenRequest method.
-//    req, resp := client.RefreshTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/RefreshToken
 func (c *AmplifyUIBuilder) RefreshTokenRequest(input *RefreshTokenInput) (req *request.Request, output *RefreshTokenOutput) {
@@ -1230,8 +1224,8 @@ func (c *AmplifyUIBuilder) RefreshTokenRequest(input *RefreshTokenInput) (req *r
 // API operation RefreshToken for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/RefreshToken
 func (c *AmplifyUIBuilder) RefreshToken(input *RefreshTokenInput) (*RefreshTokenOutput, error) {
@@ -1271,14 +1265,13 @@ const opUpdateComponent = "UpdateComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateComponentRequest method.
+//	req, resp := client.UpdateComponentRequest(params)
 //
-//    // Example sending a request using the UpdateComponentRequest method.
-//    req, resp := client.UpdateComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateComponent
 func (c *AmplifyUIBuilder) UpdateComponentRequest(input *UpdateComponentInput) (req *request.Request, output *UpdateComponentOutput) {
@@ -1309,14 +1302,15 @@ func (c *AmplifyUIBuilder) UpdateComponentRequest(input *UpdateComponentInput) (
 // API operation UpdateComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
 //
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateComponent
 func (c *AmplifyUIBuilder) UpdateComponent(input *UpdateComponentInput) (*UpdateComponentOutput, error) {
@@ -1356,14 +1350,13 @@ const opUpdateTheme = "UpdateTheme"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateThemeRequest method.
+//	req, resp := client.UpdateThemeRequest(params)
 //
-//    // Example sending a request using the UpdateThemeRequest method.
-//    req, resp := client.UpdateThemeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateTheme
 func (c *AmplifyUIBuilder) UpdateThemeRequest(input *UpdateThemeInput) (req *request.Request, output *UpdateThemeOutput) {
@@ -1394,14 +1387,15 @@ func (c *AmplifyUIBuilder) UpdateThemeRequest(input *UpdateThemeInput) (req *req
 // API operation UpdateTheme for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
 //
-//   * InternalServerException
-//   An internal error has occurred. Please retry your request.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
-//   * InvalidParameterException
-//   An invalid or out-of-range value was supplied for the input parameter.
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateTheme
 func (c *AmplifyUIBuilder) UpdateTheme(input *UpdateThemeInput) (*UpdateThemeOutput, error) {

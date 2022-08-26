@@ -29,14 +29,13 @@ const opApproveSkill = "ApproveSkill"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApproveSkillRequest method.
+//	req, resp := client.ApproveSkillRequest(params)
 //
-//    // Example sending a request using the ApproveSkillRequest method.
-//    req, resp := client.ApproveSkillRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ApproveSkill
 func (c *AlexaForBusiness) ApproveSkillRequest(input *ApproveSkillInput) (req *request.Request, output *ApproveSkillOutput) {
@@ -70,14 +69,15 @@ func (c *AlexaForBusiness) ApproveSkillRequest(input *ApproveSkillInput) (req *r
 // API operation ApproveSkill for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ApproveSkill
 func (c *AlexaForBusiness) ApproveSkill(input *ApproveSkillInput) (*ApproveSkillOutput, error) {
@@ -117,14 +117,13 @@ const opAssociateContactWithAddressBook = "AssociateContactWithAddressBook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateContactWithAddressBookRequest method.
+//	req, resp := client.AssociateContactWithAddressBookRequest(params)
 //
-//    // Example sending a request using the AssociateContactWithAddressBookRequest method.
-//    req, resp := client.AssociateContactWithAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateContactWithAddressBook
 func (c *AlexaForBusiness) AssociateContactWithAddressBookRequest(input *AssociateContactWithAddressBookInput) (req *request.Request, output *AssociateContactWithAddressBookOutput) {
@@ -156,8 +155,8 @@ func (c *AlexaForBusiness) AssociateContactWithAddressBookRequest(input *Associa
 // API operation AssociateContactWithAddressBook for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateContactWithAddressBook
 func (c *AlexaForBusiness) AssociateContactWithAddressBook(input *AssociateContactWithAddressBookInput) (*AssociateContactWithAddressBookOutput, error) {
@@ -197,14 +196,13 @@ const opAssociateDeviceWithNetworkProfile = "AssociateDeviceWithNetworkProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDeviceWithNetworkProfileRequest method.
+//	req, resp := client.AssociateDeviceWithNetworkProfileRequest(params)
 //
-//    // Example sending a request using the AssociateDeviceWithNetworkProfileRequest method.
-//    req, resp := client.AssociateDeviceWithNetworkProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateDeviceWithNetworkProfile
 func (c *AlexaForBusiness) AssociateDeviceWithNetworkProfileRequest(input *AssociateDeviceWithNetworkProfileInput) (req *request.Request, output *AssociateDeviceWithNetworkProfileOutput) {
@@ -236,15 +234,16 @@ func (c *AlexaForBusiness) AssociateDeviceWithNetworkProfileRequest(input *Assoc
 // API operation AssociateDeviceWithNetworkProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateDeviceWithNetworkProfile
 func (c *AlexaForBusiness) AssociateDeviceWithNetworkProfile(input *AssociateDeviceWithNetworkProfileInput) (*AssociateDeviceWithNetworkProfileOutput, error) {
@@ -284,14 +283,13 @@ const opAssociateDeviceWithRoom = "AssociateDeviceWithRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDeviceWithRoomRequest method.
+//	req, resp := client.AssociateDeviceWithRoomRequest(params)
 //
-//    // Example sending a request using the AssociateDeviceWithRoomRequest method.
-//    req, resp := client.AssociateDeviceWithRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateDeviceWithRoom
 func (c *AlexaForBusiness) AssociateDeviceWithRoomRequest(input *AssociateDeviceWithRoomInput) (req *request.Request, output *AssociateDeviceWithRoomOutput) {
@@ -326,15 +324,16 @@ func (c *AlexaForBusiness) AssociateDeviceWithRoomRequest(input *AssociateDevice
 // API operation AssociateDeviceWithRoom for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateDeviceWithRoom
 func (c *AlexaForBusiness) AssociateDeviceWithRoom(input *AssociateDeviceWithRoomInput) (*AssociateDeviceWithRoomOutput, error) {
@@ -374,14 +373,13 @@ const opAssociateSkillGroupWithRoom = "AssociateSkillGroupWithRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateSkillGroupWithRoomRequest method.
+//	req, resp := client.AssociateSkillGroupWithRoomRequest(params)
 //
-//    // Example sending a request using the AssociateSkillGroupWithRoomRequest method.
-//    req, resp := client.AssociateSkillGroupWithRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillGroupWithRoom
 func (c *AlexaForBusiness) AssociateSkillGroupWithRoomRequest(input *AssociateSkillGroupWithRoomInput) (req *request.Request, output *AssociateSkillGroupWithRoomOutput) {
@@ -414,8 +412,8 @@ func (c *AlexaForBusiness) AssociateSkillGroupWithRoomRequest(input *AssociateSk
 // API operation AssociateSkillGroupWithRoom for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillGroupWithRoom
 func (c *AlexaForBusiness) AssociateSkillGroupWithRoom(input *AssociateSkillGroupWithRoomInput) (*AssociateSkillGroupWithRoomOutput, error) {
@@ -455,14 +453,13 @@ const opAssociateSkillWithSkillGroup = "AssociateSkillWithSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateSkillWithSkillGroupRequest method.
+//	req, resp := client.AssociateSkillWithSkillGroupRequest(params)
 //
-//    // Example sending a request using the AssociateSkillWithSkillGroupRequest method.
-//    req, resp := client.AssociateSkillWithSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillWithSkillGroup
 func (c *AlexaForBusiness) AssociateSkillWithSkillGroupRequest(input *AssociateSkillWithSkillGroupInput) (req *request.Request, output *AssociateSkillWithSkillGroupOutput) {
@@ -494,14 +491,15 @@ func (c *AlexaForBusiness) AssociateSkillWithSkillGroupRequest(input *AssociateS
 // API operation AssociateSkillWithSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
-//   * SkillNotLinkedException
-//   The skill must be linked to a third-party account.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - SkillNotLinkedException
+//     The skill must be linked to a third-party account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillWithSkillGroup
 func (c *AlexaForBusiness) AssociateSkillWithSkillGroup(input *AssociateSkillWithSkillGroupInput) (*AssociateSkillWithSkillGroupOutput, error) {
@@ -541,14 +539,13 @@ const opAssociateSkillWithUsers = "AssociateSkillWithUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateSkillWithUsersRequest method.
+//	req, resp := client.AssociateSkillWithUsersRequest(params)
 //
-//    // Example sending a request using the AssociateSkillWithUsersRequest method.
-//    req, resp := client.AssociateSkillWithUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillWithUsers
 func (c *AlexaForBusiness) AssociateSkillWithUsersRequest(input *AssociateSkillWithUsersInput) (req *request.Request, output *AssociateSkillWithUsersOutput) {
@@ -580,11 +577,12 @@ func (c *AlexaForBusiness) AssociateSkillWithUsersRequest(input *AssociateSkillW
 // API operation AssociateSkillWithUsers for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/AssociateSkillWithUsers
 func (c *AlexaForBusiness) AssociateSkillWithUsers(input *AssociateSkillWithUsersInput) (*AssociateSkillWithUsersOutput, error) {
@@ -624,14 +622,13 @@ const opCreateAddressBook = "CreateAddressBook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAddressBookRequest method.
+//	req, resp := client.CreateAddressBookRequest(params)
 //
-//    // Example sending a request using the CreateAddressBookRequest method.
-//    req, resp := client.CreateAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateAddressBook
 func (c *AlexaForBusiness) CreateAddressBookRequest(input *CreateAddressBookInput) (req *request.Request, output *CreateAddressBookOutput) {
@@ -662,11 +659,12 @@ func (c *AlexaForBusiness) CreateAddressBookRequest(input *CreateAddressBookInpu
 // API operation CreateAddressBook for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
+//
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateAddressBook
 func (c *AlexaForBusiness) CreateAddressBook(input *CreateAddressBookInput) (*CreateAddressBookOutput, error) {
@@ -706,14 +704,13 @@ const opCreateBusinessReportSchedule = "CreateBusinessReportSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBusinessReportScheduleRequest method.
+//	req, resp := client.CreateBusinessReportScheduleRequest(params)
 //
-//    // Example sending a request using the CreateBusinessReportScheduleRequest method.
-//    req, resp := client.CreateBusinessReportScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateBusinessReportSchedule
 func (c *AlexaForBusiness) CreateBusinessReportScheduleRequest(input *CreateBusinessReportScheduleInput) (req *request.Request, output *CreateBusinessReportScheduleOutput) {
@@ -745,8 +742,8 @@ func (c *AlexaForBusiness) CreateBusinessReportScheduleRequest(input *CreateBusi
 // API operation CreateBusinessReportSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
+//   - AlreadyExistsException
+//     The resource being created already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateBusinessReportSchedule
 func (c *AlexaForBusiness) CreateBusinessReportSchedule(input *CreateBusinessReportScheduleInput) (*CreateBusinessReportScheduleOutput, error) {
@@ -786,14 +783,13 @@ const opCreateConferenceProvider = "CreateConferenceProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConferenceProviderRequest method.
+//	req, resp := client.CreateConferenceProviderRequest(params)
 //
-//    // Example sending a request using the CreateConferenceProviderRequest method.
-//    req, resp := client.CreateConferenceProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateConferenceProvider
 func (c *AlexaForBusiness) CreateConferenceProviderRequest(input *CreateConferenceProviderInput) (req *request.Request, output *CreateConferenceProviderOutput) {
@@ -824,8 +820,8 @@ func (c *AlexaForBusiness) CreateConferenceProviderRequest(input *CreateConferen
 // API operation CreateConferenceProvider for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
+//   - AlreadyExistsException
+//     The resource being created already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateConferenceProvider
 func (c *AlexaForBusiness) CreateConferenceProvider(input *CreateConferenceProviderInput) (*CreateConferenceProviderOutput, error) {
@@ -865,14 +861,13 @@ const opCreateContact = "CreateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContactRequest method.
+//	req, resp := client.CreateContactRequest(params)
 //
-//    // Example sending a request using the CreateContactRequest method.
-//    req, resp := client.CreateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateContact
 func (c *AlexaForBusiness) CreateContactRequest(input *CreateContactInput) (req *request.Request, output *CreateContactOutput) {
@@ -903,11 +898,12 @@ func (c *AlexaForBusiness) CreateContactRequest(input *CreateContactInput) (req 
 // API operation CreateContact for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
+//
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateContact
 func (c *AlexaForBusiness) CreateContact(input *CreateContactInput) (*CreateContactOutput, error) {
@@ -947,14 +943,13 @@ const opCreateGatewayGroup = "CreateGatewayGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGatewayGroupRequest method.
+//	req, resp := client.CreateGatewayGroupRequest(params)
 //
-//    // Example sending a request using the CreateGatewayGroupRequest method.
-//    req, resp := client.CreateGatewayGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateGatewayGroup
 func (c *AlexaForBusiness) CreateGatewayGroupRequest(input *CreateGatewayGroupInput) (req *request.Request, output *CreateGatewayGroupOutput) {
@@ -985,11 +980,12 @@ func (c *AlexaForBusiness) CreateGatewayGroupRequest(input *CreateGatewayGroupIn
 // API operation CreateGatewayGroup for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
+//
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateGatewayGroup
 func (c *AlexaForBusiness) CreateGatewayGroup(input *CreateGatewayGroupInput) (*CreateGatewayGroupOutput, error) {
@@ -1029,14 +1025,13 @@ const opCreateNetworkProfile = "CreateNetworkProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkProfileRequest method.
+//	req, resp := client.CreateNetworkProfileRequest(params)
 //
-//    // Example sending a request using the CreateNetworkProfileRequest method.
-//    req, resp := client.CreateNetworkProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateNetworkProfile
 func (c *AlexaForBusiness) CreateNetworkProfileRequest(input *CreateNetworkProfileInput) (req *request.Request, output *CreateNetworkProfileOutput) {
@@ -1067,20 +1062,21 @@ func (c *AlexaForBusiness) CreateNetworkProfileRequest(input *CreateNetworkProfi
 // API operation CreateNetworkProfile for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
-//   * InvalidCertificateAuthorityException
-//   The Certificate Authority can't issue or revoke a certificate.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
-//   * InvalidServiceLinkedRoleStateException
-//   The service linked role is locked for deletion.
+//   - InvalidCertificateAuthorityException
+//     The Certificate Authority can't issue or revoke a certificate.
+//
+//   - InvalidServiceLinkedRoleStateException
+//     The service linked role is locked for deletion.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateNetworkProfile
 func (c *AlexaForBusiness) CreateNetworkProfile(input *CreateNetworkProfileInput) (*CreateNetworkProfileOutput, error) {
@@ -1120,14 +1116,13 @@ const opCreateProfile = "CreateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProfileRequest method.
+//	req, resp := client.CreateProfileRequest(params)
 //
-//    // Example sending a request using the CreateProfileRequest method.
-//    req, resp := client.CreateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateProfile
 func (c *AlexaForBusiness) CreateProfileRequest(input *CreateProfileInput) (req *request.Request, output *CreateProfileOutput) {
@@ -1158,14 +1153,15 @@ func (c *AlexaForBusiness) CreateProfileRequest(input *CreateProfileInput) (req 
 // API operation CreateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
 //
-//   * AlreadyExistsException
-//   The resource being created already exists.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - AlreadyExistsException
+//     The resource being created already exists.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateProfile
 func (c *AlexaForBusiness) CreateProfile(input *CreateProfileInput) (*CreateProfileOutput, error) {
@@ -1205,14 +1201,13 @@ const opCreateRoom = "CreateRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRoomRequest method.
+//	req, resp := client.CreateRoomRequest(params)
 //
-//    // Example sending a request using the CreateRoomRequest method.
-//    req, resp := client.CreateRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateRoom
 func (c *AlexaForBusiness) CreateRoomRequest(input *CreateRoomInput) (req *request.Request, output *CreateRoomOutput) {
@@ -1243,11 +1238,12 @@ func (c *AlexaForBusiness) CreateRoomRequest(input *CreateRoomInput) (req *reque
 // API operation CreateRoom for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
+//
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateRoom
 func (c *AlexaForBusiness) CreateRoom(input *CreateRoomInput) (*CreateRoomOutput, error) {
@@ -1287,14 +1283,13 @@ const opCreateSkillGroup = "CreateSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSkillGroupRequest method.
+//	req, resp := client.CreateSkillGroupRequest(params)
 //
-//    // Example sending a request using the CreateSkillGroupRequest method.
-//    req, resp := client.CreateSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateSkillGroup
 func (c *AlexaForBusiness) CreateSkillGroupRequest(input *CreateSkillGroupInput) (req *request.Request, output *CreateSkillGroupOutput) {
@@ -1325,14 +1320,15 @@ func (c *AlexaForBusiness) CreateSkillGroupRequest(input *CreateSkillGroupInput)
 // API operation CreateSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * AlreadyExistsException
-//   The resource being created already exists.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - AlreadyExistsException
+//     The resource being created already exists.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateSkillGroup
 func (c *AlexaForBusiness) CreateSkillGroup(input *CreateSkillGroupInput) (*CreateSkillGroupOutput, error) {
@@ -1372,14 +1368,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateUser
 func (c *AlexaForBusiness) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -1410,14 +1405,15 @@ func (c *AlexaForBusiness) CreateUserRequest(input *CreateUserInput) (req *reque
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource in the request is already in use.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - ResourceInUseException
+//     The resource in the request is already in use.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/CreateUser
 func (c *AlexaForBusiness) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -1457,14 +1453,13 @@ const opDeleteAddressBook = "DeleteAddressBook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAddressBookRequest method.
+//	req, resp := client.DeleteAddressBookRequest(params)
 //
-//    // Example sending a request using the DeleteAddressBookRequest method.
-//    req, resp := client.DeleteAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteAddressBook
 func (c *AlexaForBusiness) DeleteAddressBookRequest(input *DeleteAddressBookInput) (req *request.Request, output *DeleteAddressBookOutput) {
@@ -1496,11 +1491,12 @@ func (c *AlexaForBusiness) DeleteAddressBookRequest(input *DeleteAddressBookInpu
 // API operation DeleteAddressBook for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteAddressBook
 func (c *AlexaForBusiness) DeleteAddressBook(input *DeleteAddressBookInput) (*DeleteAddressBookOutput, error) {
@@ -1540,14 +1536,13 @@ const opDeleteBusinessReportSchedule = "DeleteBusinessReportSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBusinessReportScheduleRequest method.
+//	req, resp := client.DeleteBusinessReportScheduleRequest(params)
 //
-//    // Example sending a request using the DeleteBusinessReportScheduleRequest method.
-//    req, resp := client.DeleteBusinessReportScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteBusinessReportSchedule
 func (c *AlexaForBusiness) DeleteBusinessReportScheduleRequest(input *DeleteBusinessReportScheduleInput) (req *request.Request, output *DeleteBusinessReportScheduleOutput) {
@@ -1580,11 +1575,12 @@ func (c *AlexaForBusiness) DeleteBusinessReportScheduleRequest(input *DeleteBusi
 // API operation DeleteBusinessReportSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteBusinessReportSchedule
 func (c *AlexaForBusiness) DeleteBusinessReportSchedule(input *DeleteBusinessReportScheduleInput) (*DeleteBusinessReportScheduleOutput, error) {
@@ -1624,14 +1620,13 @@ const opDeleteConferenceProvider = "DeleteConferenceProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConferenceProviderRequest method.
+//	req, resp := client.DeleteConferenceProviderRequest(params)
 //
-//    // Example sending a request using the DeleteConferenceProviderRequest method.
-//    req, resp := client.DeleteConferenceProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteConferenceProvider
 func (c *AlexaForBusiness) DeleteConferenceProviderRequest(input *DeleteConferenceProviderInput) (req *request.Request, output *DeleteConferenceProviderOutput) {
@@ -1663,8 +1658,8 @@ func (c *AlexaForBusiness) DeleteConferenceProviderRequest(input *DeleteConferen
 // API operation DeleteConferenceProvider for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteConferenceProvider
 func (c *AlexaForBusiness) DeleteConferenceProvider(input *DeleteConferenceProviderInput) (*DeleteConferenceProviderOutput, error) {
@@ -1704,14 +1699,13 @@ const opDeleteContact = "DeleteContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContactRequest method.
+//	req, resp := client.DeleteContactRequest(params)
 //
-//    // Example sending a request using the DeleteContactRequest method.
-//    req, resp := client.DeleteContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteContact
 func (c *AlexaForBusiness) DeleteContactRequest(input *DeleteContactInput) (req *request.Request, output *DeleteContactOutput) {
@@ -1743,11 +1737,12 @@ func (c *AlexaForBusiness) DeleteContactRequest(input *DeleteContactInput) (req 
 // API operation DeleteContact for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteContact
 func (c *AlexaForBusiness) DeleteContact(input *DeleteContactInput) (*DeleteContactOutput, error) {
@@ -1787,14 +1782,13 @@ const opDeleteDevice = "DeleteDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeviceRequest method.
+//	req, resp := client.DeleteDeviceRequest(params)
 //
-//    // Example sending a request using the DeleteDeviceRequest method.
-//    req, resp := client.DeleteDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteDevice
 func (c *AlexaForBusiness) DeleteDeviceRequest(input *DeleteDeviceInput) (req *request.Request, output *DeleteDeviceOutput) {
@@ -1826,14 +1820,15 @@ func (c *AlexaForBusiness) DeleteDeviceRequest(input *DeleteDeviceInput) (req *r
 // API operation DeleteDevice for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * InvalidCertificateAuthorityException
-//   The Certificate Authority can't issue or revoke a certificate.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - InvalidCertificateAuthorityException
+//     The Certificate Authority can't issue or revoke a certificate.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteDevice
 func (c *AlexaForBusiness) DeleteDevice(input *DeleteDeviceInput) (*DeleteDeviceOutput, error) {
@@ -1873,14 +1868,13 @@ const opDeleteDeviceUsageData = "DeleteDeviceUsageData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeviceUsageDataRequest method.
+//	req, resp := client.DeleteDeviceUsageDataRequest(params)
 //
-//    // Example sending a request using the DeleteDeviceUsageDataRequest method.
-//    req, resp := client.DeleteDeviceUsageDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteDeviceUsageData
 func (c *AlexaForBusiness) DeleteDeviceUsageDataRequest(input *DeleteDeviceUsageDataInput) (req *request.Request, output *DeleteDeviceUsageDataOutput) {
@@ -1915,15 +1909,16 @@ func (c *AlexaForBusiness) DeleteDeviceUsageDataRequest(input *DeleteDeviceUsage
 // API operation DeleteDeviceUsageData for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
+//
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteDeviceUsageData
 func (c *AlexaForBusiness) DeleteDeviceUsageData(input *DeleteDeviceUsageDataInput) (*DeleteDeviceUsageDataOutput, error) {
@@ -1963,14 +1958,13 @@ const opDeleteGatewayGroup = "DeleteGatewayGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGatewayGroupRequest method.
+//	req, resp := client.DeleteGatewayGroupRequest(params)
 //
-//    // Example sending a request using the DeleteGatewayGroupRequest method.
-//    req, resp := client.DeleteGatewayGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteGatewayGroup
 func (c *AlexaForBusiness) DeleteGatewayGroupRequest(input *DeleteGatewayGroupInput) (req *request.Request, output *DeleteGatewayGroupOutput) {
@@ -2002,8 +1996,8 @@ func (c *AlexaForBusiness) DeleteGatewayGroupRequest(input *DeleteGatewayGroupIn
 // API operation DeleteGatewayGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAssociatedException
-//   Another resource is associated with the resource in the request.
+//   - ResourceAssociatedException
+//     Another resource is associated with the resource in the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteGatewayGroup
 func (c *AlexaForBusiness) DeleteGatewayGroup(input *DeleteGatewayGroupInput) (*DeleteGatewayGroupOutput, error) {
@@ -2043,14 +2037,13 @@ const opDeleteNetworkProfile = "DeleteNetworkProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkProfileRequest method.
+//	req, resp := client.DeleteNetworkProfileRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkProfileRequest method.
-//    req, resp := client.DeleteNetworkProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteNetworkProfile
 func (c *AlexaForBusiness) DeleteNetworkProfileRequest(input *DeleteNetworkProfileInput) (req *request.Request, output *DeleteNetworkProfileOutput) {
@@ -2082,14 +2075,15 @@ func (c *AlexaForBusiness) DeleteNetworkProfileRequest(input *DeleteNetworkProfi
 // API operation DeleteNetworkProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceInUseException
-//   The resource in the request is already in use.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - ResourceInUseException
+//     The resource in the request is already in use.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteNetworkProfile
 func (c *AlexaForBusiness) DeleteNetworkProfile(input *DeleteNetworkProfileInput) (*DeleteNetworkProfileOutput, error) {
@@ -2129,14 +2123,13 @@ const opDeleteProfile = "DeleteProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfileRequest method.
+//	req, resp := client.DeleteProfileRequest(params)
 //
-//    // Example sending a request using the DeleteProfileRequest method.
-//    req, resp := client.DeleteProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteProfile
 func (c *AlexaForBusiness) DeleteProfileRequest(input *DeleteProfileInput) (req *request.Request, output *DeleteProfileOutput) {
@@ -2168,11 +2161,12 @@ func (c *AlexaForBusiness) DeleteProfileRequest(input *DeleteProfileInput) (req 
 // API operation DeleteProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteProfile
 func (c *AlexaForBusiness) DeleteProfile(input *DeleteProfileInput) (*DeleteProfileOutput, error) {
@@ -2212,14 +2206,13 @@ const opDeleteRoom = "DeleteRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRoomRequest method.
+//	req, resp := client.DeleteRoomRequest(params)
 //
-//    // Example sending a request using the DeleteRoomRequest method.
-//    req, resp := client.DeleteRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteRoom
 func (c *AlexaForBusiness) DeleteRoomRequest(input *DeleteRoomInput) (req *request.Request, output *DeleteRoomOutput) {
@@ -2251,11 +2244,12 @@ func (c *AlexaForBusiness) DeleteRoomRequest(input *DeleteRoomInput) (req *reque
 // API operation DeleteRoom for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteRoom
 func (c *AlexaForBusiness) DeleteRoom(input *DeleteRoomInput) (*DeleteRoomOutput, error) {
@@ -2295,14 +2289,13 @@ const opDeleteRoomSkillParameter = "DeleteRoomSkillParameter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRoomSkillParameterRequest method.
+//	req, resp := client.DeleteRoomSkillParameterRequest(params)
 //
-//    // Example sending a request using the DeleteRoomSkillParameterRequest method.
-//    req, resp := client.DeleteRoomSkillParameterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteRoomSkillParameter
 func (c *AlexaForBusiness) DeleteRoomSkillParameterRequest(input *DeleteRoomSkillParameterInput) (req *request.Request, output *DeleteRoomSkillParameterOutput) {
@@ -2334,8 +2327,8 @@ func (c *AlexaForBusiness) DeleteRoomSkillParameterRequest(input *DeleteRoomSkil
 // API operation DeleteRoomSkillParameter for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteRoomSkillParameter
 func (c *AlexaForBusiness) DeleteRoomSkillParameter(input *DeleteRoomSkillParameterInput) (*DeleteRoomSkillParameterOutput, error) {
@@ -2375,14 +2368,13 @@ const opDeleteSkillAuthorization = "DeleteSkillAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSkillAuthorizationRequest method.
+//	req, resp := client.DeleteSkillAuthorizationRequest(params)
 //
-//    // Example sending a request using the DeleteSkillAuthorizationRequest method.
-//    req, resp := client.DeleteSkillAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteSkillAuthorization
 func (c *AlexaForBusiness) DeleteSkillAuthorizationRequest(input *DeleteSkillAuthorizationInput) (req *request.Request, output *DeleteSkillAuthorizationOutput) {
@@ -2414,11 +2406,12 @@ func (c *AlexaForBusiness) DeleteSkillAuthorizationRequest(input *DeleteSkillAut
 // API operation DeleteSkillAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteSkillAuthorization
 func (c *AlexaForBusiness) DeleteSkillAuthorization(input *DeleteSkillAuthorizationInput) (*DeleteSkillAuthorizationOutput, error) {
@@ -2458,14 +2451,13 @@ const opDeleteSkillGroup = "DeleteSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSkillGroupRequest method.
+//	req, resp := client.DeleteSkillGroupRequest(params)
 //
-//    // Example sending a request using the DeleteSkillGroupRequest method.
-//    req, resp := client.DeleteSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteSkillGroup
 func (c *AlexaForBusiness) DeleteSkillGroupRequest(input *DeleteSkillGroupInput) (req *request.Request, output *DeleteSkillGroupOutput) {
@@ -2497,11 +2489,12 @@ func (c *AlexaForBusiness) DeleteSkillGroupRequest(input *DeleteSkillGroupInput)
 // API operation DeleteSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteSkillGroup
 func (c *AlexaForBusiness) DeleteSkillGroup(input *DeleteSkillGroupInput) (*DeleteSkillGroupOutput, error) {
@@ -2541,14 +2534,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteUser
 func (c *AlexaForBusiness) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -2580,11 +2572,12 @@ func (c *AlexaForBusiness) DeleteUserRequest(input *DeleteUserInput) (req *reque
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DeleteUser
 func (c *AlexaForBusiness) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -2624,14 +2617,13 @@ const opDisassociateContactFromAddressBook = "DisassociateContactFromAddressBook
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateContactFromAddressBookRequest method.
+//	req, resp := client.DisassociateContactFromAddressBookRequest(params)
 //
-//    // Example sending a request using the DisassociateContactFromAddressBookRequest method.
-//    req, resp := client.DisassociateContactFromAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateContactFromAddressBook
 func (c *AlexaForBusiness) DisassociateContactFromAddressBookRequest(input *DisassociateContactFromAddressBookInput) (req *request.Request, output *DisassociateContactFromAddressBookOutput) {
@@ -2699,14 +2691,13 @@ const opDisassociateDeviceFromRoom = "DisassociateDeviceFromRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateDeviceFromRoomRequest method.
+//	req, resp := client.DisassociateDeviceFromRoomRequest(params)
 //
-//    // Example sending a request using the DisassociateDeviceFromRoomRequest method.
-//    req, resp := client.DisassociateDeviceFromRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateDeviceFromRoom
 func (c *AlexaForBusiness) DisassociateDeviceFromRoomRequest(input *DisassociateDeviceFromRoomInput) (req *request.Request, output *DisassociateDeviceFromRoomOutput) {
@@ -2740,12 +2731,13 @@ func (c *AlexaForBusiness) DisassociateDeviceFromRoomRequest(input *Disassociate
 // API operation DisassociateDeviceFromRoom for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateDeviceFromRoom
 func (c *AlexaForBusiness) DisassociateDeviceFromRoom(input *DisassociateDeviceFromRoomInput) (*DisassociateDeviceFromRoomOutput, error) {
@@ -2785,14 +2777,13 @@ const opDisassociateSkillFromSkillGroup = "DisassociateSkillFromSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateSkillFromSkillGroupRequest method.
+//	req, resp := client.DisassociateSkillFromSkillGroupRequest(params)
 //
-//    // Example sending a request using the DisassociateSkillFromSkillGroupRequest method.
-//    req, resp := client.DisassociateSkillFromSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillFromSkillGroup
 func (c *AlexaForBusiness) DisassociateSkillFromSkillGroupRequest(input *DisassociateSkillFromSkillGroupInput) (req *request.Request, output *DisassociateSkillFromSkillGroupOutput) {
@@ -2824,11 +2815,12 @@ func (c *AlexaForBusiness) DisassociateSkillFromSkillGroupRequest(input *Disasso
 // API operation DisassociateSkillFromSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillFromSkillGroup
 func (c *AlexaForBusiness) DisassociateSkillFromSkillGroup(input *DisassociateSkillFromSkillGroupInput) (*DisassociateSkillFromSkillGroupOutput, error) {
@@ -2868,14 +2860,13 @@ const opDisassociateSkillFromUsers = "DisassociateSkillFromUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateSkillFromUsersRequest method.
+//	req, resp := client.DisassociateSkillFromUsersRequest(params)
 //
-//    // Example sending a request using the DisassociateSkillFromUsersRequest method.
-//    req, resp := client.DisassociateSkillFromUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillFromUsers
 func (c *AlexaForBusiness) DisassociateSkillFromUsersRequest(input *DisassociateSkillFromUsersInput) (req *request.Request, output *DisassociateSkillFromUsersOutput) {
@@ -2908,11 +2899,12 @@ func (c *AlexaForBusiness) DisassociateSkillFromUsersRequest(input *Disassociate
 // API operation DisassociateSkillFromUsers for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillFromUsers
 func (c *AlexaForBusiness) DisassociateSkillFromUsers(input *DisassociateSkillFromUsersInput) (*DisassociateSkillFromUsersOutput, error) {
@@ -2952,14 +2944,13 @@ const opDisassociateSkillGroupFromRoom = "DisassociateSkillGroupFromRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateSkillGroupFromRoomRequest method.
+//	req, resp := client.DisassociateSkillGroupFromRoomRequest(params)
 //
-//    // Example sending a request using the DisassociateSkillGroupFromRoomRequest method.
-//    req, resp := client.DisassociateSkillGroupFromRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillGroupFromRoom
 func (c *AlexaForBusiness) DisassociateSkillGroupFromRoomRequest(input *DisassociateSkillGroupFromRoomInput) (req *request.Request, output *DisassociateSkillGroupFromRoomOutput) {
@@ -2992,8 +2983,8 @@ func (c *AlexaForBusiness) DisassociateSkillGroupFromRoomRequest(input *Disassoc
 // API operation DisassociateSkillGroupFromRoom for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/DisassociateSkillGroupFromRoom
 func (c *AlexaForBusiness) DisassociateSkillGroupFromRoom(input *DisassociateSkillGroupFromRoomInput) (*DisassociateSkillGroupFromRoomOutput, error) {
@@ -3033,14 +3024,13 @@ const opForgetSmartHomeAppliances = "ForgetSmartHomeAppliances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ForgetSmartHomeAppliancesRequest method.
+//	req, resp := client.ForgetSmartHomeAppliancesRequest(params)
 //
-//    // Example sending a request using the ForgetSmartHomeAppliancesRequest method.
-//    req, resp := client.ForgetSmartHomeAppliancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ForgetSmartHomeAppliances
 func (c *AlexaForBusiness) ForgetSmartHomeAppliancesRequest(input *ForgetSmartHomeAppliancesInput) (req *request.Request, output *ForgetSmartHomeAppliancesOutput) {
@@ -3072,8 +3062,8 @@ func (c *AlexaForBusiness) ForgetSmartHomeAppliancesRequest(input *ForgetSmartHo
 // API operation ForgetSmartHomeAppliances for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ForgetSmartHomeAppliances
 func (c *AlexaForBusiness) ForgetSmartHomeAppliances(input *ForgetSmartHomeAppliancesInput) (*ForgetSmartHomeAppliancesOutput, error) {
@@ -3113,14 +3103,13 @@ const opGetAddressBook = "GetAddressBook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAddressBookRequest method.
+//	req, resp := client.GetAddressBookRequest(params)
 //
-//    // Example sending a request using the GetAddressBookRequest method.
-//    req, resp := client.GetAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetAddressBook
 func (c *AlexaForBusiness) GetAddressBookRequest(input *GetAddressBookInput) (req *request.Request, output *GetAddressBookOutput) {
@@ -3151,8 +3140,8 @@ func (c *AlexaForBusiness) GetAddressBookRequest(input *GetAddressBookInput) (re
 // API operation GetAddressBook for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetAddressBook
 func (c *AlexaForBusiness) GetAddressBook(input *GetAddressBookInput) (*GetAddressBookOutput, error) {
@@ -3192,14 +3181,13 @@ const opGetConferencePreference = "GetConferencePreference"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConferencePreferenceRequest method.
+//	req, resp := client.GetConferencePreferenceRequest(params)
 //
-//    // Example sending a request using the GetConferencePreferenceRequest method.
-//    req, resp := client.GetConferencePreferenceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetConferencePreference
 func (c *AlexaForBusiness) GetConferencePreferenceRequest(input *GetConferencePreferenceInput) (req *request.Request, output *GetConferencePreferenceOutput) {
@@ -3230,8 +3218,8 @@ func (c *AlexaForBusiness) GetConferencePreferenceRequest(input *GetConferencePr
 // API operation GetConferencePreference for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetConferencePreference
 func (c *AlexaForBusiness) GetConferencePreference(input *GetConferencePreferenceInput) (*GetConferencePreferenceOutput, error) {
@@ -3271,14 +3259,13 @@ const opGetConferenceProvider = "GetConferenceProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConferenceProviderRequest method.
+//	req, resp := client.GetConferenceProviderRequest(params)
 //
-//    // Example sending a request using the GetConferenceProviderRequest method.
-//    req, resp := client.GetConferenceProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetConferenceProvider
 func (c *AlexaForBusiness) GetConferenceProviderRequest(input *GetConferenceProviderInput) (req *request.Request, output *GetConferenceProviderOutput) {
@@ -3309,8 +3296,8 @@ func (c *AlexaForBusiness) GetConferenceProviderRequest(input *GetConferenceProv
 // API operation GetConferenceProvider for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetConferenceProvider
 func (c *AlexaForBusiness) GetConferenceProvider(input *GetConferenceProviderInput) (*GetConferenceProviderOutput, error) {
@@ -3350,14 +3337,13 @@ const opGetContact = "GetContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContactRequest method.
+//	req, resp := client.GetContactRequest(params)
 //
-//    // Example sending a request using the GetContactRequest method.
-//    req, resp := client.GetContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetContact
 func (c *AlexaForBusiness) GetContactRequest(input *GetContactInput) (req *request.Request, output *GetContactOutput) {
@@ -3388,8 +3374,8 @@ func (c *AlexaForBusiness) GetContactRequest(input *GetContactInput) (req *reque
 // API operation GetContact for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetContact
 func (c *AlexaForBusiness) GetContact(input *GetContactInput) (*GetContactOutput, error) {
@@ -3429,14 +3415,13 @@ const opGetDevice = "GetDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeviceRequest method.
+//	req, resp := client.GetDeviceRequest(params)
 //
-//    // Example sending a request using the GetDeviceRequest method.
-//    req, resp := client.GetDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetDevice
 func (c *AlexaForBusiness) GetDeviceRequest(input *GetDeviceInput) (req *request.Request, output *GetDeviceOutput) {
@@ -3467,8 +3452,8 @@ func (c *AlexaForBusiness) GetDeviceRequest(input *GetDeviceInput) (req *request
 // API operation GetDevice for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetDevice
 func (c *AlexaForBusiness) GetDevice(input *GetDeviceInput) (*GetDeviceOutput, error) {
@@ -3508,14 +3493,13 @@ const opGetGateway = "GetGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGatewayRequest method.
+//	req, resp := client.GetGatewayRequest(params)
 //
-//    // Example sending a request using the GetGatewayRequest method.
-//    req, resp := client.GetGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetGateway
 func (c *AlexaForBusiness) GetGatewayRequest(input *GetGatewayInput) (req *request.Request, output *GetGatewayOutput) {
@@ -3546,8 +3530,8 @@ func (c *AlexaForBusiness) GetGatewayRequest(input *GetGatewayInput) (req *reque
 // API operation GetGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetGateway
 func (c *AlexaForBusiness) GetGateway(input *GetGatewayInput) (*GetGatewayOutput, error) {
@@ -3587,14 +3571,13 @@ const opGetGatewayGroup = "GetGatewayGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGatewayGroupRequest method.
+//	req, resp := client.GetGatewayGroupRequest(params)
 //
-//    // Example sending a request using the GetGatewayGroupRequest method.
-//    req, resp := client.GetGatewayGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetGatewayGroup
 func (c *AlexaForBusiness) GetGatewayGroupRequest(input *GetGatewayGroupInput) (req *request.Request, output *GetGatewayGroupOutput) {
@@ -3625,8 +3608,8 @@ func (c *AlexaForBusiness) GetGatewayGroupRequest(input *GetGatewayGroupInput) (
 // API operation GetGatewayGroup for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetGatewayGroup
 func (c *AlexaForBusiness) GetGatewayGroup(input *GetGatewayGroupInput) (*GetGatewayGroupOutput, error) {
@@ -3666,14 +3649,13 @@ const opGetInvitationConfiguration = "GetInvitationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInvitationConfigurationRequest method.
+//	req, resp := client.GetInvitationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetInvitationConfigurationRequest method.
-//    req, resp := client.GetInvitationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetInvitationConfiguration
 func (c *AlexaForBusiness) GetInvitationConfigurationRequest(input *GetInvitationConfigurationInput) (req *request.Request, output *GetInvitationConfigurationOutput) {
@@ -3705,8 +3687,8 @@ func (c *AlexaForBusiness) GetInvitationConfigurationRequest(input *GetInvitatio
 // API operation GetInvitationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetInvitationConfiguration
 func (c *AlexaForBusiness) GetInvitationConfiguration(input *GetInvitationConfigurationInput) (*GetInvitationConfigurationOutput, error) {
@@ -3746,14 +3728,13 @@ const opGetNetworkProfile = "GetNetworkProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkProfileRequest method.
+//	req, resp := client.GetNetworkProfileRequest(params)
 //
-//    // Example sending a request using the GetNetworkProfileRequest method.
-//    req, resp := client.GetNetworkProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetNetworkProfile
 func (c *AlexaForBusiness) GetNetworkProfileRequest(input *GetNetworkProfileInput) (req *request.Request, output *GetNetworkProfileOutput) {
@@ -3784,11 +3765,12 @@ func (c *AlexaForBusiness) GetNetworkProfileRequest(input *GetNetworkProfileInpu
 // API operation GetNetworkProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * InvalidSecretsManagerResourceException
-//   A password in SecretsManager is in an invalid state.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - InvalidSecretsManagerResourceException
+//     A password in SecretsManager is in an invalid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetNetworkProfile
 func (c *AlexaForBusiness) GetNetworkProfile(input *GetNetworkProfileInput) (*GetNetworkProfileOutput, error) {
@@ -3828,14 +3810,13 @@ const opGetProfile = "GetProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProfileRequest method.
+//	req, resp := client.GetProfileRequest(params)
 //
-//    // Example sending a request using the GetProfileRequest method.
-//    req, resp := client.GetProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetProfile
 func (c *AlexaForBusiness) GetProfileRequest(input *GetProfileInput) (req *request.Request, output *GetProfileOutput) {
@@ -3866,8 +3847,8 @@ func (c *AlexaForBusiness) GetProfileRequest(input *GetProfileInput) (req *reque
 // API operation GetProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetProfile
 func (c *AlexaForBusiness) GetProfile(input *GetProfileInput) (*GetProfileOutput, error) {
@@ -3907,14 +3888,13 @@ const opGetRoom = "GetRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoomRequest method.
+//	req, resp := client.GetRoomRequest(params)
 //
-//    // Example sending a request using the GetRoomRequest method.
-//    req, resp := client.GetRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetRoom
 func (c *AlexaForBusiness) GetRoomRequest(input *GetRoomInput) (req *request.Request, output *GetRoomOutput) {
@@ -3945,8 +3925,8 @@ func (c *AlexaForBusiness) GetRoomRequest(input *GetRoomInput) (req *request.Req
 // API operation GetRoom for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetRoom
 func (c *AlexaForBusiness) GetRoom(input *GetRoomInput) (*GetRoomOutput, error) {
@@ -3986,14 +3966,13 @@ const opGetRoomSkillParameter = "GetRoomSkillParameter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoomSkillParameterRequest method.
+//	req, resp := client.GetRoomSkillParameterRequest(params)
 //
-//    // Example sending a request using the GetRoomSkillParameterRequest method.
-//    req, resp := client.GetRoomSkillParameterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetRoomSkillParameter
 func (c *AlexaForBusiness) GetRoomSkillParameterRequest(input *GetRoomSkillParameterInput) (req *request.Request, output *GetRoomSkillParameterOutput) {
@@ -4024,8 +4003,8 @@ func (c *AlexaForBusiness) GetRoomSkillParameterRequest(input *GetRoomSkillParam
 // API operation GetRoomSkillParameter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetRoomSkillParameter
 func (c *AlexaForBusiness) GetRoomSkillParameter(input *GetRoomSkillParameterInput) (*GetRoomSkillParameterOutput, error) {
@@ -4065,14 +4044,13 @@ const opGetSkillGroup = "GetSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSkillGroupRequest method.
+//	req, resp := client.GetSkillGroupRequest(params)
 //
-//    // Example sending a request using the GetSkillGroupRequest method.
-//    req, resp := client.GetSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetSkillGroup
 func (c *AlexaForBusiness) GetSkillGroupRequest(input *GetSkillGroupInput) (req *request.Request, output *GetSkillGroupOutput) {
@@ -4103,8 +4081,8 @@ func (c *AlexaForBusiness) GetSkillGroupRequest(input *GetSkillGroupInput) (req 
 // API operation GetSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/GetSkillGroup
 func (c *AlexaForBusiness) GetSkillGroup(input *GetSkillGroupInput) (*GetSkillGroupOutput, error) {
@@ -4144,14 +4122,13 @@ const opListBusinessReportSchedules = "ListBusinessReportSchedules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBusinessReportSchedulesRequest method.
+//	req, resp := client.ListBusinessReportSchedulesRequest(params)
 //
-//    // Example sending a request using the ListBusinessReportSchedulesRequest method.
-//    req, resp := client.ListBusinessReportSchedulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListBusinessReportSchedules
 func (c *AlexaForBusiness) ListBusinessReportSchedulesRequest(input *ListBusinessReportSchedulesInput) (req *request.Request, output *ListBusinessReportSchedulesOutput) {
@@ -4219,15 +4196,14 @@ func (c *AlexaForBusiness) ListBusinessReportSchedulesWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBusinessReportSchedules operation.
-//    pageNum := 0
-//    err := client.ListBusinessReportSchedulesPages(params,
-//        func(page *alexaforbusiness.ListBusinessReportSchedulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBusinessReportSchedules operation.
+//	pageNum := 0
+//	err := client.ListBusinessReportSchedulesPages(params,
+//	    func(page *alexaforbusiness.ListBusinessReportSchedulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListBusinessReportSchedulesPages(input *ListBusinessReportSchedulesInput, fn func(*ListBusinessReportSchedulesOutput, bool) bool) error {
 	return c.ListBusinessReportSchedulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4279,14 +4255,13 @@ const opListConferenceProviders = "ListConferenceProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConferenceProvidersRequest method.
+//	req, resp := client.ListConferenceProvidersRequest(params)
 //
-//    // Example sending a request using the ListConferenceProvidersRequest method.
-//    req, resp := client.ListConferenceProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListConferenceProviders
 func (c *AlexaForBusiness) ListConferenceProvidersRequest(input *ListConferenceProvidersInput) (req *request.Request, output *ListConferenceProvidersOutput) {
@@ -4351,15 +4326,14 @@ func (c *AlexaForBusiness) ListConferenceProvidersWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConferenceProviders operation.
-//    pageNum := 0
-//    err := client.ListConferenceProvidersPages(params,
-//        func(page *alexaforbusiness.ListConferenceProvidersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConferenceProviders operation.
+//	pageNum := 0
+//	err := client.ListConferenceProvidersPages(params,
+//	    func(page *alexaforbusiness.ListConferenceProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListConferenceProvidersPages(input *ListConferenceProvidersInput, fn func(*ListConferenceProvidersOutput, bool) bool) error {
 	return c.ListConferenceProvidersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4411,14 +4385,13 @@ const opListDeviceEvents = "ListDeviceEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeviceEventsRequest method.
+//	req, resp := client.ListDeviceEventsRequest(params)
 //
-//    // Example sending a request using the ListDeviceEventsRequest method.
-//    req, resp := client.ListDeviceEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListDeviceEvents
 func (c *AlexaForBusiness) ListDeviceEventsRequest(input *ListDeviceEventsInput) (req *request.Request, output *ListDeviceEventsOutput) {
@@ -4456,8 +4429,8 @@ func (c *AlexaForBusiness) ListDeviceEventsRequest(input *ListDeviceEventsInput)
 // API operation ListDeviceEvents for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListDeviceEvents
 func (c *AlexaForBusiness) ListDeviceEvents(input *ListDeviceEventsInput) (*ListDeviceEventsOutput, error) {
@@ -4489,15 +4462,14 @@ func (c *AlexaForBusiness) ListDeviceEventsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeviceEvents operation.
-//    pageNum := 0
-//    err := client.ListDeviceEventsPages(params,
-//        func(page *alexaforbusiness.ListDeviceEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeviceEvents operation.
+//	pageNum := 0
+//	err := client.ListDeviceEventsPages(params,
+//	    func(page *alexaforbusiness.ListDeviceEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListDeviceEventsPages(input *ListDeviceEventsInput, fn func(*ListDeviceEventsOutput, bool) bool) error {
 	return c.ListDeviceEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4549,14 +4521,13 @@ const opListGatewayGroups = "ListGatewayGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGatewayGroupsRequest method.
+//	req, resp := client.ListGatewayGroupsRequest(params)
 //
-//    // Example sending a request using the ListGatewayGroupsRequest method.
-//    req, resp := client.ListGatewayGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListGatewayGroups
 func (c *AlexaForBusiness) ListGatewayGroupsRequest(input *ListGatewayGroupsInput) (req *request.Request, output *ListGatewayGroupsOutput) {
@@ -4622,15 +4593,14 @@ func (c *AlexaForBusiness) ListGatewayGroupsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGatewayGroups operation.
-//    pageNum := 0
-//    err := client.ListGatewayGroupsPages(params,
-//        func(page *alexaforbusiness.ListGatewayGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGatewayGroups operation.
+//	pageNum := 0
+//	err := client.ListGatewayGroupsPages(params,
+//	    func(page *alexaforbusiness.ListGatewayGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListGatewayGroupsPages(input *ListGatewayGroupsInput, fn func(*ListGatewayGroupsOutput, bool) bool) error {
 	return c.ListGatewayGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4682,14 +4652,13 @@ const opListGateways = "ListGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGatewaysRequest method.
+//	req, resp := client.ListGatewaysRequest(params)
 //
-//    // Example sending a request using the ListGatewaysRequest method.
-//    req, resp := client.ListGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListGateways
 func (c *AlexaForBusiness) ListGatewaysRequest(input *ListGatewaysInput) (req *request.Request, output *ListGatewaysOutput) {
@@ -4757,15 +4726,14 @@ func (c *AlexaForBusiness) ListGatewaysWithContext(ctx aws.Context, input *ListG
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGateways operation.
-//    pageNum := 0
-//    err := client.ListGatewaysPages(params,
-//        func(page *alexaforbusiness.ListGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGateways operation.
+//	pageNum := 0
+//	err := client.ListGatewaysPages(params,
+//	    func(page *alexaforbusiness.ListGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListGatewaysPages(input *ListGatewaysInput, fn func(*ListGatewaysOutput, bool) bool) error {
 	return c.ListGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4817,14 +4785,13 @@ const opListSkills = "ListSkills"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSkillsRequest method.
+//	req, resp := client.ListSkillsRequest(params)
 //
-//    // Example sending a request using the ListSkillsRequest method.
-//    req, resp := client.ListSkillsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListSkills
 func (c *AlexaForBusiness) ListSkillsRequest(input *ListSkillsInput) (req *request.Request, output *ListSkillsOutput) {
@@ -4889,15 +4856,14 @@ func (c *AlexaForBusiness) ListSkillsWithContext(ctx aws.Context, input *ListSki
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSkills operation.
-//    pageNum := 0
-//    err := client.ListSkillsPages(params,
-//        func(page *alexaforbusiness.ListSkillsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSkills operation.
+//	pageNum := 0
+//	err := client.ListSkillsPages(params,
+//	    func(page *alexaforbusiness.ListSkillsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListSkillsPages(input *ListSkillsInput, fn func(*ListSkillsOutput, bool) bool) error {
 	return c.ListSkillsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4949,14 +4915,13 @@ const opListSkillsStoreCategories = "ListSkillsStoreCategories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSkillsStoreCategoriesRequest method.
+//	req, resp := client.ListSkillsStoreCategoriesRequest(params)
 //
-//    // Example sending a request using the ListSkillsStoreCategoriesRequest method.
-//    req, resp := client.ListSkillsStoreCategoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListSkillsStoreCategories
 func (c *AlexaForBusiness) ListSkillsStoreCategoriesRequest(input *ListSkillsStoreCategoriesInput) (req *request.Request, output *ListSkillsStoreCategoriesOutput) {
@@ -5021,15 +4986,14 @@ func (c *AlexaForBusiness) ListSkillsStoreCategoriesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSkillsStoreCategories operation.
-//    pageNum := 0
-//    err := client.ListSkillsStoreCategoriesPages(params,
-//        func(page *alexaforbusiness.ListSkillsStoreCategoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSkillsStoreCategories operation.
+//	pageNum := 0
+//	err := client.ListSkillsStoreCategoriesPages(params,
+//	    func(page *alexaforbusiness.ListSkillsStoreCategoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListSkillsStoreCategoriesPages(input *ListSkillsStoreCategoriesInput, fn func(*ListSkillsStoreCategoriesOutput, bool) bool) error {
 	return c.ListSkillsStoreCategoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5081,14 +5045,13 @@ const opListSkillsStoreSkillsByCategory = "ListSkillsStoreSkillsByCategory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSkillsStoreSkillsByCategoryRequest method.
+//	req, resp := client.ListSkillsStoreSkillsByCategoryRequest(params)
 //
-//    // Example sending a request using the ListSkillsStoreSkillsByCategoryRequest method.
-//    req, resp := client.ListSkillsStoreSkillsByCategoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListSkillsStoreSkillsByCategory
 func (c *AlexaForBusiness) ListSkillsStoreSkillsByCategoryRequest(input *ListSkillsStoreSkillsByCategoryInput) (req *request.Request, output *ListSkillsStoreSkillsByCategoryOutput) {
@@ -5153,15 +5116,14 @@ func (c *AlexaForBusiness) ListSkillsStoreSkillsByCategoryWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSkillsStoreSkillsByCategory operation.
-//    pageNum := 0
-//    err := client.ListSkillsStoreSkillsByCategoryPages(params,
-//        func(page *alexaforbusiness.ListSkillsStoreSkillsByCategoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSkillsStoreSkillsByCategory operation.
+//	pageNum := 0
+//	err := client.ListSkillsStoreSkillsByCategoryPages(params,
+//	    func(page *alexaforbusiness.ListSkillsStoreSkillsByCategoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListSkillsStoreSkillsByCategoryPages(input *ListSkillsStoreSkillsByCategoryInput, fn func(*ListSkillsStoreSkillsByCategoryOutput, bool) bool) error {
 	return c.ListSkillsStoreSkillsByCategoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5213,14 +5175,13 @@ const opListSmartHomeAppliances = "ListSmartHomeAppliances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSmartHomeAppliancesRequest method.
+//	req, resp := client.ListSmartHomeAppliancesRequest(params)
 //
-//    // Example sending a request using the ListSmartHomeAppliancesRequest method.
-//    req, resp := client.ListSmartHomeAppliancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListSmartHomeAppliances
 func (c *AlexaForBusiness) ListSmartHomeAppliancesRequest(input *ListSmartHomeAppliancesInput) (req *request.Request, output *ListSmartHomeAppliancesOutput) {
@@ -5257,8 +5218,8 @@ func (c *AlexaForBusiness) ListSmartHomeAppliancesRequest(input *ListSmartHomeAp
 // API operation ListSmartHomeAppliances for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListSmartHomeAppliances
 func (c *AlexaForBusiness) ListSmartHomeAppliances(input *ListSmartHomeAppliancesInput) (*ListSmartHomeAppliancesOutput, error) {
@@ -5290,15 +5251,14 @@ func (c *AlexaForBusiness) ListSmartHomeAppliancesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSmartHomeAppliances operation.
-//    pageNum := 0
-//    err := client.ListSmartHomeAppliancesPages(params,
-//        func(page *alexaforbusiness.ListSmartHomeAppliancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSmartHomeAppliances operation.
+//	pageNum := 0
+//	err := client.ListSmartHomeAppliancesPages(params,
+//	    func(page *alexaforbusiness.ListSmartHomeAppliancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListSmartHomeAppliancesPages(input *ListSmartHomeAppliancesInput, fn func(*ListSmartHomeAppliancesOutput, bool) bool) error {
 	return c.ListSmartHomeAppliancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5350,14 +5310,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListTags
 func (c *AlexaForBusiness) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -5394,8 +5353,8 @@ func (c *AlexaForBusiness) ListTagsRequest(input *ListTagsInput) (req *request.R
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ListTags
 func (c *AlexaForBusiness) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -5427,15 +5386,14 @@ func (c *AlexaForBusiness) ListTagsWithContext(ctx aws.Context, input *ListTagsI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTags operation.
-//    pageNum := 0
-//    err := client.ListTagsPages(params,
-//        func(page *alexaforbusiness.ListTagsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTags operation.
+//	pageNum := 0
+//	err := client.ListTagsPages(params,
+//	    func(page *alexaforbusiness.ListTagsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) ListTagsPages(input *ListTagsInput, fn func(*ListTagsOutput, bool) bool) error {
 	return c.ListTagsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5487,14 +5445,13 @@ const opPutConferencePreference = "PutConferencePreference"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutConferencePreferenceRequest method.
+//	req, resp := client.PutConferencePreferenceRequest(params)
 //
-//    // Example sending a request using the PutConferencePreferenceRequest method.
-//    req, resp := client.PutConferencePreferenceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutConferencePreference
 func (c *AlexaForBusiness) PutConferencePreferenceRequest(input *PutConferencePreferenceInput) (req *request.Request, output *PutConferencePreferenceOutput) {
@@ -5527,8 +5484,8 @@ func (c *AlexaForBusiness) PutConferencePreferenceRequest(input *PutConferencePr
 // API operation PutConferencePreference for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutConferencePreference
 func (c *AlexaForBusiness) PutConferencePreference(input *PutConferencePreferenceInput) (*PutConferencePreferenceOutput, error) {
@@ -5568,14 +5525,13 @@ const opPutInvitationConfiguration = "PutInvitationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutInvitationConfigurationRequest method.
+//	req, resp := client.PutInvitationConfigurationRequest(params)
 //
-//    // Example sending a request using the PutInvitationConfigurationRequest method.
-//    req, resp := client.PutInvitationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutInvitationConfiguration
 func (c *AlexaForBusiness) PutInvitationConfigurationRequest(input *PutInvitationConfigurationInput) (req *request.Request, output *PutInvitationConfigurationOutput) {
@@ -5608,11 +5564,12 @@ func (c *AlexaForBusiness) PutInvitationConfigurationRequest(input *PutInvitatio
 // API operation PutInvitationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutInvitationConfiguration
 func (c *AlexaForBusiness) PutInvitationConfiguration(input *PutInvitationConfigurationInput) (*PutInvitationConfigurationOutput, error) {
@@ -5652,14 +5609,13 @@ const opPutRoomSkillParameter = "PutRoomSkillParameter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRoomSkillParameterRequest method.
+//	req, resp := client.PutRoomSkillParameterRequest(params)
 //
-//    // Example sending a request using the PutRoomSkillParameterRequest method.
-//    req, resp := client.PutRoomSkillParameterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutRoomSkillParameter
 func (c *AlexaForBusiness) PutRoomSkillParameterRequest(input *PutRoomSkillParameterInput) (req *request.Request, output *PutRoomSkillParameterOutput) {
@@ -5692,8 +5648,8 @@ func (c *AlexaForBusiness) PutRoomSkillParameterRequest(input *PutRoomSkillParam
 // API operation PutRoomSkillParameter for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutRoomSkillParameter
 func (c *AlexaForBusiness) PutRoomSkillParameter(input *PutRoomSkillParameterInput) (*PutRoomSkillParameterOutput, error) {
@@ -5733,14 +5689,13 @@ const opPutSkillAuthorization = "PutSkillAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSkillAuthorizationRequest method.
+//	req, resp := client.PutSkillAuthorizationRequest(params)
 //
-//    // Example sending a request using the PutSkillAuthorizationRequest method.
-//    req, resp := client.PutSkillAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutSkillAuthorization
 func (c *AlexaForBusiness) PutSkillAuthorizationRequest(input *PutSkillAuthorizationInput) (req *request.Request, output *PutSkillAuthorizationOutput) {
@@ -5775,12 +5730,13 @@ func (c *AlexaForBusiness) PutSkillAuthorizationRequest(input *PutSkillAuthoriza
 // API operation PutSkillAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The caller has no permissions to operate on the resource involved in the
-//   API call.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - UnauthorizedException
+//     The caller has no permissions to operate on the resource involved in the
+//     API call.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/PutSkillAuthorization
 func (c *AlexaForBusiness) PutSkillAuthorization(input *PutSkillAuthorizationInput) (*PutSkillAuthorizationOutput, error) {
@@ -5820,14 +5776,13 @@ const opRegisterAVSDevice = "RegisterAVSDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterAVSDeviceRequest method.
+//	req, resp := client.RegisterAVSDeviceRequest(params)
 //
-//    // Example sending a request using the RegisterAVSDeviceRequest method.
-//    req, resp := client.RegisterAVSDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RegisterAVSDevice
 func (c *AlexaForBusiness) RegisterAVSDeviceRequest(input *RegisterAVSDeviceInput) (req *request.Request, output *RegisterAVSDeviceOutput) {
@@ -5859,17 +5814,18 @@ func (c *AlexaForBusiness) RegisterAVSDeviceRequest(input *RegisterAVSDeviceInpu
 // API operation RegisterAVSDevice for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
-//   * InvalidDeviceException
-//   The device is in an invalid state.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - InvalidDeviceException
+//     The device is in an invalid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RegisterAVSDevice
 func (c *AlexaForBusiness) RegisterAVSDevice(input *RegisterAVSDeviceInput) (*RegisterAVSDeviceOutput, error) {
@@ -5909,14 +5865,13 @@ const opRejectSkill = "RejectSkill"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectSkillRequest method.
+//	req, resp := client.RejectSkillRequest(params)
 //
-//    // Example sending a request using the RejectSkillRequest method.
-//    req, resp := client.RejectSkillRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RejectSkill
 func (c *AlexaForBusiness) RejectSkillRequest(input *RejectSkillInput) (req *request.Request, output *RejectSkillOutput) {
@@ -5951,11 +5906,12 @@ func (c *AlexaForBusiness) RejectSkillRequest(input *RejectSkillInput) (req *req
 // API operation RejectSkill for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
 //
-//   * NotFoundException
-//   The resource is not found.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RejectSkill
 func (c *AlexaForBusiness) RejectSkill(input *RejectSkillInput) (*RejectSkillOutput, error) {
@@ -5995,14 +5951,13 @@ const opResolveRoom = "ResolveRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResolveRoomRequest method.
+//	req, resp := client.ResolveRoomRequest(params)
 //
-//    // Example sending a request using the ResolveRoomRequest method.
-//    req, resp := client.ResolveRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ResolveRoom
 func (c *AlexaForBusiness) ResolveRoomRequest(input *ResolveRoomInput) (req *request.Request, output *ResolveRoomOutput) {
@@ -6041,8 +5996,8 @@ func (c *AlexaForBusiness) ResolveRoomRequest(input *ResolveRoomInput) (req *req
 // API operation ResolveRoom for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/ResolveRoom
 func (c *AlexaForBusiness) ResolveRoom(input *ResolveRoomInput) (*ResolveRoomOutput, error) {
@@ -6082,14 +6037,13 @@ const opRevokeInvitation = "RevokeInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeInvitationRequest method.
+//	req, resp := client.RevokeInvitationRequest(params)
 //
-//    // Example sending a request using the RevokeInvitationRequest method.
-//    req, resp := client.RevokeInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RevokeInvitation
 func (c *AlexaForBusiness) RevokeInvitationRequest(input *RevokeInvitationInput) (req *request.Request, output *RevokeInvitationOutput) {
@@ -6121,11 +6075,12 @@ func (c *AlexaForBusiness) RevokeInvitationRequest(input *RevokeInvitationInput)
 // API operation RevokeInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/RevokeInvitation
 func (c *AlexaForBusiness) RevokeInvitation(input *RevokeInvitationInput) (*RevokeInvitationOutput, error) {
@@ -6165,14 +6120,13 @@ const opSearchAddressBooks = "SearchAddressBooks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchAddressBooksRequest method.
+//	req, resp := client.SearchAddressBooksRequest(params)
 //
-//    // Example sending a request using the SearchAddressBooksRequest method.
-//    req, resp := client.SearchAddressBooksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchAddressBooks
 func (c *AlexaForBusiness) SearchAddressBooksRequest(input *SearchAddressBooksInput) (req *request.Request, output *SearchAddressBooksOutput) {
@@ -6238,15 +6192,14 @@ func (c *AlexaForBusiness) SearchAddressBooksWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchAddressBooks operation.
-//    pageNum := 0
-//    err := client.SearchAddressBooksPages(params,
-//        func(page *alexaforbusiness.SearchAddressBooksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchAddressBooks operation.
+//	pageNum := 0
+//	err := client.SearchAddressBooksPages(params,
+//	    func(page *alexaforbusiness.SearchAddressBooksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchAddressBooksPages(input *SearchAddressBooksInput, fn func(*SearchAddressBooksOutput, bool) bool) error {
 	return c.SearchAddressBooksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6298,14 +6251,13 @@ const opSearchContacts = "SearchContacts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchContactsRequest method.
+//	req, resp := client.SearchContactsRequest(params)
 //
-//    // Example sending a request using the SearchContactsRequest method.
-//    req, resp := client.SearchContactsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchContacts
 func (c *AlexaForBusiness) SearchContactsRequest(input *SearchContactsInput) (req *request.Request, output *SearchContactsOutput) {
@@ -6370,15 +6322,14 @@ func (c *AlexaForBusiness) SearchContactsWithContext(ctx aws.Context, input *Sea
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchContacts operation.
-//    pageNum := 0
-//    err := client.SearchContactsPages(params,
-//        func(page *alexaforbusiness.SearchContactsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchContacts operation.
+//	pageNum := 0
+//	err := client.SearchContactsPages(params,
+//	    func(page *alexaforbusiness.SearchContactsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchContactsPages(input *SearchContactsInput, fn func(*SearchContactsOutput, bool) bool) error {
 	return c.SearchContactsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6430,14 +6381,13 @@ const opSearchDevices = "SearchDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchDevicesRequest method.
+//	req, resp := client.SearchDevicesRequest(params)
 //
-//    // Example sending a request using the SearchDevicesRequest method.
-//    req, resp := client.SearchDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchDevices
 func (c *AlexaForBusiness) SearchDevicesRequest(input *SearchDevicesInput) (req *request.Request, output *SearchDevicesOutput) {
@@ -6502,15 +6452,14 @@ func (c *AlexaForBusiness) SearchDevicesWithContext(ctx aws.Context, input *Sear
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchDevices operation.
-//    pageNum := 0
-//    err := client.SearchDevicesPages(params,
-//        func(page *alexaforbusiness.SearchDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchDevices operation.
+//	pageNum := 0
+//	err := client.SearchDevicesPages(params,
+//	    func(page *alexaforbusiness.SearchDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchDevicesPages(input *SearchDevicesInput, fn func(*SearchDevicesOutput, bool) bool) error {
 	return c.SearchDevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6562,14 +6511,13 @@ const opSearchNetworkProfiles = "SearchNetworkProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchNetworkProfilesRequest method.
+//	req, resp := client.SearchNetworkProfilesRequest(params)
 //
-//    // Example sending a request using the SearchNetworkProfilesRequest method.
-//    req, resp := client.SearchNetworkProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchNetworkProfiles
 func (c *AlexaForBusiness) SearchNetworkProfilesRequest(input *SearchNetworkProfilesInput) (req *request.Request, output *SearchNetworkProfilesOutput) {
@@ -6635,15 +6583,14 @@ func (c *AlexaForBusiness) SearchNetworkProfilesWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchNetworkProfiles operation.
-//    pageNum := 0
-//    err := client.SearchNetworkProfilesPages(params,
-//        func(page *alexaforbusiness.SearchNetworkProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchNetworkProfiles operation.
+//	pageNum := 0
+//	err := client.SearchNetworkProfilesPages(params,
+//	    func(page *alexaforbusiness.SearchNetworkProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchNetworkProfilesPages(input *SearchNetworkProfilesInput, fn func(*SearchNetworkProfilesOutput, bool) bool) error {
 	return c.SearchNetworkProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6695,14 +6642,13 @@ const opSearchProfiles = "SearchProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchProfilesRequest method.
+//	req, resp := client.SearchProfilesRequest(params)
 //
-//    // Example sending a request using the SearchProfilesRequest method.
-//    req, resp := client.SearchProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchProfiles
 func (c *AlexaForBusiness) SearchProfilesRequest(input *SearchProfilesInput) (req *request.Request, output *SearchProfilesOutput) {
@@ -6767,15 +6713,14 @@ func (c *AlexaForBusiness) SearchProfilesWithContext(ctx aws.Context, input *Sea
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchProfiles operation.
-//    pageNum := 0
-//    err := client.SearchProfilesPages(params,
-//        func(page *alexaforbusiness.SearchProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchProfiles operation.
+//	pageNum := 0
+//	err := client.SearchProfilesPages(params,
+//	    func(page *alexaforbusiness.SearchProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchProfilesPages(input *SearchProfilesInput, fn func(*SearchProfilesOutput, bool) bool) error {
 	return c.SearchProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6827,14 +6772,13 @@ const opSearchRooms = "SearchRooms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchRoomsRequest method.
+//	req, resp := client.SearchRoomsRequest(params)
 //
-//    // Example sending a request using the SearchRoomsRequest method.
-//    req, resp := client.SearchRoomsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchRooms
 func (c *AlexaForBusiness) SearchRoomsRequest(input *SearchRoomsInput) (req *request.Request, output *SearchRoomsOutput) {
@@ -6899,15 +6843,14 @@ func (c *AlexaForBusiness) SearchRoomsWithContext(ctx aws.Context, input *Search
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchRooms operation.
-//    pageNum := 0
-//    err := client.SearchRoomsPages(params,
-//        func(page *alexaforbusiness.SearchRoomsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchRooms operation.
+//	pageNum := 0
+//	err := client.SearchRoomsPages(params,
+//	    func(page *alexaforbusiness.SearchRoomsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchRoomsPages(input *SearchRoomsInput, fn func(*SearchRoomsOutput, bool) bool) error {
 	return c.SearchRoomsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6959,14 +6902,13 @@ const opSearchSkillGroups = "SearchSkillGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSkillGroupsRequest method.
+//	req, resp := client.SearchSkillGroupsRequest(params)
 //
-//    // Example sending a request using the SearchSkillGroupsRequest method.
-//    req, resp := client.SearchSkillGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchSkillGroups
 func (c *AlexaForBusiness) SearchSkillGroupsRequest(input *SearchSkillGroupsInput) (req *request.Request, output *SearchSkillGroupsOutput) {
@@ -7032,15 +6974,14 @@ func (c *AlexaForBusiness) SearchSkillGroupsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSkillGroups operation.
-//    pageNum := 0
-//    err := client.SearchSkillGroupsPages(params,
-//        func(page *alexaforbusiness.SearchSkillGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSkillGroups operation.
+//	pageNum := 0
+//	err := client.SearchSkillGroupsPages(params,
+//	    func(page *alexaforbusiness.SearchSkillGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchSkillGroupsPages(input *SearchSkillGroupsInput, fn func(*SearchSkillGroupsOutput, bool) bool) error {
 	return c.SearchSkillGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7092,14 +7033,13 @@ const opSearchUsers = "SearchUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchUsersRequest method.
+//	req, resp := client.SearchUsersRequest(params)
 //
-//    // Example sending a request using the SearchUsersRequest method.
-//    req, resp := client.SearchUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SearchUsers
 func (c *AlexaForBusiness) SearchUsersRequest(input *SearchUsersInput) (req *request.Request, output *SearchUsersOutput) {
@@ -7164,15 +7104,14 @@ func (c *AlexaForBusiness) SearchUsersWithContext(ctx aws.Context, input *Search
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchUsers operation.
-//    pageNum := 0
-//    err := client.SearchUsersPages(params,
-//        func(page *alexaforbusiness.SearchUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchUsers operation.
+//	pageNum := 0
+//	err := client.SearchUsersPages(params,
+//	    func(page *alexaforbusiness.SearchUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AlexaForBusiness) SearchUsersPages(input *SearchUsersInput, fn func(*SearchUsersOutput, bool) bool) error {
 	return c.SearchUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7224,14 +7163,13 @@ const opSendAnnouncement = "SendAnnouncement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendAnnouncementRequest method.
+//	req, resp := client.SendAnnouncementRequest(params)
 //
-//    // Example sending a request using the SendAnnouncementRequest method.
-//    req, resp := client.SendAnnouncementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SendAnnouncement
 func (c *AlexaForBusiness) SendAnnouncementRequest(input *SendAnnouncementInput) (req *request.Request, output *SendAnnouncementOutput) {
@@ -7263,11 +7201,12 @@ func (c *AlexaForBusiness) SendAnnouncementRequest(input *SendAnnouncementInput)
 // API operation SendAnnouncement for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   You are performing an action that would put you beyond your account's limits.
 //
-//   * AlreadyExistsException
-//   The resource being created already exists.
+//   - LimitExceededException
+//     You are performing an action that would put you beyond your account's limits.
+//
+//   - AlreadyExistsException
+//     The resource being created already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SendAnnouncement
 func (c *AlexaForBusiness) SendAnnouncement(input *SendAnnouncementInput) (*SendAnnouncementOutput, error) {
@@ -7307,14 +7246,13 @@ const opSendInvitation = "SendInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendInvitationRequest method.
+//	req, resp := client.SendInvitationRequest(params)
 //
-//    // Example sending a request using the SendInvitationRequest method.
-//    req, resp := client.SendInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SendInvitation
 func (c *AlexaForBusiness) SendInvitationRequest(input *SendInvitationInput) (req *request.Request, output *SendInvitationOutput) {
@@ -7347,14 +7285,15 @@ func (c *AlexaForBusiness) SendInvitationRequest(input *SendInvitationInput) (re
 // API operation SendInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * InvalidUserStatusException
-//   The attempt to update a user is invalid due to the user's current status.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - InvalidUserStatusException
+//     The attempt to update a user is invalid due to the user's current status.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/SendInvitation
 func (c *AlexaForBusiness) SendInvitation(input *SendInvitationInput) (*SendInvitationOutput, error) {
@@ -7394,14 +7333,13 @@ const opStartDeviceSync = "StartDeviceSync"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeviceSyncRequest method.
+//	req, resp := client.StartDeviceSyncRequest(params)
 //
-//    // Example sending a request using the StartDeviceSyncRequest method.
-//    req, resp := client.StartDeviceSyncRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/StartDeviceSync
 func (c *AlexaForBusiness) StartDeviceSyncRequest(input *StartDeviceSyncInput) (req *request.Request, output *StartDeviceSyncOutput) {
@@ -7426,18 +7364,18 @@ func (c *AlexaForBusiness) StartDeviceSyncRequest(input *StartDeviceSyncInput) (
 // Resets a device and its account to the known default settings. This clears
 // all information and settings set by previous users in the following ways:
 //
-//    * Bluetooth - This unpairs all bluetooth devices paired with your echo
-//    device.
+//   - Bluetooth - This unpairs all bluetooth devices paired with your echo
+//     device.
 //
-//    * Volume - This resets the echo device's volume to the default value.
+//   - Volume - This resets the echo device's volume to the default value.
 //
-//    * Notifications - This clears all notifications from your echo device.
+//   - Notifications - This clears all notifications from your echo device.
 //
-//    * Lists - This clears all to-do items from your echo device.
+//   - Lists - This clears all to-do items from your echo device.
 //
-//    * Settings - This internally syncs the room's profile (if the device is
-//    assigned to a room), contacts, address books, delegation access for account
-//    linking, and communications (if enabled on the room profile).
+//   - Settings - This internally syncs the room's profile (if the device is
+//     assigned to a room), contacts, address books, delegation access for account
+//     linking, and communications (if enabled on the room profile).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7447,9 +7385,9 @@ func (c *AlexaForBusiness) StartDeviceSyncRequest(input *StartDeviceSyncInput) (
 // API operation StartDeviceSync for usage and error information.
 //
 // Returned Error Types:
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/StartDeviceSync
 func (c *AlexaForBusiness) StartDeviceSync(input *StartDeviceSyncInput) (*StartDeviceSyncOutput, error) {
@@ -7489,14 +7427,13 @@ const opStartSmartHomeApplianceDiscovery = "StartSmartHomeApplianceDiscovery"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSmartHomeApplianceDiscoveryRequest method.
+//	req, resp := client.StartSmartHomeApplianceDiscoveryRequest(params)
 //
-//    // Example sending a request using the StartSmartHomeApplianceDiscoveryRequest method.
-//    req, resp := client.StartSmartHomeApplianceDiscoveryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/StartSmartHomeApplianceDiscovery
 func (c *AlexaForBusiness) StartSmartHomeApplianceDiscoveryRequest(input *StartSmartHomeApplianceDiscoveryInput) (req *request.Request, output *StartSmartHomeApplianceDiscoveryOutput) {
@@ -7529,8 +7466,8 @@ func (c *AlexaForBusiness) StartSmartHomeApplianceDiscoveryRequest(input *StartS
 // API operation StartSmartHomeApplianceDiscovery for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/StartSmartHomeApplianceDiscovery
 func (c *AlexaForBusiness) StartSmartHomeApplianceDiscovery(input *StartSmartHomeApplianceDiscoveryInput) (*StartSmartHomeApplianceDiscoveryOutput, error) {
@@ -7570,14 +7507,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/TagResource
 func (c *AlexaForBusiness) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -7609,8 +7545,8 @@ func (c *AlexaForBusiness) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/TagResource
 func (c *AlexaForBusiness) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -7650,14 +7586,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UntagResource
 func (c *AlexaForBusiness) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -7689,8 +7624,8 @@ func (c *AlexaForBusiness) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UntagResource
 func (c *AlexaForBusiness) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7730,14 +7665,13 @@ const opUpdateAddressBook = "UpdateAddressBook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAddressBookRequest method.
+//	req, resp := client.UpdateAddressBookRequest(params)
 //
-//    // Example sending a request using the UpdateAddressBookRequest method.
-//    req, resp := client.UpdateAddressBookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateAddressBook
 func (c *AlexaForBusiness) UpdateAddressBookRequest(input *UpdateAddressBookInput) (req *request.Request, output *UpdateAddressBookOutput) {
@@ -7769,14 +7703,15 @@ func (c *AlexaForBusiness) UpdateAddressBookRequest(input *UpdateAddressBookInpu
 // API operation UpdateAddressBook for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NameInUseException
+//     The name sent in the request is already in use.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateAddressBook
 func (c *AlexaForBusiness) UpdateAddressBook(input *UpdateAddressBookInput) (*UpdateAddressBookOutput, error) {
@@ -7816,14 +7751,13 @@ const opUpdateBusinessReportSchedule = "UpdateBusinessReportSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBusinessReportScheduleRequest method.
+//	req, resp := client.UpdateBusinessReportScheduleRequest(params)
 //
-//    // Example sending a request using the UpdateBusinessReportScheduleRequest method.
-//    req, resp := client.UpdateBusinessReportScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateBusinessReportSchedule
 func (c *AlexaForBusiness) UpdateBusinessReportScheduleRequest(input *UpdateBusinessReportScheduleInput) (req *request.Request, output *UpdateBusinessReportScheduleOutput) {
@@ -7856,11 +7790,12 @@ func (c *AlexaForBusiness) UpdateBusinessReportScheduleRequest(input *UpdateBusi
 // API operation UpdateBusinessReportSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateBusinessReportSchedule
 func (c *AlexaForBusiness) UpdateBusinessReportSchedule(input *UpdateBusinessReportScheduleInput) (*UpdateBusinessReportScheduleOutput, error) {
@@ -7900,14 +7835,13 @@ const opUpdateConferenceProvider = "UpdateConferenceProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConferenceProviderRequest method.
+//	req, resp := client.UpdateConferenceProviderRequest(params)
 //
-//    // Example sending a request using the UpdateConferenceProviderRequest method.
-//    req, resp := client.UpdateConferenceProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateConferenceProvider
 func (c *AlexaForBusiness) UpdateConferenceProviderRequest(input *UpdateConferenceProviderInput) (req *request.Request, output *UpdateConferenceProviderOutput) {
@@ -7939,8 +7873,8 @@ func (c *AlexaForBusiness) UpdateConferenceProviderRequest(input *UpdateConferen
 // API operation UpdateConferenceProvider for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
+//   - NotFoundException
+//     The resource is not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateConferenceProvider
 func (c *AlexaForBusiness) UpdateConferenceProvider(input *UpdateConferenceProviderInput) (*UpdateConferenceProviderOutput, error) {
@@ -7980,14 +7914,13 @@ const opUpdateContact = "UpdateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateContactRequest method.
+//	req, resp := client.UpdateContactRequest(params)
 //
-//    // Example sending a request using the UpdateContactRequest method.
-//    req, resp := client.UpdateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateContact
 func (c *AlexaForBusiness) UpdateContactRequest(input *UpdateContactInput) (req *request.Request, output *UpdateContactOutput) {
@@ -8019,11 +7952,12 @@ func (c *AlexaForBusiness) UpdateContactRequest(input *UpdateContactInput) (req 
 // API operation UpdateContact for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateContact
 func (c *AlexaForBusiness) UpdateContact(input *UpdateContactInput) (*UpdateContactOutput, error) {
@@ -8063,14 +7997,13 @@ const opUpdateDevice = "UpdateDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeviceRequest method.
+//	req, resp := client.UpdateDeviceRequest(params)
 //
-//    // Example sending a request using the UpdateDeviceRequest method.
-//    req, resp := client.UpdateDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateDevice
 func (c *AlexaForBusiness) UpdateDeviceRequest(input *UpdateDeviceInput) (req *request.Request, output *UpdateDeviceOutput) {
@@ -8102,15 +8035,16 @@ func (c *AlexaForBusiness) UpdateDeviceRequest(input *UpdateDeviceInput) (req *r
 // API operation UpdateDevice for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * DeviceNotRegisteredException
-//   The request failed because this device is no longer registered and therefore
-//   no longer managed by this account.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
+//
+//   - DeviceNotRegisteredException
+//     The request failed because this device is no longer registered and therefore
+//     no longer managed by this account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateDevice
 func (c *AlexaForBusiness) UpdateDevice(input *UpdateDeviceInput) (*UpdateDeviceOutput, error) {
@@ -8150,14 +8084,13 @@ const opUpdateGateway = "UpdateGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayRequest method.
+//	req, resp := client.UpdateGatewayRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayRequest method.
-//    req, resp := client.UpdateGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateGateway
 func (c *AlexaForBusiness) UpdateGatewayRequest(input *UpdateGatewayInput) (req *request.Request, output *UpdateGatewayOutput) {
@@ -8190,11 +8123,12 @@ func (c *AlexaForBusiness) UpdateGatewayRequest(input *UpdateGatewayInput) (req 
 // API operation UpdateGateway for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - NameInUseException
+//     The name sent in the request is already in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateGateway
 func (c *AlexaForBusiness) UpdateGateway(input *UpdateGatewayInput) (*UpdateGatewayOutput, error) {
@@ -8234,14 +8168,13 @@ const opUpdateGatewayGroup = "UpdateGatewayGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayGroupRequest method.
+//	req, resp := client.UpdateGatewayGroupRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayGroupRequest method.
-//    req, resp := client.UpdateGatewayGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateGatewayGroup
 func (c *AlexaForBusiness) UpdateGatewayGroupRequest(input *UpdateGatewayGroupInput) (req *request.Request, output *UpdateGatewayGroupOutput) {
@@ -8274,11 +8207,12 @@ func (c *AlexaForBusiness) UpdateGatewayGroupRequest(input *UpdateGatewayGroupIn
 // API operation UpdateGatewayGroup for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - NameInUseException
+//     The name sent in the request is already in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateGatewayGroup
 func (c *AlexaForBusiness) UpdateGatewayGroup(input *UpdateGatewayGroupInput) (*UpdateGatewayGroupOutput, error) {
@@ -8318,14 +8252,13 @@ const opUpdateNetworkProfile = "UpdateNetworkProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNetworkProfileRequest method.
+//	req, resp := client.UpdateNetworkProfileRequest(params)
 //
-//    // Example sending a request using the UpdateNetworkProfileRequest method.
-//    req, resp := client.UpdateNetworkProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateNetworkProfile
 func (c *AlexaForBusiness) UpdateNetworkProfileRequest(input *UpdateNetworkProfileInput) (req *request.Request, output *UpdateNetworkProfileOutput) {
@@ -8357,20 +8290,21 @@ func (c *AlexaForBusiness) UpdateNetworkProfileRequest(input *UpdateNetworkProfi
 // API operation UpdateNetworkProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NameInUseException
+//     The name sent in the request is already in use.
 //
-//   * InvalidCertificateAuthorityException
-//   The Certificate Authority can't issue or revoke a certificate.
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
-//   * InvalidSecretsManagerResourceException
-//   A password in SecretsManager is in an invalid state.
+//   - InvalidCertificateAuthorityException
+//     The Certificate Authority can't issue or revoke a certificate.
+//
+//   - InvalidSecretsManagerResourceException
+//     A password in SecretsManager is in an invalid state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateNetworkProfile
 func (c *AlexaForBusiness) UpdateNetworkProfile(input *UpdateNetworkProfileInput) (*UpdateNetworkProfileOutput, error) {
@@ -8410,14 +8344,13 @@ const opUpdateProfile = "UpdateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProfileRequest method.
+//	req, resp := client.UpdateProfileRequest(params)
 //
-//    // Example sending a request using the UpdateProfileRequest method.
-//    req, resp := client.UpdateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateProfile
 func (c *AlexaForBusiness) UpdateProfileRequest(input *UpdateProfileInput) (req *request.Request, output *UpdateProfileOutput) {
@@ -8449,14 +8382,15 @@ func (c *AlexaForBusiness) UpdateProfileRequest(input *UpdateProfileInput) (req 
 // API operation UpdateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NameInUseException
+//     The name sent in the request is already in use.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateProfile
 func (c *AlexaForBusiness) UpdateProfile(input *UpdateProfileInput) (*UpdateProfileOutput, error) {
@@ -8496,14 +8430,13 @@ const opUpdateRoom = "UpdateRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoomRequest method.
+//	req, resp := client.UpdateRoomRequest(params)
 //
-//    // Example sending a request using the UpdateRoomRequest method.
-//    req, resp := client.UpdateRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateRoom
 func (c *AlexaForBusiness) UpdateRoomRequest(input *UpdateRoomInput) (req *request.Request, output *UpdateRoomOutput) {
@@ -8535,11 +8468,12 @@ func (c *AlexaForBusiness) UpdateRoomRequest(input *UpdateRoomInput) (req *reque
 // API operation UpdateRoom for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
+//
+//   - NameInUseException
+//     The name sent in the request is already in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateRoom
 func (c *AlexaForBusiness) UpdateRoom(input *UpdateRoomInput) (*UpdateRoomOutput, error) {
@@ -8579,14 +8513,13 @@ const opUpdateSkillGroup = "UpdateSkillGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSkillGroupRequest method.
+//	req, resp := client.UpdateSkillGroupRequest(params)
 //
-//    // Example sending a request using the UpdateSkillGroupRequest method.
-//    req, resp := client.UpdateSkillGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateSkillGroup
 func (c *AlexaForBusiness) UpdateSkillGroupRequest(input *UpdateSkillGroupInput) (req *request.Request, output *UpdateSkillGroupOutput) {
@@ -8618,14 +8551,15 @@ func (c *AlexaForBusiness) UpdateSkillGroupRequest(input *UpdateSkillGroupInput)
 // API operation UpdateSkillGroup for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource is not found.
 //
-//   * NameInUseException
-//   The name sent in the request is already in use.
+//   - NotFoundException
+//     The resource is not found.
 //
-//   * ConcurrentModificationException
-//   There is a concurrent modification of resources.
+//   - NameInUseException
+//     The name sent in the request is already in use.
+//
+//   - ConcurrentModificationException
+//     There is a concurrent modification of resources.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/alexaforbusiness-2017-11-09/UpdateSkillGroup
 func (c *AlexaForBusiness) UpdateSkillGroup(input *UpdateSkillGroupInput) (*UpdateSkillGroupOutput, error) {
@@ -16984,12 +16918,12 @@ func (s *MeetingRoomConfiguration) SetRoomUtilizationMetricsEnabled(v bool) *Mee
 // The values that indicate whether a pin is always required (YES), never required
 // (NO), or OPTIONAL.
 //
-//    * If YES, Alexa will always ask for a meeting pin.
+//   - If YES, Alexa will always ask for a meeting pin.
 //
-//    * If NO, Alexa will never ask for a meeting pin.
+//   - If NO, Alexa will never ask for a meeting pin.
 //
-//    * If OPTIONAL, Alexa will ask if you have a meeting pin and if the customer
-//    responds with yes, it will ask for the meeting pin.
+//   - If OPTIONAL, Alexa will ask if you have a meeting pin and if the customer
+//     responds with yes, it will ask for the meeting pin.
 type MeetingSetting struct {
 	_ struct{} `type:"structure"`
 

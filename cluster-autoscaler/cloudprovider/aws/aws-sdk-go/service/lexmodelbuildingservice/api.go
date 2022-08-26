@@ -29,14 +29,13 @@ const opCreateBotVersion = "CreateBotVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBotVersionRequest method.
+//	req, resp := client.CreateBotVersionRequest(params)
 //
-//    // Example sending a request using the CreateBotVersionRequest method.
-//    req, resp := client.CreateBotVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
 func (c *LexModelBuildingService) CreateBotVersionRequest(input *CreateBotVersionInput) (req *request.Request, output *CreateBotVersionOutput) {
@@ -77,26 +76,27 @@ func (c *LexModelBuildingService) CreateBotVersionRequest(input *CreateBotVersio
 // API operation CreateBotVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateBotVersion
 func (c *LexModelBuildingService) CreateBotVersion(input *CreateBotVersionInput) (*CreateBotVersionOutput, error) {
@@ -136,14 +136,13 @@ const opCreateIntentVersion = "CreateIntentVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIntentVersionRequest method.
+//	req, resp := client.CreateIntentVersionRequest(params)
 //
-//    // Example sending a request using the CreateIntentVersionRequest method.
-//    req, resp := client.CreateIntentVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
 func (c *LexModelBuildingService) CreateIntentVersionRequest(input *CreateIntentVersionInput) (req *request.Request, output *CreateIntentVersionOutput) {
@@ -186,26 +185,27 @@ func (c *LexModelBuildingService) CreateIntentVersionRequest(input *CreateIntent
 // API operation CreateIntentVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateIntentVersion
 func (c *LexModelBuildingService) CreateIntentVersion(input *CreateIntentVersionInput) (*CreateIntentVersionOutput, error) {
@@ -245,14 +245,13 @@ const opCreateSlotTypeVersion = "CreateSlotTypeVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSlotTypeVersionRequest method.
+//	req, resp := client.CreateSlotTypeVersionRequest(params)
 //
-//    // Example sending a request using the CreateSlotTypeVersionRequest method.
-//    req, resp := client.CreateSlotTypeVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
 func (c *LexModelBuildingService) CreateSlotTypeVersionRequest(input *CreateSlotTypeVersionInput) (req *request.Request, output *CreateSlotTypeVersionOutput) {
@@ -294,26 +293,27 @@ func (c *LexModelBuildingService) CreateSlotTypeVersionRequest(input *CreateSlot
 // API operation CreateSlotTypeVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/CreateSlotTypeVersion
 func (c *LexModelBuildingService) CreateSlotTypeVersion(input *CreateSlotTypeVersionInput) (*CreateSlotTypeVersionOutput, error) {
@@ -353,14 +353,13 @@ const opDeleteBot = "DeleteBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotRequest method.
+//	req, resp := client.DeleteBotRequest(params)
 //
-//    // Example sending a request using the DeleteBotRequest method.
-//    req, resp := client.DeleteBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
 func (c *LexModelBuildingService) DeleteBotRequest(input *DeleteBotInput) (req *request.Request, output *DeleteBotOutput) {
@@ -407,35 +406,36 @@ func (c *LexModelBuildingService) DeleteBotRequest(input *DeleteBotInput) (req *
 // API operation DeleteBot for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBot
 func (c *LexModelBuildingService) DeleteBot(input *DeleteBotInput) (*DeleteBotOutput, error) {
@@ -475,14 +475,13 @@ const opDeleteBotAlias = "DeleteBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotAliasRequest method.
+//	req, resp := client.DeleteBotAliasRequest(params)
 //
-//    // Example sending a request using the DeleteBotAliasRequest method.
-//    req, resp := client.DeleteBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
 func (c *LexModelBuildingService) DeleteBotAliasRequest(input *DeleteBotAliasInput) (req *request.Request, output *DeleteBotAliasOutput) {
@@ -522,35 +521,36 @@ func (c *LexModelBuildingService) DeleteBotAliasRequest(input *DeleteBotAliasInp
 // API operation DeleteBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotAlias
 func (c *LexModelBuildingService) DeleteBotAlias(input *DeleteBotAliasInput) (*DeleteBotAliasOutput, error) {
@@ -590,14 +590,13 @@ const opDeleteBotChannelAssociation = "DeleteBotChannelAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotChannelAssociationRequest method.
+//	req, resp := client.DeleteBotChannelAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteBotChannelAssociationRequest method.
-//    req, resp := client.DeleteBotChannelAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
 func (c *LexModelBuildingService) DeleteBotChannelAssociationRequest(input *DeleteBotChannelAssociationInput) (req *request.Request, output *DeleteBotChannelAssociationOutput) {
@@ -632,22 +631,23 @@ func (c *LexModelBuildingService) DeleteBotChannelAssociationRequest(input *Dele
 // API operation DeleteBotChannelAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotChannelAssociation
 func (c *LexModelBuildingService) DeleteBotChannelAssociation(input *DeleteBotChannelAssociationInput) (*DeleteBotChannelAssociationOutput, error) {
@@ -687,14 +687,13 @@ const opDeleteBotVersion = "DeleteBotVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBotVersionRequest method.
+//	req, resp := client.DeleteBotVersionRequest(params)
 //
-//    // Example sending a request using the DeleteBotVersionRequest method.
-//    req, resp := client.DeleteBotVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
 func (c *LexModelBuildingService) DeleteBotVersionRequest(input *DeleteBotVersionInput) (req *request.Request, output *DeleteBotVersionOutput) {
@@ -729,35 +728,36 @@ func (c *LexModelBuildingService) DeleteBotVersionRequest(input *DeleteBotVersio
 // API operation DeleteBotVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteBotVersion
 func (c *LexModelBuildingService) DeleteBotVersion(input *DeleteBotVersionInput) (*DeleteBotVersionOutput, error) {
@@ -797,14 +797,13 @@ const opDeleteIntent = "DeleteIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntentRequest method.
+//	req, resp := client.DeleteIntentRequest(params)
 //
-//    // Example sending a request using the DeleteIntentRequest method.
-//    req, resp := client.DeleteIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
 func (c *LexModelBuildingService) DeleteIntentRequest(input *DeleteIntentInput) (req *request.Request, output *DeleteIntentOutput) {
@@ -849,35 +848,36 @@ func (c *LexModelBuildingService) DeleteIntentRequest(input *DeleteIntentInput) 
 // API operation DeleteIntent for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntent
 func (c *LexModelBuildingService) DeleteIntent(input *DeleteIntentInput) (*DeleteIntentOutput, error) {
@@ -917,14 +917,13 @@ const opDeleteIntentVersion = "DeleteIntentVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntentVersionRequest method.
+//	req, resp := client.DeleteIntentVersionRequest(params)
 //
-//    // Example sending a request using the DeleteIntentVersionRequest method.
-//    req, resp := client.DeleteIntentVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
 func (c *LexModelBuildingService) DeleteIntentVersionRequest(input *DeleteIntentVersionInput) (req *request.Request, output *DeleteIntentVersionOutput) {
@@ -959,35 +958,36 @@ func (c *LexModelBuildingService) DeleteIntentVersionRequest(input *DeleteIntent
 // API operation DeleteIntentVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteIntentVersion
 func (c *LexModelBuildingService) DeleteIntentVersion(input *DeleteIntentVersionInput) (*DeleteIntentVersionOutput, error) {
@@ -1027,14 +1027,13 @@ const opDeleteSlotType = "DeleteSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSlotTypeRequest method.
+//	req, resp := client.DeleteSlotTypeRequest(params)
 //
-//    // Example sending a request using the DeleteSlotTypeRequest method.
-//    req, resp := client.DeleteSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
 func (c *LexModelBuildingService) DeleteSlotTypeRequest(input *DeleteSlotTypeInput) (req *request.Request, output *DeleteSlotTypeOutput) {
@@ -1081,35 +1080,36 @@ func (c *LexModelBuildingService) DeleteSlotTypeRequest(input *DeleteSlotTypeInp
 // API operation DeleteSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotType
 func (c *LexModelBuildingService) DeleteSlotType(input *DeleteSlotTypeInput) (*DeleteSlotTypeOutput, error) {
@@ -1149,14 +1149,13 @@ const opDeleteSlotTypeVersion = "DeleteSlotTypeVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSlotTypeVersionRequest method.
+//	req, resp := client.DeleteSlotTypeVersionRequest(params)
 //
-//    // Example sending a request using the DeleteSlotTypeVersionRequest method.
-//    req, resp := client.DeleteSlotTypeVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
 func (c *LexModelBuildingService) DeleteSlotTypeVersionRequest(input *DeleteSlotTypeVersionInput) (req *request.Request, output *DeleteSlotTypeVersionOutput) {
@@ -1191,35 +1190,36 @@ func (c *LexModelBuildingService) DeleteSlotTypeVersionRequest(input *DeleteSlot
 // API operation DeleteSlotTypeVersion for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * ResourceInUseException
-//   The resource that you are attempting to delete is referred to by another
-//   resource. Use this information to remove references to the resource that
-//   you are trying to delete.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   The body of the exception contains a JSON object that describes the resource.
+//   - ResourceInUseException
+//     The resource that you are attempting to delete is referred to by another
+//     resource. Use this information to remove references to the resource that
+//     you are trying to delete.
 //
-//   { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
+//     The body of the exception contains a JSON object that describes the resource.
 //
-//   "resourceReference": {
+//     { "resourceType": BOT | BOTALIAS | BOTCHANNEL | INTENT,
 //
-//   "name": string, "version": string } }
+//     "resourceReference": {
+//
+//     "name": string, "version": string } }
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteSlotTypeVersion
 func (c *LexModelBuildingService) DeleteSlotTypeVersion(input *DeleteSlotTypeVersionInput) (*DeleteSlotTypeVersionOutput, error) {
@@ -1259,14 +1259,13 @@ const opDeleteUtterances = "DeleteUtterances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUtterancesRequest method.
+//	req, resp := client.DeleteUtterancesRequest(params)
 //
-//    // Example sending a request using the DeleteUtterancesRequest method.
-//    req, resp := client.DeleteUtterancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
 func (c *LexModelBuildingService) DeleteUtterancesRequest(input *DeleteUtterancesInput) (req *request.Request, output *DeleteUtterancesOutput) {
@@ -1311,19 +1310,20 @@ func (c *LexModelBuildingService) DeleteUtterancesRequest(input *DeleteUtterance
 // API operation DeleteUtterances for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/DeleteUtterances
 func (c *LexModelBuildingService) DeleteUtterances(input *DeleteUtterancesInput) (*DeleteUtterancesOutput, error) {
@@ -1363,14 +1363,13 @@ const opGetBot = "GetBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotRequest method.
+//	req, resp := client.GetBotRequest(params)
 //
-//    // Example sending a request using the GetBotRequest method.
-//    req, resp := client.GetBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
 func (c *LexModelBuildingService) GetBotRequest(input *GetBotInput) (req *request.Request, output *GetBotOutput) {
@@ -1404,19 +1403,20 @@ func (c *LexModelBuildingService) GetBotRequest(input *GetBotInput) (req *reques
 // API operation GetBot for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBot
 func (c *LexModelBuildingService) GetBot(input *GetBotInput) (*GetBotOutput, error) {
@@ -1456,14 +1456,13 @@ const opGetBotAlias = "GetBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotAliasRequest method.
+//	req, resp := client.GetBotAliasRequest(params)
 //
-//    // Example sending a request using the GetBotAliasRequest method.
-//    req, resp := client.GetBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
 func (c *LexModelBuildingService) GetBotAliasRequest(input *GetBotAliasInput) (req *request.Request, output *GetBotAliasOutput) {
@@ -1497,19 +1496,20 @@ func (c *LexModelBuildingService) GetBotAliasRequest(input *GetBotAliasInput) (r
 // API operation GetBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAlias
 func (c *LexModelBuildingService) GetBotAlias(input *GetBotAliasInput) (*GetBotAliasOutput, error) {
@@ -1549,14 +1549,13 @@ const opGetBotAliases = "GetBotAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotAliasesRequest method.
+//	req, resp := client.GetBotAliasesRequest(params)
 //
-//    // Example sending a request using the GetBotAliasesRequest method.
-//    req, resp := client.GetBotAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
 func (c *LexModelBuildingService) GetBotAliasesRequest(input *GetBotAliasesInput) (req *request.Request, output *GetBotAliasesOutput) {
@@ -1595,15 +1594,16 @@ func (c *LexModelBuildingService) GetBotAliasesRequest(input *GetBotAliasesInput
 // API operation GetBotAliases for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotAliases
 func (c *LexModelBuildingService) GetBotAliases(input *GetBotAliasesInput) (*GetBotAliasesOutput, error) {
@@ -1635,15 +1635,14 @@ func (c *LexModelBuildingService) GetBotAliasesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBotAliases operation.
-//    pageNum := 0
-//    err := client.GetBotAliasesPages(params,
-//        func(page *lexmodelbuildingservice.GetBotAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBotAliases operation.
+//	pageNum := 0
+//	err := client.GetBotAliasesPages(params,
+//	    func(page *lexmodelbuildingservice.GetBotAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBotAliasesPages(input *GetBotAliasesInput, fn func(*GetBotAliasesOutput, bool) bool) error {
 	return c.GetBotAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1695,14 +1694,13 @@ const opGetBotChannelAssociation = "GetBotChannelAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotChannelAssociationRequest method.
+//	req, resp := client.GetBotChannelAssociationRequest(params)
 //
-//    // Example sending a request using the GetBotChannelAssociationRequest method.
-//    req, resp := client.GetBotChannelAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
 func (c *LexModelBuildingService) GetBotChannelAssociationRequest(input *GetBotChannelAssociationInput) (req *request.Request, output *GetBotChannelAssociationOutput) {
@@ -1737,19 +1735,20 @@ func (c *LexModelBuildingService) GetBotChannelAssociationRequest(input *GetBotC
 // API operation GetBotChannelAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociation
 func (c *LexModelBuildingService) GetBotChannelAssociation(input *GetBotChannelAssociationInput) (*GetBotChannelAssociationOutput, error) {
@@ -1789,14 +1788,13 @@ const opGetBotChannelAssociations = "GetBotChannelAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotChannelAssociationsRequest method.
+//	req, resp := client.GetBotChannelAssociationsRequest(params)
 //
-//    // Example sending a request using the GetBotChannelAssociationsRequest method.
-//    req, resp := client.GetBotChannelAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
 func (c *LexModelBuildingService) GetBotChannelAssociationsRequest(input *GetBotChannelAssociationsInput) (req *request.Request, output *GetBotChannelAssociationsOutput) {
@@ -1836,15 +1834,16 @@ func (c *LexModelBuildingService) GetBotChannelAssociationsRequest(input *GetBot
 // API operation GetBotChannelAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotChannelAssociations
 func (c *LexModelBuildingService) GetBotChannelAssociations(input *GetBotChannelAssociationsInput) (*GetBotChannelAssociationsOutput, error) {
@@ -1876,15 +1875,14 @@ func (c *LexModelBuildingService) GetBotChannelAssociationsWithContext(ctx aws.C
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBotChannelAssociations operation.
-//    pageNum := 0
-//    err := client.GetBotChannelAssociationsPages(params,
-//        func(page *lexmodelbuildingservice.GetBotChannelAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBotChannelAssociations operation.
+//	pageNum := 0
+//	err := client.GetBotChannelAssociationsPages(params,
+//	    func(page *lexmodelbuildingservice.GetBotChannelAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBotChannelAssociationsPages(input *GetBotChannelAssociationsInput, fn func(*GetBotChannelAssociationsOutput, bool) bool) error {
 	return c.GetBotChannelAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1936,14 +1934,13 @@ const opGetBotVersions = "GetBotVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotVersionsRequest method.
+//	req, resp := client.GetBotVersionsRequest(params)
 //
-//    // Example sending a request using the GetBotVersionsRequest method.
-//    req, resp := client.GetBotVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
 func (c *LexModelBuildingService) GetBotVersionsRequest(input *GetBotVersionsInput) (req *request.Request, output *GetBotVersionsOutput) {
@@ -1990,19 +1987,20 @@ func (c *LexModelBuildingService) GetBotVersionsRequest(input *GetBotVersionsInp
 // API operation GetBotVersions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBotVersions
 func (c *LexModelBuildingService) GetBotVersions(input *GetBotVersionsInput) (*GetBotVersionsOutput, error) {
@@ -2034,15 +2032,14 @@ func (c *LexModelBuildingService) GetBotVersionsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBotVersions operation.
-//    pageNum := 0
-//    err := client.GetBotVersionsPages(params,
-//        func(page *lexmodelbuildingservice.GetBotVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBotVersions operation.
+//	pageNum := 0
+//	err := client.GetBotVersionsPages(params,
+//	    func(page *lexmodelbuildingservice.GetBotVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBotVersionsPages(input *GetBotVersionsInput, fn func(*GetBotVersionsOutput, bool) bool) error {
 	return c.GetBotVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2094,14 +2091,13 @@ const opGetBots = "GetBots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBotsRequest method.
+//	req, resp := client.GetBotsRequest(params)
 //
-//    // Example sending a request using the GetBotsRequest method.
-//    req, resp := client.GetBotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
 func (c *LexModelBuildingService) GetBotsRequest(input *GetBotsInput) (req *request.Request, output *GetBotsOutput) {
@@ -2130,12 +2126,12 @@ func (c *LexModelBuildingService) GetBotsRequest(input *GetBotsInput) (req *requ
 //
 // Returns bot information as follows:
 //
-//    * If you provide the nameContains field, the response includes information
-//    for the $LATEST version of all bots whose name contains the specified
-//    string.
+//   - If you provide the nameContains field, the response includes information
+//     for the $LATEST version of all bots whose name contains the specified
+//     string.
 //
-//    * If you don't specify the nameContains field, the operation returns information
-//    about the $LATEST version of all of your bots.
+//   - If you don't specify the nameContains field, the operation returns information
+//     about the $LATEST version of all of your bots.
 //
 // This operation requires permission for the lex:GetBots action.
 //
@@ -2147,19 +2143,20 @@ func (c *LexModelBuildingService) GetBotsRequest(input *GetBotsInput) (req *requ
 // API operation GetBots for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBots
 func (c *LexModelBuildingService) GetBots(input *GetBotsInput) (*GetBotsOutput, error) {
@@ -2191,15 +2188,14 @@ func (c *LexModelBuildingService) GetBotsWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBots operation.
-//    pageNum := 0
-//    err := client.GetBotsPages(params,
-//        func(page *lexmodelbuildingservice.GetBotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBots operation.
+//	pageNum := 0
+//	err := client.GetBotsPages(params,
+//	    func(page *lexmodelbuildingservice.GetBotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBotsPages(input *GetBotsInput, fn func(*GetBotsOutput, bool) bool) error {
 	return c.GetBotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2251,14 +2247,13 @@ const opGetBuiltinIntent = "GetBuiltinIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBuiltinIntentRequest method.
+//	req, resp := client.GetBuiltinIntentRequest(params)
 //
-//    // Example sending a request using the GetBuiltinIntentRequest method.
-//    req, resp := client.GetBuiltinIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
 func (c *LexModelBuildingService) GetBuiltinIntentRequest(input *GetBuiltinIntentInput) (req *request.Request, output *GetBuiltinIntentOutput) {
@@ -2291,19 +2286,20 @@ func (c *LexModelBuildingService) GetBuiltinIntentRequest(input *GetBuiltinInten
 // API operation GetBuiltinIntent for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntent
 func (c *LexModelBuildingService) GetBuiltinIntent(input *GetBuiltinIntentInput) (*GetBuiltinIntentOutput, error) {
@@ -2343,14 +2339,13 @@ const opGetBuiltinIntents = "GetBuiltinIntents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBuiltinIntentsRequest method.
+//	req, resp := client.GetBuiltinIntentsRequest(params)
 //
-//    // Example sending a request using the GetBuiltinIntentsRequest method.
-//    req, resp := client.GetBuiltinIntentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
 func (c *LexModelBuildingService) GetBuiltinIntentsRequest(input *GetBuiltinIntentsInput) (req *request.Request, output *GetBuiltinIntentsOutput) {
@@ -2389,15 +2384,16 @@ func (c *LexModelBuildingService) GetBuiltinIntentsRequest(input *GetBuiltinInte
 // API operation GetBuiltinIntents for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinIntents
 func (c *LexModelBuildingService) GetBuiltinIntents(input *GetBuiltinIntentsInput) (*GetBuiltinIntentsOutput, error) {
@@ -2429,15 +2425,14 @@ func (c *LexModelBuildingService) GetBuiltinIntentsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBuiltinIntents operation.
-//    pageNum := 0
-//    err := client.GetBuiltinIntentsPages(params,
-//        func(page *lexmodelbuildingservice.GetBuiltinIntentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBuiltinIntents operation.
+//	pageNum := 0
+//	err := client.GetBuiltinIntentsPages(params,
+//	    func(page *lexmodelbuildingservice.GetBuiltinIntentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBuiltinIntentsPages(input *GetBuiltinIntentsInput, fn func(*GetBuiltinIntentsOutput, bool) bool) error {
 	return c.GetBuiltinIntentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2489,14 +2484,13 @@ const opGetBuiltinSlotTypes = "GetBuiltinSlotTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBuiltinSlotTypesRequest method.
+//	req, resp := client.GetBuiltinSlotTypesRequest(params)
 //
-//    // Example sending a request using the GetBuiltinSlotTypesRequest method.
-//    req, resp := client.GetBuiltinSlotTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
 func (c *LexModelBuildingService) GetBuiltinSlotTypesRequest(input *GetBuiltinSlotTypesInput) (req *request.Request, output *GetBuiltinSlotTypesOutput) {
@@ -2538,15 +2532,16 @@ func (c *LexModelBuildingService) GetBuiltinSlotTypesRequest(input *GetBuiltinSl
 // API operation GetBuiltinSlotTypes for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetBuiltinSlotTypes
 func (c *LexModelBuildingService) GetBuiltinSlotTypes(input *GetBuiltinSlotTypesInput) (*GetBuiltinSlotTypesOutput, error) {
@@ -2578,15 +2573,14 @@ func (c *LexModelBuildingService) GetBuiltinSlotTypesWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetBuiltinSlotTypes operation.
-//    pageNum := 0
-//    err := client.GetBuiltinSlotTypesPages(params,
-//        func(page *lexmodelbuildingservice.GetBuiltinSlotTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetBuiltinSlotTypes operation.
+//	pageNum := 0
+//	err := client.GetBuiltinSlotTypesPages(params,
+//	    func(page *lexmodelbuildingservice.GetBuiltinSlotTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetBuiltinSlotTypesPages(input *GetBuiltinSlotTypesInput, fn func(*GetBuiltinSlotTypesOutput, bool) bool) error {
 	return c.GetBuiltinSlotTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2638,14 +2632,13 @@ const opGetExport = "GetExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExportRequest method.
+//	req, resp := client.GetExportRequest(params)
 //
-//    // Example sending a request using the GetExportRequest method.
-//    req, resp := client.GetExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExport
 func (c *LexModelBuildingService) GetExportRequest(input *GetExportInput) (req *request.Request, output *GetExportOutput) {
@@ -2676,19 +2669,20 @@ func (c *LexModelBuildingService) GetExportRequest(input *GetExportInput) (req *
 // API operation GetExport for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetExport
 func (c *LexModelBuildingService) GetExport(input *GetExportInput) (*GetExportOutput, error) {
@@ -2728,14 +2722,13 @@ const opGetImport = "GetImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImportRequest method.
+//	req, resp := client.GetImportRequest(params)
 //
-//    // Example sending a request using the GetImportRequest method.
-//    req, resp := client.GetImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetImport
 func (c *LexModelBuildingService) GetImportRequest(input *GetImportInput) (req *request.Request, output *GetImportOutput) {
@@ -2766,19 +2759,20 @@ func (c *LexModelBuildingService) GetImportRequest(input *GetImportInput) (req *
 // API operation GetImport for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetImport
 func (c *LexModelBuildingService) GetImport(input *GetImportInput) (*GetImportOutput, error) {
@@ -2818,14 +2812,13 @@ const opGetIntent = "GetIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntentRequest method.
+//	req, resp := client.GetIntentRequest(params)
 //
-//    // Example sending a request using the GetIntentRequest method.
-//    req, resp := client.GetIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
 func (c *LexModelBuildingService) GetIntentRequest(input *GetIntentInput) (req *request.Request, output *GetIntentOutput) {
@@ -2859,19 +2852,20 @@ func (c *LexModelBuildingService) GetIntentRequest(input *GetIntentInput) (req *
 // API operation GetIntent for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntent
 func (c *LexModelBuildingService) GetIntent(input *GetIntentInput) (*GetIntentOutput, error) {
@@ -2911,14 +2905,13 @@ const opGetIntentVersions = "GetIntentVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntentVersionsRequest method.
+//	req, resp := client.GetIntentVersionsRequest(params)
 //
-//    // Example sending a request using the GetIntentVersionsRequest method.
-//    req, resp := client.GetIntentVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
 func (c *LexModelBuildingService) GetIntentVersionsRequest(input *GetIntentVersionsInput) (req *request.Request, output *GetIntentVersionsOutput) {
@@ -2965,19 +2958,20 @@ func (c *LexModelBuildingService) GetIntentVersionsRequest(input *GetIntentVersi
 // API operation GetIntentVersions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntentVersions
 func (c *LexModelBuildingService) GetIntentVersions(input *GetIntentVersionsInput) (*GetIntentVersionsOutput, error) {
@@ -3009,15 +3003,14 @@ func (c *LexModelBuildingService) GetIntentVersionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIntentVersions operation.
-//    pageNum := 0
-//    err := client.GetIntentVersionsPages(params,
-//        func(page *lexmodelbuildingservice.GetIntentVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIntentVersions operation.
+//	pageNum := 0
+//	err := client.GetIntentVersionsPages(params,
+//	    func(page *lexmodelbuildingservice.GetIntentVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetIntentVersionsPages(input *GetIntentVersionsInput, fn func(*GetIntentVersionsOutput, bool) bool) error {
 	return c.GetIntentVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3069,14 +3062,13 @@ const opGetIntents = "GetIntents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntentsRequest method.
+//	req, resp := client.GetIntentsRequest(params)
 //
-//    // Example sending a request using the GetIntentsRequest method.
-//    req, resp := client.GetIntentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
 func (c *LexModelBuildingService) GetIntentsRequest(input *GetIntentsInput) (req *request.Request, output *GetIntentsOutput) {
@@ -3105,11 +3097,11 @@ func (c *LexModelBuildingService) GetIntentsRequest(input *GetIntentsInput) (req
 //
 // Returns intent information as follows:
 //
-//    * If you specify the nameContains field, returns the $LATEST version of
-//    all intents that contain the specified string.
+//   - If you specify the nameContains field, returns the $LATEST version of
+//     all intents that contain the specified string.
 //
-//    * If you don't specify the nameContains field, returns information about
-//    the $LATEST version of all intents.
+//   - If you don't specify the nameContains field, returns information about
+//     the $LATEST version of all intents.
 //
 // The operation requires permission for the lex:GetIntents action.
 //
@@ -3121,19 +3113,20 @@ func (c *LexModelBuildingService) GetIntentsRequest(input *GetIntentsInput) (req
 // API operation GetIntents for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetIntents
 func (c *LexModelBuildingService) GetIntents(input *GetIntentsInput) (*GetIntentsOutput, error) {
@@ -3165,15 +3158,14 @@ func (c *LexModelBuildingService) GetIntentsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetIntents operation.
-//    pageNum := 0
-//    err := client.GetIntentsPages(params,
-//        func(page *lexmodelbuildingservice.GetIntentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetIntents operation.
+//	pageNum := 0
+//	err := client.GetIntentsPages(params,
+//	    func(page *lexmodelbuildingservice.GetIntentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetIntentsPages(input *GetIntentsInput, fn func(*GetIntentsOutput, bool) bool) error {
 	return c.GetIntentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3225,14 +3217,13 @@ const opGetMigration = "GetMigration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMigrationRequest method.
+//	req, resp := client.GetMigrationRequest(params)
 //
-//    // Example sending a request using the GetMigrationRequest method.
-//    req, resp := client.GetMigrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetMigration
 func (c *LexModelBuildingService) GetMigrationRequest(input *GetMigrationInput) (req *request.Request, output *GetMigrationOutput) {
@@ -3265,19 +3256,20 @@ func (c *LexModelBuildingService) GetMigrationRequest(input *GetMigrationInput) 
 // API operation GetMigration for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetMigration
 func (c *LexModelBuildingService) GetMigration(input *GetMigrationInput) (*GetMigrationOutput, error) {
@@ -3317,14 +3309,13 @@ const opGetMigrations = "GetMigrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMigrationsRequest method.
+//	req, resp := client.GetMigrationsRequest(params)
 //
-//    // Example sending a request using the GetMigrationsRequest method.
-//    req, resp := client.GetMigrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetMigrations
 func (c *LexModelBuildingService) GetMigrationsRequest(input *GetMigrationsInput) (req *request.Request, output *GetMigrationsOutput) {
@@ -3361,15 +3352,16 @@ func (c *LexModelBuildingService) GetMigrationsRequest(input *GetMigrationsInput
 // API operation GetMigrations for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetMigrations
 func (c *LexModelBuildingService) GetMigrations(input *GetMigrationsInput) (*GetMigrationsOutput, error) {
@@ -3401,15 +3393,14 @@ func (c *LexModelBuildingService) GetMigrationsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetMigrations operation.
-//    pageNum := 0
-//    err := client.GetMigrationsPages(params,
-//        func(page *lexmodelbuildingservice.GetMigrationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetMigrations operation.
+//	pageNum := 0
+//	err := client.GetMigrationsPages(params,
+//	    func(page *lexmodelbuildingservice.GetMigrationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetMigrationsPages(input *GetMigrationsInput, fn func(*GetMigrationsOutput, bool) bool) error {
 	return c.GetMigrationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3461,14 +3452,13 @@ const opGetSlotType = "GetSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSlotTypeRequest method.
+//	req, resp := client.GetSlotTypeRequest(params)
 //
-//    // Example sending a request using the GetSlotTypeRequest method.
-//    req, resp := client.GetSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
 func (c *LexModelBuildingService) GetSlotTypeRequest(input *GetSlotTypeInput) (req *request.Request, output *GetSlotTypeOutput) {
@@ -3502,19 +3492,20 @@ func (c *LexModelBuildingService) GetSlotTypeRequest(input *GetSlotTypeInput) (r
 // API operation GetSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotType
 func (c *LexModelBuildingService) GetSlotType(input *GetSlotTypeInput) (*GetSlotTypeOutput, error) {
@@ -3554,14 +3545,13 @@ const opGetSlotTypeVersions = "GetSlotTypeVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSlotTypeVersionsRequest method.
+//	req, resp := client.GetSlotTypeVersionsRequest(params)
 //
-//    // Example sending a request using the GetSlotTypeVersionsRequest method.
-//    req, resp := client.GetSlotTypeVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
 func (c *LexModelBuildingService) GetSlotTypeVersionsRequest(input *GetSlotTypeVersionsInput) (req *request.Request, output *GetSlotTypeVersionsOutput) {
@@ -3608,19 +3598,20 @@ func (c *LexModelBuildingService) GetSlotTypeVersionsRequest(input *GetSlotTypeV
 // API operation GetSlotTypeVersions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypeVersions
 func (c *LexModelBuildingService) GetSlotTypeVersions(input *GetSlotTypeVersionsInput) (*GetSlotTypeVersionsOutput, error) {
@@ -3652,15 +3643,14 @@ func (c *LexModelBuildingService) GetSlotTypeVersionsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSlotTypeVersions operation.
-//    pageNum := 0
-//    err := client.GetSlotTypeVersionsPages(params,
-//        func(page *lexmodelbuildingservice.GetSlotTypeVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSlotTypeVersions operation.
+//	pageNum := 0
+//	err := client.GetSlotTypeVersionsPages(params,
+//	    func(page *lexmodelbuildingservice.GetSlotTypeVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetSlotTypeVersionsPages(input *GetSlotTypeVersionsInput, fn func(*GetSlotTypeVersionsOutput, bool) bool) error {
 	return c.GetSlotTypeVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3712,14 +3702,13 @@ const opGetSlotTypes = "GetSlotTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSlotTypesRequest method.
+//	req, resp := client.GetSlotTypesRequest(params)
 //
-//    // Example sending a request using the GetSlotTypesRequest method.
-//    req, resp := client.GetSlotTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
 func (c *LexModelBuildingService) GetSlotTypesRequest(input *GetSlotTypesInput) (req *request.Request, output *GetSlotTypesOutput) {
@@ -3748,11 +3737,11 @@ func (c *LexModelBuildingService) GetSlotTypesRequest(input *GetSlotTypesInput) 
 //
 // Returns slot type information as follows:
 //
-//    * If you specify the nameContains field, returns the $LATEST version of
-//    all slot types that contain the specified string.
+//   - If you specify the nameContains field, returns the $LATEST version of
+//     all slot types that contain the specified string.
 //
-//    * If you don't specify the nameContains field, returns information about
-//    the $LATEST version of all slot types.
+//   - If you don't specify the nameContains field, returns information about
+//     the $LATEST version of all slot types.
 //
 // The operation requires permission for the lex:GetSlotTypes action.
 //
@@ -3764,19 +3753,20 @@ func (c *LexModelBuildingService) GetSlotTypesRequest(input *GetSlotTypesInput) 
 // API operation GetSlotTypes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetSlotTypes
 func (c *LexModelBuildingService) GetSlotTypes(input *GetSlotTypesInput) (*GetSlotTypesOutput, error) {
@@ -3808,15 +3798,14 @@ func (c *LexModelBuildingService) GetSlotTypesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSlotTypes operation.
-//    pageNum := 0
-//    err := client.GetSlotTypesPages(params,
-//        func(page *lexmodelbuildingservice.GetSlotTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSlotTypes operation.
+//	pageNum := 0
+//	err := client.GetSlotTypesPages(params,
+//	    func(page *lexmodelbuildingservice.GetSlotTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *LexModelBuildingService) GetSlotTypesPages(input *GetSlotTypesInput, fn func(*GetSlotTypesOutput, bool) bool) error {
 	return c.GetSlotTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3868,14 +3857,13 @@ const opGetUtterancesView = "GetUtterancesView"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUtterancesViewRequest method.
+//	req, resp := client.GetUtterancesViewRequest(params)
 //
-//    // Example sending a request using the GetUtterancesViewRequest method.
-//    req, resp := client.GetUtterancesViewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
 func (c *LexModelBuildingService) GetUtterancesViewRequest(input *GetUtterancesViewInput) (req *request.Request, output *GetUtterancesViewOutput) {
@@ -3931,15 +3919,16 @@ func (c *LexModelBuildingService) GetUtterancesViewRequest(input *GetUtterancesV
 // API operation GetUtterancesView for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/GetUtterancesView
 func (c *LexModelBuildingService) GetUtterancesView(input *GetUtterancesViewInput) (*GetUtterancesViewOutput, error) {
@@ -3979,14 +3968,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/ListTagsForResource
 func (c *LexModelBuildingService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4018,19 +4006,20 @@ func (c *LexModelBuildingService) ListTagsForResourceRequest(input *ListTagsForR
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/ListTagsForResource
 func (c *LexModelBuildingService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4070,14 +4059,13 @@ const opPutBot = "PutBot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBotRequest method.
+//	req, resp := client.PutBotRequest(params)
 //
-//    // Example sending a request using the PutBotRequest method.
-//    req, resp := client.PutBotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
 func (c *LexModelBuildingService) PutBotRequest(input *PutBotInput) (req *request.Request, output *PutBotOutput) {
@@ -4125,22 +4113,23 @@ func (c *LexModelBuildingService) PutBotRequest(input *PutBotInput) (req *reques
 // API operation PutBot for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBot
 func (c *LexModelBuildingService) PutBot(input *PutBotInput) (*PutBotOutput, error) {
@@ -4180,14 +4169,13 @@ const opPutBotAlias = "PutBotAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBotAliasRequest method.
+//	req, resp := client.PutBotAliasRequest(params)
 //
-//    // Example sending a request using the PutBotAliasRequest method.
-//    req, resp := client.PutBotAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
 func (c *LexModelBuildingService) PutBotAliasRequest(input *PutBotAliasInput) (req *request.Request, output *PutBotAliasOutput) {
@@ -4222,22 +4210,23 @@ func (c *LexModelBuildingService) PutBotAliasRequest(input *PutBotAliasInput) (r
 // API operation PutBotAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutBotAlias
 func (c *LexModelBuildingService) PutBotAlias(input *PutBotAliasInput) (*PutBotAliasOutput, error) {
@@ -4277,14 +4266,13 @@ const opPutIntent = "PutIntent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutIntentRequest method.
+//	req, resp := client.PutIntentRequest(params)
 //
-//    // Example sending a request using the PutIntentRequest method.
-//    req, resp := client.PutIntentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
 func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *request.Request, output *PutIntentOutput) {
@@ -4313,32 +4301,32 @@ func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *
 //
 // To create an intent or replace an existing intent, you must provide the following:
 //
-//    * Intent name. For example, OrderPizza.
+//   - Intent name. For example, OrderPizza.
 //
-//    * Sample utterances. For example, "Can I order a pizza, please." and "I
-//    want to order a pizza."
+//   - Sample utterances. For example, "Can I order a pizza, please." and "I
+//     want to order a pizza."
 //
-//    * Information to be gathered. You specify slot types for the information
-//    that your bot will request from the user. You can specify standard slot
-//    types, such as a date or a time, or custom slot types such as the size
-//    and crust of a pizza.
+//   - Information to be gathered. You specify slot types for the information
+//     that your bot will request from the user. You can specify standard slot
+//     types, such as a date or a time, or custom slot types such as the size
+//     and crust of a pizza.
 //
-//    * How the intent will be fulfilled. You can provide a Lambda function
-//    or configure the intent to return the intent information to the client
-//    application. If you use a Lambda function, when all of the intent information
-//    is available, Amazon Lex invokes your Lambda function. If you configure
-//    your intent to return the intent information to the client application.
+//   - How the intent will be fulfilled. You can provide a Lambda function
+//     or configure the intent to return the intent information to the client
+//     application. If you use a Lambda function, when all of the intent information
+//     is available, Amazon Lex invokes your Lambda function. If you configure
+//     your intent to return the intent information to the client application.
 //
 // You can specify other optional information in the request, such as:
 //
-//    * A confirmation prompt to ask the user to confirm an intent. For example,
-//    "Shall I order your pizza?"
+//   - A confirmation prompt to ask the user to confirm an intent. For example,
+//     "Shall I order your pizza?"
 //
-//    * A conclusion statement to send to the user after the intent has been
-//    fulfilled. For example, "I placed your pizza order."
+//   - A conclusion statement to send to the user after the intent has been
+//     fulfilled. For example, "I placed your pizza order."
 //
-//    * A follow-up prompt that asks the user for additional activity. For example,
-//    asking "Do you want to order a drink with your pizza?"
+//   - A follow-up prompt that asks the user for additional activity. For example,
+//     asking "Do you want to order a drink with your pizza?"
 //
 // If you specify an existing intent name to update the intent, Amazon Lex replaces
 // the values in the $LATEST version of the intent with the values in the request.
@@ -4359,22 +4347,23 @@ func (c *LexModelBuildingService) PutIntentRequest(input *PutIntentInput) (req *
 // API operation PutIntent for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutIntent
 func (c *LexModelBuildingService) PutIntent(input *PutIntentInput) (*PutIntentOutput, error) {
@@ -4414,14 +4403,13 @@ const opPutSlotType = "PutSlotType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSlotTypeRequest method.
+//	req, resp := client.PutSlotTypeRequest(params)
 //
-//    // Example sending a request using the PutSlotTypeRequest method.
-//    req, resp := client.PutSlotTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
 func (c *LexModelBuildingService) PutSlotTypeRequest(input *PutSlotTypeInput) (req *request.Request, output *PutSlotTypeOutput) {
@@ -4465,22 +4453,23 @@ func (c *LexModelBuildingService) PutSlotTypeRequest(input *PutSlotTypeInput) (r
 // API operation PutSlotType for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * PreconditionFailedException
-//   The checksum of the resource that you are trying to change does not match
-//   the checksum in the request. Check the resource's checksum and try again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
+//
+//   - PreconditionFailedException
+//     The checksum of the resource that you are trying to change does not match
+//     the checksum in the request. Check the resource's checksum and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/PutSlotType
 func (c *LexModelBuildingService) PutSlotType(input *PutSlotTypeInput) (*PutSlotTypeOutput, error) {
@@ -4520,14 +4509,13 @@ const opStartImport = "StartImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartImportRequest method.
+//	req, resp := client.StartImportRequest(params)
 //
-//    // Example sending a request using the StartImportRequest method.
-//    req, resp := client.StartImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/StartImport
 func (c *LexModelBuildingService) StartImportRequest(input *StartImportInput) (req *request.Request, output *StartImportOutput) {
@@ -4558,15 +4546,16 @@ func (c *LexModelBuildingService) StartImportRequest(input *StartImportInput) (r
 // API operation StartImport for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/StartImport
 func (c *LexModelBuildingService) StartImport(input *StartImportInput) (*StartImportOutput, error) {
@@ -4606,14 +4595,13 @@ const opStartMigration = "StartMigration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMigrationRequest method.
+//	req, resp := client.StartMigrationRequest(params)
 //
-//    // Example sending a request using the StartMigrationRequest method.
-//    req, resp := client.StartMigrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/StartMigration
 func (c *LexModelBuildingService) StartMigrationRequest(input *StartMigrationInput) (req *request.Request, output *StartMigrationOutput) {
@@ -4648,23 +4636,24 @@ func (c *LexModelBuildingService) StartMigrationRequest(input *StartMigrationInp
 // API operation StartMigration for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
 //
-//   * AccessDeniedException
-//   Your IAM user or role does not have permission to call the Amazon Lex V2
-//   APIs required to migrate your bot.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
+//   - AccessDeniedException
+//     Your IAM user or role does not have permission to call the Amazon Lex V2
+//     APIs required to migrate your bot.
+//
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/StartMigration
 func (c *LexModelBuildingService) StartMigration(input *StartMigrationInput) (*StartMigrationOutput, error) {
@@ -4704,14 +4693,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/TagResource
 func (c *LexModelBuildingService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4744,22 +4732,23 @@ func (c *LexModelBuildingService) TagResourceRequest(input *TagResourceInput) (r
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/TagResource
 func (c *LexModelBuildingService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4799,14 +4788,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UntagResource
 func (c *LexModelBuildingService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4838,22 +4826,23 @@ func (c *LexModelBuildingService) UntagResourceRequest(input *UntagResourceInput
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. Check the resource and
-//   try again.
 //
-//   * BadRequestException
-//   The request is not well formed. For example, a value is invalid or a required
-//   field is missing. Check the field values, and try again.
+//   - NotFoundException
+//     The resource specified in the request was not found. Check the resource and
+//     try again.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - BadRequestException
+//     The request is not well formed. For example, a value is invalid or a required
+//     field is missing. Check the field values, and try again.
 //
-//   * InternalFailureException
-//   An internal Amazon Lex error occurred. Try your request again.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * LimitExceededException
-//   The request exceeded a limit. Try your request again.
+//   - InternalFailureException
+//     An internal Amazon Lex error occurred. Try your request again.
+//
+//   - LimitExceededException
+//     The request exceeded a limit. Try your request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/lex-models-2017-04-19/UntagResource
 func (c *LexModelBuildingService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7151,11 +7140,11 @@ func (s DeleteUtterancesOutput) GoString() string {
 // type of crust that the pizza should have. The slot type could include the
 // values
 //
-//    * thick
+//   - thick
 //
-//    * thin
+//   - thin
 //
-//    * stuffed
+//   - stuffed
 type EnumerationValue struct {
 	_ struct{} `type:"structure"`
 
@@ -7298,14 +7287,14 @@ func (s *FollowUpPrompt) SetRejectionStatement(v *Statement) *FollowUpPrompt {
 //
 // Consider the following examples:
 //
-//    * In a pizza ordering application, after the user provides all of the
-//    information for placing an order, you use a Lambda function to place an
-//    order with a pizzeria.
+//   - In a pizza ordering application, after the user provides all of the
+//     information for placing an order, you use a Lambda function to place an
+//     order with a pizzeria.
 //
-//    * In a gaming application, when a user says "pick up a rock," this information
-//    must go back to the client application so that it can perform the operation
-//    and update the graphics. In this case, you want Amazon Lex to return the
-//    intent data to the client.
+//   - In a gaming application, when a user says "pick up a rock," this information
+//     must go back to the client application so that it can perform the operation
+//     and update the graphics. In this case, you want Amazon Lex to return the
+//     intent data to the client.
 type FulfillmentActivity struct {
 	_ struct{} `type:"structure"`
 

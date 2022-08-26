@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaConnect client from just a session.
-//     svc := mediaconnect.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaConnect client with additional configuration
-//     svc := mediaconnect.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MediaConnect client from just a session.
+//	svc := mediaconnect.New(mySession)
+//
+//	// Create a MediaConnect client with additional configuration
+//	svc := mediaconnect.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MediaConnect {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

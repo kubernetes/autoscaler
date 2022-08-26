@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon OpenSearch Service.
-//    func myFunc(svc opensearchserviceiface.OpenSearchServiceAPI) bool {
-//        // Make svc.AcceptInboundConnection request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon OpenSearch Service.
+//	func myFunc(svc opensearchserviceiface.OpenSearchServiceAPI) bool {
+//	    // Make svc.AcceptInboundConnection request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := opensearchservice.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := opensearchservice.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockOpenSearchServiceClient struct {
-//        opensearchserviceiface.OpenSearchServiceAPI
-//    }
-//    func (m *mockOpenSearchServiceClient) AcceptInboundConnection(input *opensearchservice.AcceptInboundConnectionInput) (*opensearchservice.AcceptInboundConnectionOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockOpenSearchServiceClient struct {
+//	    opensearchserviceiface.OpenSearchServiceAPI
+//	}
+//	func (m *mockOpenSearchServiceClient) AcceptInboundConnection(input *opensearchservice.AcceptInboundConnectionInput) (*opensearchservice.AcceptInboundConnectionOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockOpenSearchServiceClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockOpenSearchServiceClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

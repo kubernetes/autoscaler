@@ -11,7 +11,7 @@ import (
 
 // GetVnicAttachmentRequest wrapper for the GetVnicAttachment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetVnicAttachment.go.html to see an example of how to use GetVnicAttachmentRequest.
 type GetVnicAttachmentRequest struct {

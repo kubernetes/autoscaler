@@ -29,14 +29,13 @@ const opAcceptQualificationRequest = "AcceptQualificationRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptQualificationRequestRequest method.
+//	req, resp := client.AcceptQualificationRequestRequest(params)
 //
-//    // Example sending a request using the AcceptQualificationRequestRequest method.
-//    req, resp := client.AcceptQualificationRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/AcceptQualificationRequest
 func (c *MTurk) AcceptQualificationRequestRequest(input *AcceptQualificationRequestInput) (req *request.Request, output *AcceptQualificationRequestOutput) {
@@ -75,12 +74,13 @@ func (c *MTurk) AcceptQualificationRequestRequest(input *AcceptQualificationRequ
 // API operation AcceptQualificationRequest for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/AcceptQualificationRequest
 func (c *MTurk) AcceptQualificationRequest(input *AcceptQualificationRequestInput) (*AcceptQualificationRequestOutput, error) {
@@ -120,14 +120,13 @@ const opApproveAssignment = "ApproveAssignment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApproveAssignmentRequest method.
+//	req, resp := client.ApproveAssignmentRequest(params)
 //
-//    // Example sending a request using the ApproveAssignmentRequest method.
-//    req, resp := client.ApproveAssignmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ApproveAssignment
 func (c *MTurk) ApproveAssignmentRequest(input *ApproveAssignmentInput) (req *request.Request, output *ApproveAssignmentOutput) {
@@ -154,10 +153,10 @@ func (c *MTurk) ApproveAssignmentRequest(input *ApproveAssignmentInput) (req *re
 // Approving an assignment initiates two payments from the Requester's Amazon.com
 // account
 //
-//    * The Worker who submitted the results is paid the reward specified in
-//    the HIT.
+//   - The Worker who submitted the results is paid the reward specified in
+//     the HIT.
 //
-//    * Amazon Mechanical Turk fees are debited.
+//   - Amazon Mechanical Turk fees are debited.
 //
 // If the Requester's account does not have adequate funds for these payments,
 // the call to ApproveAssignment returns an exception, and the approval is not
@@ -177,12 +176,13 @@ func (c *MTurk) ApproveAssignmentRequest(input *ApproveAssignmentInput) (req *re
 // API operation ApproveAssignment for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ApproveAssignment
 func (c *MTurk) ApproveAssignment(input *ApproveAssignmentInput) (*ApproveAssignmentOutput, error) {
@@ -222,14 +222,13 @@ const opAssociateQualificationWithWorker = "AssociateQualificationWithWorker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateQualificationWithWorkerRequest method.
+//	req, resp := client.AssociateQualificationWithWorkerRequest(params)
 //
-//    // Example sending a request using the AssociateQualificationWithWorkerRequest method.
-//    req, resp := client.AssociateQualificationWithWorkerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/AssociateQualificationWithWorker
 func (c *MTurk) AssociateQualificationWithWorkerRequest(input *AssociateQualificationWithWorkerInput) (req *request.Request, output *AssociateQualificationWithWorkerOutput) {
@@ -273,12 +272,13 @@ func (c *MTurk) AssociateQualificationWithWorkerRequest(input *AssociateQualific
 // API operation AssociateQualificationWithWorker for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/AssociateQualificationWithWorker
 func (c *MTurk) AssociateQualificationWithWorker(input *AssociateQualificationWithWorkerInput) (*AssociateQualificationWithWorkerOutput, error) {
@@ -318,14 +318,13 @@ const opCreateAdditionalAssignmentsForHIT = "CreateAdditionalAssignmentsForHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAdditionalAssignmentsForHITRequest method.
+//	req, resp := client.CreateAdditionalAssignmentsForHITRequest(params)
 //
-//    // Example sending a request using the CreateAdditionalAssignmentsForHITRequest method.
-//    req, resp := client.CreateAdditionalAssignmentsForHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateAdditionalAssignmentsForHIT
 func (c *MTurk) CreateAdditionalAssignmentsForHITRequest(input *CreateAdditionalAssignmentsForHITInput) (req *request.Request, output *CreateAdditionalAssignmentsForHITOutput) {
@@ -353,15 +352,15 @@ func (c *MTurk) CreateAdditionalAssignmentsForHITRequest(input *CreateAdditional
 // To extend the maximum number of assignments, specify the number of additional
 // assignments.
 //
-//    * HITs created with fewer than 10 assignments cannot be extended to have
-//    10 or more assignments. Attempting to add assignments in a way that brings
-//    the total number of assignments for a HIT from fewer than 10 assignments
-//    to 10 or more assignments will result in an AWS.MechanicalTurk.InvalidMaximumAssignmentsIncrease
-//    exception.
+//   - HITs created with fewer than 10 assignments cannot be extended to have
+//     10 or more assignments. Attempting to add assignments in a way that brings
+//     the total number of assignments for a HIT from fewer than 10 assignments
+//     to 10 or more assignments will result in an AWS.MechanicalTurk.InvalidMaximumAssignmentsIncrease
+//     exception.
 //
-//    * HITs that were created before July 22, 2015 cannot be extended. Attempting
-//    to extend HITs that were created before July 22, 2015 will result in an
-//    AWS.MechanicalTurk.HITTooOldForExtension exception.
+//   - HITs that were created before July 22, 2015 cannot be extended. Attempting
+//     to extend HITs that were created before July 22, 2015 will result in an
+//     AWS.MechanicalTurk.HITTooOldForExtension exception.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -371,12 +370,13 @@ func (c *MTurk) CreateAdditionalAssignmentsForHITRequest(input *CreateAdditional
 // API operation CreateAdditionalAssignmentsForHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateAdditionalAssignmentsForHIT
 func (c *MTurk) CreateAdditionalAssignmentsForHIT(input *CreateAdditionalAssignmentsForHITInput) (*CreateAdditionalAssignmentsForHITOutput, error) {
@@ -416,14 +416,13 @@ const opCreateHIT = "CreateHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHITRequest method.
+//	req, resp := client.CreateHITRequest(params)
 //
-//    // Example sending a request using the CreateHITRequest method.
-//    req, resp := client.CreateHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHIT
 func (c *MTurk) CreateHITRequest(input *CreateHITInput) (req *request.Request, output *CreateHITOutput) {
@@ -475,12 +474,13 @@ func (c *MTurk) CreateHITRequest(input *CreateHITInput) (req *request.Request, o
 // API operation CreateHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHIT
 func (c *MTurk) CreateHIT(input *CreateHITInput) (*CreateHITOutput, error) {
@@ -520,14 +520,13 @@ const opCreateHITType = "CreateHITType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHITTypeRequest method.
+//	req, resp := client.CreateHITTypeRequest(params)
 //
-//    // Example sending a request using the CreateHITTypeRequest method.
-//    req, resp := client.CreateHITTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHITType
 func (c *MTurk) CreateHITTypeRequest(input *CreateHITTypeInput) (req *request.Request, output *CreateHITTypeOutput) {
@@ -561,12 +560,13 @@ func (c *MTurk) CreateHITTypeRequest(input *CreateHITTypeInput) (req *request.Re
 // API operation CreateHITType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHITType
 func (c *MTurk) CreateHITType(input *CreateHITTypeInput) (*CreateHITTypeOutput, error) {
@@ -606,14 +606,13 @@ const opCreateHITWithHITType = "CreateHITWithHITType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHITWithHITTypeRequest method.
+//	req, resp := client.CreateHITWithHITTypeRequest(params)
 //
-//    // Example sending a request using the CreateHITWithHITTypeRequest method.
-//    req, resp := client.CreateHITWithHITTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHITWithHITType
 func (c *MTurk) CreateHITWithHITTypeRequest(input *CreateHITWithHITTypeInput) (req *request.Request, output *CreateHITWithHITTypeOutput) {
@@ -656,12 +655,13 @@ func (c *MTurk) CreateHITWithHITTypeRequest(input *CreateHITWithHITTypeInput) (r
 // API operation CreateHITWithHITType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateHITWithHITType
 func (c *MTurk) CreateHITWithHITType(input *CreateHITWithHITTypeInput) (*CreateHITWithHITTypeOutput, error) {
@@ -701,14 +701,13 @@ const opCreateQualificationType = "CreateQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateQualificationTypeRequest method.
+//	req, resp := client.CreateQualificationTypeRequest(params)
 //
-//    // Example sending a request using the CreateQualificationTypeRequest method.
-//    req, resp := client.CreateQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateQualificationType
 func (c *MTurk) CreateQualificationTypeRequest(input *CreateQualificationTypeInput) (req *request.Request, output *CreateQualificationTypeOutput) {
@@ -740,12 +739,13 @@ func (c *MTurk) CreateQualificationTypeRequest(input *CreateQualificationTypeInp
 // API operation CreateQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateQualificationType
 func (c *MTurk) CreateQualificationType(input *CreateQualificationTypeInput) (*CreateQualificationTypeOutput, error) {
@@ -785,14 +785,13 @@ const opCreateWorkerBlock = "CreateWorkerBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkerBlockRequest method.
+//	req, resp := client.CreateWorkerBlockRequest(params)
 //
-//    // Example sending a request using the CreateWorkerBlockRequest method.
-//    req, resp := client.CreateWorkerBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateWorkerBlock
 func (c *MTurk) CreateWorkerBlockRequest(input *CreateWorkerBlockInput) (req *request.Request, output *CreateWorkerBlockOutput) {
@@ -826,12 +825,13 @@ func (c *MTurk) CreateWorkerBlockRequest(input *CreateWorkerBlockInput) (req *re
 // API operation CreateWorkerBlock for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/CreateWorkerBlock
 func (c *MTurk) CreateWorkerBlock(input *CreateWorkerBlockInput) (*CreateWorkerBlockOutput, error) {
@@ -871,14 +871,13 @@ const opDeleteHIT = "DeleteHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHITRequest method.
+//	req, resp := client.DeleteHITRequest(params)
 //
-//    // Example sending a request using the DeleteHITRequest method.
-//    req, resp := client.DeleteHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteHIT
 func (c *MTurk) DeleteHITRequest(input *DeleteHITInput) (req *request.Request, output *DeleteHITOutput) {
@@ -910,15 +909,15 @@ func (c *MTurk) DeleteHITRequest(input *DeleteHITInput) (req *request.Request, o
 // HIT that is Reviewable but without all of its submitted assignments already
 // approved or rejected, the service will return an error.
 //
-//    * HITs are automatically disposed of after 120 days.
+//   - HITs are automatically disposed of after 120 days.
 //
-//    * After you dispose of a HIT, you can no longer approve the HIT's rejected
-//    assignments.
+//   - After you dispose of a HIT, you can no longer approve the HIT's rejected
+//     assignments.
 //
-//    * Disposed HITs are not returned in results for the ListHITs operation.
+//   - Disposed HITs are not returned in results for the ListHITs operation.
 //
-//    * Disposing HITs can improve the performance of operations such as ListReviewableHITs
-//    and ListHITs.
+//   - Disposing HITs can improve the performance of operations such as ListReviewableHITs
+//     and ListHITs.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -928,12 +927,13 @@ func (c *MTurk) DeleteHITRequest(input *DeleteHITInput) (req *request.Request, o
 // API operation DeleteHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteHIT
 func (c *MTurk) DeleteHIT(input *DeleteHITInput) (*DeleteHITOutput, error) {
@@ -973,14 +973,13 @@ const opDeleteQualificationType = "DeleteQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteQualificationTypeRequest method.
+//	req, resp := client.DeleteQualificationTypeRequest(params)
 //
-//    // Example sending a request using the DeleteQualificationTypeRequest method.
-//    req, resp := client.DeleteQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteQualificationType
 func (c *MTurk) DeleteQualificationTypeRequest(input *DeleteQualificationTypeInput) (req *request.Request, output *DeleteQualificationTypeOutput) {
@@ -1024,12 +1023,13 @@ func (c *MTurk) DeleteQualificationTypeRequest(input *DeleteQualificationTypeInp
 // API operation DeleteQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteQualificationType
 func (c *MTurk) DeleteQualificationType(input *DeleteQualificationTypeInput) (*DeleteQualificationTypeOutput, error) {
@@ -1069,14 +1069,13 @@ const opDeleteWorkerBlock = "DeleteWorkerBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkerBlockRequest method.
+//	req, resp := client.DeleteWorkerBlockRequest(params)
 //
-//    // Example sending a request using the DeleteWorkerBlockRequest method.
-//    req, resp := client.DeleteWorkerBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteWorkerBlock
 func (c *MTurk) DeleteWorkerBlockRequest(input *DeleteWorkerBlockInput) (req *request.Request, output *DeleteWorkerBlockOutput) {
@@ -1113,12 +1112,13 @@ func (c *MTurk) DeleteWorkerBlockRequest(input *DeleteWorkerBlockInput) (req *re
 // API operation DeleteWorkerBlock for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DeleteWorkerBlock
 func (c *MTurk) DeleteWorkerBlock(input *DeleteWorkerBlockInput) (*DeleteWorkerBlockOutput, error) {
@@ -1158,14 +1158,13 @@ const opDisassociateQualificationFromWorker = "DisassociateQualificationFromWork
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateQualificationFromWorkerRequest method.
+//	req, resp := client.DisassociateQualificationFromWorkerRequest(params)
 //
-//    // Example sending a request using the DisassociateQualificationFromWorkerRequest method.
-//    req, resp := client.DisassociateQualificationFromWorkerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DisassociateQualificationFromWorker
 func (c *MTurk) DisassociateQualificationFromWorkerRequest(input *DisassociateQualificationFromWorkerInput) (req *request.Request, output *DisassociateQualificationFromWorkerOutput) {
@@ -1201,12 +1200,13 @@ func (c *MTurk) DisassociateQualificationFromWorkerRequest(input *DisassociateQu
 // API operation DisassociateQualificationFromWorker for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/DisassociateQualificationFromWorker
 func (c *MTurk) DisassociateQualificationFromWorker(input *DisassociateQualificationFromWorkerInput) (*DisassociateQualificationFromWorkerOutput, error) {
@@ -1246,14 +1246,13 @@ const opGetAccountBalance = "GetAccountBalance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountBalanceRequest method.
+//	req, resp := client.GetAccountBalanceRequest(params)
 //
-//    // Example sending a request using the GetAccountBalanceRequest method.
-//    req, resp := client.GetAccountBalanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetAccountBalance
 func (c *MTurk) GetAccountBalanceRequest(input *GetAccountBalanceInput) (req *request.Request, output *GetAccountBalanceOutput) {
@@ -1289,12 +1288,13 @@ func (c *MTurk) GetAccountBalanceRequest(input *GetAccountBalanceInput) (req *re
 // API operation GetAccountBalance for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetAccountBalance
 func (c *MTurk) GetAccountBalance(input *GetAccountBalanceInput) (*GetAccountBalanceOutput, error) {
@@ -1334,14 +1334,13 @@ const opGetAssignment = "GetAssignment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssignmentRequest method.
+//	req, resp := client.GetAssignmentRequest(params)
 //
-//    // Example sending a request using the GetAssignmentRequest method.
-//    req, resp := client.GetAssignmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetAssignment
 func (c *MTurk) GetAssignmentRequest(input *GetAssignmentInput) (req *request.Request, output *GetAssignmentOutput) {
@@ -1372,12 +1371,13 @@ func (c *MTurk) GetAssignmentRequest(input *GetAssignmentInput) (req *request.Re
 // API operation GetAssignment for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetAssignment
 func (c *MTurk) GetAssignment(input *GetAssignmentInput) (*GetAssignmentOutput, error) {
@@ -1417,14 +1417,13 @@ const opGetFileUploadURL = "GetFileUploadURL"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFileUploadURLRequest method.
+//	req, resp := client.GetFileUploadURLRequest(params)
 //
-//    // Example sending a request using the GetFileUploadURLRequest method.
-//    req, resp := client.GetFileUploadURLRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetFileUploadURL
 func (c *MTurk) GetFileUploadURLRequest(input *GetFileUploadURLInput) (req *request.Request, output *GetFileUploadURLOutput) {
@@ -1465,12 +1464,13 @@ func (c *MTurk) GetFileUploadURLRequest(input *GetFileUploadURLInput) (req *requ
 // API operation GetFileUploadURL for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetFileUploadURL
 func (c *MTurk) GetFileUploadURL(input *GetFileUploadURLInput) (*GetFileUploadURLOutput, error) {
@@ -1510,14 +1510,13 @@ const opGetHIT = "GetHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHITRequest method.
+//	req, resp := client.GetHITRequest(params)
 //
-//    // Example sending a request using the GetHITRequest method.
-//    req, resp := client.GetHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetHIT
 func (c *MTurk) GetHITRequest(input *GetHITInput) (req *request.Request, output *GetHITOutput) {
@@ -1548,12 +1547,13 @@ func (c *MTurk) GetHITRequest(input *GetHITInput) (req *request.Request, output 
 // API operation GetHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetHIT
 func (c *MTurk) GetHIT(input *GetHITInput) (*GetHITOutput, error) {
@@ -1593,14 +1593,13 @@ const opGetQualificationScore = "GetQualificationScore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetQualificationScoreRequest method.
+//	req, resp := client.GetQualificationScoreRequest(params)
 //
-//    // Example sending a request using the GetQualificationScoreRequest method.
-//    req, resp := client.GetQualificationScoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetQualificationScore
 func (c *MTurk) GetQualificationScoreRequest(input *GetQualificationScoreInput) (req *request.Request, output *GetQualificationScoreOutput) {
@@ -1639,12 +1638,13 @@ func (c *MTurk) GetQualificationScoreRequest(input *GetQualificationScoreInput) 
 // API operation GetQualificationScore for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetQualificationScore
 func (c *MTurk) GetQualificationScore(input *GetQualificationScoreInput) (*GetQualificationScoreOutput, error) {
@@ -1684,14 +1684,13 @@ const opGetQualificationType = "GetQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetQualificationTypeRequest method.
+//	req, resp := client.GetQualificationTypeRequest(params)
 //
-//    // Example sending a request using the GetQualificationTypeRequest method.
-//    req, resp := client.GetQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetQualificationType
 func (c *MTurk) GetQualificationTypeRequest(input *GetQualificationTypeInput) (req *request.Request, output *GetQualificationTypeOutput) {
@@ -1723,12 +1722,13 @@ func (c *MTurk) GetQualificationTypeRequest(input *GetQualificationTypeInput) (r
 // API operation GetQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/GetQualificationType
 func (c *MTurk) GetQualificationType(input *GetQualificationTypeInput) (*GetQualificationTypeOutput, error) {
@@ -1768,14 +1768,13 @@ const opListAssignmentsForHIT = "ListAssignmentsForHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssignmentsForHITRequest method.
+//	req, resp := client.ListAssignmentsForHITRequest(params)
 //
-//    // Example sending a request using the ListAssignmentsForHITRequest method.
-//    req, resp := client.ListAssignmentsForHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListAssignmentsForHIT
 func (c *MTurk) ListAssignmentsForHITRequest(input *ListAssignmentsForHITInput) (req *request.Request, output *ListAssignmentsForHITOutput) {
@@ -1832,12 +1831,13 @@ func (c *MTurk) ListAssignmentsForHITRequest(input *ListAssignmentsForHITInput) 
 // API operation ListAssignmentsForHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListAssignmentsForHIT
 func (c *MTurk) ListAssignmentsForHIT(input *ListAssignmentsForHITInput) (*ListAssignmentsForHITOutput, error) {
@@ -1869,15 +1869,14 @@ func (c *MTurk) ListAssignmentsForHITWithContext(ctx aws.Context, input *ListAss
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssignmentsForHIT operation.
-//    pageNum := 0
-//    err := client.ListAssignmentsForHITPages(params,
-//        func(page *mturk.ListAssignmentsForHITOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssignmentsForHIT operation.
+//	pageNum := 0
+//	err := client.ListAssignmentsForHITPages(params,
+//	    func(page *mturk.ListAssignmentsForHITOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListAssignmentsForHITPages(input *ListAssignmentsForHITInput, fn func(*ListAssignmentsForHITOutput, bool) bool) error {
 	return c.ListAssignmentsForHITPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1929,14 +1928,13 @@ const opListBonusPayments = "ListBonusPayments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBonusPaymentsRequest method.
+//	req, resp := client.ListBonusPaymentsRequest(params)
 //
-//    // Example sending a request using the ListBonusPaymentsRequest method.
-//    req, resp := client.ListBonusPaymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListBonusPayments
 func (c *MTurk) ListBonusPaymentsRequest(input *ListBonusPaymentsInput) (req *request.Request, output *ListBonusPaymentsOutput) {
@@ -1974,12 +1972,13 @@ func (c *MTurk) ListBonusPaymentsRequest(input *ListBonusPaymentsInput) (req *re
 // API operation ListBonusPayments for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListBonusPayments
 func (c *MTurk) ListBonusPayments(input *ListBonusPaymentsInput) (*ListBonusPaymentsOutput, error) {
@@ -2011,15 +2010,14 @@ func (c *MTurk) ListBonusPaymentsWithContext(ctx aws.Context, input *ListBonusPa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBonusPayments operation.
-//    pageNum := 0
-//    err := client.ListBonusPaymentsPages(params,
-//        func(page *mturk.ListBonusPaymentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBonusPayments operation.
+//	pageNum := 0
+//	err := client.ListBonusPaymentsPages(params,
+//	    func(page *mturk.ListBonusPaymentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListBonusPaymentsPages(input *ListBonusPaymentsInput, fn func(*ListBonusPaymentsOutput, bool) bool) error {
 	return c.ListBonusPaymentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2071,14 +2069,13 @@ const opListHITs = "ListHITs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHITsRequest method.
+//	req, resp := client.ListHITsRequest(params)
 //
-//    // Example sending a request using the ListHITsRequest method.
-//    req, resp := client.ListHITsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListHITs
 func (c *MTurk) ListHITsRequest(input *ListHITsInput) (req *request.Request, output *ListHITsOutput) {
@@ -2117,12 +2114,13 @@ func (c *MTurk) ListHITsRequest(input *ListHITsInput) (req *request.Request, out
 // API operation ListHITs for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListHITs
 func (c *MTurk) ListHITs(input *ListHITsInput) (*ListHITsOutput, error) {
@@ -2154,15 +2152,14 @@ func (c *MTurk) ListHITsWithContext(ctx aws.Context, input *ListHITsInput, opts 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHITs operation.
-//    pageNum := 0
-//    err := client.ListHITsPages(params,
-//        func(page *mturk.ListHITsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHITs operation.
+//	pageNum := 0
+//	err := client.ListHITsPages(params,
+//	    func(page *mturk.ListHITsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListHITsPages(input *ListHITsInput, fn func(*ListHITsOutput, bool) bool) error {
 	return c.ListHITsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2214,14 +2211,13 @@ const opListHITsForQualificationType = "ListHITsForQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHITsForQualificationTypeRequest method.
+//	req, resp := client.ListHITsForQualificationTypeRequest(params)
 //
-//    // Example sending a request using the ListHITsForQualificationTypeRequest method.
-//    req, resp := client.ListHITsForQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListHITsForQualificationType
 func (c *MTurk) ListHITsForQualificationTypeRequest(input *ListHITsForQualificationTypeInput) (req *request.Request, output *ListHITsForQualificationTypeOutput) {
@@ -2261,12 +2257,13 @@ func (c *MTurk) ListHITsForQualificationTypeRequest(input *ListHITsForQualificat
 // API operation ListHITsForQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListHITsForQualificationType
 func (c *MTurk) ListHITsForQualificationType(input *ListHITsForQualificationTypeInput) (*ListHITsForQualificationTypeOutput, error) {
@@ -2298,15 +2295,14 @@ func (c *MTurk) ListHITsForQualificationTypeWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHITsForQualificationType operation.
-//    pageNum := 0
-//    err := client.ListHITsForQualificationTypePages(params,
-//        func(page *mturk.ListHITsForQualificationTypeOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHITsForQualificationType operation.
+//	pageNum := 0
+//	err := client.ListHITsForQualificationTypePages(params,
+//	    func(page *mturk.ListHITsForQualificationTypeOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListHITsForQualificationTypePages(input *ListHITsForQualificationTypeInput, fn func(*ListHITsForQualificationTypeOutput, bool) bool) error {
 	return c.ListHITsForQualificationTypePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2358,14 +2354,13 @@ const opListQualificationRequests = "ListQualificationRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListQualificationRequestsRequest method.
+//	req, resp := client.ListQualificationRequestsRequest(params)
 //
-//    // Example sending a request using the ListQualificationRequestsRequest method.
-//    req, resp := client.ListQualificationRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListQualificationRequests
 func (c *MTurk) ListQualificationRequestsRequest(input *ListQualificationRequestsInput) (req *request.Request, output *ListQualificationRequestsOutput) {
@@ -2405,12 +2400,13 @@ func (c *MTurk) ListQualificationRequestsRequest(input *ListQualificationRequest
 // API operation ListQualificationRequests for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListQualificationRequests
 func (c *MTurk) ListQualificationRequests(input *ListQualificationRequestsInput) (*ListQualificationRequestsOutput, error) {
@@ -2442,15 +2438,14 @@ func (c *MTurk) ListQualificationRequestsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListQualificationRequests operation.
-//    pageNum := 0
-//    err := client.ListQualificationRequestsPages(params,
-//        func(page *mturk.ListQualificationRequestsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListQualificationRequests operation.
+//	pageNum := 0
+//	err := client.ListQualificationRequestsPages(params,
+//	    func(page *mturk.ListQualificationRequestsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListQualificationRequestsPages(input *ListQualificationRequestsInput, fn func(*ListQualificationRequestsOutput, bool) bool) error {
 	return c.ListQualificationRequestsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2502,14 +2497,13 @@ const opListQualificationTypes = "ListQualificationTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListQualificationTypesRequest method.
+//	req, resp := client.ListQualificationTypesRequest(params)
 //
-//    // Example sending a request using the ListQualificationTypesRequest method.
-//    req, resp := client.ListQualificationTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListQualificationTypes
 func (c *MTurk) ListQualificationTypesRequest(input *ListQualificationTypesInput) (req *request.Request, output *ListQualificationTypesOutput) {
@@ -2547,12 +2541,13 @@ func (c *MTurk) ListQualificationTypesRequest(input *ListQualificationTypesInput
 // API operation ListQualificationTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListQualificationTypes
 func (c *MTurk) ListQualificationTypes(input *ListQualificationTypesInput) (*ListQualificationTypesOutput, error) {
@@ -2584,15 +2579,14 @@ func (c *MTurk) ListQualificationTypesWithContext(ctx aws.Context, input *ListQu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListQualificationTypes operation.
-//    pageNum := 0
-//    err := client.ListQualificationTypesPages(params,
-//        func(page *mturk.ListQualificationTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListQualificationTypes operation.
+//	pageNum := 0
+//	err := client.ListQualificationTypesPages(params,
+//	    func(page *mturk.ListQualificationTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListQualificationTypesPages(input *ListQualificationTypesInput, fn func(*ListQualificationTypesOutput, bool) bool) error {
 	return c.ListQualificationTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2644,14 +2638,13 @@ const opListReviewPolicyResultsForHIT = "ListReviewPolicyResultsForHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReviewPolicyResultsForHITRequest method.
+//	req, resp := client.ListReviewPolicyResultsForHITRequest(params)
 //
-//    // Example sending a request using the ListReviewPolicyResultsForHITRequest method.
-//    req, resp := client.ListReviewPolicyResultsForHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListReviewPolicyResultsForHIT
 func (c *MTurk) ListReviewPolicyResultsForHITRequest(input *ListReviewPolicyResultsForHITInput) (req *request.Request, output *ListReviewPolicyResultsForHITOutput) {
@@ -2692,12 +2685,13 @@ func (c *MTurk) ListReviewPolicyResultsForHITRequest(input *ListReviewPolicyResu
 // API operation ListReviewPolicyResultsForHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListReviewPolicyResultsForHIT
 func (c *MTurk) ListReviewPolicyResultsForHIT(input *ListReviewPolicyResultsForHITInput) (*ListReviewPolicyResultsForHITOutput, error) {
@@ -2729,15 +2723,14 @@ func (c *MTurk) ListReviewPolicyResultsForHITWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReviewPolicyResultsForHIT operation.
-//    pageNum := 0
-//    err := client.ListReviewPolicyResultsForHITPages(params,
-//        func(page *mturk.ListReviewPolicyResultsForHITOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReviewPolicyResultsForHIT operation.
+//	pageNum := 0
+//	err := client.ListReviewPolicyResultsForHITPages(params,
+//	    func(page *mturk.ListReviewPolicyResultsForHITOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListReviewPolicyResultsForHITPages(input *ListReviewPolicyResultsForHITInput, fn func(*ListReviewPolicyResultsForHITOutput, bool) bool) error {
 	return c.ListReviewPolicyResultsForHITPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2789,14 +2782,13 @@ const opListReviewableHITs = "ListReviewableHITs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReviewableHITsRequest method.
+//	req, resp := client.ListReviewableHITsRequest(params)
 //
-//    // Example sending a request using the ListReviewableHITsRequest method.
-//    req, resp := client.ListReviewableHITsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListReviewableHITs
 func (c *MTurk) ListReviewableHITsRequest(input *ListReviewableHITsInput) (req *request.Request, output *ListReviewableHITsOutput) {
@@ -2835,12 +2827,13 @@ func (c *MTurk) ListReviewableHITsRequest(input *ListReviewableHITsInput) (req *
 // API operation ListReviewableHITs for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListReviewableHITs
 func (c *MTurk) ListReviewableHITs(input *ListReviewableHITsInput) (*ListReviewableHITsOutput, error) {
@@ -2872,15 +2865,14 @@ func (c *MTurk) ListReviewableHITsWithContext(ctx aws.Context, input *ListReview
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReviewableHITs operation.
-//    pageNum := 0
-//    err := client.ListReviewableHITsPages(params,
-//        func(page *mturk.ListReviewableHITsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReviewableHITs operation.
+//	pageNum := 0
+//	err := client.ListReviewableHITsPages(params,
+//	    func(page *mturk.ListReviewableHITsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListReviewableHITsPages(input *ListReviewableHITsInput, fn func(*ListReviewableHITsOutput, bool) bool) error {
 	return c.ListReviewableHITsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2932,14 +2924,13 @@ const opListWorkerBlocks = "ListWorkerBlocks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkerBlocksRequest method.
+//	req, resp := client.ListWorkerBlocksRequest(params)
 //
-//    // Example sending a request using the ListWorkerBlocksRequest method.
-//    req, resp := client.ListWorkerBlocksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListWorkerBlocks
 func (c *MTurk) ListWorkerBlocksRequest(input *ListWorkerBlocksInput) (req *request.Request, output *ListWorkerBlocksOutput) {
@@ -2977,12 +2968,13 @@ func (c *MTurk) ListWorkerBlocksRequest(input *ListWorkerBlocksInput) (req *requ
 // API operation ListWorkerBlocks for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListWorkerBlocks
 func (c *MTurk) ListWorkerBlocks(input *ListWorkerBlocksInput) (*ListWorkerBlocksOutput, error) {
@@ -3014,15 +3006,14 @@ func (c *MTurk) ListWorkerBlocksWithContext(ctx aws.Context, input *ListWorkerBl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkerBlocks operation.
-//    pageNum := 0
-//    err := client.ListWorkerBlocksPages(params,
-//        func(page *mturk.ListWorkerBlocksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkerBlocks operation.
+//	pageNum := 0
+//	err := client.ListWorkerBlocksPages(params,
+//	    func(page *mturk.ListWorkerBlocksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListWorkerBlocksPages(input *ListWorkerBlocksInput, fn func(*ListWorkerBlocksOutput, bool) bool) error {
 	return c.ListWorkerBlocksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3074,14 +3065,13 @@ const opListWorkersWithQualificationType = "ListWorkersWithQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkersWithQualificationTypeRequest method.
+//	req, resp := client.ListWorkersWithQualificationTypeRequest(params)
 //
-//    // Example sending a request using the ListWorkersWithQualificationTypeRequest method.
-//    req, resp := client.ListWorkersWithQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListWorkersWithQualificationType
 func (c *MTurk) ListWorkersWithQualificationTypeRequest(input *ListWorkersWithQualificationTypeInput) (req *request.Request, output *ListWorkersWithQualificationTypeOutput) {
@@ -3119,12 +3109,13 @@ func (c *MTurk) ListWorkersWithQualificationTypeRequest(input *ListWorkersWithQu
 // API operation ListWorkersWithQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/ListWorkersWithQualificationType
 func (c *MTurk) ListWorkersWithQualificationType(input *ListWorkersWithQualificationTypeInput) (*ListWorkersWithQualificationTypeOutput, error) {
@@ -3156,15 +3147,14 @@ func (c *MTurk) ListWorkersWithQualificationTypeWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkersWithQualificationType operation.
-//    pageNum := 0
-//    err := client.ListWorkersWithQualificationTypePages(params,
-//        func(page *mturk.ListWorkersWithQualificationTypeOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkersWithQualificationType operation.
+//	pageNum := 0
+//	err := client.ListWorkersWithQualificationTypePages(params,
+//	    func(page *mturk.ListWorkersWithQualificationTypeOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MTurk) ListWorkersWithQualificationTypePages(input *ListWorkersWithQualificationTypeInput, fn func(*ListWorkersWithQualificationTypeOutput, bool) bool) error {
 	return c.ListWorkersWithQualificationTypePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3216,14 +3206,13 @@ const opNotifyWorkers = "NotifyWorkers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyWorkersRequest method.
+//	req, resp := client.NotifyWorkersRequest(params)
 //
-//    // Example sending a request using the NotifyWorkersRequest method.
-//    req, resp := client.NotifyWorkersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/NotifyWorkers
 func (c *MTurk) NotifyWorkersRequest(input *NotifyWorkersInput) (req *request.Request, output *NotifyWorkersOutput) {
@@ -3258,12 +3247,13 @@ func (c *MTurk) NotifyWorkersRequest(input *NotifyWorkersInput) (req *request.Re
 // API operation NotifyWorkers for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/NotifyWorkers
 func (c *MTurk) NotifyWorkers(input *NotifyWorkersInput) (*NotifyWorkersOutput, error) {
@@ -3303,14 +3293,13 @@ const opRejectAssignment = "RejectAssignment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectAssignmentRequest method.
+//	req, resp := client.RejectAssignmentRequest(params)
 //
-//    // Example sending a request using the RejectAssignmentRequest method.
-//    req, resp := client.RejectAssignmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/RejectAssignment
 func (c *MTurk) RejectAssignmentRequest(input *RejectAssignmentInput) (req *request.Request, output *RejectAssignmentOutput) {
@@ -3350,12 +3339,13 @@ func (c *MTurk) RejectAssignmentRequest(input *RejectAssignmentInput) (req *requ
 // API operation RejectAssignment for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/RejectAssignment
 func (c *MTurk) RejectAssignment(input *RejectAssignmentInput) (*RejectAssignmentOutput, error) {
@@ -3395,14 +3385,13 @@ const opRejectQualificationRequest = "RejectQualificationRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectQualificationRequestRequest method.
+//	req, resp := client.RejectQualificationRequestRequest(params)
 //
-//    // Example sending a request using the RejectQualificationRequestRequest method.
-//    req, resp := client.RejectQualificationRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/RejectQualificationRequest
 func (c *MTurk) RejectQualificationRequestRequest(input *RejectQualificationRequestInput) (req *request.Request, output *RejectQualificationRequestOutput) {
@@ -3437,12 +3426,13 @@ func (c *MTurk) RejectQualificationRequestRequest(input *RejectQualificationRequ
 // API operation RejectQualificationRequest for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/RejectQualificationRequest
 func (c *MTurk) RejectQualificationRequest(input *RejectQualificationRequestInput) (*RejectQualificationRequestOutput, error) {
@@ -3482,14 +3472,13 @@ const opSendBonus = "SendBonus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendBonusRequest method.
+//	req, resp := client.SendBonusRequest(params)
 //
-//    // Example sending a request using the SendBonusRequest method.
-//    req, resp := client.SendBonusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/SendBonus
 func (c *MTurk) SendBonusRequest(input *SendBonusInput) (req *request.Request, output *SendBonusOutput) {
@@ -3529,12 +3518,13 @@ func (c *MTurk) SendBonusRequest(input *SendBonusInput) (req *request.Request, o
 // API operation SendBonus for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/SendBonus
 func (c *MTurk) SendBonus(input *SendBonusInput) (*SendBonusOutput, error) {
@@ -3574,14 +3564,13 @@ const opSendTestEventNotification = "SendTestEventNotification"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendTestEventNotificationRequest method.
+//	req, resp := client.SendTestEventNotificationRequest(params)
 //
-//    // Example sending a request using the SendTestEventNotificationRequest method.
-//    req, resp := client.SendTestEventNotificationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/SendTestEventNotification
 func (c *MTurk) SendTestEventNotificationRequest(input *SendTestEventNotificationInput) (req *request.Request, output *SendTestEventNotificationOutput) {
@@ -3618,12 +3607,13 @@ func (c *MTurk) SendTestEventNotificationRequest(input *SendTestEventNotificatio
 // API operation SendTestEventNotification for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/SendTestEventNotification
 func (c *MTurk) SendTestEventNotification(input *SendTestEventNotificationInput) (*SendTestEventNotificationOutput, error) {
@@ -3663,14 +3653,13 @@ const opUpdateExpirationForHIT = "UpdateExpirationForHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateExpirationForHITRequest method.
+//	req, resp := client.UpdateExpirationForHITRequest(params)
 //
-//    // Example sending a request using the UpdateExpirationForHITRequest method.
-//    req, resp := client.UpdateExpirationForHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateExpirationForHIT
 func (c *MTurk) UpdateExpirationForHITRequest(input *UpdateExpirationForHITInput) (req *request.Request, output *UpdateExpirationForHITOutput) {
@@ -3704,12 +3693,13 @@ func (c *MTurk) UpdateExpirationForHITRequest(input *UpdateExpirationForHITInput
 // API operation UpdateExpirationForHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateExpirationForHIT
 func (c *MTurk) UpdateExpirationForHIT(input *UpdateExpirationForHITInput) (*UpdateExpirationForHITOutput, error) {
@@ -3749,14 +3739,13 @@ const opUpdateHITReviewStatus = "UpdateHITReviewStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateHITReviewStatusRequest method.
+//	req, resp := client.UpdateHITReviewStatusRequest(params)
 //
-//    // Example sending a request using the UpdateHITReviewStatusRequest method.
-//    req, resp := client.UpdateHITReviewStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateHITReviewStatus
 func (c *MTurk) UpdateHITReviewStatusRequest(input *UpdateHITReviewStatusInput) (req *request.Request, output *UpdateHITReviewStatusOutput) {
@@ -3790,12 +3779,13 @@ func (c *MTurk) UpdateHITReviewStatusRequest(input *UpdateHITReviewStatusInput) 
 // API operation UpdateHITReviewStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateHITReviewStatus
 func (c *MTurk) UpdateHITReviewStatus(input *UpdateHITReviewStatusInput) (*UpdateHITReviewStatusOutput, error) {
@@ -3835,14 +3825,13 @@ const opUpdateHITTypeOfHIT = "UpdateHITTypeOfHIT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateHITTypeOfHITRequest method.
+//	req, resp := client.UpdateHITTypeOfHITRequest(params)
 //
-//    // Example sending a request using the UpdateHITTypeOfHITRequest method.
-//    req, resp := client.UpdateHITTypeOfHITRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateHITTypeOfHIT
 func (c *MTurk) UpdateHITTypeOfHITRequest(input *UpdateHITTypeOfHITInput) (req *request.Request, output *UpdateHITTypeOfHITOutput) {
@@ -3877,12 +3866,13 @@ func (c *MTurk) UpdateHITTypeOfHITRequest(input *UpdateHITTypeOfHITInput) (req *
 // API operation UpdateHITTypeOfHIT for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateHITTypeOfHIT
 func (c *MTurk) UpdateHITTypeOfHIT(input *UpdateHITTypeOfHITInput) (*UpdateHITTypeOfHITOutput, error) {
@@ -3922,14 +3912,13 @@ const opUpdateNotificationSettings = "UpdateNotificationSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNotificationSettingsRequest method.
+//	req, resp := client.UpdateNotificationSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateNotificationSettingsRequest method.
-//    req, resp := client.UpdateNotificationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateNotificationSettings
 func (c *MTurk) UpdateNotificationSettingsRequest(input *UpdateNotificationSettingsInput) (req *request.Request, output *UpdateNotificationSettingsOutput) {
@@ -3970,12 +3959,13 @@ func (c *MTurk) UpdateNotificationSettingsRequest(input *UpdateNotificationSetti
 // API operation UpdateNotificationSettings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateNotificationSettings
 func (c *MTurk) UpdateNotificationSettings(input *UpdateNotificationSettingsInput) (*UpdateNotificationSettingsOutput, error) {
@@ -4015,14 +4005,13 @@ const opUpdateQualificationType = "UpdateQualificationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateQualificationTypeRequest method.
+//	req, resp := client.UpdateQualificationTypeRequest(params)
 //
-//    // Example sending a request using the UpdateQualificationTypeRequest method.
-//    req, resp := client.UpdateQualificationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateQualificationType
 func (c *MTurk) UpdateQualificationTypeRequest(input *UpdateQualificationTypeInput) (req *request.Request, output *UpdateQualificationTypeOutput) {
@@ -4083,12 +4072,13 @@ func (c *MTurk) UpdateQualificationTypeRequest(input *UpdateQualificationTypeInp
 // API operation UpdateQualificationType for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFault
-//   Amazon Mechanical Turk is temporarily unable to process your request. Try
-//   your call again.
 //
-//   * RequestError
-//   Your request is invalid.
+//   - ServiceFault
+//     Amazon Mechanical Turk is temporarily unable to process your request. Try
+//     your call again.
+//
+//   - RequestError
+//     Your request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mturk-requester-2017-01-17/UpdateQualificationType
 func (c *MTurk) UpdateQualificationType(input *UpdateQualificationTypeInput) (*UpdateQualificationTypeOutput, error) {

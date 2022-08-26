@@ -28,14 +28,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateApplication
 func (c *ServerlessApplicationRepository) CreateApplicationRequest(input *CreateApplicationRequest) (req *request.Request, output *CreateApplicationOutput) {
@@ -67,22 +66,23 @@ func (c *ServerlessApplicationRepository) CreateApplicationRequest(input *Create
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ConflictException
-//   The resource already exists.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - ConflictException
+//     The resource already exists.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateApplication
 func (c *ServerlessApplicationRepository) CreateApplication(input *CreateApplicationRequest) (*CreateApplicationOutput, error) {
@@ -122,14 +122,13 @@ const opCreateApplicationVersion = "CreateApplicationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationVersionRequest method.
+//	req, resp := client.CreateApplicationVersionRequest(params)
 //
-//    // Example sending a request using the CreateApplicationVersionRequest method.
-//    req, resp := client.CreateApplicationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateApplicationVersion
 func (c *ServerlessApplicationRepository) CreateApplicationVersionRequest(input *CreateApplicationVersionRequest) (req *request.Request, output *CreateApplicationVersionOutput) {
@@ -160,22 +159,23 @@ func (c *ServerlessApplicationRepository) CreateApplicationVersionRequest(input 
 // API operation CreateApplicationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ConflictException
-//   The resource already exists.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - ConflictException
+//     The resource already exists.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateApplicationVersion
 func (c *ServerlessApplicationRepository) CreateApplicationVersion(input *CreateApplicationVersionRequest) (*CreateApplicationVersionOutput, error) {
@@ -215,14 +215,13 @@ const opCreateCloudFormationChangeSet = "CreateCloudFormationChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCloudFormationChangeSetRequest method.
+//	req, resp := client.CreateCloudFormationChangeSetRequest(params)
 //
-//    // Example sending a request using the CreateCloudFormationChangeSetRequest method.
-//    req, resp := client.CreateCloudFormationChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateCloudFormationChangeSet
 func (c *ServerlessApplicationRepository) CreateCloudFormationChangeSetRequest(input *CreateCloudFormationChangeSetRequest) (req *request.Request, output *CreateCloudFormationChangeSetOutput) {
@@ -253,19 +252,20 @@ func (c *ServerlessApplicationRepository) CreateCloudFormationChangeSetRequest(i
 // API operation CreateCloudFormationChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateCloudFormationChangeSet
 func (c *ServerlessApplicationRepository) CreateCloudFormationChangeSet(input *CreateCloudFormationChangeSetRequest) (*CreateCloudFormationChangeSetOutput, error) {
@@ -305,14 +305,13 @@ const opCreateCloudFormationTemplate = "CreateCloudFormationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCloudFormationTemplateRequest method.
+//	req, resp := client.CreateCloudFormationTemplateRequest(params)
 //
-//    // Example sending a request using the CreateCloudFormationTemplateRequest method.
-//    req, resp := client.CreateCloudFormationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateCloudFormationTemplate
 func (c *ServerlessApplicationRepository) CreateCloudFormationTemplateRequest(input *CreateCloudFormationTemplateInput) (req *request.Request, output *CreateCloudFormationTemplateOutput) {
@@ -343,23 +342,24 @@ func (c *ServerlessApplicationRepository) CreateCloudFormationTemplateRequest(in
 // API operation CreateCloudFormationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/CreateCloudFormationTemplate
 func (c *ServerlessApplicationRepository) CreateCloudFormationTemplate(input *CreateCloudFormationTemplateInput) (*CreateCloudFormationTemplateOutput, error) {
@@ -399,14 +399,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/DeleteApplication
 func (c *ServerlessApplicationRepository) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -438,26 +437,27 @@ func (c *ServerlessApplicationRepository) DeleteApplicationRequest(input *Delete
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
 //
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
+//   - ForbiddenException
+//     The client is not authenticated.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * ConflictException
-//   The resource already exists.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
+//
+//   - ConflictException
+//     The resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/DeleteApplication
 func (c *ServerlessApplicationRepository) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -497,14 +497,13 @@ const opGetApplication = "GetApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationRequest method.
+//	req, resp := client.GetApplicationRequest(params)
 //
-//    // Example sending a request using the GetApplicationRequest method.
-//    req, resp := client.GetApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetApplication
 func (c *ServerlessApplicationRepository) GetApplicationRequest(input *GetApplicationInput) (req *request.Request, output *GetApplicationOutput) {
@@ -535,23 +534,24 @@ func (c *ServerlessApplicationRepository) GetApplicationRequest(input *GetApplic
 // API operation GetApplication for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetApplication
 func (c *ServerlessApplicationRepository) GetApplication(input *GetApplicationInput) (*GetApplicationOutput, error) {
@@ -591,14 +591,13 @@ const opGetApplicationPolicy = "GetApplicationPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationPolicyRequest method.
+//	req, resp := client.GetApplicationPolicyRequest(params)
 //
-//    // Example sending a request using the GetApplicationPolicyRequest method.
-//    req, resp := client.GetApplicationPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetApplicationPolicy
 func (c *ServerlessApplicationRepository) GetApplicationPolicyRequest(input *GetApplicationPolicyInput) (req *request.Request, output *GetApplicationPolicyOutput) {
@@ -629,23 +628,24 @@ func (c *ServerlessApplicationRepository) GetApplicationPolicyRequest(input *Get
 // API operation GetApplicationPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetApplicationPolicy
 func (c *ServerlessApplicationRepository) GetApplicationPolicy(input *GetApplicationPolicyInput) (*GetApplicationPolicyOutput, error) {
@@ -685,14 +685,13 @@ const opGetCloudFormationTemplate = "GetCloudFormationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCloudFormationTemplateRequest method.
+//	req, resp := client.GetCloudFormationTemplateRequest(params)
 //
-//    // Example sending a request using the GetCloudFormationTemplateRequest method.
-//    req, resp := client.GetCloudFormationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetCloudFormationTemplate
 func (c *ServerlessApplicationRepository) GetCloudFormationTemplateRequest(input *GetCloudFormationTemplateInput) (req *request.Request, output *GetCloudFormationTemplateOutput) {
@@ -723,23 +722,24 @@ func (c *ServerlessApplicationRepository) GetCloudFormationTemplateRequest(input
 // API operation GetCloudFormationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/GetCloudFormationTemplate
 func (c *ServerlessApplicationRepository) GetCloudFormationTemplate(input *GetCloudFormationTemplateInput) (*GetCloudFormationTemplateOutput, error) {
@@ -779,14 +779,13 @@ const opListApplicationDependencies = "ListApplicationDependencies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationDependenciesRequest method.
+//	req, resp := client.ListApplicationDependenciesRequest(params)
 //
-//    // Example sending a request using the ListApplicationDependenciesRequest method.
-//    req, resp := client.ListApplicationDependenciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplicationDependencies
 func (c *ServerlessApplicationRepository) ListApplicationDependenciesRequest(input *ListApplicationDependenciesInput) (req *request.Request, output *ListApplicationDependenciesOutput) {
@@ -823,23 +822,24 @@ func (c *ServerlessApplicationRepository) ListApplicationDependenciesRequest(inp
 // API operation ListApplicationDependencies for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplicationDependencies
 func (c *ServerlessApplicationRepository) ListApplicationDependencies(input *ListApplicationDependenciesInput) (*ListApplicationDependenciesOutput, error) {
@@ -871,15 +871,14 @@ func (c *ServerlessApplicationRepository) ListApplicationDependenciesWithContext
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationDependencies operation.
-//    pageNum := 0
-//    err := client.ListApplicationDependenciesPages(params,
-//        func(page *serverlessapplicationrepository.ListApplicationDependenciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationDependencies operation.
+//	pageNum := 0
+//	err := client.ListApplicationDependenciesPages(params,
+//	    func(page *serverlessapplicationrepository.ListApplicationDependenciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServerlessApplicationRepository) ListApplicationDependenciesPages(input *ListApplicationDependenciesInput, fn func(*ListApplicationDependenciesOutput, bool) bool) error {
 	return c.ListApplicationDependenciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -931,14 +930,13 @@ const opListApplicationVersions = "ListApplicationVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationVersionsRequest method.
+//	req, resp := client.ListApplicationVersionsRequest(params)
 //
-//    // Example sending a request using the ListApplicationVersionsRequest method.
-//    req, resp := client.ListApplicationVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplicationVersions
 func (c *ServerlessApplicationRepository) ListApplicationVersionsRequest(input *ListApplicationVersionsInput) (req *request.Request, output *ListApplicationVersionsOutput) {
@@ -975,23 +973,24 @@ func (c *ServerlessApplicationRepository) ListApplicationVersionsRequest(input *
 // API operation ListApplicationVersions for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplicationVersions
 func (c *ServerlessApplicationRepository) ListApplicationVersions(input *ListApplicationVersionsInput) (*ListApplicationVersionsOutput, error) {
@@ -1023,15 +1022,14 @@ func (c *ServerlessApplicationRepository) ListApplicationVersionsWithContext(ctx
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplicationVersions operation.
-//    pageNum := 0
-//    err := client.ListApplicationVersionsPages(params,
-//        func(page *serverlessapplicationrepository.ListApplicationVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplicationVersions operation.
+//	pageNum := 0
+//	err := client.ListApplicationVersionsPages(params,
+//	    func(page *serverlessapplicationrepository.ListApplicationVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServerlessApplicationRepository) ListApplicationVersionsPages(input *ListApplicationVersionsInput, fn func(*ListApplicationVersionsOutput, bool) bool) error {
 	return c.ListApplicationVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1083,14 +1081,13 @@ const opListApplications = "ListApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
 //
-//    // Example sending a request using the ListApplicationsRequest method.
-//    req, resp := client.ListApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplications
 func (c *ServerlessApplicationRepository) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
@@ -1127,19 +1124,20 @@ func (c *ServerlessApplicationRepository) ListApplicationsRequest(input *ListApp
 // API operation ListApplications for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/ListApplications
 func (c *ServerlessApplicationRepository) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
@@ -1171,15 +1169,14 @@ func (c *ServerlessApplicationRepository) ListApplicationsWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplications operation.
-//    pageNum := 0
-//    err := client.ListApplicationsPages(params,
-//        func(page *serverlessapplicationrepository.ListApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *serverlessapplicationrepository.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ServerlessApplicationRepository) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
 	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1231,14 +1228,13 @@ const opPutApplicationPolicy = "PutApplicationPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutApplicationPolicyRequest method.
+//	req, resp := client.PutApplicationPolicyRequest(params)
 //
-//    // Example sending a request using the PutApplicationPolicyRequest method.
-//    req, resp := client.PutApplicationPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/PutApplicationPolicy
 func (c *ServerlessApplicationRepository) PutApplicationPolicyRequest(input *PutApplicationPolicyInput) (req *request.Request, output *PutApplicationPolicyOutput) {
@@ -1270,23 +1266,24 @@ func (c *ServerlessApplicationRepository) PutApplicationPolicyRequest(input *Put
 // API operation PutApplicationPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/PutApplicationPolicy
 func (c *ServerlessApplicationRepository) PutApplicationPolicy(input *PutApplicationPolicyInput) (*PutApplicationPolicyOutput, error) {
@@ -1326,14 +1323,13 @@ const opUnshareApplication = "UnshareApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnshareApplicationRequest method.
+//	req, resp := client.UnshareApplicationRequest(params)
 //
-//    // Example sending a request using the UnshareApplicationRequest method.
-//    req, resp := client.UnshareApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/UnshareApplication
 func (c *ServerlessApplicationRepository) UnshareApplicationRequest(input *UnshareApplicationInput) (req *request.Request, output *UnshareApplicationOutput) {
@@ -1367,23 +1363,24 @@ func (c *ServerlessApplicationRepository) UnshareApplicationRequest(input *Unsha
 // API operation UnshareApplication for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
+//
+//   - ForbiddenException
+//     The client is not authenticated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/UnshareApplication
 func (c *ServerlessApplicationRepository) UnshareApplication(input *UnshareApplicationInput) (*UnshareApplicationOutput, error) {
@@ -1423,14 +1420,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/UpdateApplication
 func (c *ServerlessApplicationRepository) UpdateApplicationRequest(input *UpdateApplicationRequest) (req *request.Request, output *UpdateApplicationOutput) {
@@ -1461,26 +1457,27 @@ func (c *ServerlessApplicationRepository) UpdateApplicationRequest(input *Update
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   The AWS Serverless Application Repository service encountered an internal
-//   error.
+//   - BadRequestException
+//     One of the parameters in the request is invalid.
 //
-//   * ForbiddenException
-//   The client is not authenticated.
+//   - InternalServerErrorException
+//     The AWS Serverless Application Repository service encountered an internal
+//     error.
 //
-//   * NotFoundException
-//   The resource (for example, an access policy statement) specified in the request
-//   doesn't exist.
+//   - ForbiddenException
+//     The client is not authenticated.
 //
-//   * TooManyRequestsException
-//   The client is sending more than the allowed number of requests per unit of
-//   time.
+//   - NotFoundException
+//     The resource (for example, an access policy statement) specified in the request
+//     doesn't exist.
 //
-//   * ConflictException
-//   The resource already exists.
+//   - TooManyRequestsException
+//     The client is sending more than the allowed number of requests per unit of
+//     time.
+//
+//   - ConflictException
+//     The resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/serverlessrepo-2017-09-08/UpdateApplication
 func (c *ServerlessApplicationRepository) UpdateApplication(input *UpdateApplicationRequest) (*UpdateApplicationOutput, error) {

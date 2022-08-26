@@ -29,14 +29,13 @@ const opAssociateAssets = "AssociateAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateAssetsRequest method.
+//	req, resp := client.AssociateAssetsRequest(params)
 //
-//    // Example sending a request using the AssociateAssetsRequest method.
-//    req, resp := client.AssociateAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/AssociateAssets
 func (c *IoTSiteWise) AssociateAssetsRequest(input *AssociateAssetsInput) (req *request.Request, output *AssociateAssetsOutput) {
@@ -73,35 +72,36 @@ func (c *IoTSiteWise) AssociateAssetsRequest(input *AssociateAssetsInput) (req *
 // API operation AssociateAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/AssociateAssets
 func (c *IoTSiteWise) AssociateAssets(input *AssociateAssetsInput) (*AssociateAssetsOutput, error) {
@@ -141,14 +141,13 @@ const opAssociateTimeSeriesToAssetProperty = "AssociateTimeSeriesToAssetProperty
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTimeSeriesToAssetPropertyRequest method.
+//	req, resp := client.AssociateTimeSeriesToAssetPropertyRequest(params)
 //
-//    // Example sending a request using the AssociateTimeSeriesToAssetPropertyRequest method.
-//    req, resp := client.AssociateTimeSeriesToAssetPropertyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/AssociateTimeSeriesToAssetProperty
 func (c *IoTSiteWise) AssociateTimeSeriesToAssetPropertyRequest(input *AssociateTimeSeriesToAssetPropertyInput) (req *request.Request, output *AssociateTimeSeriesToAssetPropertyOutput) {
@@ -182,27 +181,28 @@ func (c *IoTSiteWise) AssociateTimeSeriesToAssetPropertyRequest(input *Associate
 // API operation AssociateTimeSeriesToAssetProperty for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/AssociateTimeSeriesToAssetProperty
 func (c *IoTSiteWise) AssociateTimeSeriesToAssetProperty(input *AssociateTimeSeriesToAssetPropertyInput) (*AssociateTimeSeriesToAssetPropertyOutput, error) {
@@ -242,14 +242,13 @@ const opBatchAssociateProjectAssets = "BatchAssociateProjectAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAssociateProjectAssetsRequest method.
+//	req, resp := client.BatchAssociateProjectAssetsRequest(params)
 //
-//    // Example sending a request using the BatchAssociateProjectAssetsRequest method.
-//    req, resp := client.BatchAssociateProjectAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchAssociateProjectAssets
 func (c *IoTSiteWise) BatchAssociateProjectAssetsRequest(input *BatchAssociateProjectAssetsInput) (req *request.Request, output *BatchAssociateProjectAssetsOutput) {
@@ -282,31 +281,32 @@ func (c *IoTSiteWise) BatchAssociateProjectAssetsRequest(input *BatchAssociatePr
 // API operation BatchAssociateProjectAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchAssociateProjectAssets
 func (c *IoTSiteWise) BatchAssociateProjectAssets(input *BatchAssociateProjectAssetsInput) (*BatchAssociateProjectAssetsOutput, error) {
@@ -346,14 +346,13 @@ const opBatchDisassociateProjectAssets = "BatchDisassociateProjectAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisassociateProjectAssetsRequest method.
+//	req, resp := client.BatchDisassociateProjectAssetsRequest(params)
 //
-//    // Example sending a request using the BatchDisassociateProjectAssetsRequest method.
-//    req, resp := client.BatchDisassociateProjectAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchDisassociateProjectAssets
 func (c *IoTSiteWise) BatchDisassociateProjectAssetsRequest(input *BatchDisassociateProjectAssetsInput) (req *request.Request, output *BatchDisassociateProjectAssetsOutput) {
@@ -386,23 +385,24 @@ func (c *IoTSiteWise) BatchDisassociateProjectAssetsRequest(input *BatchDisassoc
 // API operation BatchDisassociateProjectAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchDisassociateProjectAssets
 func (c *IoTSiteWise) BatchDisassociateProjectAssets(input *BatchDisassociateProjectAssetsInput) (*BatchDisassociateProjectAssetsOutput, error) {
@@ -442,14 +442,13 @@ const opBatchGetAssetPropertyAggregates = "BatchGetAssetPropertyAggregates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetAssetPropertyAggregatesRequest method.
+//	req, resp := client.BatchGetAssetPropertyAggregatesRequest(params)
 //
-//    // Example sending a request using the BatchGetAssetPropertyAggregatesRequest method.
-//    req, resp := client.BatchGetAssetPropertyAggregatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyAggregates
 func (c *IoTSiteWise) BatchGetAssetPropertyAggregatesRequest(input *BatchGetAssetPropertyAggregatesInput) (req *request.Request, output *BatchGetAssetPropertyAggregatesOutput) {
@@ -490,23 +489,24 @@ func (c *IoTSiteWise) BatchGetAssetPropertyAggregatesRequest(input *BatchGetAsse
 // API operation BatchGetAssetPropertyAggregates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyAggregates
 func (c *IoTSiteWise) BatchGetAssetPropertyAggregates(input *BatchGetAssetPropertyAggregatesInput) (*BatchGetAssetPropertyAggregatesOutput, error) {
@@ -538,15 +538,14 @@ func (c *IoTSiteWise) BatchGetAssetPropertyAggregatesWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a BatchGetAssetPropertyAggregates operation.
-//    pageNum := 0
-//    err := client.BatchGetAssetPropertyAggregatesPages(params,
-//        func(page *iotsitewise.BatchGetAssetPropertyAggregatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a BatchGetAssetPropertyAggregates operation.
+//	pageNum := 0
+//	err := client.BatchGetAssetPropertyAggregatesPages(params,
+//	    func(page *iotsitewise.BatchGetAssetPropertyAggregatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) BatchGetAssetPropertyAggregatesPages(input *BatchGetAssetPropertyAggregatesInput, fn func(*BatchGetAssetPropertyAggregatesOutput, bool) bool) error {
 	return c.BatchGetAssetPropertyAggregatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -598,14 +597,13 @@ const opBatchGetAssetPropertyValue = "BatchGetAssetPropertyValue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetAssetPropertyValueRequest method.
+//	req, resp := client.BatchGetAssetPropertyValueRequest(params)
 //
-//    // Example sending a request using the BatchGetAssetPropertyValueRequest method.
-//    req, resp := client.BatchGetAssetPropertyValueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyValue
 func (c *IoTSiteWise) BatchGetAssetPropertyValueRequest(input *BatchGetAssetPropertyValueInput) (req *request.Request, output *BatchGetAssetPropertyValueOutput) {
@@ -646,23 +644,24 @@ func (c *IoTSiteWise) BatchGetAssetPropertyValueRequest(input *BatchGetAssetProp
 // API operation BatchGetAssetPropertyValue for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyValue
 func (c *IoTSiteWise) BatchGetAssetPropertyValue(input *BatchGetAssetPropertyValueInput) (*BatchGetAssetPropertyValueOutput, error) {
@@ -694,15 +693,14 @@ func (c *IoTSiteWise) BatchGetAssetPropertyValueWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a BatchGetAssetPropertyValue operation.
-//    pageNum := 0
-//    err := client.BatchGetAssetPropertyValuePages(params,
-//        func(page *iotsitewise.BatchGetAssetPropertyValueOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a BatchGetAssetPropertyValue operation.
+//	pageNum := 0
+//	err := client.BatchGetAssetPropertyValuePages(params,
+//	    func(page *iotsitewise.BatchGetAssetPropertyValueOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) BatchGetAssetPropertyValuePages(input *BatchGetAssetPropertyValueInput, fn func(*BatchGetAssetPropertyValueOutput, bool) bool) error {
 	return c.BatchGetAssetPropertyValuePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -754,14 +752,13 @@ const opBatchGetAssetPropertyValueHistory = "BatchGetAssetPropertyValueHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetAssetPropertyValueHistoryRequest method.
+//	req, resp := client.BatchGetAssetPropertyValueHistoryRequest(params)
 //
-//    // Example sending a request using the BatchGetAssetPropertyValueHistoryRequest method.
-//    req, resp := client.BatchGetAssetPropertyValueHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyValueHistory
 func (c *IoTSiteWise) BatchGetAssetPropertyValueHistoryRequest(input *BatchGetAssetPropertyValueHistoryInput) (req *request.Request, output *BatchGetAssetPropertyValueHistoryOutput) {
@@ -802,23 +799,24 @@ func (c *IoTSiteWise) BatchGetAssetPropertyValueHistoryRequest(input *BatchGetAs
 // API operation BatchGetAssetPropertyValueHistory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchGetAssetPropertyValueHistory
 func (c *IoTSiteWise) BatchGetAssetPropertyValueHistory(input *BatchGetAssetPropertyValueHistoryInput) (*BatchGetAssetPropertyValueHistoryOutput, error) {
@@ -850,15 +848,14 @@ func (c *IoTSiteWise) BatchGetAssetPropertyValueHistoryWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a BatchGetAssetPropertyValueHistory operation.
-//    pageNum := 0
-//    err := client.BatchGetAssetPropertyValueHistoryPages(params,
-//        func(page *iotsitewise.BatchGetAssetPropertyValueHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a BatchGetAssetPropertyValueHistory operation.
+//	pageNum := 0
+//	err := client.BatchGetAssetPropertyValueHistoryPages(params,
+//	    func(page *iotsitewise.BatchGetAssetPropertyValueHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) BatchGetAssetPropertyValueHistoryPages(input *BatchGetAssetPropertyValueHistoryInput, fn func(*BatchGetAssetPropertyValueHistoryOutput, bool) bool) error {
 	return c.BatchGetAssetPropertyValueHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -910,14 +907,13 @@ const opBatchPutAssetPropertyValue = "BatchPutAssetPropertyValue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchPutAssetPropertyValueRequest method.
+//	req, resp := client.BatchPutAssetPropertyValueRequest(params)
 //
-//    // Example sending a request using the BatchPutAssetPropertyValueRequest method.
-//    req, resp := client.BatchPutAssetPropertyValueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchPutAssetPropertyValue
 func (c *IoTSiteWise) BatchPutAssetPropertyValueRequest(input *BatchPutAssetPropertyValueInput) (req *request.Request, output *BatchPutAssetPropertyValueOutput) {
@@ -947,10 +943,10 @@ func (c *IoTSiteWise) BatchPutAssetPropertyValueRequest(input *BatchPutAssetProp
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 //
 // With respect to Unix epoch time, IoT SiteWise accepts only TQVs that have
 // a timestamp of no more than 7 days in the past and no more than 10 minutes
@@ -973,38 +969,39 @@ func (c *IoTSiteWise) BatchPutAssetPropertyValueRequest(input *BatchPutAssetProp
 // API operation BatchPutAssetPropertyValue for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/BatchPutAssetPropertyValue
 func (c *IoTSiteWise) BatchPutAssetPropertyValue(input *BatchPutAssetPropertyValueInput) (*BatchPutAssetPropertyValueOutput, error) {
@@ -1044,14 +1041,13 @@ const opCreateAccessPolicy = "CreateAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessPolicyRequest method.
+//	req, resp := client.CreateAccessPolicyRequest(params)
 //
-//    // Example sending a request using the CreateAccessPolicyRequest method.
-//    req, resp := client.CreateAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAccessPolicy
 func (c *IoTSiteWise) CreateAccessPolicyRequest(input *CreateAccessPolicyInput) (req *request.Request, output *CreateAccessPolicyOutput) {
@@ -1086,31 +1082,32 @@ func (c *IoTSiteWise) CreateAccessPolicyRequest(input *CreateAccessPolicyInput) 
 // API operation CreateAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAccessPolicy
 func (c *IoTSiteWise) CreateAccessPolicy(input *CreateAccessPolicyInput) (*CreateAccessPolicyOutput, error) {
@@ -1150,14 +1147,13 @@ const opCreateAsset = "CreateAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssetRequest method.
+//	req, resp := client.CreateAssetRequest(params)
 //
-//    // Example sending a request using the CreateAssetRequest method.
-//    req, resp := client.CreateAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAsset
 func (c *IoTSiteWise) CreateAssetRequest(input *CreateAssetInput) (req *request.Request, output *CreateAssetOutput) {
@@ -1192,38 +1188,39 @@ func (c *IoTSiteWise) CreateAssetRequest(input *CreateAssetInput) (req *request.
 // API operation CreateAsset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAsset
 func (c *IoTSiteWise) CreateAsset(input *CreateAssetInput) (*CreateAssetOutput, error) {
@@ -1263,14 +1260,13 @@ const opCreateAssetModel = "CreateAssetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssetModelRequest method.
+//	req, resp := client.CreateAssetModelRequest(params)
 //
-//    // Example sending a request using the CreateAssetModelRequest method.
-//    req, resp := client.CreateAssetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAssetModel
 func (c *IoTSiteWise) CreateAssetModelRequest(input *CreateAssetModelInput) (req *request.Request, output *CreateAssetModelOutput) {
@@ -1308,38 +1304,39 @@ func (c *IoTSiteWise) CreateAssetModelRequest(input *CreateAssetModelInput) (req
 // API operation CreateAssetModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateAssetModel
 func (c *IoTSiteWise) CreateAssetModel(input *CreateAssetModelInput) (*CreateAssetModelOutput, error) {
@@ -1379,14 +1376,13 @@ const opCreateDashboard = "CreateDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDashboardRequest method.
+//	req, resp := client.CreateDashboardRequest(params)
 //
-//    // Example sending a request using the CreateDashboardRequest method.
-//    req, resp := client.CreateDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateDashboard
 func (c *IoTSiteWise) CreateDashboardRequest(input *CreateDashboardInput) (req *request.Request, output *CreateDashboardOutput) {
@@ -1419,31 +1415,32 @@ func (c *IoTSiteWise) CreateDashboardRequest(input *CreateDashboardInput) (req *
 // API operation CreateDashboard for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateDashboard
 func (c *IoTSiteWise) CreateDashboard(input *CreateDashboardInput) (*CreateDashboardOutput, error) {
@@ -1483,14 +1480,13 @@ const opCreateGateway = "CreateGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGatewayRequest method.
+//	req, resp := client.CreateGatewayRequest(params)
 //
-//    // Example sending a request using the CreateGatewayRequest method.
-//    req, resp := client.CreateGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateGateway
 func (c *IoTSiteWise) CreateGatewayRequest(input *CreateGatewayInput) (req *request.Request, output *CreateGatewayOutput) {
@@ -1526,31 +1522,32 @@ func (c *IoTSiteWise) CreateGatewayRequest(input *CreateGatewayInput) (req *requ
 // API operation CreateGateway for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateGateway
 func (c *IoTSiteWise) CreateGateway(input *CreateGatewayInput) (*CreateGatewayOutput, error) {
@@ -1590,14 +1587,13 @@ const opCreatePortal = "CreatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePortalRequest method.
+//	req, resp := client.CreatePortalRequest(params)
 //
-//    // Example sending a request using the CreatePortalRequest method.
-//    req, resp := client.CreatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreatePortal
 func (c *IoTSiteWise) CreatePortalRequest(input *CreatePortalInput) (req *request.Request, output *CreatePortalOutput) {
@@ -1637,31 +1633,32 @@ func (c *IoTSiteWise) CreatePortalRequest(input *CreatePortalInput) (req *reques
 // API operation CreatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreatePortal
 func (c *IoTSiteWise) CreatePortal(input *CreatePortalInput) (*CreatePortalOutput, error) {
@@ -1701,14 +1698,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateProject
 func (c *IoTSiteWise) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -1744,31 +1740,32 @@ func (c *IoTSiteWise) CreateProjectRequest(input *CreateProjectInput) (req *requ
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/CreateProject
 func (c *IoTSiteWise) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -1808,14 +1805,13 @@ const opDeleteAccessPolicy = "DeleteAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessPolicyRequest method.
+//	req, resp := client.DeleteAccessPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteAccessPolicyRequest method.
-//    req, resp := client.DeleteAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAccessPolicy
 func (c *IoTSiteWise) DeleteAccessPolicyRequest(input *DeleteAccessPolicyInput) (req *request.Request, output *DeleteAccessPolicyOutput) {
@@ -1851,23 +1847,24 @@ func (c *IoTSiteWise) DeleteAccessPolicyRequest(input *DeleteAccessPolicyInput) 
 // API operation DeleteAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAccessPolicy
 func (c *IoTSiteWise) DeleteAccessPolicy(input *DeleteAccessPolicyInput) (*DeleteAccessPolicyOutput, error) {
@@ -1907,14 +1904,13 @@ const opDeleteAsset = "DeleteAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssetRequest method.
+//	req, resp := client.DeleteAssetRequest(params)
 //
-//    // Example sending a request using the DeleteAssetRequest method.
-//    req, resp := client.DeleteAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAsset
 func (c *IoTSiteWise) DeleteAssetRequest(input *DeleteAssetInput) (req *request.Request, output *DeleteAssetOutput) {
@@ -1952,27 +1948,28 @@ func (c *IoTSiteWise) DeleteAssetRequest(input *DeleteAssetInput) (req *request.
 // API operation DeleteAsset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAsset
 func (c *IoTSiteWise) DeleteAsset(input *DeleteAssetInput) (*DeleteAssetOutput, error) {
@@ -2012,14 +2009,13 @@ const opDeleteAssetModel = "DeleteAssetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssetModelRequest method.
+//	req, resp := client.DeleteAssetModelRequest(params)
 //
-//    // Example sending a request using the DeleteAssetModelRequest method.
-//    req, resp := client.DeleteAssetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAssetModel
 func (c *IoTSiteWise) DeleteAssetModelRequest(input *DeleteAssetModelInput) (req *request.Request, output *DeleteAssetModelOutput) {
@@ -2057,27 +2053,28 @@ func (c *IoTSiteWise) DeleteAssetModelRequest(input *DeleteAssetModelInput) (req
 // API operation DeleteAssetModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteAssetModel
 func (c *IoTSiteWise) DeleteAssetModel(input *DeleteAssetModelInput) (*DeleteAssetModelOutput, error) {
@@ -2117,14 +2114,13 @@ const opDeleteDashboard = "DeleteDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDashboardRequest method.
+//	req, resp := client.DeleteDashboardRequest(params)
 //
-//    // Example sending a request using the DeleteDashboardRequest method.
-//    req, resp := client.DeleteDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteDashboard
 func (c *IoTSiteWise) DeleteDashboardRequest(input *DeleteDashboardInput) (req *request.Request, output *DeleteDashboardOutput) {
@@ -2158,23 +2154,24 @@ func (c *IoTSiteWise) DeleteDashboardRequest(input *DeleteDashboardInput) (req *
 // API operation DeleteDashboard for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteDashboard
 func (c *IoTSiteWise) DeleteDashboard(input *DeleteDashboardInput) (*DeleteDashboardOutput, error) {
@@ -2214,14 +2211,13 @@ const opDeleteGateway = "DeleteGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGatewayRequest method.
+//	req, resp := client.DeleteGatewayRequest(params)
 //
-//    // Example sending a request using the DeleteGatewayRequest method.
-//    req, resp := client.DeleteGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteGateway
 func (c *IoTSiteWise) DeleteGatewayRequest(input *DeleteGatewayInput) (req *request.Request, output *DeleteGatewayOutput) {
@@ -2256,23 +2252,24 @@ func (c *IoTSiteWise) DeleteGatewayRequest(input *DeleteGatewayInput) (req *requ
 // API operation DeleteGateway for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteGateway
 func (c *IoTSiteWise) DeleteGateway(input *DeleteGatewayInput) (*DeleteGatewayOutput, error) {
@@ -2312,14 +2309,13 @@ const opDeletePortal = "DeletePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePortalRequest method.
+//	req, resp := client.DeletePortalRequest(params)
 //
-//    // Example sending a request using the DeletePortalRequest method.
-//    req, resp := client.DeletePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeletePortal
 func (c *IoTSiteWise) DeletePortalRequest(input *DeletePortalInput) (req *request.Request, output *DeletePortalOutput) {
@@ -2352,27 +2348,28 @@ func (c *IoTSiteWise) DeletePortalRequest(input *DeletePortalInput) (req *reques
 // API operation DeletePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeletePortal
 func (c *IoTSiteWise) DeletePortal(input *DeletePortalInput) (*DeletePortalOutput, error) {
@@ -2412,14 +2409,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteProject
 func (c *IoTSiteWise) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -2453,23 +2449,24 @@ func (c *IoTSiteWise) DeleteProjectRequest(input *DeleteProjectInput) (req *requ
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteProject
 func (c *IoTSiteWise) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -2509,14 +2506,13 @@ const opDeleteTimeSeries = "DeleteTimeSeries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTimeSeriesRequest method.
+//	req, resp := client.DeleteTimeSeriesRequest(params)
 //
-//    // Example sending a request using the DeleteTimeSeriesRequest method.
-//    req, resp := client.DeleteTimeSeriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteTimeSeries
 func (c *IoTSiteWise) DeleteTimeSeriesRequest(input *DeleteTimeSeriesInput) (req *request.Request, output *DeleteTimeSeriesOutput) {
@@ -2546,12 +2542,12 @@ func (c *IoTSiteWise) DeleteTimeSeriesRequest(input *DeleteTimeSeriesInput) (req
 //
 // To identify a time series, do one of the following:
 //
-//    * If the time series isn't associated with an asset property, specify
-//    the alias of the time series.
+//   - If the time series isn't associated with an asset property, specify
+//     the alias of the time series.
 //
-//    * If the time series is associated with an asset property, specify one
-//    of the following: The alias of the time series. The assetId and propertyId
-//    that identifies the asset property.
+//   - If the time series is associated with an asset property, specify one
+//     of the following: The alias of the time series. The assetId and propertyId
+//     that identifies the asset property.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2561,27 +2557,28 @@ func (c *IoTSiteWise) DeleteTimeSeriesRequest(input *DeleteTimeSeriesInput) (req
 // API operation DeleteTimeSeries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DeleteTimeSeries
 func (c *IoTSiteWise) DeleteTimeSeries(input *DeleteTimeSeriesInput) (*DeleteTimeSeriesOutput, error) {
@@ -2621,14 +2618,13 @@ const opDescribeAccessPolicy = "DescribeAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccessPolicyRequest method.
+//	req, resp := client.DescribeAccessPolicyRequest(params)
 //
-//    // Example sending a request using the DescribeAccessPolicyRequest method.
-//    req, resp := client.DescribeAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAccessPolicy
 func (c *IoTSiteWise) DescribeAccessPolicyRequest(input *DescribeAccessPolicyInput) (req *request.Request, output *DescribeAccessPolicyOutput) {
@@ -2662,23 +2658,24 @@ func (c *IoTSiteWise) DescribeAccessPolicyRequest(input *DescribeAccessPolicyInp
 // API operation DescribeAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAccessPolicy
 func (c *IoTSiteWise) DescribeAccessPolicy(input *DescribeAccessPolicyInput) (*DescribeAccessPolicyOutput, error) {
@@ -2718,14 +2715,13 @@ const opDescribeAsset = "DescribeAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssetRequest method.
+//	req, resp := client.DescribeAssetRequest(params)
 //
-//    // Example sending a request using the DescribeAssetRequest method.
-//    req, resp := client.DescribeAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAsset
 func (c *IoTSiteWise) DescribeAssetRequest(input *DescribeAssetInput) (req *request.Request, output *DescribeAssetOutput) {
@@ -2758,23 +2754,24 @@ func (c *IoTSiteWise) DescribeAssetRequest(input *DescribeAssetInput) (req *requ
 // API operation DescribeAsset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAsset
 func (c *IoTSiteWise) DescribeAsset(input *DescribeAssetInput) (*DescribeAssetOutput, error) {
@@ -2814,14 +2811,13 @@ const opDescribeAssetModel = "DescribeAssetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssetModelRequest method.
+//	req, resp := client.DescribeAssetModelRequest(params)
 //
-//    // Example sending a request using the DescribeAssetModelRequest method.
-//    req, resp := client.DescribeAssetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAssetModel
 func (c *IoTSiteWise) DescribeAssetModelRequest(input *DescribeAssetModelInput) (req *request.Request, output *DescribeAssetModelOutput) {
@@ -2854,23 +2850,24 @@ func (c *IoTSiteWise) DescribeAssetModelRequest(input *DescribeAssetModelInput) 
 // API operation DescribeAssetModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAssetModel
 func (c *IoTSiteWise) DescribeAssetModel(input *DescribeAssetModelInput) (*DescribeAssetModelOutput, error) {
@@ -2910,14 +2907,13 @@ const opDescribeAssetProperty = "DescribeAssetProperty"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssetPropertyRequest method.
+//	req, resp := client.DescribeAssetPropertyRequest(params)
 //
-//    // Example sending a request using the DescribeAssetPropertyRequest method.
-//    req, resp := client.DescribeAssetPropertyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAssetProperty
 func (c *IoTSiteWise) DescribeAssetPropertyRequest(input *DescribeAssetPropertyInput) (req *request.Request, output *DescribeAssetPropertyOutput) {
@@ -2958,23 +2954,24 @@ func (c *IoTSiteWise) DescribeAssetPropertyRequest(input *DescribeAssetPropertyI
 // API operation DescribeAssetProperty for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeAssetProperty
 func (c *IoTSiteWise) DescribeAssetProperty(input *DescribeAssetPropertyInput) (*DescribeAssetPropertyOutput, error) {
@@ -3014,14 +3011,13 @@ const opDescribeDashboard = "DescribeDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDashboardRequest method.
+//	req, resp := client.DescribeDashboardRequest(params)
 //
-//    // Example sending a request using the DescribeDashboardRequest method.
-//    req, resp := client.DescribeDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeDashboard
 func (c *IoTSiteWise) DescribeDashboardRequest(input *DescribeDashboardInput) (req *request.Request, output *DescribeDashboardOutput) {
@@ -3054,23 +3050,24 @@ func (c *IoTSiteWise) DescribeDashboardRequest(input *DescribeDashboardInput) (r
 // API operation DescribeDashboard for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeDashboard
 func (c *IoTSiteWise) DescribeDashboard(input *DescribeDashboardInput) (*DescribeDashboardOutput, error) {
@@ -3110,14 +3107,13 @@ const opDescribeDefaultEncryptionConfiguration = "DescribeDefaultEncryptionConfi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDefaultEncryptionConfigurationRequest method.
+//	req, resp := client.DescribeDefaultEncryptionConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeDefaultEncryptionConfigurationRequest method.
-//    req, resp := client.DescribeDefaultEncryptionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeDefaultEncryptionConfiguration
 func (c *IoTSiteWise) DescribeDefaultEncryptionConfigurationRequest(input *DescribeDefaultEncryptionConfigurationInput) (req *request.Request, output *DescribeDefaultEncryptionConfigurationOutput) {
@@ -3153,20 +3149,21 @@ func (c *IoTSiteWise) DescribeDefaultEncryptionConfigurationRequest(input *Descr
 // API operation DescribeDefaultEncryptionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeDefaultEncryptionConfiguration
 func (c *IoTSiteWise) DescribeDefaultEncryptionConfiguration(input *DescribeDefaultEncryptionConfigurationInput) (*DescribeDefaultEncryptionConfigurationOutput, error) {
@@ -3206,14 +3203,13 @@ const opDescribeGateway = "DescribeGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGatewayRequest method.
+//	req, resp := client.DescribeGatewayRequest(params)
 //
-//    // Example sending a request using the DescribeGatewayRequest method.
-//    req, resp := client.DescribeGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeGateway
 func (c *IoTSiteWise) DescribeGatewayRequest(input *DescribeGatewayInput) (req *request.Request, output *DescribeGatewayOutput) {
@@ -3246,23 +3242,24 @@ func (c *IoTSiteWise) DescribeGatewayRequest(input *DescribeGatewayInput) (req *
 // API operation DescribeGateway for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeGateway
 func (c *IoTSiteWise) DescribeGateway(input *DescribeGatewayInput) (*DescribeGatewayOutput, error) {
@@ -3302,14 +3299,13 @@ const opDescribeGatewayCapabilityConfiguration = "DescribeGatewayCapabilityConfi
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGatewayCapabilityConfigurationRequest method.
+//	req, resp := client.DescribeGatewayCapabilityConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeGatewayCapabilityConfigurationRequest method.
-//    req, resp := client.DescribeGatewayCapabilityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeGatewayCapabilityConfiguration
 func (c *IoTSiteWise) DescribeGatewayCapabilityConfigurationRequest(input *DescribeGatewayCapabilityConfigurationInput) (req *request.Request, output *DescribeGatewayCapabilityConfigurationOutput) {
@@ -3347,23 +3343,24 @@ func (c *IoTSiteWise) DescribeGatewayCapabilityConfigurationRequest(input *Descr
 // API operation DescribeGatewayCapabilityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeGatewayCapabilityConfiguration
 func (c *IoTSiteWise) DescribeGatewayCapabilityConfiguration(input *DescribeGatewayCapabilityConfigurationInput) (*DescribeGatewayCapabilityConfigurationOutput, error) {
@@ -3403,14 +3400,13 @@ const opDescribeLoggingOptions = "DescribeLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoggingOptionsRequest method.
+//	req, resp := client.DescribeLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeLoggingOptionsRequest method.
-//    req, resp := client.DescribeLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeLoggingOptions
 func (c *IoTSiteWise) DescribeLoggingOptionsRequest(input *DescribeLoggingOptionsInput) (req *request.Request, output *DescribeLoggingOptionsOutput) {
@@ -3443,23 +3439,24 @@ func (c *IoTSiteWise) DescribeLoggingOptionsRequest(input *DescribeLoggingOption
 // API operation DescribeLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
+//
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeLoggingOptions
 func (c *IoTSiteWise) DescribeLoggingOptions(input *DescribeLoggingOptionsInput) (*DescribeLoggingOptionsOutput, error) {
@@ -3499,14 +3496,13 @@ const opDescribePortal = "DescribePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePortalRequest method.
+//	req, resp := client.DescribePortalRequest(params)
 //
-//    // Example sending a request using the DescribePortalRequest method.
-//    req, resp := client.DescribePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribePortal
 func (c *IoTSiteWise) DescribePortalRequest(input *DescribePortalInput) (req *request.Request, output *DescribePortalOutput) {
@@ -3539,23 +3535,24 @@ func (c *IoTSiteWise) DescribePortalRequest(input *DescribePortalInput) (req *re
 // API operation DescribePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribePortal
 func (c *IoTSiteWise) DescribePortal(input *DescribePortalInput) (*DescribePortalOutput, error) {
@@ -3595,14 +3592,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeProject
 func (c *IoTSiteWise) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -3635,23 +3631,24 @@ func (c *IoTSiteWise) DescribeProjectRequest(input *DescribeProjectInput) (req *
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeProject
 func (c *IoTSiteWise) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -3691,14 +3688,13 @@ const opDescribeStorageConfiguration = "DescribeStorageConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStorageConfigurationRequest method.
+//	req, resp := client.DescribeStorageConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeStorageConfigurationRequest method.
-//    req, resp := client.DescribeStorageConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeStorageConfiguration
 func (c *IoTSiteWise) DescribeStorageConfigurationRequest(input *DescribeStorageConfigurationInput) (req *request.Request, output *DescribeStorageConfigurationOutput) {
@@ -3731,35 +3727,36 @@ func (c *IoTSiteWise) DescribeStorageConfigurationRequest(input *DescribeStorage
 // API operation DescribeStorageConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeStorageConfiguration
 func (c *IoTSiteWise) DescribeStorageConfiguration(input *DescribeStorageConfigurationInput) (*DescribeStorageConfigurationOutput, error) {
@@ -3799,14 +3796,13 @@ const opDescribeTimeSeries = "DescribeTimeSeries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTimeSeriesRequest method.
+//	req, resp := client.DescribeTimeSeriesRequest(params)
 //
-//    // Example sending a request using the DescribeTimeSeriesRequest method.
-//    req, resp := client.DescribeTimeSeriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeTimeSeries
 func (c *IoTSiteWise) DescribeTimeSeriesRequest(input *DescribeTimeSeriesInput) (req *request.Request, output *DescribeTimeSeriesOutput) {
@@ -3833,12 +3829,12 @@ func (c *IoTSiteWise) DescribeTimeSeriesRequest(input *DescribeTimeSeriesInput) 
 //
 // To identify a time series, do one of the following:
 //
-//    * If the time series isn't associated with an asset property, specify
-//    the alias of the time series.
+//   - If the time series isn't associated with an asset property, specify
+//     the alias of the time series.
 //
-//    * If the time series is associated with an asset property, specify one
-//    of the following: The alias of the time series. The assetId and propertyId
-//    that identifies the asset property.
+//   - If the time series is associated with an asset property, specify one
+//     of the following: The alias of the time series. The assetId and propertyId
+//     that identifies the asset property.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3848,23 +3844,24 @@ func (c *IoTSiteWise) DescribeTimeSeriesRequest(input *DescribeTimeSeriesInput) 
 // API operation DescribeTimeSeries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DescribeTimeSeries
 func (c *IoTSiteWise) DescribeTimeSeries(input *DescribeTimeSeriesInput) (*DescribeTimeSeriesOutput, error) {
@@ -3904,14 +3901,13 @@ const opDisassociateAssets = "DisassociateAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateAssetsRequest method.
+//	req, resp := client.DisassociateAssetsRequest(params)
 //
-//    // Example sending a request using the DisassociateAssetsRequest method.
-//    req, resp := client.DisassociateAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DisassociateAssets
 func (c *IoTSiteWise) DisassociateAssetsRequest(input *DisassociateAssetsInput) (req *request.Request, output *DisassociateAssetsOutput) {
@@ -3946,27 +3942,28 @@ func (c *IoTSiteWise) DisassociateAssetsRequest(input *DisassociateAssetsInput) 
 // API operation DisassociateAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DisassociateAssets
 func (c *IoTSiteWise) DisassociateAssets(input *DisassociateAssetsInput) (*DisassociateAssetsOutput, error) {
@@ -4006,14 +4003,13 @@ const opDisassociateTimeSeriesFromAssetProperty = "DisassociateTimeSeriesFromAss
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTimeSeriesFromAssetPropertyRequest method.
+//	req, resp := client.DisassociateTimeSeriesFromAssetPropertyRequest(params)
 //
-//    // Example sending a request using the DisassociateTimeSeriesFromAssetPropertyRequest method.
-//    req, resp := client.DisassociateTimeSeriesFromAssetPropertyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DisassociateTimeSeriesFromAssetProperty
 func (c *IoTSiteWise) DisassociateTimeSeriesFromAssetPropertyRequest(input *DisassociateTimeSeriesFromAssetPropertyInput) (req *request.Request, output *DisassociateTimeSeriesFromAssetPropertyOutput) {
@@ -4047,27 +4043,28 @@ func (c *IoTSiteWise) DisassociateTimeSeriesFromAssetPropertyRequest(input *Disa
 // API operation DisassociateTimeSeriesFromAssetProperty for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/DisassociateTimeSeriesFromAssetProperty
 func (c *IoTSiteWise) DisassociateTimeSeriesFromAssetProperty(input *DisassociateTimeSeriesFromAssetPropertyInput) (*DisassociateTimeSeriesFromAssetPropertyOutput, error) {
@@ -4107,14 +4104,13 @@ const opGetAssetPropertyAggregates = "GetAssetPropertyAggregates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssetPropertyAggregatesRequest method.
+//	req, resp := client.GetAssetPropertyAggregatesRequest(params)
 //
-//    // Example sending a request using the GetAssetPropertyAggregatesRequest method.
-//    req, resp := client.GetAssetPropertyAggregatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyAggregates
 func (c *IoTSiteWise) GetAssetPropertyAggregatesRequest(input *GetAssetPropertyAggregatesInput) (req *request.Request, output *GetAssetPropertyAggregatesOutput) {
@@ -4149,10 +4145,10 @@ func (c *IoTSiteWise) GetAssetPropertyAggregatesRequest(input *GetAssetPropertyA
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4162,26 +4158,27 @@ func (c *IoTSiteWise) GetAssetPropertyAggregatesRequest(input *GetAssetPropertyA
 // API operation GetAssetPropertyAggregates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyAggregates
 func (c *IoTSiteWise) GetAssetPropertyAggregates(input *GetAssetPropertyAggregatesInput) (*GetAssetPropertyAggregatesOutput, error) {
@@ -4213,15 +4210,14 @@ func (c *IoTSiteWise) GetAssetPropertyAggregatesWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAssetPropertyAggregates operation.
-//    pageNum := 0
-//    err := client.GetAssetPropertyAggregatesPages(params,
-//        func(page *iotsitewise.GetAssetPropertyAggregatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAssetPropertyAggregates operation.
+//	pageNum := 0
+//	err := client.GetAssetPropertyAggregatesPages(params,
+//	    func(page *iotsitewise.GetAssetPropertyAggregatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) GetAssetPropertyAggregatesPages(input *GetAssetPropertyAggregatesInput, fn func(*GetAssetPropertyAggregatesOutput, bool) bool) error {
 	return c.GetAssetPropertyAggregatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4273,14 +4269,13 @@ const opGetAssetPropertyValue = "GetAssetPropertyValue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssetPropertyValueRequest method.
+//	req, resp := client.GetAssetPropertyValueRequest(params)
 //
-//    // Example sending a request using the GetAssetPropertyValueRequest method.
-//    req, resp := client.GetAssetPropertyValueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyValue
 func (c *IoTSiteWise) GetAssetPropertyValueRequest(input *GetAssetPropertyValueInput) (req *request.Request, output *GetAssetPropertyValueOutput) {
@@ -4309,10 +4304,10 @@ func (c *IoTSiteWise) GetAssetPropertyValueRequest(input *GetAssetPropertyValueI
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4322,26 +4317,27 @@ func (c *IoTSiteWise) GetAssetPropertyValueRequest(input *GetAssetPropertyValueI
 // API operation GetAssetPropertyValue for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyValue
 func (c *IoTSiteWise) GetAssetPropertyValue(input *GetAssetPropertyValueInput) (*GetAssetPropertyValueOutput, error) {
@@ -4381,14 +4377,13 @@ const opGetAssetPropertyValueHistory = "GetAssetPropertyValueHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssetPropertyValueHistoryRequest method.
+//	req, resp := client.GetAssetPropertyValueHistoryRequest(params)
 //
-//    // Example sending a request using the GetAssetPropertyValueHistoryRequest method.
-//    req, resp := client.GetAssetPropertyValueHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyValueHistory
 func (c *IoTSiteWise) GetAssetPropertyValueHistoryRequest(input *GetAssetPropertyValueHistoryInput) (req *request.Request, output *GetAssetPropertyValueHistoryOutput) {
@@ -4423,10 +4418,10 @@ func (c *IoTSiteWise) GetAssetPropertyValueHistoryRequest(input *GetAssetPropert
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4436,26 +4431,27 @@ func (c *IoTSiteWise) GetAssetPropertyValueHistoryRequest(input *GetAssetPropert
 // API operation GetAssetPropertyValueHistory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetAssetPropertyValueHistory
 func (c *IoTSiteWise) GetAssetPropertyValueHistory(input *GetAssetPropertyValueHistoryInput) (*GetAssetPropertyValueHistoryOutput, error) {
@@ -4487,15 +4483,14 @@ func (c *IoTSiteWise) GetAssetPropertyValueHistoryWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetAssetPropertyValueHistory operation.
-//    pageNum := 0
-//    err := client.GetAssetPropertyValueHistoryPages(params,
-//        func(page *iotsitewise.GetAssetPropertyValueHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetAssetPropertyValueHistory operation.
+//	pageNum := 0
+//	err := client.GetAssetPropertyValueHistoryPages(params,
+//	    func(page *iotsitewise.GetAssetPropertyValueHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) GetAssetPropertyValueHistoryPages(input *GetAssetPropertyValueHistoryInput, fn func(*GetAssetPropertyValueHistoryOutput, bool) bool) error {
 	return c.GetAssetPropertyValueHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4547,14 +4542,13 @@ const opGetInterpolatedAssetPropertyValues = "GetInterpolatedAssetPropertyValues
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInterpolatedAssetPropertyValuesRequest method.
+//	req, resp := client.GetInterpolatedAssetPropertyValuesRequest(params)
 //
-//    // Example sending a request using the GetInterpolatedAssetPropertyValuesRequest method.
-//    req, resp := client.GetInterpolatedAssetPropertyValuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetInterpolatedAssetPropertyValues
 func (c *IoTSiteWise) GetInterpolatedAssetPropertyValuesRequest(input *GetInterpolatedAssetPropertyValuesInput) (req *request.Request, output *GetInterpolatedAssetPropertyValuesOutput) {
@@ -4593,10 +4587,10 @@ func (c *IoTSiteWise) GetInterpolatedAssetPropertyValuesRequest(input *GetInterp
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4606,26 +4600,27 @@ func (c *IoTSiteWise) GetInterpolatedAssetPropertyValuesRequest(input *GetInterp
 // API operation GetInterpolatedAssetPropertyValues for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ServiceUnavailableException
-//   The requested service is unavailable.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ServiceUnavailableException
+//     The requested service is unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/GetInterpolatedAssetPropertyValues
 func (c *IoTSiteWise) GetInterpolatedAssetPropertyValues(input *GetInterpolatedAssetPropertyValuesInput) (*GetInterpolatedAssetPropertyValuesOutput, error) {
@@ -4657,15 +4652,14 @@ func (c *IoTSiteWise) GetInterpolatedAssetPropertyValuesWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetInterpolatedAssetPropertyValues operation.
-//    pageNum := 0
-//    err := client.GetInterpolatedAssetPropertyValuesPages(params,
-//        func(page *iotsitewise.GetInterpolatedAssetPropertyValuesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetInterpolatedAssetPropertyValues operation.
+//	pageNum := 0
+//	err := client.GetInterpolatedAssetPropertyValuesPages(params,
+//	    func(page *iotsitewise.GetInterpolatedAssetPropertyValuesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) GetInterpolatedAssetPropertyValuesPages(input *GetInterpolatedAssetPropertyValuesInput, fn func(*GetInterpolatedAssetPropertyValuesOutput, bool) bool) error {
 	return c.GetInterpolatedAssetPropertyValuesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4717,14 +4711,13 @@ const opListAccessPolicies = "ListAccessPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessPoliciesRequest method.
+//	req, resp := client.ListAccessPoliciesRequest(params)
 //
-//    // Example sending a request using the ListAccessPoliciesRequest method.
-//    req, resp := client.ListAccessPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAccessPolicies
 func (c *IoTSiteWise) ListAccessPoliciesRequest(input *ListAccessPoliciesInput) (req *request.Request, output *ListAccessPoliciesOutput) {
@@ -4765,20 +4758,21 @@ func (c *IoTSiteWise) ListAccessPoliciesRequest(input *ListAccessPoliciesInput) 
 // API operation ListAccessPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAccessPolicies
 func (c *IoTSiteWise) ListAccessPolicies(input *ListAccessPoliciesInput) (*ListAccessPoliciesOutput, error) {
@@ -4810,15 +4804,14 @@ func (c *IoTSiteWise) ListAccessPoliciesWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessPolicies operation.
-//    pageNum := 0
-//    err := client.ListAccessPoliciesPages(params,
-//        func(page *iotsitewise.ListAccessPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessPolicies operation.
+//	pageNum := 0
+//	err := client.ListAccessPoliciesPages(params,
+//	    func(page *iotsitewise.ListAccessPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListAccessPoliciesPages(input *ListAccessPoliciesInput, fn func(*ListAccessPoliciesOutput, bool) bool) error {
 	return c.ListAccessPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4870,14 +4863,13 @@ const opListAssetModels = "ListAssetModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssetModelsRequest method.
+//	req, resp := client.ListAssetModelsRequest(params)
 //
-//    // Example sending a request using the ListAssetModelsRequest method.
-//    req, resp := client.ListAssetModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssetModels
 func (c *IoTSiteWise) ListAssetModelsRequest(input *ListAssetModelsInput) (req *request.Request, output *ListAssetModelsOutput) {
@@ -4916,20 +4908,21 @@ func (c *IoTSiteWise) ListAssetModelsRequest(input *ListAssetModelsInput) (req *
 // API operation ListAssetModels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssetModels
 func (c *IoTSiteWise) ListAssetModels(input *ListAssetModelsInput) (*ListAssetModelsOutput, error) {
@@ -4961,15 +4954,14 @@ func (c *IoTSiteWise) ListAssetModelsWithContext(ctx aws.Context, input *ListAss
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssetModels operation.
-//    pageNum := 0
-//    err := client.ListAssetModelsPages(params,
-//        func(page *iotsitewise.ListAssetModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssetModels operation.
+//	pageNum := 0
+//	err := client.ListAssetModelsPages(params,
+//	    func(page *iotsitewise.ListAssetModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListAssetModelsPages(input *ListAssetModelsInput, fn func(*ListAssetModelsOutput, bool) bool) error {
 	return c.ListAssetModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5021,14 +5013,13 @@ const opListAssetRelationships = "ListAssetRelationships"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssetRelationshipsRequest method.
+//	req, resp := client.ListAssetRelationshipsRequest(params)
 //
-//    // Example sending a request using the ListAssetRelationshipsRequest method.
-//    req, resp := client.ListAssetRelationshipsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssetRelationships
 func (c *IoTSiteWise) ListAssetRelationshipsRequest(input *ListAssetRelationshipsInput) (req *request.Request, output *ListAssetRelationshipsOutput) {
@@ -5069,23 +5060,24 @@ func (c *IoTSiteWise) ListAssetRelationshipsRequest(input *ListAssetRelationship
 // API operation ListAssetRelationships for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssetRelationships
 func (c *IoTSiteWise) ListAssetRelationships(input *ListAssetRelationshipsInput) (*ListAssetRelationshipsOutput, error) {
@@ -5117,15 +5109,14 @@ func (c *IoTSiteWise) ListAssetRelationshipsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssetRelationships operation.
-//    pageNum := 0
-//    err := client.ListAssetRelationshipsPages(params,
-//        func(page *iotsitewise.ListAssetRelationshipsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssetRelationships operation.
+//	pageNum := 0
+//	err := client.ListAssetRelationshipsPages(params,
+//	    func(page *iotsitewise.ListAssetRelationshipsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListAssetRelationshipsPages(input *ListAssetRelationshipsInput, fn func(*ListAssetRelationshipsOutput, bool) bool) error {
 	return c.ListAssetRelationshipsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5177,14 +5168,13 @@ const opListAssets = "ListAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssetsRequest method.
+//	req, resp := client.ListAssetsRequest(params)
 //
-//    // Example sending a request using the ListAssetsRequest method.
-//    req, resp := client.ListAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssets
 func (c *IoTSiteWise) ListAssetsRequest(input *ListAssetsInput) (req *request.Request, output *ListAssetsOutput) {
@@ -5217,9 +5207,9 @@ func (c *IoTSiteWise) ListAssetsRequest(input *ListAssetsInput) (req *request.Re
 //
 // You can use this operation to do the following:
 //
-//    * List assets based on a specific asset model.
+//   - List assets based on a specific asset model.
 //
-//    * List top-level assets.
+//   - List top-level assets.
 //
 // You can't use this operation to list all assets. To retrieve summaries for
 // all of your assets, use ListAssetModels (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_ListAssetModels.html)
@@ -5234,23 +5224,24 @@ func (c *IoTSiteWise) ListAssetsRequest(input *ListAssetsInput) (req *request.Re
 // API operation ListAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssets
 func (c *IoTSiteWise) ListAssets(input *ListAssetsInput) (*ListAssetsOutput, error) {
@@ -5282,15 +5273,14 @@ func (c *IoTSiteWise) ListAssetsWithContext(ctx aws.Context, input *ListAssetsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssets operation.
-//    pageNum := 0
-//    err := client.ListAssetsPages(params,
-//        func(page *iotsitewise.ListAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssets operation.
+//	pageNum := 0
+//	err := client.ListAssetsPages(params,
+//	    func(page *iotsitewise.ListAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListAssetsPages(input *ListAssetsInput, fn func(*ListAssetsOutput, bool) bool) error {
 	return c.ListAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5342,14 +5332,13 @@ const opListAssociatedAssets = "ListAssociatedAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociatedAssetsRequest method.
+//	req, resp := client.ListAssociatedAssetsRequest(params)
 //
-//    // Example sending a request using the ListAssociatedAssetsRequest method.
-//    req, resp := client.ListAssociatedAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssociatedAssets
 func (c *IoTSiteWise) ListAssociatedAssetsRequest(input *ListAssociatedAssetsInput) (req *request.Request, output *ListAssociatedAssetsOutput) {
@@ -5382,10 +5371,10 @@ func (c *IoTSiteWise) ListAssociatedAssetsRequest(input *ListAssociatedAssetsInp
 //
 // You can use this operation to do the following:
 //
-//    * List child assets associated to a parent asset by a hierarchy that you
-//    specify.
+//   - List child assets associated to a parent asset by a hierarchy that you
+//     specify.
 //
-//    * List an asset's parent asset.
+//   - List an asset's parent asset.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5395,23 +5384,24 @@ func (c *IoTSiteWise) ListAssociatedAssetsRequest(input *ListAssociatedAssetsInp
 // API operation ListAssociatedAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListAssociatedAssets
 func (c *IoTSiteWise) ListAssociatedAssets(input *ListAssociatedAssetsInput) (*ListAssociatedAssetsOutput, error) {
@@ -5443,15 +5433,14 @@ func (c *IoTSiteWise) ListAssociatedAssetsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssociatedAssets operation.
-//    pageNum := 0
-//    err := client.ListAssociatedAssetsPages(params,
-//        func(page *iotsitewise.ListAssociatedAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssociatedAssets operation.
+//	pageNum := 0
+//	err := client.ListAssociatedAssetsPages(params,
+//	    func(page *iotsitewise.ListAssociatedAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListAssociatedAssetsPages(input *ListAssociatedAssetsInput, fn func(*ListAssociatedAssetsOutput, bool) bool) error {
 	return c.ListAssociatedAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5503,14 +5492,13 @@ const opListDashboards = "ListDashboards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDashboardsRequest method.
+//	req, resp := client.ListDashboardsRequest(params)
 //
-//    // Example sending a request using the ListDashboardsRequest method.
-//    req, resp := client.ListDashboardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListDashboards
 func (c *IoTSiteWise) ListDashboardsRequest(input *ListDashboardsInput) (req *request.Request, output *ListDashboardsOutput) {
@@ -5549,20 +5537,21 @@ func (c *IoTSiteWise) ListDashboardsRequest(input *ListDashboardsInput) (req *re
 // API operation ListDashboards for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListDashboards
 func (c *IoTSiteWise) ListDashboards(input *ListDashboardsInput) (*ListDashboardsOutput, error) {
@@ -5594,15 +5583,14 @@ func (c *IoTSiteWise) ListDashboardsWithContext(ctx aws.Context, input *ListDash
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDashboards operation.
-//    pageNum := 0
-//    err := client.ListDashboardsPages(params,
-//        func(page *iotsitewise.ListDashboardsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDashboards operation.
+//	pageNum := 0
+//	err := client.ListDashboardsPages(params,
+//	    func(page *iotsitewise.ListDashboardsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListDashboardsPages(input *ListDashboardsInput, fn func(*ListDashboardsOutput, bool) bool) error {
 	return c.ListDashboardsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5654,14 +5642,13 @@ const opListGateways = "ListGateways"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGatewaysRequest method.
+//	req, resp := client.ListGatewaysRequest(params)
 //
-//    // Example sending a request using the ListGatewaysRequest method.
-//    req, resp := client.ListGatewaysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListGateways
 func (c *IoTSiteWise) ListGatewaysRequest(input *ListGatewaysInput) (req *request.Request, output *ListGatewaysOutput) {
@@ -5700,20 +5687,21 @@ func (c *IoTSiteWise) ListGatewaysRequest(input *ListGatewaysInput) (req *reques
 // API operation ListGateways for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListGateways
 func (c *IoTSiteWise) ListGateways(input *ListGatewaysInput) (*ListGatewaysOutput, error) {
@@ -5745,15 +5733,14 @@ func (c *IoTSiteWise) ListGatewaysWithContext(ctx aws.Context, input *ListGatewa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGateways operation.
-//    pageNum := 0
-//    err := client.ListGatewaysPages(params,
-//        func(page *iotsitewise.ListGatewaysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGateways operation.
+//	pageNum := 0
+//	err := client.ListGatewaysPages(params,
+//	    func(page *iotsitewise.ListGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListGatewaysPages(input *ListGatewaysInput, fn func(*ListGatewaysOutput, bool) bool) error {
 	return c.ListGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5805,14 +5792,13 @@ const opListPortals = "ListPortals"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPortalsRequest method.
+//	req, resp := client.ListPortalsRequest(params)
 //
-//    // Example sending a request using the ListPortalsRequest method.
-//    req, resp := client.ListPortalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListPortals
 func (c *IoTSiteWise) ListPortalsRequest(input *ListPortalsInput) (req *request.Request, output *ListPortalsOutput) {
@@ -5851,20 +5837,21 @@ func (c *IoTSiteWise) ListPortalsRequest(input *ListPortalsInput) (req *request.
 // API operation ListPortals for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListPortals
 func (c *IoTSiteWise) ListPortals(input *ListPortalsInput) (*ListPortalsOutput, error) {
@@ -5896,15 +5883,14 @@ func (c *IoTSiteWise) ListPortalsWithContext(ctx aws.Context, input *ListPortals
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPortals operation.
-//    pageNum := 0
-//    err := client.ListPortalsPages(params,
-//        func(page *iotsitewise.ListPortalsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPortals operation.
+//	pageNum := 0
+//	err := client.ListPortalsPages(params,
+//	    func(page *iotsitewise.ListPortalsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListPortalsPages(input *ListPortalsInput, fn func(*ListPortalsOutput, bool) bool) error {
 	return c.ListPortalsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5956,14 +5942,13 @@ const opListProjectAssets = "ListProjectAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectAssetsRequest method.
+//	req, resp := client.ListProjectAssetsRequest(params)
 //
-//    // Example sending a request using the ListProjectAssetsRequest method.
-//    req, resp := client.ListProjectAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListProjectAssets
 func (c *IoTSiteWise) ListProjectAssetsRequest(input *ListProjectAssetsInput) (req *request.Request, output *ListProjectAssetsOutput) {
@@ -6003,20 +5988,21 @@ func (c *IoTSiteWise) ListProjectAssetsRequest(input *ListProjectAssetsInput) (r
 // API operation ListProjectAssets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListProjectAssets
 func (c *IoTSiteWise) ListProjectAssets(input *ListProjectAssetsInput) (*ListProjectAssetsOutput, error) {
@@ -6048,15 +6034,14 @@ func (c *IoTSiteWise) ListProjectAssetsWithContext(ctx aws.Context, input *ListP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjectAssets operation.
-//    pageNum := 0
-//    err := client.ListProjectAssetsPages(params,
-//        func(page *iotsitewise.ListProjectAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjectAssets operation.
+//	pageNum := 0
+//	err := client.ListProjectAssetsPages(params,
+//	    func(page *iotsitewise.ListProjectAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListProjectAssetsPages(input *ListProjectAssetsInput, fn func(*ListProjectAssetsOutput, bool) bool) error {
 	return c.ListProjectAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6108,14 +6093,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListProjects
 func (c *IoTSiteWise) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -6154,20 +6138,21 @@ func (c *IoTSiteWise) ListProjectsRequest(input *ListProjectsInput) (req *reques
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListProjects
 func (c *IoTSiteWise) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -6199,15 +6184,14 @@ func (c *IoTSiteWise) ListProjectsWithContext(ctx aws.Context, input *ListProjec
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *iotsitewise.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *iotsitewise.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6259,14 +6243,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListTagsForResource
 func (c *IoTSiteWise) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -6299,38 +6282,39 @@ func (c *IoTSiteWise) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * UnauthorizedException
-//   You are not authorized.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - UnauthorizedException
+//     You are not authorized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListTagsForResource
 func (c *IoTSiteWise) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -6370,14 +6354,13 @@ const opListTimeSeries = "ListTimeSeries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTimeSeriesRequest method.
+//	req, resp := client.ListTimeSeriesRequest(params)
 //
-//    // Example sending a request using the ListTimeSeriesRequest method.
-//    req, resp := client.ListTimeSeriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListTimeSeries
 func (c *IoTSiteWise) ListTimeSeriesRequest(input *ListTimeSeriesInput) (req *request.Request, output *ListTimeSeriesOutput) {
@@ -6416,23 +6399,24 @@ func (c *IoTSiteWise) ListTimeSeriesRequest(input *ListTimeSeriesInput) (req *re
 // API operation ListTimeSeries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/ListTimeSeries
 func (c *IoTSiteWise) ListTimeSeries(input *ListTimeSeriesInput) (*ListTimeSeriesOutput, error) {
@@ -6464,15 +6448,14 @@ func (c *IoTSiteWise) ListTimeSeriesWithContext(ctx aws.Context, input *ListTime
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTimeSeries operation.
-//    pageNum := 0
-//    err := client.ListTimeSeriesPages(params,
-//        func(page *iotsitewise.ListTimeSeriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTimeSeries operation.
+//	pageNum := 0
+//	err := client.ListTimeSeriesPages(params,
+//	    func(page *iotsitewise.ListTimeSeriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTSiteWise) ListTimeSeriesPages(input *ListTimeSeriesInput, fn func(*ListTimeSeriesOutput, bool) bool) error {
 	return c.ListTimeSeriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6524,14 +6507,13 @@ const opPutDefaultEncryptionConfiguration = "PutDefaultEncryptionConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDefaultEncryptionConfigurationRequest method.
+//	req, resp := client.PutDefaultEncryptionConfigurationRequest(params)
 //
-//    // Example sending a request using the PutDefaultEncryptionConfigurationRequest method.
-//    req, resp := client.PutDefaultEncryptionConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutDefaultEncryptionConfiguration
 func (c *IoTSiteWise) PutDefaultEncryptionConfigurationRequest(input *PutDefaultEncryptionConfigurationInput) (req *request.Request, output *PutDefaultEncryptionConfigurationOutput) {
@@ -6566,32 +6548,33 @@ func (c *IoTSiteWise) PutDefaultEncryptionConfigurationRequest(input *PutDefault
 // API operation PutDefaultEncryptionConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutDefaultEncryptionConfiguration
 func (c *IoTSiteWise) PutDefaultEncryptionConfiguration(input *PutDefaultEncryptionConfigurationInput) (*PutDefaultEncryptionConfigurationOutput, error) {
@@ -6631,14 +6614,13 @@ const opPutLoggingOptions = "PutLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutLoggingOptionsRequest method.
+//	req, resp := client.PutLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the PutLoggingOptionsRequest method.
-//    req, resp := client.PutLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutLoggingOptions
 func (c *IoTSiteWise) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (req *request.Request, output *PutLoggingOptionsOutput) {
@@ -6672,27 +6654,28 @@ func (c *IoTSiteWise) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (r
 // API operation PutLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
+//
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutLoggingOptions
 func (c *IoTSiteWise) PutLoggingOptions(input *PutLoggingOptionsInput) (*PutLoggingOptionsOutput, error) {
@@ -6732,14 +6715,13 @@ const opPutStorageConfiguration = "PutStorageConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutStorageConfigurationRequest method.
+//	req, resp := client.PutStorageConfigurationRequest(params)
 //
-//    // Example sending a request using the PutStorageConfigurationRequest method.
-//    req, resp := client.PutStorageConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutStorageConfiguration
 func (c *IoTSiteWise) PutStorageConfigurationRequest(input *PutStorageConfigurationInput) (req *request.Request, output *PutStorageConfigurationOutput) {
@@ -6772,38 +6754,39 @@ func (c *IoTSiteWise) PutStorageConfigurationRequest(input *PutStorageConfigurat
 // API operation PutStorageConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/PutStorageConfiguration
 func (c *IoTSiteWise) PutStorageConfiguration(input *PutStorageConfigurationInput) (*PutStorageConfigurationOutput, error) {
@@ -6843,14 +6826,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/TagResource
 func (c *IoTSiteWise) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -6885,43 +6867,44 @@ func (c *IoTSiteWise) TagResourceRequest(input *TagResourceInput) (req *request.
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * UnauthorizedException
-//   You are not authorized.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * TooManyTagsException
-//   You've reached the limit for the number of tags allowed for a resource. For
-//   more information, see Tag naming limits and requirements (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions)
-//   in the Amazon Web Services General Reference.
+//   - UnauthorizedException
+//     You are not authorized.
+//
+//   - TooManyTagsException
+//     You've reached the limit for the number of tags allowed for a resource. For
+//     more information, see Tag naming limits and requirements (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/TagResource
 func (c *IoTSiteWise) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -6961,14 +6944,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UntagResource
 func (c *IoTSiteWise) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -7002,38 +6984,39 @@ func (c *IoTSiteWise) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * UnauthorizedException
-//   You are not authorized.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - UnauthorizedException
+//     You are not authorized.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UntagResource
 func (c *IoTSiteWise) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7073,14 +7056,13 @@ const opUpdateAccessPolicy = "UpdateAccessPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAccessPolicyRequest method.
+//	req, resp := client.UpdateAccessPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateAccessPolicyRequest method.
-//    req, resp := client.UpdateAccessPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAccessPolicy
 func (c *IoTSiteWise) UpdateAccessPolicyRequest(input *UpdateAccessPolicyInput) (req *request.Request, output *UpdateAccessPolicyOutput) {
@@ -7115,23 +7097,24 @@ func (c *IoTSiteWise) UpdateAccessPolicyRequest(input *UpdateAccessPolicyInput) 
 // API operation UpdateAccessPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAccessPolicy
 func (c *IoTSiteWise) UpdateAccessPolicy(input *UpdateAccessPolicyInput) (*UpdateAccessPolicyOutput, error) {
@@ -7171,14 +7154,13 @@ const opUpdateAsset = "UpdateAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssetRequest method.
+//	req, resp := client.UpdateAssetRequest(params)
 //
-//    // Example sending a request using the UpdateAssetRequest method.
-//    req, resp := client.UpdateAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAsset
 func (c *IoTSiteWise) UpdateAssetRequest(input *UpdateAssetInput) (req *request.Request, output *UpdateAssetOutput) {
@@ -7213,30 +7195,31 @@ func (c *IoTSiteWise) UpdateAssetRequest(input *UpdateAssetInput) (req *request.
 // API operation UpdateAsset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAsset
 func (c *IoTSiteWise) UpdateAsset(input *UpdateAssetInput) (*UpdateAssetOutput, error) {
@@ -7276,14 +7259,13 @@ const opUpdateAssetModel = "UpdateAssetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssetModelRequest method.
+//	req, resp := client.UpdateAssetModelRequest(params)
 //
-//    // Example sending a request using the UpdateAssetModelRequest method.
-//    req, resp := client.UpdateAssetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAssetModel
 func (c *IoTSiteWise) UpdateAssetModelRequest(input *UpdateAssetModelInput) (req *request.Request, output *UpdateAssetModelOutput) {
@@ -7330,38 +7312,39 @@ func (c *IoTSiteWise) UpdateAssetModelRequest(input *UpdateAssetModelInput) (req
 // API operation UpdateAssetModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAssetModel
 func (c *IoTSiteWise) UpdateAssetModel(input *UpdateAssetModelInput) (*UpdateAssetModelOutput, error) {
@@ -7401,14 +7384,13 @@ const opUpdateAssetProperty = "UpdateAssetProperty"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssetPropertyRequest method.
+//	req, resp := client.UpdateAssetPropertyRequest(params)
 //
-//    // Example sending a request using the UpdateAssetPropertyRequest method.
-//    req, resp := client.UpdateAssetPropertyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAssetProperty
 func (c *IoTSiteWise) UpdateAssetPropertyRequest(input *UpdateAssetPropertyInput) (req *request.Request, output *UpdateAssetPropertyOutput) {
@@ -7447,27 +7429,28 @@ func (c *IoTSiteWise) UpdateAssetPropertyRequest(input *UpdateAssetPropertyInput
 // API operation UpdateAssetProperty for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateAssetProperty
 func (c *IoTSiteWise) UpdateAssetProperty(input *UpdateAssetPropertyInput) (*UpdateAssetPropertyOutput, error) {
@@ -7507,14 +7490,13 @@ const opUpdateDashboard = "UpdateDashboard"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDashboardRequest method.
+//	req, resp := client.UpdateDashboardRequest(params)
 //
-//    // Example sending a request using the UpdateDashboardRequest method.
-//    req, resp := client.UpdateDashboardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateDashboard
 func (c *IoTSiteWise) UpdateDashboardRequest(input *UpdateDashboardInput) (req *request.Request, output *UpdateDashboardOutput) {
@@ -7548,23 +7530,24 @@ func (c *IoTSiteWise) UpdateDashboardRequest(input *UpdateDashboardInput) (req *
 // API operation UpdateDashboard for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateDashboard
 func (c *IoTSiteWise) UpdateDashboard(input *UpdateDashboardInput) (*UpdateDashboardOutput, error) {
@@ -7604,14 +7587,13 @@ const opUpdateGateway = "UpdateGateway"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayRequest method.
+//	req, resp := client.UpdateGatewayRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayRequest method.
-//    req, resp := client.UpdateGatewayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateGateway
 func (c *IoTSiteWise) UpdateGatewayRequest(input *UpdateGatewayInput) (req *request.Request, output *UpdateGatewayOutput) {
@@ -7645,27 +7627,28 @@ func (c *IoTSiteWise) UpdateGatewayRequest(input *UpdateGatewayInput) (req *requ
 // API operation UpdateGateway for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateGateway
 func (c *IoTSiteWise) UpdateGateway(input *UpdateGatewayInput) (*UpdateGatewayOutput, error) {
@@ -7705,14 +7688,13 @@ const opUpdateGatewayCapabilityConfiguration = "UpdateGatewayCapabilityConfigura
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGatewayCapabilityConfigurationRequest method.
+//	req, resp := client.UpdateGatewayCapabilityConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateGatewayCapabilityConfigurationRequest method.
-//    req, resp := client.UpdateGatewayCapabilityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateGatewayCapabilityConfiguration
 func (c *IoTSiteWise) UpdateGatewayCapabilityConfigurationRequest(input *UpdateGatewayCapabilityConfigurationInput) (req *request.Request, output *UpdateGatewayCapabilityConfigurationOutput) {
@@ -7750,35 +7732,36 @@ func (c *IoTSiteWise) UpdateGatewayCapabilityConfigurationRequest(input *UpdateG
 // API operation UpdateGatewayCapabilityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * LimitExceededException
-//   You've reached the limit for a resource. For example, this can occur if you're
-//   trying to associate more than the allowed number of child assets or attempting
-//   to create more than the allowed number of properties for an asset model.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - LimitExceededException
+//     You've reached the limit for a resource. For example, this can occur if you're
+//     trying to associate more than the allowed number of child assets or attempting
+//     to create more than the allowed number of properties for an asset model.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateGatewayCapabilityConfiguration
 func (c *IoTSiteWise) UpdateGatewayCapabilityConfiguration(input *UpdateGatewayCapabilityConfigurationInput) (*UpdateGatewayCapabilityConfigurationOutput, error) {
@@ -7818,14 +7801,13 @@ const opUpdatePortal = "UpdatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePortalRequest method.
+//	req, resp := client.UpdatePortalRequest(params)
 //
-//    // Example sending a request using the UpdatePortalRequest method.
-//    req, resp := client.UpdatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdatePortal
 func (c *IoTSiteWise) UpdatePortalRequest(input *UpdatePortalInput) (req *request.Request, output *UpdatePortalOutput) {
@@ -7858,27 +7840,28 @@ func (c *IoTSiteWise) UpdatePortalRequest(input *UpdatePortalInput) (req *reques
 // API operation UpdatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
 //
-//   * ConflictingOperationException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time.
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
+//
+//   - ConflictingOperationException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdatePortal
 func (c *IoTSiteWise) UpdatePortal(input *UpdatePortalInput) (*UpdatePortalOutput, error) {
@@ -7918,14 +7901,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateProject
 func (c *IoTSiteWise) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -7959,23 +7941,24 @@ func (c *IoTSiteWise) UpdateProjectRequest(input *UpdateProjectInput) (req *requ
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request isn't valid. This can occur if your request contains malformed
-//   JSON or unsupported characters. Check your request and try again.
 //
-//   * ResourceNotFoundException
-//   The requested resource can't be found.
+//   - InvalidRequestException
+//     The request isn't valid. This can occur if your request contains malformed
+//     JSON or unsupported characters. Check your request and try again.
 //
-//   * InternalFailureException
-//   IoT SiteWise can't process your request right now. Try again later.
+//   - ResourceNotFoundException
+//     The requested resource can't be found.
 //
-//   * ThrottlingException
-//   Your request exceeded a rate limit. For example, you might have exceeded
-//   the number of IoT SiteWise assets that can be created per second, the allowed
-//   number of messages per second, and so on.
+//   - InternalFailureException
+//     IoT SiteWise can't process your request right now. Try again later.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
-//   in the IoT SiteWise User Guide.
+//   - ThrottlingException
+//     Your request exceeded a rate limit. For example, you might have exceeded
+//     the number of IoT SiteWise assets that can be created per second, the allowed
+//     number of messages per second, and so on.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
+//     in the IoT SiteWise User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotsitewise-2019-12-02/UpdateProject
 func (c *IoTSiteWise) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {
@@ -10259,10 +10242,10 @@ func (s *BatchDisassociateProjectAssetsOutput) SetErrors(v []*AssetErrorDetails)
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 type BatchGetAssetPropertyAggregatesEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -10812,10 +10795,10 @@ func (s *BatchGetAssetPropertyAggregatesSuccessEntry) SetEntryId(v string) *Batc
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 type BatchGetAssetPropertyValueEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -11013,10 +10996,10 @@ func (s *BatchGetAssetPropertyValueErrorInfo) SetErrorTimestamp(v time.Time) *Ba
 //
 // To identify an asset property, you must specify one of the following:
 //
-//    * The assetId and propertyId of an asset property.
+//   - The assetId and propertyId of an asset property.
 //
-//    * A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
-//    To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
+//   - A propertyAlias, which is a data stream alias (for example, /company/windfarm/3/turbine/7/temperature).
+//     To define an asset property's alias, see UpdateAssetProperty (https://docs.aws.amazon.com/iot-sitewise/latest/APIReference/API_UpdateAssetProperty.html).
 type BatchGetAssetPropertyValueHistoryEntry struct {
 	_ struct{} `type:"structure"`
 
@@ -18093,10 +18076,10 @@ func (s *Identity) SetUser(v *UserIdentity) *Identity {
 
 // Contains an image that is one of the following:
 //
-//    * An image file. Choose this option to upload a new image.
+//   - An image file. Choose this option to upload a new image.
 //
-//    * The ID of an existing image. Choose this option to keep an existing
-//    image.
+//   - The ID of an existing image. Choose this option to keep an existing
+//     image.
 type Image struct {
 	_ struct{} `type:"structure"`
 

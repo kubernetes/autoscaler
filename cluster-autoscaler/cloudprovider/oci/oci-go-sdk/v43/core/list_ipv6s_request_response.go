@@ -11,7 +11,7 @@ import (
 
 // ListIpv6sRequest wrapper for the ListIpv6s operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListIpv6s.go.html to see an example of how to use ListIpv6sRequest.
 type ListIpv6sRequest struct {

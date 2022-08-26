@@ -3,7 +3,7 @@
 // Package panorama provides the client and types for making API
 // requests to AWS Panorama.
 //
-// Overview
+// # Overview
 //
 // This is the AWS Panorama API Reference. For an introduction to the service,
 // see What is AWS Panorama? (https://docs.aws.amazon.com/panorama/latest/dev/panorama-welcome.html)
@@ -14,7 +14,7 @@
 // See panorama package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/panorama/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Panorama with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

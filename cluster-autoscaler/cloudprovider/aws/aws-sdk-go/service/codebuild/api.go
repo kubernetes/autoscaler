@@ -29,14 +29,13 @@ const opBatchDeleteBuilds = "BatchDeleteBuilds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteBuildsRequest method.
+//	req, resp := client.BatchDeleteBuildsRequest(params)
 //
-//    // Example sending a request using the BatchDeleteBuildsRequest method.
-//    req, resp := client.BatchDeleteBuildsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuilds
 func (c *CodeBuild) BatchDeleteBuildsRequest(input *BatchDeleteBuildsInput) (req *request.Request, output *BatchDeleteBuildsOutput) {
@@ -67,8 +66,8 @@ func (c *CodeBuild) BatchDeleteBuildsRequest(input *BatchDeleteBuildsInput) (req
 // API operation BatchDeleteBuilds for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuilds
 func (c *CodeBuild) BatchDeleteBuilds(input *BatchDeleteBuildsInput) (*BatchDeleteBuildsOutput, error) {
@@ -108,14 +107,13 @@ const opBatchGetBuildBatches = "BatchGetBuildBatches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetBuildBatchesRequest method.
+//	req, resp := client.BatchGetBuildBatchesRequest(params)
 //
-//    // Example sending a request using the BatchGetBuildBatchesRequest method.
-//    req, resp := client.BatchGetBuildBatchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildBatches
 func (c *CodeBuild) BatchGetBuildBatchesRequest(input *BatchGetBuildBatchesInput) (req *request.Request, output *BatchGetBuildBatchesOutput) {
@@ -146,8 +144,8 @@ func (c *CodeBuild) BatchGetBuildBatchesRequest(input *BatchGetBuildBatchesInput
 // API operation BatchGetBuildBatches for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildBatches
 func (c *CodeBuild) BatchGetBuildBatches(input *BatchGetBuildBatchesInput) (*BatchGetBuildBatchesOutput, error) {
@@ -187,14 +185,13 @@ const opBatchGetBuilds = "BatchGetBuilds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetBuildsRequest method.
+//	req, resp := client.BatchGetBuildsRequest(params)
 //
-//    // Example sending a request using the BatchGetBuildsRequest method.
-//    req, resp := client.BatchGetBuildsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
 func (c *CodeBuild) BatchGetBuildsRequest(input *BatchGetBuildsInput) (req *request.Request, output *BatchGetBuildsOutput) {
@@ -225,8 +222,8 @@ func (c *CodeBuild) BatchGetBuildsRequest(input *BatchGetBuildsInput) (req *requ
 // API operation BatchGetBuilds for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
 func (c *CodeBuild) BatchGetBuilds(input *BatchGetBuildsInput) (*BatchGetBuildsOutput, error) {
@@ -266,14 +263,13 @@ const opBatchGetProjects = "BatchGetProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetProjectsRequest method.
+//	req, resp := client.BatchGetProjectsRequest(params)
 //
-//    // Example sending a request using the BatchGetProjectsRequest method.
-//    req, resp := client.BatchGetProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
 func (c *CodeBuild) BatchGetProjectsRequest(input *BatchGetProjectsInput) (req *request.Request, output *BatchGetProjectsOutput) {
@@ -304,8 +300,8 @@ func (c *CodeBuild) BatchGetProjectsRequest(input *BatchGetProjectsInput) (req *
 // API operation BatchGetProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
 func (c *CodeBuild) BatchGetProjects(input *BatchGetProjectsInput) (*BatchGetProjectsOutput, error) {
@@ -345,14 +341,13 @@ const opBatchGetReportGroups = "BatchGetReportGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetReportGroupsRequest method.
+//	req, resp := client.BatchGetReportGroupsRequest(params)
 //
-//    // Example sending a request using the BatchGetReportGroupsRequest method.
-//    req, resp := client.BatchGetReportGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetReportGroups
 func (c *CodeBuild) BatchGetReportGroupsRequest(input *BatchGetReportGroupsInput) (req *request.Request, output *BatchGetReportGroupsOutput) {
@@ -383,8 +378,8 @@ func (c *CodeBuild) BatchGetReportGroupsRequest(input *BatchGetReportGroupsInput
 // API operation BatchGetReportGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetReportGroups
 func (c *CodeBuild) BatchGetReportGroups(input *BatchGetReportGroupsInput) (*BatchGetReportGroupsOutput, error) {
@@ -424,14 +419,13 @@ const opBatchGetReports = "BatchGetReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetReportsRequest method.
+//	req, resp := client.BatchGetReportsRequest(params)
 //
-//    // Example sending a request using the BatchGetReportsRequest method.
-//    req, resp := client.BatchGetReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetReports
 func (c *CodeBuild) BatchGetReportsRequest(input *BatchGetReportsInput) (req *request.Request, output *BatchGetReportsOutput) {
@@ -462,8 +456,8 @@ func (c *CodeBuild) BatchGetReportsRequest(input *BatchGetReportsInput) (req *re
 // API operation BatchGetReports for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetReports
 func (c *CodeBuild) BatchGetReports(input *BatchGetReportsInput) (*BatchGetReportsOutput, error) {
@@ -503,14 +497,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
 func (c *CodeBuild) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -541,16 +534,17 @@ func (c *CodeBuild) CreateProjectRequest(input *CreateProjectInput) (req *reques
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The specified Amazon Web Services resource cannot be created, because an
-//   Amazon Web Services resource with the same settings already exists.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * AccountLimitExceededException
-//   An Amazon Web Services service limit was exceeded for the calling Amazon
-//   Web Services account.
+//   - ResourceAlreadyExistsException
+//     The specified Amazon Web Services resource cannot be created, because an
+//     Amazon Web Services resource with the same settings already exists.
+//
+//   - AccountLimitExceededException
+//     An Amazon Web Services service limit was exceeded for the calling Amazon
+//     Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
 func (c *CodeBuild) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -590,14 +584,13 @@ const opCreateReportGroup = "CreateReportGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReportGroupRequest method.
+//	req, resp := client.CreateReportGroupRequest(params)
 //
-//    // Example sending a request using the CreateReportGroupRequest method.
-//    req, resp := client.CreateReportGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateReportGroup
 func (c *CodeBuild) CreateReportGroupRequest(input *CreateReportGroupInput) (req *request.Request, output *CreateReportGroupOutput) {
@@ -628,16 +621,17 @@ func (c *CodeBuild) CreateReportGroupRequest(input *CreateReportGroupInput) (req
 // API operation CreateReportGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The specified Amazon Web Services resource cannot be created, because an
-//   Amazon Web Services resource with the same settings already exists.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * AccountLimitExceededException
-//   An Amazon Web Services service limit was exceeded for the calling Amazon
-//   Web Services account.
+//   - ResourceAlreadyExistsException
+//     The specified Amazon Web Services resource cannot be created, because an
+//     Amazon Web Services resource with the same settings already exists.
+//
+//   - AccountLimitExceededException
+//     An Amazon Web Services service limit was exceeded for the calling Amazon
+//     Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateReportGroup
 func (c *CodeBuild) CreateReportGroup(input *CreateReportGroupInput) (*CreateReportGroupOutput, error) {
@@ -677,14 +671,13 @@ const opCreateWebhook = "CreateWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWebhookRequest method.
+//	req, resp := client.CreateWebhookRequest(params)
 //
-//    // Example sending a request using the CreateWebhookRequest method.
-//    req, resp := client.CreateWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhook
 func (c *CodeBuild) CreateWebhookRequest(input *CreateWebhookInput) (req *request.Request, output *CreateWebhookOutput) {
@@ -725,18 +718,19 @@ func (c *CodeBuild) CreateWebhookRequest(input *CreateWebhookInput) (req *reques
 // API operation CreateWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * OAuthProviderException
-//   There was a problem with the underlying OAuth provider.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The specified Amazon Web Services resource cannot be created, because an
-//   Amazon Web Services resource with the same settings already exists.
+//   - OAuthProviderException
+//     There was a problem with the underlying OAuth provider.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - ResourceAlreadyExistsException
+//     The specified Amazon Web Services resource cannot be created, because an
+//     Amazon Web Services resource with the same settings already exists.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhook
 func (c *CodeBuild) CreateWebhook(input *CreateWebhookInput) (*CreateWebhookOutput, error) {
@@ -776,14 +770,13 @@ const opDeleteBuildBatch = "DeleteBuildBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBuildBatchRequest method.
+//	req, resp := client.DeleteBuildBatchRequest(params)
 //
-//    // Example sending a request using the DeleteBuildBatchRequest method.
-//    req, resp := client.DeleteBuildBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteBuildBatch
 func (c *CodeBuild) DeleteBuildBatchRequest(input *DeleteBuildBatchInput) (req *request.Request, output *DeleteBuildBatchOutput) {
@@ -814,8 +807,8 @@ func (c *CodeBuild) DeleteBuildBatchRequest(input *DeleteBuildBatchInput) (req *
 // API operation DeleteBuildBatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteBuildBatch
 func (c *CodeBuild) DeleteBuildBatch(input *DeleteBuildBatchInput) (*DeleteBuildBatchOutput, error) {
@@ -855,14 +848,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
 func (c *CodeBuild) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -894,8 +886,8 @@ func (c *CodeBuild) DeleteProjectRequest(input *DeleteProjectInput) (req *reques
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
 func (c *CodeBuild) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -935,14 +927,13 @@ const opDeleteReport = "DeleteReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReportRequest method.
+//	req, resp := client.DeleteReportRequest(params)
 //
-//    // Example sending a request using the DeleteReportRequest method.
-//    req, resp := client.DeleteReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteReport
 func (c *CodeBuild) DeleteReportRequest(input *DeleteReportInput) (req *request.Request, output *DeleteReportOutput) {
@@ -974,8 +965,8 @@ func (c *CodeBuild) DeleteReportRequest(input *DeleteReportInput) (req *request.
 // API operation DeleteReport for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteReport
 func (c *CodeBuild) DeleteReport(input *DeleteReportInput) (*DeleteReportOutput, error) {
@@ -1015,14 +1006,13 @@ const opDeleteReportGroup = "DeleteReportGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReportGroupRequest method.
+//	req, resp := client.DeleteReportGroupRequest(params)
 //
-//    // Example sending a request using the DeleteReportGroupRequest method.
-//    req, resp := client.DeleteReportGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteReportGroup
 func (c *CodeBuild) DeleteReportGroupRequest(input *DeleteReportGroupInput) (req *request.Request, output *DeleteReportGroupOutput) {
@@ -1055,8 +1045,8 @@ func (c *CodeBuild) DeleteReportGroupRequest(input *DeleteReportGroupInput) (req
 // API operation DeleteReportGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteReportGroup
 func (c *CodeBuild) DeleteReportGroup(input *DeleteReportGroupInput) (*DeleteReportGroupOutput, error) {
@@ -1096,14 +1086,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteResourcePolicy
 func (c *CodeBuild) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -1135,8 +1124,8 @@ func (c *CodeBuild) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteResourcePolicy
 func (c *CodeBuild) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -1176,14 +1165,13 @@ const opDeleteSourceCredentials = "DeleteSourceCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSourceCredentialsRequest method.
+//	req, resp := client.DeleteSourceCredentialsRequest(params)
 //
-//    // Example sending a request using the DeleteSourceCredentialsRequest method.
-//    req, resp := client.DeleteSourceCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteSourceCredentials
 func (c *CodeBuild) DeleteSourceCredentialsRequest(input *DeleteSourceCredentialsInput) (req *request.Request, output *DeleteSourceCredentialsOutput) {
@@ -1214,11 +1202,12 @@ func (c *CodeBuild) DeleteSourceCredentialsRequest(input *DeleteSourceCredential
 // API operation DeleteSourceCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteSourceCredentials
 func (c *CodeBuild) DeleteSourceCredentials(input *DeleteSourceCredentialsInput) (*DeleteSourceCredentialsOutput, error) {
@@ -1258,14 +1247,13 @@ const opDeleteWebhook = "DeleteWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWebhookRequest method.
+//	req, resp := client.DeleteWebhookRequest(params)
 //
-//    // Example sending a request using the DeleteWebhookRequest method.
-//    req, resp := client.DeleteWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhook
 func (c *CodeBuild) DeleteWebhookRequest(input *DeleteWebhookInput) (req *request.Request, output *DeleteWebhookOutput) {
@@ -1299,14 +1287,15 @@ func (c *CodeBuild) DeleteWebhookRequest(input *DeleteWebhookInput) (req *reques
 // API operation DeleteWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * OAuthProviderException
-//   There was a problem with the underlying OAuth provider.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - OAuthProviderException
+//     There was a problem with the underlying OAuth provider.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhook
 func (c *CodeBuild) DeleteWebhook(input *DeleteWebhookInput) (*DeleteWebhookOutput, error) {
@@ -1346,14 +1335,13 @@ const opDescribeCodeCoverages = "DescribeCodeCoverages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCodeCoveragesRequest method.
+//	req, resp := client.DescribeCodeCoveragesRequest(params)
 //
-//    // Example sending a request using the DescribeCodeCoveragesRequest method.
-//    req, resp := client.DescribeCodeCoveragesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DescribeCodeCoverages
 func (c *CodeBuild) DescribeCodeCoveragesRequest(input *DescribeCodeCoveragesInput) (req *request.Request, output *DescribeCodeCoveragesOutput) {
@@ -1390,8 +1378,8 @@ func (c *CodeBuild) DescribeCodeCoveragesRequest(input *DescribeCodeCoveragesInp
 // API operation DescribeCodeCoverages for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DescribeCodeCoverages
 func (c *CodeBuild) DescribeCodeCoverages(input *DescribeCodeCoveragesInput) (*DescribeCodeCoveragesOutput, error) {
@@ -1423,15 +1411,14 @@ func (c *CodeBuild) DescribeCodeCoveragesWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCodeCoverages operation.
-//    pageNum := 0
-//    err := client.DescribeCodeCoveragesPages(params,
-//        func(page *codebuild.DescribeCodeCoveragesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCodeCoverages operation.
+//	pageNum := 0
+//	err := client.DescribeCodeCoveragesPages(params,
+//	    func(page *codebuild.DescribeCodeCoveragesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) DescribeCodeCoveragesPages(input *DescribeCodeCoveragesInput, fn func(*DescribeCodeCoveragesOutput, bool) bool) error {
 	return c.DescribeCodeCoveragesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1483,14 +1470,13 @@ const opDescribeTestCases = "DescribeTestCases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTestCasesRequest method.
+//	req, resp := client.DescribeTestCasesRequest(params)
 //
-//    // Example sending a request using the DescribeTestCasesRequest method.
-//    req, resp := client.DescribeTestCasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DescribeTestCases
 func (c *CodeBuild) DescribeTestCasesRequest(input *DescribeTestCasesInput) (req *request.Request, output *DescribeTestCasesOutput) {
@@ -1527,11 +1513,12 @@ func (c *CodeBuild) DescribeTestCasesRequest(input *DescribeTestCasesInput) (req
 // API operation DescribeTestCases for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DescribeTestCases
 func (c *CodeBuild) DescribeTestCases(input *DescribeTestCasesInput) (*DescribeTestCasesOutput, error) {
@@ -1563,15 +1550,14 @@ func (c *CodeBuild) DescribeTestCasesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeTestCases operation.
-//    pageNum := 0
-//    err := client.DescribeTestCasesPages(params,
-//        func(page *codebuild.DescribeTestCasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeTestCases operation.
+//	pageNum := 0
+//	err := client.DescribeTestCasesPages(params,
+//	    func(page *codebuild.DescribeTestCasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) DescribeTestCasesPages(input *DescribeTestCasesInput, fn func(*DescribeTestCasesOutput, bool) bool) error {
 	return c.DescribeTestCasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1623,14 +1609,13 @@ const opGetReportGroupTrend = "GetReportGroupTrend"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReportGroupTrendRequest method.
+//	req, resp := client.GetReportGroupTrendRequest(params)
 //
-//    // Example sending a request using the GetReportGroupTrendRequest method.
-//    req, resp := client.GetReportGroupTrendRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/GetReportGroupTrend
 func (c *CodeBuild) GetReportGroupTrendRequest(input *GetReportGroupTrendInput) (req *request.Request, output *GetReportGroupTrendOutput) {
@@ -1661,11 +1646,12 @@ func (c *CodeBuild) GetReportGroupTrendRequest(input *GetReportGroupTrendInput) 
 // API operation GetReportGroupTrend for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/GetReportGroupTrend
 func (c *CodeBuild) GetReportGroupTrend(input *GetReportGroupTrendInput) (*GetReportGroupTrendOutput, error) {
@@ -1705,14 +1691,13 @@ const opGetResourcePolicy = "GetResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
 //
-//    // Example sending a request using the GetResourcePolicyRequest method.
-//    req, resp := client.GetResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/GetResourcePolicy
 func (c *CodeBuild) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
@@ -1743,11 +1728,12 @@ func (c *CodeBuild) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req
 // API operation GetResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
 //
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/GetResourcePolicy
 func (c *CodeBuild) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
@@ -1787,14 +1773,13 @@ const opImportSourceCredentials = "ImportSourceCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportSourceCredentialsRequest method.
+//	req, resp := client.ImportSourceCredentialsRequest(params)
 //
-//    // Example sending a request using the ImportSourceCredentialsRequest method.
-//    req, resp := client.ImportSourceCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ImportSourceCredentials
 func (c *CodeBuild) ImportSourceCredentialsRequest(input *ImportSourceCredentialsInput) (req *request.Request, output *ImportSourceCredentialsOutput) {
@@ -1826,16 +1811,17 @@ func (c *CodeBuild) ImportSourceCredentialsRequest(input *ImportSourceCredential
 // API operation ImportSourceCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * AccountLimitExceededException
-//   An Amazon Web Services service limit was exceeded for the calling Amazon
-//   Web Services account.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The specified Amazon Web Services resource cannot be created, because an
-//   Amazon Web Services resource with the same settings already exists.
+//   - AccountLimitExceededException
+//     An Amazon Web Services service limit was exceeded for the calling Amazon
+//     Web Services account.
+//
+//   - ResourceAlreadyExistsException
+//     The specified Amazon Web Services resource cannot be created, because an
+//     Amazon Web Services resource with the same settings already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ImportSourceCredentials
 func (c *CodeBuild) ImportSourceCredentials(input *ImportSourceCredentialsInput) (*ImportSourceCredentialsOutput, error) {
@@ -1875,14 +1861,13 @@ const opInvalidateProjectCache = "InvalidateProjectCache"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InvalidateProjectCacheRequest method.
+//	req, resp := client.InvalidateProjectCacheRequest(params)
 //
-//    // Example sending a request using the InvalidateProjectCacheRequest method.
-//    req, resp := client.InvalidateProjectCacheRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCache
 func (c *CodeBuild) InvalidateProjectCacheRequest(input *InvalidateProjectCacheInput) (req *request.Request, output *InvalidateProjectCacheOutput) {
@@ -1914,11 +1899,12 @@ func (c *CodeBuild) InvalidateProjectCacheRequest(input *InvalidateProjectCacheI
 // API operation InvalidateProjectCache for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCache
 func (c *CodeBuild) InvalidateProjectCache(input *InvalidateProjectCacheInput) (*InvalidateProjectCacheOutput, error) {
@@ -1958,14 +1944,13 @@ const opListBuildBatches = "ListBuildBatches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuildBatchesRequest method.
+//	req, resp := client.ListBuildBatchesRequest(params)
 //
-//    // Example sending a request using the ListBuildBatchesRequest method.
-//    req, resp := client.ListBuildBatchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildBatches
 func (c *CodeBuild) ListBuildBatchesRequest(input *ListBuildBatchesInput) (req *request.Request, output *ListBuildBatchesOutput) {
@@ -2002,8 +1987,8 @@ func (c *CodeBuild) ListBuildBatchesRequest(input *ListBuildBatchesInput) (req *
 // API operation ListBuildBatches for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildBatches
 func (c *CodeBuild) ListBuildBatches(input *ListBuildBatchesInput) (*ListBuildBatchesOutput, error) {
@@ -2035,15 +2020,14 @@ func (c *CodeBuild) ListBuildBatchesWithContext(ctx aws.Context, input *ListBuil
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuildBatches operation.
-//    pageNum := 0
-//    err := client.ListBuildBatchesPages(params,
-//        func(page *codebuild.ListBuildBatchesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuildBatches operation.
+//	pageNum := 0
+//	err := client.ListBuildBatchesPages(params,
+//	    func(page *codebuild.ListBuildBatchesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListBuildBatchesPages(input *ListBuildBatchesInput, fn func(*ListBuildBatchesOutput, bool) bool) error {
 	return c.ListBuildBatchesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2095,14 +2079,13 @@ const opListBuildBatchesForProject = "ListBuildBatchesForProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuildBatchesForProjectRequest method.
+//	req, resp := client.ListBuildBatchesForProjectRequest(params)
 //
-//    // Example sending a request using the ListBuildBatchesForProjectRequest method.
-//    req, resp := client.ListBuildBatchesForProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildBatchesForProject
 func (c *CodeBuild) ListBuildBatchesForProjectRequest(input *ListBuildBatchesForProjectInput) (req *request.Request, output *ListBuildBatchesForProjectOutput) {
@@ -2139,11 +2122,12 @@ func (c *CodeBuild) ListBuildBatchesForProjectRequest(input *ListBuildBatchesFor
 // API operation ListBuildBatchesForProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildBatchesForProject
 func (c *CodeBuild) ListBuildBatchesForProject(input *ListBuildBatchesForProjectInput) (*ListBuildBatchesForProjectOutput, error) {
@@ -2175,15 +2159,14 @@ func (c *CodeBuild) ListBuildBatchesForProjectWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuildBatchesForProject operation.
-//    pageNum := 0
-//    err := client.ListBuildBatchesForProjectPages(params,
-//        func(page *codebuild.ListBuildBatchesForProjectOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuildBatchesForProject operation.
+//	pageNum := 0
+//	err := client.ListBuildBatchesForProjectPages(params,
+//	    func(page *codebuild.ListBuildBatchesForProjectOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListBuildBatchesForProjectPages(input *ListBuildBatchesForProjectInput, fn func(*ListBuildBatchesForProjectOutput, bool) bool) error {
 	return c.ListBuildBatchesForProjectPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2235,14 +2218,13 @@ const opListBuilds = "ListBuilds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuildsRequest method.
+//	req, resp := client.ListBuildsRequest(params)
 //
-//    // Example sending a request using the ListBuildsRequest method.
-//    req, resp := client.ListBuildsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
 func (c *CodeBuild) ListBuildsRequest(input *ListBuildsInput) (req *request.Request, output *ListBuildsOutput) {
@@ -2279,8 +2261,8 @@ func (c *CodeBuild) ListBuildsRequest(input *ListBuildsInput) (req *request.Requ
 // API operation ListBuilds for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
 func (c *CodeBuild) ListBuilds(input *ListBuildsInput) (*ListBuildsOutput, error) {
@@ -2312,15 +2294,14 @@ func (c *CodeBuild) ListBuildsWithContext(ctx aws.Context, input *ListBuildsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuilds operation.
-//    pageNum := 0
-//    err := client.ListBuildsPages(params,
-//        func(page *codebuild.ListBuildsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuilds operation.
+//	pageNum := 0
+//	err := client.ListBuildsPages(params,
+//	    func(page *codebuild.ListBuildsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListBuildsPages(input *ListBuildsInput, fn func(*ListBuildsOutput, bool) bool) error {
 	return c.ListBuildsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2372,14 +2353,13 @@ const opListBuildsForProject = "ListBuildsForProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuildsForProjectRequest method.
+//	req, resp := client.ListBuildsForProjectRequest(params)
 //
-//    // Example sending a request using the ListBuildsForProjectRequest method.
-//    req, resp := client.ListBuildsForProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
 func (c *CodeBuild) ListBuildsForProjectRequest(input *ListBuildsForProjectInput) (req *request.Request, output *ListBuildsForProjectOutput) {
@@ -2417,11 +2397,12 @@ func (c *CodeBuild) ListBuildsForProjectRequest(input *ListBuildsForProjectInput
 // API operation ListBuildsForProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
 func (c *CodeBuild) ListBuildsForProject(input *ListBuildsForProjectInput) (*ListBuildsForProjectOutput, error) {
@@ -2453,15 +2434,14 @@ func (c *CodeBuild) ListBuildsForProjectWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuildsForProject operation.
-//    pageNum := 0
-//    err := client.ListBuildsForProjectPages(params,
-//        func(page *codebuild.ListBuildsForProjectOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuildsForProject operation.
+//	pageNum := 0
+//	err := client.ListBuildsForProjectPages(params,
+//	    func(page *codebuild.ListBuildsForProjectOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListBuildsForProjectPages(input *ListBuildsForProjectInput, fn func(*ListBuildsForProjectOutput, bool) bool) error {
 	return c.ListBuildsForProjectPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2513,14 +2493,13 @@ const opListCuratedEnvironmentImages = "ListCuratedEnvironmentImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCuratedEnvironmentImagesRequest method.
+//	req, resp := client.ListCuratedEnvironmentImagesRequest(params)
 //
-//    // Example sending a request using the ListCuratedEnvironmentImagesRequest method.
-//    req, resp := client.ListCuratedEnvironmentImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImages
 func (c *CodeBuild) ListCuratedEnvironmentImagesRequest(input *ListCuratedEnvironmentImagesInput) (req *request.Request, output *ListCuratedEnvironmentImagesOutput) {
@@ -2587,14 +2566,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
 func (c *CodeBuild) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -2632,8 +2610,8 @@ func (c *CodeBuild) ListProjectsRequest(input *ListProjectsInput) (req *request.
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
 func (c *CodeBuild) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -2665,15 +2643,14 @@ func (c *CodeBuild) ListProjectsWithContext(ctx aws.Context, input *ListProjects
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *codebuild.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *codebuild.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2725,14 +2702,13 @@ const opListReportGroups = "ListReportGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportGroupsRequest method.
+//	req, resp := client.ListReportGroupsRequest(params)
 //
-//    // Example sending a request using the ListReportGroupsRequest method.
-//    req, resp := client.ListReportGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReportGroups
 func (c *CodeBuild) ListReportGroupsRequest(input *ListReportGroupsInput) (req *request.Request, output *ListReportGroupsOutput) {
@@ -2770,8 +2746,8 @@ func (c *CodeBuild) ListReportGroupsRequest(input *ListReportGroupsInput) (req *
 // API operation ListReportGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReportGroups
 func (c *CodeBuild) ListReportGroups(input *ListReportGroupsInput) (*ListReportGroupsOutput, error) {
@@ -2803,15 +2779,14 @@ func (c *CodeBuild) ListReportGroupsWithContext(ctx aws.Context, input *ListRepo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReportGroups operation.
-//    pageNum := 0
-//    err := client.ListReportGroupsPages(params,
-//        func(page *codebuild.ListReportGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReportGroups operation.
+//	pageNum := 0
+//	err := client.ListReportGroupsPages(params,
+//	    func(page *codebuild.ListReportGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListReportGroupsPages(input *ListReportGroupsInput, fn func(*ListReportGroupsOutput, bool) bool) error {
 	return c.ListReportGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2863,14 +2838,13 @@ const opListReports = "ListReports"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportsRequest method.
+//	req, resp := client.ListReportsRequest(params)
 //
-//    // Example sending a request using the ListReportsRequest method.
-//    req, resp := client.ListReportsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReports
 func (c *CodeBuild) ListReportsRequest(input *ListReportsInput) (req *request.Request, output *ListReportsOutput) {
@@ -2908,8 +2882,8 @@ func (c *CodeBuild) ListReportsRequest(input *ListReportsInput) (req *request.Re
 // API operation ListReports for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReports
 func (c *CodeBuild) ListReports(input *ListReportsInput) (*ListReportsOutput, error) {
@@ -2941,15 +2915,14 @@ func (c *CodeBuild) ListReportsWithContext(ctx aws.Context, input *ListReportsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReports operation.
-//    pageNum := 0
-//    err := client.ListReportsPages(params,
-//        func(page *codebuild.ListReportsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReports operation.
+//	pageNum := 0
+//	err := client.ListReportsPages(params,
+//	    func(page *codebuild.ListReportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListReportsPages(input *ListReportsInput, fn func(*ListReportsOutput, bool) bool) error {
 	return c.ListReportsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3001,14 +2974,13 @@ const opListReportsForReportGroup = "ListReportsForReportGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportsForReportGroupRequest method.
+//	req, resp := client.ListReportsForReportGroupRequest(params)
 //
-//    // Example sending a request using the ListReportsForReportGroupRequest method.
-//    req, resp := client.ListReportsForReportGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReportsForReportGroup
 func (c *CodeBuild) ListReportsForReportGroupRequest(input *ListReportsForReportGroupInput) (req *request.Request, output *ListReportsForReportGroupOutput) {
@@ -3045,11 +3017,12 @@ func (c *CodeBuild) ListReportsForReportGroupRequest(input *ListReportsForReport
 // API operation ListReportsForReportGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListReportsForReportGroup
 func (c *CodeBuild) ListReportsForReportGroup(input *ListReportsForReportGroupInput) (*ListReportsForReportGroupOutput, error) {
@@ -3081,15 +3054,14 @@ func (c *CodeBuild) ListReportsForReportGroupWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReportsForReportGroup operation.
-//    pageNum := 0
-//    err := client.ListReportsForReportGroupPages(params,
-//        func(page *codebuild.ListReportsForReportGroupOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReportsForReportGroup operation.
+//	pageNum := 0
+//	err := client.ListReportsForReportGroupPages(params,
+//	    func(page *codebuild.ListReportsForReportGroupOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListReportsForReportGroupPages(input *ListReportsForReportGroupInput, fn func(*ListReportsForReportGroupOutput, bool) bool) error {
 	return c.ListReportsForReportGroupPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3141,14 +3113,13 @@ const opListSharedProjects = "ListSharedProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSharedProjectsRequest method.
+//	req, resp := client.ListSharedProjectsRequest(params)
 //
-//    // Example sending a request using the ListSharedProjectsRequest method.
-//    req, resp := client.ListSharedProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSharedProjects
 func (c *CodeBuild) ListSharedProjectsRequest(input *ListSharedProjectsInput) (req *request.Request, output *ListSharedProjectsOutput) {
@@ -3186,8 +3157,8 @@ func (c *CodeBuild) ListSharedProjectsRequest(input *ListSharedProjectsInput) (r
 // API operation ListSharedProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSharedProjects
 func (c *CodeBuild) ListSharedProjects(input *ListSharedProjectsInput) (*ListSharedProjectsOutput, error) {
@@ -3219,15 +3190,14 @@ func (c *CodeBuild) ListSharedProjectsWithContext(ctx aws.Context, input *ListSh
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSharedProjects operation.
-//    pageNum := 0
-//    err := client.ListSharedProjectsPages(params,
-//        func(page *codebuild.ListSharedProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSharedProjects operation.
+//	pageNum := 0
+//	err := client.ListSharedProjectsPages(params,
+//	    func(page *codebuild.ListSharedProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListSharedProjectsPages(input *ListSharedProjectsInput, fn func(*ListSharedProjectsOutput, bool) bool) error {
 	return c.ListSharedProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3279,14 +3249,13 @@ const opListSharedReportGroups = "ListSharedReportGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSharedReportGroupsRequest method.
+//	req, resp := client.ListSharedReportGroupsRequest(params)
 //
-//    // Example sending a request using the ListSharedReportGroupsRequest method.
-//    req, resp := client.ListSharedReportGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSharedReportGroups
 func (c *CodeBuild) ListSharedReportGroupsRequest(input *ListSharedReportGroupsInput) (req *request.Request, output *ListSharedReportGroupsOutput) {
@@ -3324,8 +3293,8 @@ func (c *CodeBuild) ListSharedReportGroupsRequest(input *ListSharedReportGroupsI
 // API operation ListSharedReportGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSharedReportGroups
 func (c *CodeBuild) ListSharedReportGroups(input *ListSharedReportGroupsInput) (*ListSharedReportGroupsOutput, error) {
@@ -3357,15 +3326,14 @@ func (c *CodeBuild) ListSharedReportGroupsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSharedReportGroups operation.
-//    pageNum := 0
-//    err := client.ListSharedReportGroupsPages(params,
-//        func(page *codebuild.ListSharedReportGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSharedReportGroups operation.
+//	pageNum := 0
+//	err := client.ListSharedReportGroupsPages(params,
+//	    func(page *codebuild.ListSharedReportGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeBuild) ListSharedReportGroupsPages(input *ListSharedReportGroupsInput, fn func(*ListSharedReportGroupsOutput, bool) bool) error {
 	return c.ListSharedReportGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3417,14 +3385,13 @@ const opListSourceCredentials = "ListSourceCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSourceCredentialsRequest method.
+//	req, resp := client.ListSourceCredentialsRequest(params)
 //
-//    // Example sending a request using the ListSourceCredentialsRequest method.
-//    req, resp := client.ListSourceCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSourceCredentials
 func (c *CodeBuild) ListSourceCredentialsRequest(input *ListSourceCredentialsInput) (req *request.Request, output *ListSourceCredentialsOutput) {
@@ -3455,8 +3422,8 @@ func (c *CodeBuild) ListSourceCredentialsRequest(input *ListSourceCredentialsInp
 // API operation ListSourceCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListSourceCredentials
 func (c *CodeBuild) ListSourceCredentials(input *ListSourceCredentialsInput) (*ListSourceCredentialsOutput, error) {
@@ -3496,14 +3463,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/PutResourcePolicy
 func (c *CodeBuild) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -3534,11 +3500,12 @@ func (c *CodeBuild) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
 //
-//   * InvalidInputException
-//   The input value that was provided is not valid.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/PutResourcePolicy
 func (c *CodeBuild) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -3578,14 +3545,13 @@ const opRetryBuild = "RetryBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetryBuildRequest method.
+//	req, resp := client.RetryBuildRequest(params)
 //
-//    // Example sending a request using the RetryBuildRequest method.
-//    req, resp := client.RetryBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/RetryBuild
 func (c *CodeBuild) RetryBuildRequest(input *RetryBuildInput) (req *request.Request, output *RetryBuildOutput) {
@@ -3616,15 +3582,16 @@ func (c *CodeBuild) RetryBuildRequest(input *RetryBuildInput) (req *request.Requ
 // API operation RetryBuild for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * AccountLimitExceededException
-//   An Amazon Web Services service limit was exceeded for the calling Amazon
-//   Web Services account.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - AccountLimitExceededException
+//     An Amazon Web Services service limit was exceeded for the calling Amazon
+//     Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/RetryBuild
 func (c *CodeBuild) RetryBuild(input *RetryBuildInput) (*RetryBuildOutput, error) {
@@ -3664,14 +3631,13 @@ const opRetryBuildBatch = "RetryBuildBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetryBuildBatchRequest method.
+//	req, resp := client.RetryBuildBatchRequest(params)
 //
-//    // Example sending a request using the RetryBuildBatchRequest method.
-//    req, resp := client.RetryBuildBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/RetryBuildBatch
 func (c *CodeBuild) RetryBuildBatchRequest(input *RetryBuildBatchInput) (req *request.Request, output *RetryBuildBatchOutput) {
@@ -3703,11 +3669,12 @@ func (c *CodeBuild) RetryBuildBatchRequest(input *RetryBuildBatchInput) (req *re
 // API operation RetryBuildBatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/RetryBuildBatch
 func (c *CodeBuild) RetryBuildBatch(input *RetryBuildBatchInput) (*RetryBuildBatchOutput, error) {
@@ -3747,14 +3714,13 @@ const opStartBuild = "StartBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBuildRequest method.
+//	req, resp := client.StartBuildRequest(params)
 //
-//    // Example sending a request using the StartBuildRequest method.
-//    req, resp := client.StartBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
 func (c *CodeBuild) StartBuildRequest(input *StartBuildInput) (req *request.Request, output *StartBuildOutput) {
@@ -3785,15 +3751,16 @@ func (c *CodeBuild) StartBuildRequest(input *StartBuildInput) (req *request.Requ
 // API operation StartBuild for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * AccountLimitExceededException
-//   An Amazon Web Services service limit was exceeded for the calling Amazon
-//   Web Services account.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - AccountLimitExceededException
+//     An Amazon Web Services service limit was exceeded for the calling Amazon
+//     Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
 func (c *CodeBuild) StartBuild(input *StartBuildInput) (*StartBuildOutput, error) {
@@ -3833,14 +3800,13 @@ const opStartBuildBatch = "StartBuildBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartBuildBatchRequest method.
+//	req, resp := client.StartBuildBatchRequest(params)
 //
-//    // Example sending a request using the StartBuildBatchRequest method.
-//    req, resp := client.StartBuildBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildBatch
 func (c *CodeBuild) StartBuildBatchRequest(input *StartBuildBatchInput) (req *request.Request, output *StartBuildBatchOutput) {
@@ -3871,11 +3837,12 @@ func (c *CodeBuild) StartBuildBatchRequest(input *StartBuildBatchInput) (req *re
 // API operation StartBuildBatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildBatch
 func (c *CodeBuild) StartBuildBatch(input *StartBuildBatchInput) (*StartBuildBatchOutput, error) {
@@ -3915,14 +3882,13 @@ const opStopBuild = "StopBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopBuildRequest method.
+//	req, resp := client.StopBuildRequest(params)
 //
-//    // Example sending a request using the StopBuildRequest method.
-//    req, resp := client.StopBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
 func (c *CodeBuild) StopBuildRequest(input *StopBuildInput) (req *request.Request, output *StopBuildOutput) {
@@ -3953,11 +3919,12 @@ func (c *CodeBuild) StopBuildRequest(input *StopBuildInput) (req *request.Reques
 // API operation StopBuild for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
 func (c *CodeBuild) StopBuild(input *StopBuildInput) (*StopBuildOutput, error) {
@@ -3997,14 +3964,13 @@ const opStopBuildBatch = "StopBuildBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopBuildBatchRequest method.
+//	req, resp := client.StopBuildBatchRequest(params)
 //
-//    // Example sending a request using the StopBuildBatchRequest method.
-//    req, resp := client.StopBuildBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildBatch
 func (c *CodeBuild) StopBuildBatchRequest(input *StopBuildBatchInput) (req *request.Request, output *StopBuildBatchOutput) {
@@ -4035,11 +4001,12 @@ func (c *CodeBuild) StopBuildBatchRequest(input *StopBuildBatchInput) (req *requ
 // API operation StopBuildBatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildBatch
 func (c *CodeBuild) StopBuildBatch(input *StopBuildBatchInput) (*StopBuildBatchOutput, error) {
@@ -4079,14 +4046,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
 func (c *CodeBuild) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -4117,11 +4083,12 @@ func (c *CodeBuild) UpdateProjectRequest(input *UpdateProjectInput) (req *reques
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
 func (c *CodeBuild) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {
@@ -4161,14 +4128,13 @@ const opUpdateProjectVisibility = "UpdateProjectVisibility"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectVisibilityRequest method.
+//	req, resp := client.UpdateProjectVisibilityRequest(params)
 //
-//    // Example sending a request using the UpdateProjectVisibilityRequest method.
-//    req, resp := client.UpdateProjectVisibilityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectVisibility
 func (c *CodeBuild) UpdateProjectVisibilityRequest(input *UpdateProjectVisibilityInput) (req *request.Request, output *UpdateProjectVisibilityOutput) {
@@ -4196,27 +4162,27 @@ func (c *CodeBuild) UpdateProjectVisibilityRequest(input *UpdateProjectVisibilit
 //
 // The following should be kept in mind when making your projects public:
 //
-//    * All of a project's build results, logs, and artifacts, including builds
-//    that were run when the project was private, are available to the general
-//    public.
+//   - All of a project's build results, logs, and artifacts, including builds
+//     that were run when the project was private, are available to the general
+//     public.
 //
-//    * All build logs and artifacts are available to the public. Environment
-//    variables, source code, and other sensitive information may have been
-//    output to the build logs and artifacts. You must be careful about what
-//    information is output to the build logs. Some best practice are: Do not
-//    store sensitive values, especially Amazon Web Services access key IDs
-//    and secret access keys, in environment variables. We recommend that you
-//    use an Amazon EC2 Systems Manager Parameter Store or Secrets Manager to
-//    store sensitive values. Follow Best practices for using webhooks (https://docs.aws.amazon.com/codebuild/latest/userguide/webhooks.html#webhook-best-practices)
-//    in the CodeBuild User Guide to limit which entities can trigger a build,
-//    and do not store the buildspec in the project itself, to ensure that your
-//    webhooks are as secure as possible.
+//   - All build logs and artifacts are available to the public. Environment
+//     variables, source code, and other sensitive information may have been
+//     output to the build logs and artifacts. You must be careful about what
+//     information is output to the build logs. Some best practice are: Do not
+//     store sensitive values, especially Amazon Web Services access key IDs
+//     and secret access keys, in environment variables. We recommend that you
+//     use an Amazon EC2 Systems Manager Parameter Store or Secrets Manager to
+//     store sensitive values. Follow Best practices for using webhooks (https://docs.aws.amazon.com/codebuild/latest/userguide/webhooks.html#webhook-best-practices)
+//     in the CodeBuild User Guide to limit which entities can trigger a build,
+//     and do not store the buildspec in the project itself, to ensure that your
+//     webhooks are as secure as possible.
 //
-//    * A malicious user can use public builds to distribute malicious artifacts.
-//    We recommend that you review all pull requests to verify that the pull
-//    request is a legitimate change. We also recommend that you validate any
-//    artifacts with their checksums to make sure that the correct artifacts
-//    are being downloaded.
+//   - A malicious user can use public builds to distribute malicious artifacts.
+//     We recommend that you review all pull requests to verify that the pull
+//     request is a legitimate change. We also recommend that you validate any
+//     artifacts with their checksums to make sure that the correct artifacts
+//     are being downloaded.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4226,11 +4192,12 @@ func (c *CodeBuild) UpdateProjectVisibilityRequest(input *UpdateProjectVisibilit
 // API operation UpdateProjectVisibility for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectVisibility
 func (c *CodeBuild) UpdateProjectVisibility(input *UpdateProjectVisibilityInput) (*UpdateProjectVisibilityOutput, error) {
@@ -4270,14 +4237,13 @@ const opUpdateReportGroup = "UpdateReportGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReportGroupRequest method.
+//	req, resp := client.UpdateReportGroupRequest(params)
 //
-//    // Example sending a request using the UpdateReportGroupRequest method.
-//    req, resp := client.UpdateReportGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateReportGroup
 func (c *CodeBuild) UpdateReportGroupRequest(input *UpdateReportGroupInput) (req *request.Request, output *UpdateReportGroupOutput) {
@@ -4308,11 +4274,12 @@ func (c *CodeBuild) UpdateReportGroupRequest(input *UpdateReportGroupInput) (req
 // API operation UpdateReportGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
+//
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateReportGroup
 func (c *CodeBuild) UpdateReportGroup(input *UpdateReportGroupInput) (*UpdateReportGroupOutput, error) {
@@ -4352,14 +4319,13 @@ const opUpdateWebhook = "UpdateWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWebhookRequest method.
+//	req, resp := client.UpdateWebhookRequest(params)
 //
-//    // Example sending a request using the UpdateWebhookRequest method.
-//    req, resp := client.UpdateWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateWebhook
 func (c *CodeBuild) UpdateWebhookRequest(input *UpdateWebhookInput) (req *request.Request, output *UpdateWebhookOutput) {
@@ -4392,14 +4358,15 @@ func (c *CodeBuild) UpdateWebhookRequest(input *UpdateWebhookInput) (req *reques
 // API operation UpdateWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The input value that was provided is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified Amazon Web Services resource cannot be found.
+//   - InvalidInputException
+//     The input value that was provided is not valid.
 //
-//   * OAuthProviderException
-//   There was a problem with the underlying OAuth provider.
+//   - ResourceNotFoundException
+//     The specified Amazon Web Services resource cannot be found.
+//
+//   - OAuthProviderException
+//     There was a problem with the underlying OAuth provider.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateWebhook
 func (c *CodeBuild) UpdateWebhook(input *UpdateWebhookInput) (*UpdateWebhookOutput, error) {
@@ -12448,9 +12415,9 @@ func (s *PutResourcePolicyOutput) SetResourceArn(v string) *PutResourcePolicyOut
 // Information about credentials that provide access to a private Docker registry.
 // When this is set:
 //
-//    * imagePullCredentialsType must be set to SERVICE_ROLE.
+//   - imagePullCredentialsType must be set to SERVICE_ROLE.
 //
-//    * images cannot be curated or an Amazon ECR image.
+//   - images cannot be curated or an Amazon ECR image.
 //
 // For more information, see Private Registry with Secrets Manager Sample for
 // CodeBuild (https://docs.aws.amazon.com/codebuild/latest/userguide/sample-private-registry.html).
@@ -16340,7 +16307,7 @@ func BatchReportModeType_Values() []string {
 //
 // This property can be one of the following values:
 //
-// NONE
+// # NONE
 //
 // The bucket owner does not have access to the objects. This is the default.
 //
@@ -16349,16 +16316,16 @@ func BatchReportModeType_Values() []string {
 // The bucket owner has read-only access to the objects. The uploading account
 // retains ownership of the objects.
 //
-// FULL
+// # FULL
 //
 // The bucket owner has full access to the objects. Object ownership is determined
 // by the following criteria:
 //
-//    * If the bucket is configured with the Bucket owner preferred setting,
-//    the bucket owner owns the objects. The uploading account will have object
-//    access as specified by the bucket's policy.
+//   - If the bucket is configured with the Bucket owner preferred setting,
+//     the bucket owner owns the objects. The uploading account will have object
+//     access as specified by the bucket's policy.
 //
-//    * Otherwise, the uploading account retains ownership of the objects.
+//   - Otherwise, the uploading account retains ownership of the objects.
 //
 // For more information about Amazon S3 object ownership, see Controlling ownership
 // of uploaded objects using S3 Object Ownership (https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html)
@@ -16737,7 +16704,7 @@ func ProjectSortByType_Values() []string {
 //
 // The project builds are visible to the public.
 //
-// PRIVATE
+// # PRIVATE
 //
 // The project builds are not visible to the public.
 const (

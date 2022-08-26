@@ -27,14 +27,13 @@ const opCreateChangeset = "CreateChangeset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChangesetRequest method.
+//	req, resp := client.CreateChangesetRequest(params)
 //
-//    // Example sending a request using the CreateChangesetRequest method.
-//    req, resp := client.CreateChangesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateChangeset
 func (c *FinSpaceData) CreateChangesetRequest(input *CreateChangesetInput) (req *request.Request, output *CreateChangesetOutput) {
@@ -65,27 +64,28 @@ func (c *FinSpaceData) CreateChangesetRequest(input *CreateChangesetInput) (req 
 // API operation CreateChangeset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateChangeset
 func (c *FinSpaceData) CreateChangeset(input *CreateChangesetInput) (*CreateChangesetOutput, error) {
@@ -125,14 +125,13 @@ const opCreateDataView = "CreateDataView"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataViewRequest method.
+//	req, resp := client.CreateDataViewRequest(params)
 //
-//    // Example sending a request using the CreateDataViewRequest method.
-//    req, resp := client.CreateDataViewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateDataView
 func (c *FinSpaceData) CreateDataViewRequest(input *CreateDataViewInput) (req *request.Request, output *CreateDataViewOutput) {
@@ -163,24 +162,25 @@ func (c *FinSpaceData) CreateDataViewRequest(input *CreateDataViewInput) (req *r
 // API operation CreateDataView for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     The request conflicts with an existing resource.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateDataView
 func (c *FinSpaceData) CreateDataView(input *CreateDataViewInput) (*CreateDataViewOutput, error) {
@@ -220,14 +220,13 @@ const opCreateDataset = "CreateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetRequest method.
+//	req, resp := client.CreateDatasetRequest(params)
 //
-//    // Example sending a request using the CreateDatasetRequest method.
-//    req, resp := client.CreateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateDataset
 func (c *FinSpaceData) CreateDatasetRequest(input *CreateDatasetInput) (req *request.Request, output *CreateDatasetOutput) {
@@ -258,27 +257,28 @@ func (c *FinSpaceData) CreateDatasetRequest(input *CreateDatasetInput) (req *req
 // API operation CreateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     The request conflicts with an existing resource.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateDataset
 func (c *FinSpaceData) CreateDataset(input *CreateDatasetInput) (*CreateDatasetOutput, error) {
@@ -318,14 +318,13 @@ const opCreatePermissionGroup = "CreatePermissionGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePermissionGroupRequest method.
+//	req, resp := client.CreatePermissionGroupRequest(params)
 //
-//    // Example sending a request using the CreatePermissionGroupRequest method.
-//    req, resp := client.CreatePermissionGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreatePermissionGroup
 func (c *FinSpaceData) CreatePermissionGroupRequest(input *CreatePermissionGroupInput) (req *request.Request, output *CreatePermissionGroupOutput) {
@@ -357,24 +356,25 @@ func (c *FinSpaceData) CreatePermissionGroupRequest(input *CreatePermissionGroup
 // API operation CreatePermissionGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreatePermissionGroup
 func (c *FinSpaceData) CreatePermissionGroup(input *CreatePermissionGroupInput) (*CreatePermissionGroupOutput, error) {
@@ -414,14 +414,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateUser
 func (c *FinSpaceData) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -452,24 +451,25 @@ func (c *FinSpaceData) CreateUserRequest(input *CreateUserInput) (req *request.R
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/CreateUser
 func (c *FinSpaceData) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -509,14 +509,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DeleteDataset
 func (c *FinSpaceData) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -547,27 +546,28 @@ func (c *FinSpaceData) DeleteDatasetRequest(input *DeleteDatasetInput) (req *req
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DeleteDataset
 func (c *FinSpaceData) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -607,14 +607,13 @@ const opDeletePermissionGroup = "DeletePermissionGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePermissionGroupRequest method.
+//	req, resp := client.DeletePermissionGroupRequest(params)
 //
-//    // Example sending a request using the DeletePermissionGroupRequest method.
-//    req, resp := client.DeletePermissionGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DeletePermissionGroup
 func (c *FinSpaceData) DeletePermissionGroupRequest(input *DeletePermissionGroupInput) (req *request.Request, output *DeletePermissionGroupOutput) {
@@ -645,27 +644,28 @@ func (c *FinSpaceData) DeletePermissionGroupRequest(input *DeletePermissionGroup
 // API operation DeletePermissionGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DeletePermissionGroup
 func (c *FinSpaceData) DeletePermissionGroup(input *DeletePermissionGroupInput) (*DeletePermissionGroupOutput, error) {
@@ -705,14 +705,13 @@ const opDisableUser = "DisableUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableUserRequest method.
+//	req, resp := client.DisableUserRequest(params)
 //
-//    // Example sending a request using the DisableUserRequest method.
-//    req, resp := client.DisableUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DisableUser
 func (c *FinSpaceData) DisableUserRequest(input *DisableUserInput) (req *request.Request, output *DisableUserOutput) {
@@ -743,24 +742,25 @@ func (c *FinSpaceData) DisableUserRequest(input *DisableUserInput) (req *request
 // API operation DisableUser for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/DisableUser
 func (c *FinSpaceData) DisableUser(input *DisableUserInput) (*DisableUserOutput, error) {
@@ -800,14 +800,13 @@ const opEnableUser = "EnableUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableUserRequest method.
+//	req, resp := client.EnableUserRequest(params)
 //
-//    // Example sending a request using the EnableUserRequest method.
-//    req, resp := client.EnableUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/EnableUser
 func (c *FinSpaceData) EnableUserRequest(input *EnableUserInput) (req *request.Request, output *EnableUserOutput) {
@@ -838,27 +837,28 @@ func (c *FinSpaceData) EnableUserRequest(input *EnableUserInput) (req *request.R
 // API operation EnableUser for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * LimitExceededException
-//   A limit has exceeded.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - LimitExceededException
+//     A limit has exceeded.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/EnableUser
 func (c *FinSpaceData) EnableUser(input *EnableUserInput) (*EnableUserOutput, error) {
@@ -898,14 +898,13 @@ const opGetChangeset = "GetChangeset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChangesetRequest method.
+//	req, resp := client.GetChangesetRequest(params)
 //
-//    // Example sending a request using the GetChangesetRequest method.
-//    req, resp := client.GetChangesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetChangeset
 func (c *FinSpaceData) GetChangesetRequest(input *GetChangesetInput) (req *request.Request, output *GetChangesetOutput) {
@@ -936,24 +935,25 @@ func (c *FinSpaceData) GetChangesetRequest(input *GetChangesetInput) (req *reque
 // API operation GetChangeset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetChangeset
 func (c *FinSpaceData) GetChangeset(input *GetChangesetInput) (*GetChangesetOutput, error) {
@@ -993,14 +993,13 @@ const opGetDataView = "GetDataView"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataViewRequest method.
+//	req, resp := client.GetDataViewRequest(params)
 //
-//    // Example sending a request using the GetDataViewRequest method.
-//    req, resp := client.GetDataViewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetDataView
 func (c *FinSpaceData) GetDataViewRequest(input *GetDataViewInput) (req *request.Request, output *GetDataViewOutput) {
@@ -1031,21 +1030,22 @@ func (c *FinSpaceData) GetDataViewRequest(input *GetDataViewInput) (req *request
 // API operation GetDataView for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetDataView
 func (c *FinSpaceData) GetDataView(input *GetDataViewInput) (*GetDataViewOutput, error) {
@@ -1085,14 +1085,13 @@ const opGetDataset = "GetDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDatasetRequest method.
+//	req, resp := client.GetDatasetRequest(params)
 //
-//    // Example sending a request using the GetDatasetRequest method.
-//    req, resp := client.GetDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetDataset
 func (c *FinSpaceData) GetDatasetRequest(input *GetDatasetInput) (req *request.Request, output *GetDatasetOutput) {
@@ -1123,24 +1122,25 @@ func (c *FinSpaceData) GetDatasetRequest(input *GetDatasetInput) (req *request.R
 // API operation GetDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetDataset
 func (c *FinSpaceData) GetDataset(input *GetDatasetInput) (*GetDatasetOutput, error) {
@@ -1180,14 +1180,13 @@ const opGetProgrammaticAccessCredentials = "GetProgrammaticAccessCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProgrammaticAccessCredentialsRequest method.
+//	req, resp := client.GetProgrammaticAccessCredentialsRequest(params)
 //
-//    // Example sending a request using the GetProgrammaticAccessCredentialsRequest method.
-//    req, resp := client.GetProgrammaticAccessCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetProgrammaticAccessCredentials
 func (c *FinSpaceData) GetProgrammaticAccessCredentialsRequest(input *GetProgrammaticAccessCredentialsInput) (req *request.Request, output *GetProgrammaticAccessCredentialsOutput) {
@@ -1218,18 +1217,19 @@ func (c *FinSpaceData) GetProgrammaticAccessCredentialsRequest(input *GetProgram
 // API operation GetProgrammaticAccessCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetProgrammaticAccessCredentials
 func (c *FinSpaceData) GetProgrammaticAccessCredentials(input *GetProgrammaticAccessCredentialsInput) (*GetProgrammaticAccessCredentialsOutput, error) {
@@ -1269,14 +1269,13 @@ const opGetUser = "GetUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserRequest method.
+//	req, resp := client.GetUserRequest(params)
 //
-//    // Example sending a request using the GetUserRequest method.
-//    req, resp := client.GetUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetUser
 func (c *FinSpaceData) GetUserRequest(input *GetUserInput) (req *request.Request, output *GetUserOutput) {
@@ -1307,21 +1306,22 @@ func (c *FinSpaceData) GetUserRequest(input *GetUserInput) (req *request.Request
 // API operation GetUser for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetUser
 func (c *FinSpaceData) GetUser(input *GetUserInput) (*GetUserOutput, error) {
@@ -1361,14 +1361,13 @@ const opGetWorkingLocation = "GetWorkingLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkingLocationRequest method.
+//	req, resp := client.GetWorkingLocationRequest(params)
 //
-//    // Example sending a request using the GetWorkingLocationRequest method.
-//    req, resp := client.GetWorkingLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetWorkingLocation
 func (c *FinSpaceData) GetWorkingLocationRequest(input *GetWorkingLocationInput) (req *request.Request, output *GetWorkingLocationOutput) {
@@ -1400,18 +1399,19 @@ func (c *FinSpaceData) GetWorkingLocationRequest(input *GetWorkingLocationInput)
 // API operation GetWorkingLocation for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/GetWorkingLocation
 func (c *FinSpaceData) GetWorkingLocation(input *GetWorkingLocationInput) (*GetWorkingLocationOutput, error) {
@@ -1451,14 +1451,13 @@ const opListChangesets = "ListChangesets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChangesetsRequest method.
+//	req, resp := client.ListChangesetsRequest(params)
 //
-//    // Example sending a request using the ListChangesetsRequest method.
-//    req, resp := client.ListChangesetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListChangesets
 func (c *FinSpaceData) ListChangesetsRequest(input *ListChangesetsInput) (req *request.Request, output *ListChangesetsOutput) {
@@ -1495,24 +1494,25 @@ func (c *FinSpaceData) ListChangesetsRequest(input *ListChangesetsInput) (req *r
 // API operation ListChangesets for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListChangesets
 func (c *FinSpaceData) ListChangesets(input *ListChangesetsInput) (*ListChangesetsOutput, error) {
@@ -1544,15 +1544,14 @@ func (c *FinSpaceData) ListChangesetsWithContext(ctx aws.Context, input *ListCha
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChangesets operation.
-//    pageNum := 0
-//    err := client.ListChangesetsPages(params,
-//        func(page *finspacedata.ListChangesetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChangesets operation.
+//	pageNum := 0
+//	err := client.ListChangesetsPages(params,
+//	    func(page *finspacedata.ListChangesetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FinSpaceData) ListChangesetsPages(input *ListChangesetsInput, fn func(*ListChangesetsOutput, bool) bool) error {
 	return c.ListChangesetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1604,14 +1603,13 @@ const opListDataViews = "ListDataViews"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataViewsRequest method.
+//	req, resp := client.ListDataViewsRequest(params)
 //
-//    // Example sending a request using the ListDataViewsRequest method.
-//    req, resp := client.ListDataViewsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListDataViews
 func (c *FinSpaceData) ListDataViewsRequest(input *ListDataViewsInput) (req *request.Request, output *ListDataViewsOutput) {
@@ -1648,21 +1646,22 @@ func (c *FinSpaceData) ListDataViewsRequest(input *ListDataViewsInput) (req *req
 // API operation ListDataViews for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListDataViews
 func (c *FinSpaceData) ListDataViews(input *ListDataViewsInput) (*ListDataViewsOutput, error) {
@@ -1694,15 +1693,14 @@ func (c *FinSpaceData) ListDataViewsWithContext(ctx aws.Context, input *ListData
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataViews operation.
-//    pageNum := 0
-//    err := client.ListDataViewsPages(params,
-//        func(page *finspacedata.ListDataViewsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataViews operation.
+//	pageNum := 0
+//	err := client.ListDataViewsPages(params,
+//	    func(page *finspacedata.ListDataViewsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FinSpaceData) ListDataViewsPages(input *ListDataViewsInput, fn func(*ListDataViewsOutput, bool) bool) error {
 	return c.ListDataViewsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1754,14 +1752,13 @@ const opListDatasets = "ListDatasets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetsRequest method.
+//	req, resp := client.ListDatasetsRequest(params)
 //
-//    // Example sending a request using the ListDatasetsRequest method.
-//    req, resp := client.ListDatasetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListDatasets
 func (c *FinSpaceData) ListDatasetsRequest(input *ListDatasetsInput) (req *request.Request, output *ListDatasetsOutput) {
@@ -1798,21 +1795,22 @@ func (c *FinSpaceData) ListDatasetsRequest(input *ListDatasetsInput) (req *reque
 // API operation ListDatasets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     The request conflicts with an existing resource.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListDatasets
 func (c *FinSpaceData) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
@@ -1844,15 +1842,14 @@ func (c *FinSpaceData) ListDatasetsWithContext(ctx aws.Context, input *ListDatas
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasets operation.
-//    pageNum := 0
-//    err := client.ListDatasetsPages(params,
-//        func(page *finspacedata.ListDatasetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasets operation.
+//	pageNum := 0
+//	err := client.ListDatasetsPages(params,
+//	    func(page *finspacedata.ListDatasetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FinSpaceData) ListDatasetsPages(input *ListDatasetsInput, fn func(*ListDatasetsOutput, bool) bool) error {
 	return c.ListDatasetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1904,14 +1901,13 @@ const opListPermissionGroups = "ListPermissionGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPermissionGroupsRequest method.
+//	req, resp := client.ListPermissionGroupsRequest(params)
 //
-//    // Example sending a request using the ListPermissionGroupsRequest method.
-//    req, resp := client.ListPermissionGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListPermissionGroups
 func (c *FinSpaceData) ListPermissionGroupsRequest(input *ListPermissionGroupsInput) (req *request.Request, output *ListPermissionGroupsOutput) {
@@ -1948,18 +1944,19 @@ func (c *FinSpaceData) ListPermissionGroupsRequest(input *ListPermissionGroupsIn
 // API operation ListPermissionGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListPermissionGroups
 func (c *FinSpaceData) ListPermissionGroups(input *ListPermissionGroupsInput) (*ListPermissionGroupsOutput, error) {
@@ -1991,15 +1988,14 @@ func (c *FinSpaceData) ListPermissionGroupsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPermissionGroups operation.
-//    pageNum := 0
-//    err := client.ListPermissionGroupsPages(params,
-//        func(page *finspacedata.ListPermissionGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPermissionGroups operation.
+//	pageNum := 0
+//	err := client.ListPermissionGroupsPages(params,
+//	    func(page *finspacedata.ListPermissionGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FinSpaceData) ListPermissionGroupsPages(input *ListPermissionGroupsInput, fn func(*ListPermissionGroupsOutput, bool) bool) error {
 	return c.ListPermissionGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2051,14 +2047,13 @@ const opListUsers = "ListUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUsersRequest method.
+//	req, resp := client.ListUsersRequest(params)
 //
-//    // Example sending a request using the ListUsersRequest method.
-//    req, resp := client.ListUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListUsers
 func (c *FinSpaceData) ListUsersRequest(input *ListUsersInput) (req *request.Request, output *ListUsersOutput) {
@@ -2095,18 +2090,19 @@ func (c *FinSpaceData) ListUsersRequest(input *ListUsersInput) (req *request.Req
 // API operation ListUsers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ListUsers
 func (c *FinSpaceData) ListUsers(input *ListUsersInput) (*ListUsersOutput, error) {
@@ -2138,15 +2134,14 @@ func (c *FinSpaceData) ListUsersWithContext(ctx aws.Context, input *ListUsersInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUsers operation.
-//    pageNum := 0
-//    err := client.ListUsersPages(params,
-//        func(page *finspacedata.ListUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUsers operation.
+//	pageNum := 0
+//	err := client.ListUsersPages(params,
+//	    func(page *finspacedata.ListUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FinSpaceData) ListUsersPages(input *ListUsersInput, fn func(*ListUsersOutput, bool) bool) error {
 	return c.ListUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2198,14 +2193,13 @@ const opResetUserPassword = "ResetUserPassword"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetUserPasswordRequest method.
+//	req, resp := client.ResetUserPasswordRequest(params)
 //
-//    // Example sending a request using the ResetUserPasswordRequest method.
-//    req, resp := client.ResetUserPasswordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ResetUserPassword
 func (c *FinSpaceData) ResetUserPasswordRequest(input *ResetUserPasswordInput) (req *request.Request, output *ResetUserPasswordOutput) {
@@ -2238,24 +2232,25 @@ func (c *FinSpaceData) ResetUserPasswordRequest(input *ResetUserPasswordInput) (
 // API operation ResetUserPassword for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/ResetUserPassword
 func (c *FinSpaceData) ResetUserPassword(input *ResetUserPasswordInput) (*ResetUserPasswordOutput, error) {
@@ -2295,14 +2290,13 @@ const opUpdateChangeset = "UpdateChangeset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChangesetRequest method.
+//	req, resp := client.UpdateChangesetRequest(params)
 //
-//    // Example sending a request using the UpdateChangesetRequest method.
-//    req, resp := client.UpdateChangesetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateChangeset
 func (c *FinSpaceData) UpdateChangesetRequest(input *UpdateChangesetInput) (req *request.Request, output *UpdateChangesetOutput) {
@@ -2333,24 +2327,25 @@ func (c *FinSpaceData) UpdateChangesetRequest(input *UpdateChangesetInput) (req 
 // API operation UpdateChangeset for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
 //
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateChangeset
 func (c *FinSpaceData) UpdateChangeset(input *UpdateChangesetInput) (*UpdateChangesetOutput, error) {
@@ -2390,14 +2385,13 @@ const opUpdateDataset = "UpdateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatasetRequest method.
+//	req, resp := client.UpdateDatasetRequest(params)
 //
-//    // Example sending a request using the UpdateDatasetRequest method.
-//    req, resp := client.UpdateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateDataset
 func (c *FinSpaceData) UpdateDatasetRequest(input *UpdateDatasetInput) (req *request.Request, output *UpdateDatasetOutput) {
@@ -2428,24 +2422,25 @@ func (c *FinSpaceData) UpdateDatasetRequest(input *UpdateDatasetInput) (req *req
 // API operation UpdateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - ConflictException
+//     The request conflicts with an existing resource.
+//
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateDataset
 func (c *FinSpaceData) UpdateDataset(input *UpdateDatasetInput) (*UpdateDatasetOutput, error) {
@@ -2485,14 +2480,13 @@ const opUpdatePermissionGroup = "UpdatePermissionGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePermissionGroupRequest method.
+//	req, resp := client.UpdatePermissionGroupRequest(params)
 //
-//    // Example sending a request using the UpdatePermissionGroupRequest method.
-//    req, resp := client.UpdatePermissionGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdatePermissionGroup
 func (c *FinSpaceData) UpdatePermissionGroupRequest(input *UpdatePermissionGroupInput) (req *request.Request, output *UpdatePermissionGroupOutput) {
@@ -2523,24 +2517,25 @@ func (c *FinSpaceData) UpdatePermissionGroupRequest(input *UpdatePermissionGroup
 // API operation UpdatePermissionGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdatePermissionGroup
 func (c *FinSpaceData) UpdatePermissionGroup(input *UpdatePermissionGroupInput) (*UpdatePermissionGroupOutput, error) {
@@ -2580,14 +2575,13 @@ const opUpdateUser = "UpdateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserRequest method.
+//	req, resp := client.UpdateUserRequest(params)
 //
-//    // Example sending a request using the UpdateUserRequest method.
-//    req, resp := client.UpdateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateUser
 func (c *FinSpaceData) UpdateUserRequest(input *UpdateUserInput) (req *request.Request, output *UpdateUserOutput) {
@@ -2619,24 +2613,25 @@ func (c *FinSpaceData) UpdateUserRequest(input *UpdateUserInput) (req *request.R
 // API operation UpdateUser for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The request processing has failed because of an unknown error, exception
-//   or failure.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception
+//     or failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   One or more resources can't be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The request conflicts with an existing resource.
+//   - ResourceNotFoundException
+//     One or more resources can't be found.
+//
+//   - ConflictException
+//     The request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/finspace-2020-07-13/UpdateUser
 func (c *FinSpaceData) UpdateUser(input *UpdateUserInput) (*UpdateUserOutput, error) {
@@ -6869,17 +6864,17 @@ func (s *ResourceNotFoundException) RequestID() string {
 //
 // The following is a list of valid dataset permissions that you can apply:
 //
-//    * ViewDatasetDetails
+//   - ViewDatasetDetails
 //
-//    * ReadDatasetDetails
+//   - ReadDatasetDetails
 //
-//    * AddDatasetData
+//   - AddDatasetData
 //
-//    * CreateDataView
+//   - CreateDataView
 //
-//    * EditDatasetMetadata
+//   - EditDatasetMetadata
 //
-//    * DeleteDataset
+//   - DeleteDataset
 //
 // For more information on the dataset permissions, see Supported Dataset Permissions
 // (https://docs.aws.amazon.com/finspace/latest/userguide/managing-user-permissions.html#supported-dataset-permissions)

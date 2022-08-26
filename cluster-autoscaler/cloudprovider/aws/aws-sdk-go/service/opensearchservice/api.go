@@ -29,14 +29,13 @@ const opAcceptInboundConnection = "AcceptInboundConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptInboundConnectionRequest method.
+//	req, resp := client.AcceptInboundConnectionRequest(params)
 //
-//    // Example sending a request using the AcceptInboundConnectionRequest method.
-//    req, resp := client.AcceptInboundConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AcceptInboundConnection
 func (c *OpenSearchService) AcceptInboundConnectionRequest(input *AcceptInboundConnectionInput) (req *request.Request, output *AcceptInboundConnectionOutput) {
@@ -68,17 +67,18 @@ func (c *OpenSearchService) AcceptInboundConnectionRequest(input *AcceptInboundC
 // API operation AcceptInboundConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AcceptInboundConnection
 func (c *OpenSearchService) AcceptInboundConnection(input *AcceptInboundConnectionInput) (*AcceptInboundConnectionOutput, error) {
@@ -118,14 +118,13 @@ const opAddTags = "AddTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsRequest method.
+//	req, resp := client.AddTagsRequest(params)
 //
-//    // Example sending a request using the AddTagsRequest method.
-//    req, resp := client.AddTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AddTags
 func (c *OpenSearchService) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
@@ -160,21 +159,22 @@ func (c *OpenSearchService) AddTagsRequest(input *AddTagsInput) (req *request.Re
 // API operation AddTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AddTags
 func (c *OpenSearchService) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
@@ -214,14 +214,13 @@ const opAssociatePackage = "AssociatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociatePackageRequest method.
+//	req, resp := client.AssociatePackageRequest(params)
 //
-//    // Example sending a request using the AssociatePackageRequest method.
-//    req, resp := client.AssociatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AssociatePackage
 func (c *OpenSearchService) AssociatePackageRequest(input *AssociatePackageInput) (req *request.Request, output *AssociatePackageOutput) {
@@ -252,29 +251,30 @@ func (c *OpenSearchService) AssociatePackageRequest(input *AssociatePackageInput
 // API operation AssociatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/AssociatePackage
 func (c *OpenSearchService) AssociatePackage(input *AssociatePackageInput) (*AssociatePackageOutput, error) {
@@ -314,14 +314,13 @@ const opCancelServiceSoftwareUpdate = "CancelServiceSoftwareUpdate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelServiceSoftwareUpdateRequest method.
+//	req, resp := client.CancelServiceSoftwareUpdateRequest(params)
 //
-//    // Example sending a request using the CancelServiceSoftwareUpdateRequest method.
-//    req, resp := client.CancelServiceSoftwareUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CancelServiceSoftwareUpdate
 func (c *OpenSearchService) CancelServiceSoftwareUpdateRequest(input *CancelServiceSoftwareUpdateInput) (req *request.Request, output *CancelServiceSoftwareUpdateOutput) {
@@ -354,21 +353,22 @@ func (c *OpenSearchService) CancelServiceSoftwareUpdateRequest(input *CancelServ
 // API operation CancelServiceSoftwareUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CancelServiceSoftwareUpdate
 func (c *OpenSearchService) CancelServiceSoftwareUpdate(input *CancelServiceSoftwareUpdateInput) (*CancelServiceSoftwareUpdateOutput, error) {
@@ -408,14 +408,13 @@ const opCreateDomain = "CreateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainRequest method.
+//	req, resp := client.CreateDomainRequest(params)
 //
-//    // Example sending a request using the CreateDomainRequest method.
-//    req, resp := client.CreateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreateDomain
 func (c *OpenSearchService) CreateDomainRequest(input *CreateDomainInput) (req *request.Request, output *CreateDomainOutput) {
@@ -448,33 +447,34 @@ func (c *OpenSearchService) CreateDomainRequest(input *CreateDomainInput) (req *
 // API operation CreateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreateDomain
 func (c *OpenSearchService) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
@@ -514,14 +514,13 @@ const opCreateOutboundConnection = "CreateOutboundConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateOutboundConnectionRequest method.
+//	req, resp := client.CreateOutboundConnectionRequest(params)
 //
-//    // Example sending a request using the CreateOutboundConnectionRequest method.
-//    req, resp := client.CreateOutboundConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreateOutboundConnection
 func (c *OpenSearchService) CreateOutboundConnectionRequest(input *CreateOutboundConnectionInput) (req *request.Request, output *CreateOutboundConnectionOutput) {
@@ -553,22 +552,23 @@ func (c *OpenSearchService) CreateOutboundConnectionRequest(input *CreateOutboun
 // API operation CreateOutboundConnection for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreateOutboundConnection
 func (c *OpenSearchService) CreateOutboundConnection(input *CreateOutboundConnectionInput) (*CreateOutboundConnectionOutput, error) {
@@ -608,14 +608,13 @@ const opCreatePackage = "CreatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackageRequest method.
+//	req, resp := client.CreatePackageRequest(params)
 //
-//    // Example sending a request using the CreatePackageRequest method.
-//    req, resp := client.CreatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreatePackage
 func (c *OpenSearchService) CreatePackageRequest(input *CreatePackageInput) (req *request.Request, output *CreatePackageOutput) {
@@ -646,33 +645,34 @@ func (c *OpenSearchService) CreatePackageRequest(input *CreatePackageInput) (req
 // API operation CreatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/CreatePackage
 func (c *OpenSearchService) CreatePackage(input *CreatePackageInput) (*CreatePackageOutput, error) {
@@ -712,14 +712,13 @@ const opDeleteDomain = "DeleteDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainRequest method.
+//	req, resp := client.DeleteDomainRequest(params)
 //
-//    // Example sending a request using the DeleteDomainRequest method.
-//    req, resp := client.DeleteDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteDomain
 func (c *OpenSearchService) DeleteDomainRequest(input *DeleteDomainInput) (req *request.Request, output *DeleteDomainOutput) {
@@ -751,21 +750,22 @@ func (c *OpenSearchService) DeleteDomainRequest(input *DeleteDomainInput) (req *
 // API operation DeleteDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteDomain
 func (c *OpenSearchService) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
@@ -805,14 +805,13 @@ const opDeleteInboundConnection = "DeleteInboundConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInboundConnectionRequest method.
+//	req, resp := client.DeleteInboundConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteInboundConnectionRequest method.
-//    req, resp := client.DeleteInboundConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteInboundConnection
 func (c *OpenSearchService) DeleteInboundConnectionRequest(input *DeleteInboundConnectionInput) (req *request.Request, output *DeleteInboundConnectionOutput) {
@@ -844,13 +843,14 @@ func (c *OpenSearchService) DeleteInboundConnectionRequest(input *DeleteInboundC
 // API operation DeleteInboundConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteInboundConnection
 func (c *OpenSearchService) DeleteInboundConnection(input *DeleteInboundConnectionInput) (*DeleteInboundConnectionOutput, error) {
@@ -890,14 +890,13 @@ const opDeleteOutboundConnection = "DeleteOutboundConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOutboundConnectionRequest method.
+//	req, resp := client.DeleteOutboundConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteOutboundConnectionRequest method.
-//    req, resp := client.DeleteOutboundConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteOutboundConnection
 func (c *OpenSearchService) DeleteOutboundConnectionRequest(input *DeleteOutboundConnectionInput) (req *request.Request, output *DeleteOutboundConnectionOutput) {
@@ -929,13 +928,14 @@ func (c *OpenSearchService) DeleteOutboundConnectionRequest(input *DeleteOutboun
 // API operation DeleteOutboundConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeleteOutboundConnection
 func (c *OpenSearchService) DeleteOutboundConnection(input *DeleteOutboundConnectionInput) (*DeleteOutboundConnectionOutput, error) {
@@ -975,14 +975,13 @@ const opDeletePackage = "DeletePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackageRequest method.
+//	req, resp := client.DeletePackageRequest(params)
 //
-//    // Example sending a request using the DeletePackageRequest method.
-//    req, resp := client.DeletePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeletePackage
 func (c *OpenSearchService) DeletePackageRequest(input *DeletePackageInput) (req *request.Request, output *DeletePackageOutput) {
@@ -1013,29 +1012,30 @@ func (c *OpenSearchService) DeletePackageRequest(input *DeletePackageInput) (req
 // API operation DeletePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DeletePackage
 func (c *OpenSearchService) DeletePackage(input *DeletePackageInput) (*DeletePackageOutput, error) {
@@ -1075,14 +1075,13 @@ const opDescribeDomain = "DescribeDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainRequest method.
+//	req, resp := client.DescribeDomainRequest(params)
 //
-//    // Example sending a request using the DescribeDomainRequest method.
-//    req, resp := client.DescribeDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomain
 func (c *OpenSearchService) DescribeDomainRequest(input *DescribeDomainInput) (req *request.Request, output *DescribeDomainOutput) {
@@ -1114,21 +1113,22 @@ func (c *OpenSearchService) DescribeDomainRequest(input *DescribeDomainInput) (r
 // API operation DescribeDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomain
 func (c *OpenSearchService) DescribeDomain(input *DescribeDomainInput) (*DescribeDomainOutput, error) {
@@ -1168,14 +1168,13 @@ const opDescribeDomainAutoTunes = "DescribeDomainAutoTunes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainAutoTunesRequest method.
+//	req, resp := client.DescribeDomainAutoTunesRequest(params)
 //
-//    // Example sending a request using the DescribeDomainAutoTunesRequest method.
-//    req, resp := client.DescribeDomainAutoTunesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainAutoTunes
 func (c *OpenSearchService) DescribeDomainAutoTunesRequest(input *DescribeDomainAutoTunesInput) (req *request.Request, output *DescribeDomainAutoTunesOutput) {
@@ -1213,21 +1212,22 @@ func (c *OpenSearchService) DescribeDomainAutoTunesRequest(input *DescribeDomain
 // API operation DescribeDomainAutoTunes for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainAutoTunes
 func (c *OpenSearchService) DescribeDomainAutoTunes(input *DescribeDomainAutoTunesInput) (*DescribeDomainAutoTunesOutput, error) {
@@ -1259,15 +1259,14 @@ func (c *OpenSearchService) DescribeDomainAutoTunesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDomainAutoTunes operation.
-//    pageNum := 0
-//    err := client.DescribeDomainAutoTunesPages(params,
-//        func(page *opensearchservice.DescribeDomainAutoTunesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDomainAutoTunes operation.
+//	pageNum := 0
+//	err := client.DescribeDomainAutoTunesPages(params,
+//	    func(page *opensearchservice.DescribeDomainAutoTunesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribeDomainAutoTunesPages(input *DescribeDomainAutoTunesInput, fn func(*DescribeDomainAutoTunesOutput, bool) bool) error {
 	return c.DescribeDomainAutoTunesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1319,14 +1318,13 @@ const opDescribeDomainChangeProgress = "DescribeDomainChangeProgress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainChangeProgressRequest method.
+//	req, resp := client.DescribeDomainChangeProgressRequest(params)
 //
-//    // Example sending a request using the DescribeDomainChangeProgressRequest method.
-//    req, resp := client.DescribeDomainChangeProgressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainChangeProgress
 func (c *OpenSearchService) DescribeDomainChangeProgressRequest(input *DescribeDomainChangeProgressInput) (req *request.Request, output *DescribeDomainChangeProgressOutput) {
@@ -1358,21 +1356,22 @@ func (c *OpenSearchService) DescribeDomainChangeProgressRequest(input *DescribeD
 // API operation DescribeDomainChangeProgress for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainChangeProgress
 func (c *OpenSearchService) DescribeDomainChangeProgress(input *DescribeDomainChangeProgressInput) (*DescribeDomainChangeProgressOutput, error) {
@@ -1412,14 +1411,13 @@ const opDescribeDomainConfig = "DescribeDomainConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainConfigRequest method.
+//	req, resp := client.DescribeDomainConfigRequest(params)
 //
-//    // Example sending a request using the DescribeDomainConfigRequest method.
-//    req, resp := client.DescribeDomainConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainConfig
 func (c *OpenSearchService) DescribeDomainConfigRequest(input *DescribeDomainConfigInput) (req *request.Request, output *DescribeDomainConfigOutput) {
@@ -1452,21 +1450,22 @@ func (c *OpenSearchService) DescribeDomainConfigRequest(input *DescribeDomainCon
 // API operation DescribeDomainConfig for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomainConfig
 func (c *OpenSearchService) DescribeDomainConfig(input *DescribeDomainConfigInput) (*DescribeDomainConfigOutput, error) {
@@ -1506,14 +1505,13 @@ const opDescribeDomains = "DescribeDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainsRequest method.
+//	req, resp := client.DescribeDomainsRequest(params)
 //
-//    // Example sending a request using the DescribeDomainsRequest method.
-//    req, resp := client.DescribeDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomains
 func (c *OpenSearchService) DescribeDomainsRequest(input *DescribeDomainsInput) (req *request.Request, output *DescribeDomainsOutput) {
@@ -1545,17 +1543,18 @@ func (c *OpenSearchService) DescribeDomainsRequest(input *DescribeDomainsInput) 
 // API operation DescribeDomains for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeDomains
 func (c *OpenSearchService) DescribeDomains(input *DescribeDomainsInput) (*DescribeDomainsOutput, error) {
@@ -1595,14 +1594,13 @@ const opDescribeInboundConnections = "DescribeInboundConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInboundConnectionsRequest method.
+//	req, resp := client.DescribeInboundConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeInboundConnectionsRequest method.
-//    req, resp := client.DescribeInboundConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeInboundConnections
 func (c *OpenSearchService) DescribeInboundConnectionsRequest(input *DescribeInboundConnectionsInput) (req *request.Request, output *DescribeInboundConnectionsOutput) {
@@ -1639,13 +1637,14 @@ func (c *OpenSearchService) DescribeInboundConnectionsRequest(input *DescribeInb
 // API operation DescribeInboundConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationTokenException
-//   The request processing has failed because of invalid pagination token provided
-//   by customer. Returns an HTTP status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - InvalidPaginationTokenException
+//     The request processing has failed because of invalid pagination token provided
+//     by customer. Returns an HTTP status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeInboundConnections
 func (c *OpenSearchService) DescribeInboundConnections(input *DescribeInboundConnectionsInput) (*DescribeInboundConnectionsOutput, error) {
@@ -1677,15 +1676,14 @@ func (c *OpenSearchService) DescribeInboundConnectionsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInboundConnections operation.
-//    pageNum := 0
-//    err := client.DescribeInboundConnectionsPages(params,
-//        func(page *opensearchservice.DescribeInboundConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInboundConnections operation.
+//	pageNum := 0
+//	err := client.DescribeInboundConnectionsPages(params,
+//	    func(page *opensearchservice.DescribeInboundConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribeInboundConnectionsPages(input *DescribeInboundConnectionsInput, fn func(*DescribeInboundConnectionsOutput, bool) bool) error {
 	return c.DescribeInboundConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1737,14 +1735,13 @@ const opDescribeInstanceTypeLimits = "DescribeInstanceTypeLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstanceTypeLimitsRequest method.
+//	req, resp := client.DescribeInstanceTypeLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeInstanceTypeLimitsRequest method.
-//    req, resp := client.DescribeInstanceTypeLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeInstanceTypeLimits
 func (c *OpenSearchService) DescribeInstanceTypeLimitsRequest(input *DescribeInstanceTypeLimitsInput) (req *request.Request, output *DescribeInstanceTypeLimitsOutput) {
@@ -1777,29 +1774,30 @@ func (c *OpenSearchService) DescribeInstanceTypeLimitsRequest(input *DescribeIns
 // API operation DescribeInstanceTypeLimits for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeInstanceTypeLimits
 func (c *OpenSearchService) DescribeInstanceTypeLimits(input *DescribeInstanceTypeLimitsInput) (*DescribeInstanceTypeLimitsOutput, error) {
@@ -1839,14 +1837,13 @@ const opDescribeOutboundConnections = "DescribeOutboundConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOutboundConnectionsRequest method.
+//	req, resp := client.DescribeOutboundConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeOutboundConnectionsRequest method.
-//    req, resp := client.DescribeOutboundConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeOutboundConnections
 func (c *OpenSearchService) DescribeOutboundConnectionsRequest(input *DescribeOutboundConnectionsInput) (req *request.Request, output *DescribeOutboundConnectionsOutput) {
@@ -1883,13 +1880,14 @@ func (c *OpenSearchService) DescribeOutboundConnectionsRequest(input *DescribeOu
 // API operation DescribeOutboundConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationTokenException
-//   The request processing has failed because of invalid pagination token provided
-//   by customer. Returns an HTTP status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - InvalidPaginationTokenException
+//     The request processing has failed because of invalid pagination token provided
+//     by customer. Returns an HTTP status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeOutboundConnections
 func (c *OpenSearchService) DescribeOutboundConnections(input *DescribeOutboundConnectionsInput) (*DescribeOutboundConnectionsOutput, error) {
@@ -1921,15 +1919,14 @@ func (c *OpenSearchService) DescribeOutboundConnectionsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOutboundConnections operation.
-//    pageNum := 0
-//    err := client.DescribeOutboundConnectionsPages(params,
-//        func(page *opensearchservice.DescribeOutboundConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOutboundConnections operation.
+//	pageNum := 0
+//	err := client.DescribeOutboundConnectionsPages(params,
+//	    func(page *opensearchservice.DescribeOutboundConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribeOutboundConnectionsPages(input *DescribeOutboundConnectionsInput, fn func(*DescribeOutboundConnectionsOutput, bool) bool) error {
 	return c.DescribeOutboundConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1981,14 +1978,13 @@ const opDescribePackages = "DescribePackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackagesRequest method.
+//	req, resp := client.DescribePackagesRequest(params)
 //
-//    // Example sending a request using the DescribePackagesRequest method.
-//    req, resp := client.DescribePackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribePackages
 func (c *OpenSearchService) DescribePackagesRequest(input *DescribePackagesInput) (req *request.Request, output *DescribePackagesOutput) {
@@ -2026,25 +2022,26 @@ func (c *OpenSearchService) DescribePackagesRequest(input *DescribePackagesInput
 // API operation DescribePackages for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribePackages
 func (c *OpenSearchService) DescribePackages(input *DescribePackagesInput) (*DescribePackagesOutput, error) {
@@ -2076,15 +2073,14 @@ func (c *OpenSearchService) DescribePackagesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePackages operation.
-//    pageNum := 0
-//    err := client.DescribePackagesPages(params,
-//        func(page *opensearchservice.DescribePackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePackages operation.
+//	pageNum := 0
+//	err := client.DescribePackagesPages(params,
+//	    func(page *opensearchservice.DescribePackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribePackagesPages(input *DescribePackagesInput, fn func(*DescribePackagesOutput, bool) bool) error {
 	return c.DescribePackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2136,14 +2132,13 @@ const opDescribeReservedInstanceOfferings = "DescribeReservedInstanceOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstanceOfferingsRequest method.
+//	req, resp := client.DescribeReservedInstanceOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstanceOfferingsRequest method.
-//    req, resp := client.DescribeReservedInstanceOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeReservedInstanceOfferings
 func (c *OpenSearchService) DescribeReservedInstanceOfferingsRequest(input *DescribeReservedInstanceOfferingsInput) (req *request.Request, output *DescribeReservedInstanceOfferingsOutput) {
@@ -2180,22 +2175,23 @@ func (c *OpenSearchService) DescribeReservedInstanceOfferingsRequest(input *Desc
 // API operation DescribeReservedInstanceOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeReservedInstanceOfferings
 func (c *OpenSearchService) DescribeReservedInstanceOfferings(input *DescribeReservedInstanceOfferingsInput) (*DescribeReservedInstanceOfferingsOutput, error) {
@@ -2227,15 +2223,14 @@ func (c *OpenSearchService) DescribeReservedInstanceOfferingsWithContext(ctx aws
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedInstanceOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeReservedInstanceOfferingsPages(params,
-//        func(page *opensearchservice.DescribeReservedInstanceOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedInstanceOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedInstanceOfferingsPages(params,
+//	    func(page *opensearchservice.DescribeReservedInstanceOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribeReservedInstanceOfferingsPages(input *DescribeReservedInstanceOfferingsInput, fn func(*DescribeReservedInstanceOfferingsOutput, bool) bool) error {
 	return c.DescribeReservedInstanceOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2287,14 +2282,13 @@ const opDescribeReservedInstances = "DescribeReservedInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedInstancesRequest method.
+//	req, resp := client.DescribeReservedInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeReservedInstancesRequest method.
-//    req, resp := client.DescribeReservedInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeReservedInstances
 func (c *OpenSearchService) DescribeReservedInstancesRequest(input *DescribeReservedInstancesInput) (req *request.Request, output *DescribeReservedInstancesOutput) {
@@ -2331,22 +2325,23 @@ func (c *OpenSearchService) DescribeReservedInstancesRequest(input *DescribeRese
 // API operation DescribeReservedInstances for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DescribeReservedInstances
 func (c *OpenSearchService) DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error) {
@@ -2378,15 +2373,14 @@ func (c *OpenSearchService) DescribeReservedInstancesWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedInstances operation.
-//    pageNum := 0
-//    err := client.DescribeReservedInstancesPages(params,
-//        func(page *opensearchservice.DescribeReservedInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedInstances operation.
+//	pageNum := 0
+//	err := client.DescribeReservedInstancesPages(params,
+//	    func(page *opensearchservice.DescribeReservedInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) DescribeReservedInstancesPages(input *DescribeReservedInstancesInput, fn func(*DescribeReservedInstancesOutput, bool) bool) error {
 	return c.DescribeReservedInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2438,14 +2432,13 @@ const opDissociatePackage = "DissociatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DissociatePackageRequest method.
+//	req, resp := client.DissociatePackageRequest(params)
 //
-//    // Example sending a request using the DissociatePackageRequest method.
-//    req, resp := client.DissociatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DissociatePackage
 func (c *OpenSearchService) DissociatePackageRequest(input *DissociatePackageInput) (req *request.Request, output *DissociatePackageOutput) {
@@ -2476,29 +2469,30 @@ func (c *OpenSearchService) DissociatePackageRequest(input *DissociatePackageInp
 // API operation DissociatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/DissociatePackage
 func (c *OpenSearchService) DissociatePackage(input *DissociatePackageInput) (*DissociatePackageOutput, error) {
@@ -2538,14 +2532,13 @@ const opGetCompatibleVersions = "GetCompatibleVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCompatibleVersionsRequest method.
+//	req, resp := client.GetCompatibleVersionsRequest(params)
 //
-//    // Example sending a request using the GetCompatibleVersionsRequest method.
-//    req, resp := client.GetCompatibleVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetCompatibleVersions
 func (c *OpenSearchService) GetCompatibleVersionsRequest(input *GetCompatibleVersionsInput) (req *request.Request, output *GetCompatibleVersionsOutput) {
@@ -2578,25 +2571,26 @@ func (c *OpenSearchService) GetCompatibleVersionsRequest(input *GetCompatibleVer
 // API operation GetCompatibleVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetCompatibleVersions
 func (c *OpenSearchService) GetCompatibleVersions(input *GetCompatibleVersionsInput) (*GetCompatibleVersionsOutput, error) {
@@ -2636,14 +2630,13 @@ const opGetPackageVersionHistory = "GetPackageVersionHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPackageVersionHistoryRequest method.
+//	req, resp := client.GetPackageVersionHistoryRequest(params)
 //
-//    // Example sending a request using the GetPackageVersionHistoryRequest method.
-//    req, resp := client.GetPackageVersionHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetPackageVersionHistory
 func (c *OpenSearchService) GetPackageVersionHistoryRequest(input *GetPackageVersionHistoryInput) (req *request.Request, output *GetPackageVersionHistoryOutput) {
@@ -2681,25 +2674,26 @@ func (c *OpenSearchService) GetPackageVersionHistoryRequest(input *GetPackageVer
 // API operation GetPackageVersionHistory for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetPackageVersionHistory
 func (c *OpenSearchService) GetPackageVersionHistory(input *GetPackageVersionHistoryInput) (*GetPackageVersionHistoryOutput, error) {
@@ -2731,15 +2725,14 @@ func (c *OpenSearchService) GetPackageVersionHistoryWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetPackageVersionHistory operation.
-//    pageNum := 0
-//    err := client.GetPackageVersionHistoryPages(params,
-//        func(page *opensearchservice.GetPackageVersionHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetPackageVersionHistory operation.
+//	pageNum := 0
+//	err := client.GetPackageVersionHistoryPages(params,
+//	    func(page *opensearchservice.GetPackageVersionHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) GetPackageVersionHistoryPages(input *GetPackageVersionHistoryInput, fn func(*GetPackageVersionHistoryOutput, bool) bool) error {
 	return c.GetPackageVersionHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2791,14 +2784,13 @@ const opGetUpgradeHistory = "GetUpgradeHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUpgradeHistoryRequest method.
+//	req, resp := client.GetUpgradeHistoryRequest(params)
 //
-//    // Example sending a request using the GetUpgradeHistoryRequest method.
-//    req, resp := client.GetUpgradeHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetUpgradeHistory
 func (c *OpenSearchService) GetUpgradeHistoryRequest(input *GetUpgradeHistoryInput) (req *request.Request, output *GetUpgradeHistoryOutput) {
@@ -2835,25 +2827,26 @@ func (c *OpenSearchService) GetUpgradeHistoryRequest(input *GetUpgradeHistoryInp
 // API operation GetUpgradeHistory for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetUpgradeHistory
 func (c *OpenSearchService) GetUpgradeHistory(input *GetUpgradeHistoryInput) (*GetUpgradeHistoryOutput, error) {
@@ -2885,15 +2878,14 @@ func (c *OpenSearchService) GetUpgradeHistoryWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUpgradeHistory operation.
-//    pageNum := 0
-//    err := client.GetUpgradeHistoryPages(params,
-//        func(page *opensearchservice.GetUpgradeHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUpgradeHistory operation.
+//	pageNum := 0
+//	err := client.GetUpgradeHistoryPages(params,
+//	    func(page *opensearchservice.GetUpgradeHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) GetUpgradeHistoryPages(input *GetUpgradeHistoryInput, fn func(*GetUpgradeHistoryOutput, bool) bool) error {
 	return c.GetUpgradeHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2945,14 +2937,13 @@ const opGetUpgradeStatus = "GetUpgradeStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUpgradeStatusRequest method.
+//	req, resp := client.GetUpgradeStatusRequest(params)
 //
-//    // Example sending a request using the GetUpgradeStatusRequest method.
-//    req, resp := client.GetUpgradeStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetUpgradeStatus
 func (c *OpenSearchService) GetUpgradeStatusRequest(input *GetUpgradeStatusInput) (req *request.Request, output *GetUpgradeStatusOutput) {
@@ -2984,25 +2975,26 @@ func (c *OpenSearchService) GetUpgradeStatusRequest(input *GetUpgradeStatusInput
 // API operation GetUpgradeStatus for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/GetUpgradeStatus
 func (c *OpenSearchService) GetUpgradeStatus(input *GetUpgradeStatusInput) (*GetUpgradeStatusOutput, error) {
@@ -3042,14 +3034,13 @@ const opListDomainNames = "ListDomainNames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainNamesRequest method.
+//	req, resp := client.ListDomainNamesRequest(params)
 //
-//    // Example sending a request using the ListDomainNamesRequest method.
-//    req, resp := client.ListDomainNamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListDomainNames
 func (c *OpenSearchService) ListDomainNamesRequest(input *ListDomainNamesInput) (req *request.Request, output *ListDomainNamesOutput) {
@@ -3080,12 +3071,13 @@ func (c *OpenSearchService) ListDomainNamesRequest(input *ListDomainNamesInput) 
 // API operation ListDomainNames for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - BaseException
+//     An error occurred while processing the request.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListDomainNames
 func (c *OpenSearchService) ListDomainNames(input *ListDomainNamesInput) (*ListDomainNamesOutput, error) {
@@ -3125,14 +3117,13 @@ const opListDomainsForPackage = "ListDomainsForPackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsForPackageRequest method.
+//	req, resp := client.ListDomainsForPackageRequest(params)
 //
-//    // Example sending a request using the ListDomainsForPackageRequest method.
-//    req, resp := client.ListDomainsForPackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListDomainsForPackage
 func (c *OpenSearchService) ListDomainsForPackageRequest(input *ListDomainsForPackageInput) (req *request.Request, output *ListDomainsForPackageOutput) {
@@ -3169,25 +3160,26 @@ func (c *OpenSearchService) ListDomainsForPackageRequest(input *ListDomainsForPa
 // API operation ListDomainsForPackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListDomainsForPackage
 func (c *OpenSearchService) ListDomainsForPackage(input *ListDomainsForPackageInput) (*ListDomainsForPackageOutput, error) {
@@ -3219,15 +3211,14 @@ func (c *OpenSearchService) ListDomainsForPackageWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomainsForPackage operation.
-//    pageNum := 0
-//    err := client.ListDomainsForPackagePages(params,
-//        func(page *opensearchservice.ListDomainsForPackageOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomainsForPackage operation.
+//	pageNum := 0
+//	err := client.ListDomainsForPackagePages(params,
+//	    func(page *opensearchservice.ListDomainsForPackageOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) ListDomainsForPackagePages(input *ListDomainsForPackageInput, fn func(*ListDomainsForPackageOutput, bool) bool) error {
 	return c.ListDomainsForPackagePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3279,14 +3270,13 @@ const opListInstanceTypeDetails = "ListInstanceTypeDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInstanceTypeDetailsRequest method.
+//	req, resp := client.ListInstanceTypeDetailsRequest(params)
 //
-//    // Example sending a request using the ListInstanceTypeDetailsRequest method.
-//    req, resp := client.ListInstanceTypeDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListInstanceTypeDetails
 func (c *OpenSearchService) ListInstanceTypeDetailsRequest(input *ListInstanceTypeDetailsInput) (req *request.Request, output *ListInstanceTypeDetailsOutput) {
@@ -3321,21 +3311,22 @@ func (c *OpenSearchService) ListInstanceTypeDetailsRequest(input *ListInstanceTy
 // API operation ListInstanceTypeDetails for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListInstanceTypeDetails
 func (c *OpenSearchService) ListInstanceTypeDetails(input *ListInstanceTypeDetailsInput) (*ListInstanceTypeDetailsOutput, error) {
@@ -3367,15 +3358,14 @@ func (c *OpenSearchService) ListInstanceTypeDetailsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInstanceTypeDetails operation.
-//    pageNum := 0
-//    err := client.ListInstanceTypeDetailsPages(params,
-//        func(page *opensearchservice.ListInstanceTypeDetailsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInstanceTypeDetails operation.
+//	pageNum := 0
+//	err := client.ListInstanceTypeDetailsPages(params,
+//	    func(page *opensearchservice.ListInstanceTypeDetailsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) ListInstanceTypeDetailsPages(input *ListInstanceTypeDetailsInput, fn func(*ListInstanceTypeDetailsOutput, bool) bool) error {
 	return c.ListInstanceTypeDetailsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3427,14 +3417,13 @@ const opListPackagesForDomain = "ListPackagesForDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagesForDomainRequest method.
+//	req, resp := client.ListPackagesForDomainRequest(params)
 //
-//    // Example sending a request using the ListPackagesForDomainRequest method.
-//    req, resp := client.ListPackagesForDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListPackagesForDomain
 func (c *OpenSearchService) ListPackagesForDomainRequest(input *ListPackagesForDomainInput) (req *request.Request, output *ListPackagesForDomainOutput) {
@@ -3471,25 +3460,26 @@ func (c *OpenSearchService) ListPackagesForDomainRequest(input *ListPackagesForD
 // API operation ListPackagesForDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListPackagesForDomain
 func (c *OpenSearchService) ListPackagesForDomain(input *ListPackagesForDomainInput) (*ListPackagesForDomainOutput, error) {
@@ -3521,15 +3511,14 @@ func (c *OpenSearchService) ListPackagesForDomainWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackagesForDomain operation.
-//    pageNum := 0
-//    err := client.ListPackagesForDomainPages(params,
-//        func(page *opensearchservice.ListPackagesForDomainOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackagesForDomain operation.
+//	pageNum := 0
+//	err := client.ListPackagesForDomainPages(params,
+//	    func(page *opensearchservice.ListPackagesForDomainOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) ListPackagesForDomainPages(input *ListPackagesForDomainInput, fn func(*ListPackagesForDomainOutput, bool) bool) error {
 	return c.ListPackagesForDomainPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3581,14 +3570,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListTags
 func (c *OpenSearchService) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
@@ -3619,21 +3607,22 @@ func (c *OpenSearchService) ListTagsRequest(input *ListTagsInput) (req *request.
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListTags
 func (c *OpenSearchService) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
@@ -3673,14 +3662,13 @@ const opListVersions = "ListVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVersionsRequest method.
+//	req, resp := client.ListVersionsRequest(params)
 //
-//    // Example sending a request using the ListVersionsRequest method.
-//    req, resp := client.ListVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListVersions
 func (c *OpenSearchService) ListVersionsRequest(input *ListVersionsInput) (req *request.Request, output *ListVersionsOutput) {
@@ -3717,21 +3705,22 @@ func (c *OpenSearchService) ListVersionsRequest(input *ListVersionsInput) (req *
 // API operation ListVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/ListVersions
 func (c *OpenSearchService) ListVersions(input *ListVersionsInput) (*ListVersionsOutput, error) {
@@ -3763,15 +3752,14 @@ func (c *OpenSearchService) ListVersionsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVersions operation.
-//    pageNum := 0
-//    err := client.ListVersionsPages(params,
-//        func(page *opensearchservice.ListVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVersions operation.
+//	pageNum := 0
+//	err := client.ListVersionsPages(params,
+//	    func(page *opensearchservice.ListVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *OpenSearchService) ListVersionsPages(input *ListVersionsInput, fn func(*ListVersionsOutput, bool) bool) error {
 	return c.ListVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3823,14 +3811,13 @@ const opPurchaseReservedInstanceOffering = "PurchaseReservedInstanceOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseReservedInstanceOfferingRequest method.
+//	req, resp := client.PurchaseReservedInstanceOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseReservedInstanceOfferingRequest method.
-//    req, resp := client.PurchaseReservedInstanceOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/PurchaseReservedInstanceOffering
 func (c *OpenSearchService) PurchaseReservedInstanceOfferingRequest(input *PurchaseReservedInstanceOfferingInput) (req *request.Request, output *PurchaseReservedInstanceOfferingOutput) {
@@ -3861,30 +3848,31 @@ func (c *OpenSearchService) PurchaseReservedInstanceOfferingRequest(input *Purch
 // API operation PurchaseReservedInstanceOffering for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/PurchaseReservedInstanceOffering
 func (c *OpenSearchService) PurchaseReservedInstanceOffering(input *PurchaseReservedInstanceOfferingInput) (*PurchaseReservedInstanceOfferingOutput, error) {
@@ -3924,14 +3912,13 @@ const opRejectInboundConnection = "RejectInboundConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectInboundConnectionRequest method.
+//	req, resp := client.RejectInboundConnectionRequest(params)
 //
-//    // Example sending a request using the RejectInboundConnectionRequest method.
-//    req, resp := client.RejectInboundConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/RejectInboundConnection
 func (c *OpenSearchService) RejectInboundConnectionRequest(input *RejectInboundConnectionInput) (req *request.Request, output *RejectInboundConnectionOutput) {
@@ -3963,13 +3950,14 @@ func (c *OpenSearchService) RejectInboundConnectionRequest(input *RejectInboundC
 // API operation RejectInboundConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/RejectInboundConnection
 func (c *OpenSearchService) RejectInboundConnection(input *RejectInboundConnectionInput) (*RejectInboundConnectionOutput, error) {
@@ -4009,14 +3997,13 @@ const opRemoveTags = "RemoveTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsRequest method.
+//	req, resp := client.RemoveTagsRequest(params)
 //
-//    // Example sending a request using the RemoveTagsRequest method.
-//    req, resp := client.RemoveTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/RemoveTags
 func (c *OpenSearchService) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request, output *RemoveTagsOutput) {
@@ -4048,17 +4035,18 @@ func (c *OpenSearchService) RemoveTagsRequest(input *RemoveTagsInput) (req *requ
 // API operation RemoveTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/RemoveTags
 func (c *OpenSearchService) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
@@ -4098,14 +4086,13 @@ const opStartServiceSoftwareUpdate = "StartServiceSoftwareUpdate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartServiceSoftwareUpdateRequest method.
+//	req, resp := client.StartServiceSoftwareUpdateRequest(params)
 //
-//    // Example sending a request using the StartServiceSoftwareUpdateRequest method.
-//    req, resp := client.StartServiceSoftwareUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/StartServiceSoftwareUpdate
 func (c *OpenSearchService) StartServiceSoftwareUpdateRequest(input *StartServiceSoftwareUpdateInput) (req *request.Request, output *StartServiceSoftwareUpdateOutput) {
@@ -4136,21 +4123,22 @@ func (c *OpenSearchService) StartServiceSoftwareUpdateRequest(input *StartServic
 // API operation StartServiceSoftwareUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/StartServiceSoftwareUpdate
 func (c *OpenSearchService) StartServiceSoftwareUpdate(input *StartServiceSoftwareUpdateInput) (*StartServiceSoftwareUpdateOutput, error) {
@@ -4190,14 +4178,13 @@ const opUpdateDomainConfig = "UpdateDomainConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainConfigRequest method.
+//	req, resp := client.UpdateDomainConfigRequest(params)
 //
-//    // Example sending a request using the UpdateDomainConfigRequest method.
-//    req, resp := client.UpdateDomainConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpdateDomainConfig
 func (c *OpenSearchService) UpdateDomainConfigRequest(input *UpdateDomainConfigInput) (req *request.Request, output *UpdateDomainConfigOutput) {
@@ -4229,29 +4216,30 @@ func (c *OpenSearchService) UpdateDomainConfigRequest(input *UpdateDomainConfigI
 // API operation UpdateDomainConfig for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpdateDomainConfig
 func (c *OpenSearchService) UpdateDomainConfig(input *UpdateDomainConfigInput) (*UpdateDomainConfigOutput, error) {
@@ -4291,14 +4279,13 @@ const opUpdatePackage = "UpdatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePackageRequest method.
+//	req, resp := client.UpdatePackageRequest(params)
 //
-//    // Example sending a request using the UpdatePackageRequest method.
-//    req, resp := client.UpdatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpdatePackage
 func (c *OpenSearchService) UpdatePackageRequest(input *UpdatePackageInput) (req *request.Request, output *UpdatePackageOutput) {
@@ -4329,29 +4316,30 @@ func (c *OpenSearchService) UpdatePackageRequest(input *UpdatePackageInput) (req
 // API operation UpdatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpdatePackage
 func (c *OpenSearchService) UpdatePackage(input *UpdatePackageInput) (*UpdatePackageOutput, error) {
@@ -4391,14 +4379,13 @@ const opUpgradeDomain = "UpgradeDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpgradeDomainRequest method.
+//	req, resp := client.UpgradeDomainRequest(params)
 //
-//    // Example sending a request using the UpgradeDomainRequest method.
-//    req, resp := client.UpgradeDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpgradeDomain
 func (c *OpenSearchService) UpgradeDomainRequest(input *UpgradeDomainInput) (req *request.Request, output *UpgradeDomainOutput) {
@@ -4430,29 +4417,30 @@ func (c *OpenSearchService) UpgradeDomainRequest(input *UpgradeDomainInput) (req
 // API operation UpgradeDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/opensearch-2021-01-01/UpgradeDomain
 func (c *OpenSearchService) UpgradeDomain(input *UpgradeDomainInput) (*UpgradeDomainOutput, error) {
@@ -4892,12 +4880,12 @@ func (s *AdditionalLimit) SetLimitValues(v []*string) *AdditionalLimit {
 // Status of the advanced options for the specified domain. Currently, the following
 // advanced options are available:
 //
-//    * Option to allow references to indices in an HTTP request body. Must
-//    be false when configuring access to individual sub-resources. By default,
-//    the value is true. See Advanced cluster parameters for more information.
+//   - Option to allow references to indices in an HTTP request body. Must
+//     be false when configuring access to individual sub-resources. By default,
+//     the value is true. See Advanced cluster parameters for more information.
 //
-//    * Option to specify the percentage of heap space allocated to field data.
-//    By default, this setting is unbounded.
+//   - Option to specify the percentage of heap space allocated to field data.
+//     By default, this setting is unbounded.
 //
 // For more information, see Advanced cluster parameters (http://docs.aws.amazon.com/opensearch-service/latest/developerguide/createupdatedomains.html#createdomain-configure-advanced-options).
 type AdvancedOptionsStatus struct {
@@ -11527,11 +11515,12 @@ func (s *ListVersionsOutput) SetVersions(v []*string) *ListVersionsOutput {
 
 // Log Publishing option that is set for a given domain. Attributes and their
 // details:
-//    * CloudWatchLogsLogGroupArn: ARN of the Cloudwatch log group to publish
-//    logs to.
 //
-//    * Enabled: Whether the log publishing for a given log type is enabled
-//    or not.
+//   - CloudWatchLogsLogGroupArn: ARN of the Cloudwatch log group to publish
+//     logs to.
+//
+//   - Enabled: Whether the log publishing for a given log type is enabled
+//     or not.
 type LogPublishingOption struct {
 	_ struct{} `type:"structure"`
 
@@ -14880,18 +14869,19 @@ func InboundConnectionStatusCode_Values() []string {
 }
 
 // Type of log file. Can be one of the following:
-//    * INDEX_SLOW_LOGS: Index slow logs contain insert requests that took more
-//    time than configured index query log threshold to execute.
 //
-//    * SEARCH_SLOW_LOGS: Search slow logs contain search queries that took
-//    more time than configured search query log threshold to execute.
+//   - INDEX_SLOW_LOGS: Index slow logs contain insert requests that took more
+//     time than configured index query log threshold to execute.
 //
-//    * ES_APPLICATION_LOGS: OpenSearch application logs contain information
-//    about errors and warnings raised during the operation of the service and
-//    can be useful for troubleshooting.
+//   - SEARCH_SLOW_LOGS: Search slow logs contain search queries that took
+//     more time than configured search query log threshold to execute.
 //
-//    * AUDIT_LOGS: Audit logs contain records of user requests for access from
-//    the domain.
+//   - ES_APPLICATION_LOGS: OpenSearch application logs contain information
+//     about errors and warnings raised during the operation of the service and
+//     can be useful for troubleshooting.
+//
+//   - AUDIT_LOGS: Audit logs contain records of user requests for access from
+//     the domain.
 const (
 	// LogTypeIndexSlowLogs is a LogType enum value
 	LogTypeIndexSlowLogs = "INDEX_SLOW_LOGS"
@@ -15326,9 +15316,9 @@ func OpenSearchWarmPartitionInstanceType_Values() []string {
 
 // The state of a requested change. One of the following:
 //
-//    * Processing: The request change is still in progress.
+//   - Processing: The request change is still in progress.
 //
-//    * Active: The request change is processed and deployed to the domain.
+//   - Active: The request change is processed and deployed to the domain.
 const (
 	// OptionStateRequiresIndexDocuments is a OptionState enum value
 	OptionStateRequiresIndexDocuments = "RequiresIndexDocuments"

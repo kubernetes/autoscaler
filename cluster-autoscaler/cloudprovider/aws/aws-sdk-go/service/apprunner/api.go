@@ -29,14 +29,13 @@ const opAssociateCustomDomain = "AssociateCustomDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateCustomDomainRequest method.
+//	req, resp := client.AssociateCustomDomainRequest(params)
 //
-//    // Example sending a request using the AssociateCustomDomainRequest method.
-//    req, resp := client.AssociateCustomDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/AssociateCustomDomain
 func (c *AppRunner) AssociateCustomDomainRequest(input *AssociateCustomDomainInput) (req *request.Request, output *AssociateCustomDomainOutput) {
@@ -76,15 +75,16 @@ func (c *AppRunner) AssociateCustomDomainRequest(input *AssociateCustomDomainInp
 // API operation AssociateCustomDomain for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/AssociateCustomDomain
 func (c *AppRunner) AssociateCustomDomain(input *AssociateCustomDomainInput) (*AssociateCustomDomainOutput, error) {
@@ -124,14 +124,13 @@ const opCreateAutoScalingConfiguration = "CreateAutoScalingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAutoScalingConfigurationRequest method.
+//	req, resp := client.CreateAutoScalingConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateAutoScalingConfigurationRequest method.
-//    req, resp := client.CreateAutoScalingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateAutoScalingConfiguration
 func (c *AppRunner) CreateAutoScalingConfigurationRequest(input *CreateAutoScalingConfigurationInput) (req *request.Request, output *CreateAutoScalingConfigurationOutput) {
@@ -179,19 +178,20 @@ func (c *AppRunner) CreateAutoScalingConfigurationRequest(input *CreateAutoScali
 // API operation CreateAutoScalingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ServiceQuotaExceededException
-//   App Runner can't create this resource. You've reached your account quota
-//   for this resource type.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
-//   in the Amazon Web Services General Reference.
+//   - ServiceQuotaExceededException
+//     App Runner can't create this resource. You've reached your account quota
+//     for this resource type.
+//
+//     For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateAutoScalingConfiguration
 func (c *AppRunner) CreateAutoScalingConfiguration(input *CreateAutoScalingConfigurationInput) (*CreateAutoScalingConfigurationOutput, error) {
@@ -231,14 +231,13 @@ const opCreateConnection = "CreateConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionRequest method.
+//	req, resp := client.CreateConnectionRequest(params)
 //
-//    // Example sending a request using the CreateConnectionRequest method.
-//    req, resp := client.CreateConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateConnection
 func (c *AppRunner) CreateConnectionRequest(input *CreateConnectionInput) (req *request.Request, output *CreateConnectionOutput) {
@@ -276,19 +275,20 @@ func (c *AppRunner) CreateConnectionRequest(input *CreateConnectionInput) (req *
 // API operation CreateConnection for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ServiceQuotaExceededException
-//   App Runner can't create this resource. You've reached your account quota
-//   for this resource type.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
-//   in the Amazon Web Services General Reference.
+//   - ServiceQuotaExceededException
+//     App Runner can't create this resource. You've reached your account quota
+//     for this resource type.
+//
+//     For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateConnection
 func (c *AppRunner) CreateConnection(input *CreateConnectionInput) (*CreateConnectionOutput, error) {
@@ -328,14 +328,13 @@ const opCreateObservabilityConfiguration = "CreateObservabilityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateObservabilityConfigurationRequest method.
+//	req, resp := client.CreateObservabilityConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateObservabilityConfigurationRequest method.
-//    req, resp := client.CreateObservabilityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateObservabilityConfiguration
 func (c *AppRunner) CreateObservabilityConfigurationRequest(input *CreateObservabilityConfigurationInput) (req *request.Request, output *CreateObservabilityConfigurationOutput) {
@@ -382,19 +381,20 @@ func (c *AppRunner) CreateObservabilityConfigurationRequest(input *CreateObserva
 // API operation CreateObservabilityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ServiceQuotaExceededException
-//   App Runner can't create this resource. You've reached your account quota
-//   for this resource type.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
-//   in the Amazon Web Services General Reference.
+//   - ServiceQuotaExceededException
+//     App Runner can't create this resource. You've reached your account quota
+//     for this resource type.
+//
+//     For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateObservabilityConfiguration
 func (c *AppRunner) CreateObservabilityConfiguration(input *CreateObservabilityConfigurationInput) (*CreateObservabilityConfigurationOutput, error) {
@@ -434,14 +434,13 @@ const opCreateService = "CreateService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateServiceRequest method.
+//	req, resp := client.CreateServiceRequest(params)
 //
-//    // Example sending a request using the CreateServiceRequest method.
-//    req, resp := client.CreateServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateService
 func (c *AppRunner) CreateServiceRequest(input *CreateServiceInput) (req *request.Request, output *CreateServiceOutput) {
@@ -477,19 +476,20 @@ func (c *AppRunner) CreateServiceRequest(input *CreateServiceInput) (req *reques
 // API operation CreateService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ServiceQuotaExceededException
-//   App Runner can't create this resource. You've reached your account quota
-//   for this resource type.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
-//   in the Amazon Web Services General Reference.
+//   - ServiceQuotaExceededException
+//     App Runner can't create this resource. You've reached your account quota
+//     for this resource type.
+//
+//     For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateService
 func (c *AppRunner) CreateService(input *CreateServiceInput) (*CreateServiceOutput, error) {
@@ -529,14 +529,13 @@ const opCreateVpcConnector = "CreateVpcConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcConnectorRequest method.
+//	req, resp := client.CreateVpcConnectorRequest(params)
 //
-//    // Example sending a request using the CreateVpcConnectorRequest method.
-//    req, resp := client.CreateVpcConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateVpcConnector
 func (c *AppRunner) CreateVpcConnectorRequest(input *CreateVpcConnectorInput) (req *request.Request, output *CreateVpcConnectorOutput) {
@@ -569,19 +568,20 @@ func (c *AppRunner) CreateVpcConnectorRequest(input *CreateVpcConnectorInput) (r
 // API operation CreateVpcConnector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ServiceQuotaExceededException
-//   App Runner can't create this resource. You've reached your account quota
-//   for this resource type.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
-//   in the Amazon Web Services General Reference.
+//   - ServiceQuotaExceededException
+//     App Runner can't create this resource. You've reached your account quota
+//     for this resource type.
+//
+//     For App Runner per-resource quotas, see App Runner endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/apprunner.html)
+//     in the Amazon Web Services General Reference.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/CreateVpcConnector
 func (c *AppRunner) CreateVpcConnector(input *CreateVpcConnectorInput) (*CreateVpcConnectorOutput, error) {
@@ -621,14 +621,13 @@ const opDeleteAutoScalingConfiguration = "DeleteAutoScalingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAutoScalingConfigurationRequest method.
+//	req, resp := client.DeleteAutoScalingConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteAutoScalingConfigurationRequest method.
-//    req, resp := client.DeleteAutoScalingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteAutoScalingConfiguration
 func (c *AppRunner) DeleteAutoScalingConfigurationRequest(input *DeleteAutoScalingConfigurationInput) (req *request.Request, output *DeleteAutoScalingConfigurationOutput) {
@@ -661,16 +660,17 @@ func (c *AppRunner) DeleteAutoScalingConfigurationRequest(input *DeleteAutoScali
 // API operation DeleteAutoScalingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteAutoScalingConfiguration
 func (c *AppRunner) DeleteAutoScalingConfiguration(input *DeleteAutoScalingConfigurationInput) (*DeleteAutoScalingConfigurationOutput, error) {
@@ -710,14 +710,13 @@ const opDeleteConnection = "DeleteConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionRequest method.
+//	req, resp := client.DeleteConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionRequest method.
-//    req, resp := client.DeleteConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteConnection
 func (c *AppRunner) DeleteConnectionRequest(input *DeleteConnectionInput) (req *request.Request, output *DeleteConnectionOutput) {
@@ -750,16 +749,17 @@ func (c *AppRunner) DeleteConnectionRequest(input *DeleteConnectionInput) (req *
 // API operation DeleteConnection for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteConnection
 func (c *AppRunner) DeleteConnection(input *DeleteConnectionInput) (*DeleteConnectionOutput, error) {
@@ -799,14 +799,13 @@ const opDeleteObservabilityConfiguration = "DeleteObservabilityConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteObservabilityConfigurationRequest method.
+//	req, resp := client.DeleteObservabilityConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteObservabilityConfigurationRequest method.
-//    req, resp := client.DeleteObservabilityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteObservabilityConfiguration
 func (c *AppRunner) DeleteObservabilityConfigurationRequest(input *DeleteObservabilityConfigurationInput) (req *request.Request, output *DeleteObservabilityConfigurationOutput) {
@@ -839,16 +838,17 @@ func (c *AppRunner) DeleteObservabilityConfigurationRequest(input *DeleteObserva
 // API operation DeleteObservabilityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteObservabilityConfiguration
 func (c *AppRunner) DeleteObservabilityConfiguration(input *DeleteObservabilityConfigurationInput) (*DeleteObservabilityConfigurationOutput, error) {
@@ -888,14 +888,13 @@ const opDeleteService = "DeleteService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServiceRequest method.
+//	req, resp := client.DeleteServiceRequest(params)
 //
-//    // Example sending a request using the DeleteServiceRequest method.
-//    req, resp := client.DeleteServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteService
 func (c *AppRunner) DeleteServiceRequest(input *DeleteServiceInput) (req *request.Request, output *DeleteServiceOutput) {
@@ -930,19 +929,20 @@ func (c *AppRunner) DeleteServiceRequest(input *DeleteServiceInput) (req *reques
 // API operation DeleteService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteService
 func (c *AppRunner) DeleteService(input *DeleteServiceInput) (*DeleteServiceOutput, error) {
@@ -982,14 +982,13 @@ const opDeleteVpcConnector = "DeleteVpcConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcConnectorRequest method.
+//	req, resp := client.DeleteVpcConnectorRequest(params)
 //
-//    // Example sending a request using the DeleteVpcConnectorRequest method.
-//    req, resp := client.DeleteVpcConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteVpcConnector
 func (c *AppRunner) DeleteVpcConnectorRequest(input *DeleteVpcConnectorInput) (req *request.Request, output *DeleteVpcConnectorOutput) {
@@ -1021,16 +1020,17 @@ func (c *AppRunner) DeleteVpcConnectorRequest(input *DeleteVpcConnectorInput) (r
 // API operation DeleteVpcConnector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DeleteVpcConnector
 func (c *AppRunner) DeleteVpcConnector(input *DeleteVpcConnectorInput) (*DeleteVpcConnectorOutput, error) {
@@ -1070,14 +1070,13 @@ const opDescribeAutoScalingConfiguration = "DescribeAutoScalingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAutoScalingConfigurationRequest method.
+//	req, resp := client.DescribeAutoScalingConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeAutoScalingConfigurationRequest method.
-//    req, resp := client.DescribeAutoScalingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeAutoScalingConfiguration
 func (c *AppRunner) DescribeAutoScalingConfigurationRequest(input *DescribeAutoScalingConfigurationInput) (req *request.Request, output *DescribeAutoScalingConfigurationOutput) {
@@ -1109,16 +1108,17 @@ func (c *AppRunner) DescribeAutoScalingConfigurationRequest(input *DescribeAutoS
 // API operation DescribeAutoScalingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeAutoScalingConfiguration
 func (c *AppRunner) DescribeAutoScalingConfiguration(input *DescribeAutoScalingConfigurationInput) (*DescribeAutoScalingConfigurationOutput, error) {
@@ -1158,14 +1158,13 @@ const opDescribeCustomDomains = "DescribeCustomDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCustomDomainsRequest method.
+//	req, resp := client.DescribeCustomDomainsRequest(params)
 //
-//    // Example sending a request using the DescribeCustomDomainsRequest method.
-//    req, resp := client.DescribeCustomDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeCustomDomains
 func (c *AppRunner) DescribeCustomDomainsRequest(input *DescribeCustomDomainsInput) (req *request.Request, output *DescribeCustomDomainsOutput) {
@@ -1203,16 +1202,17 @@ func (c *AppRunner) DescribeCustomDomainsRequest(input *DescribeCustomDomainsInp
 // API operation DescribeCustomDomains for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeCustomDomains
 func (c *AppRunner) DescribeCustomDomains(input *DescribeCustomDomainsInput) (*DescribeCustomDomainsOutput, error) {
@@ -1244,15 +1244,14 @@ func (c *AppRunner) DescribeCustomDomainsWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCustomDomains operation.
-//    pageNum := 0
-//    err := client.DescribeCustomDomainsPages(params,
-//        func(page *apprunner.DescribeCustomDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCustomDomains operation.
+//	pageNum := 0
+//	err := client.DescribeCustomDomainsPages(params,
+//	    func(page *apprunner.DescribeCustomDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) DescribeCustomDomainsPages(input *DescribeCustomDomainsInput, fn func(*DescribeCustomDomainsOutput, bool) bool) error {
 	return c.DescribeCustomDomainsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1304,14 +1303,13 @@ const opDescribeObservabilityConfiguration = "DescribeObservabilityConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeObservabilityConfigurationRequest method.
+//	req, resp := client.DescribeObservabilityConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeObservabilityConfigurationRequest method.
-//    req, resp := client.DescribeObservabilityConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeObservabilityConfiguration
 func (c *AppRunner) DescribeObservabilityConfigurationRequest(input *DescribeObservabilityConfigurationInput) (req *request.Request, output *DescribeObservabilityConfigurationOutput) {
@@ -1342,16 +1340,17 @@ func (c *AppRunner) DescribeObservabilityConfigurationRequest(input *DescribeObs
 // API operation DescribeObservabilityConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeObservabilityConfiguration
 func (c *AppRunner) DescribeObservabilityConfiguration(input *DescribeObservabilityConfigurationInput) (*DescribeObservabilityConfigurationOutput, error) {
@@ -1391,14 +1390,13 @@ const opDescribeService = "DescribeService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServiceRequest method.
+//	req, resp := client.DescribeServiceRequest(params)
 //
-//    // Example sending a request using the DescribeServiceRequest method.
-//    req, resp := client.DescribeServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeService
 func (c *AppRunner) DescribeServiceRequest(input *DescribeServiceInput) (req *request.Request, output *DescribeServiceOutput) {
@@ -1429,16 +1427,17 @@ func (c *AppRunner) DescribeServiceRequest(input *DescribeServiceInput) (req *re
 // API operation DescribeService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeService
 func (c *AppRunner) DescribeService(input *DescribeServiceInput) (*DescribeServiceOutput, error) {
@@ -1478,14 +1477,13 @@ const opDescribeVpcConnector = "DescribeVpcConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcConnectorRequest method.
+//	req, resp := client.DescribeVpcConnectorRequest(params)
 //
-//    // Example sending a request using the DescribeVpcConnectorRequest method.
-//    req, resp := client.DescribeVpcConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeVpcConnector
 func (c *AppRunner) DescribeVpcConnectorRequest(input *DescribeVpcConnectorInput) (req *request.Request, output *DescribeVpcConnectorOutput) {
@@ -1516,16 +1514,17 @@ func (c *AppRunner) DescribeVpcConnectorRequest(input *DescribeVpcConnectorInput
 // API operation DescribeVpcConnector for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DescribeVpcConnector
 func (c *AppRunner) DescribeVpcConnector(input *DescribeVpcConnectorInput) (*DescribeVpcConnectorOutput, error) {
@@ -1565,14 +1564,13 @@ const opDisassociateCustomDomain = "DisassociateCustomDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateCustomDomainRequest method.
+//	req, resp := client.DisassociateCustomDomainRequest(params)
 //
-//    // Example sending a request using the DisassociateCustomDomainRequest method.
-//    req, resp := client.DisassociateCustomDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DisassociateCustomDomain
 func (c *AppRunner) DisassociateCustomDomainRequest(input *DisassociateCustomDomainInput) (req *request.Request, output *DisassociateCustomDomainOutput) {
@@ -1609,19 +1607,20 @@ func (c *AppRunner) DisassociateCustomDomainRequest(input *DisassociateCustomDom
 // API operation DisassociateCustomDomain for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/DisassociateCustomDomain
 func (c *AppRunner) DisassociateCustomDomain(input *DisassociateCustomDomainInput) (*DisassociateCustomDomainOutput, error) {
@@ -1661,14 +1660,13 @@ const opListAutoScalingConfigurations = "ListAutoScalingConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAutoScalingConfigurationsRequest method.
+//	req, resp := client.ListAutoScalingConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListAutoScalingConfigurationsRequest method.
-//    req, resp := client.ListAutoScalingConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListAutoScalingConfigurations
 func (c *AppRunner) ListAutoScalingConfigurationsRequest(input *ListAutoScalingConfigurationsInput) (req *request.Request, output *ListAutoScalingConfigurationsOutput) {
@@ -1711,12 +1709,13 @@ func (c *AppRunner) ListAutoScalingConfigurationsRequest(input *ListAutoScalingC
 // API operation ListAutoScalingConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListAutoScalingConfigurations
 func (c *AppRunner) ListAutoScalingConfigurations(input *ListAutoScalingConfigurationsInput) (*ListAutoScalingConfigurationsOutput, error) {
@@ -1748,15 +1747,14 @@ func (c *AppRunner) ListAutoScalingConfigurationsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAutoScalingConfigurations operation.
-//    pageNum := 0
-//    err := client.ListAutoScalingConfigurationsPages(params,
-//        func(page *apprunner.ListAutoScalingConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAutoScalingConfigurations operation.
+//	pageNum := 0
+//	err := client.ListAutoScalingConfigurationsPages(params,
+//	    func(page *apprunner.ListAutoScalingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListAutoScalingConfigurationsPages(input *ListAutoScalingConfigurationsInput, fn func(*ListAutoScalingConfigurationsOutput, bool) bool) error {
 	return c.ListAutoScalingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1808,14 +1806,13 @@ const opListConnections = "ListConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConnectionsRequest method.
+//	req, resp := client.ListConnectionsRequest(params)
 //
-//    // Example sending a request using the ListConnectionsRequest method.
-//    req, resp := client.ListConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListConnections
 func (c *AppRunner) ListConnectionsRequest(input *ListConnectionsInput) (req *request.Request, output *ListConnectionsOutput) {
@@ -1853,12 +1850,13 @@ func (c *AppRunner) ListConnectionsRequest(input *ListConnectionsInput) (req *re
 // API operation ListConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListConnections
 func (c *AppRunner) ListConnections(input *ListConnectionsInput) (*ListConnectionsOutput, error) {
@@ -1890,15 +1888,14 @@ func (c *AppRunner) ListConnectionsWithContext(ctx aws.Context, input *ListConne
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConnections operation.
-//    pageNum := 0
-//    err := client.ListConnectionsPages(params,
-//        func(page *apprunner.ListConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConnections operation.
+//	pageNum := 0
+//	err := client.ListConnectionsPages(params,
+//	    func(page *apprunner.ListConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListConnectionsPages(input *ListConnectionsInput, fn func(*ListConnectionsOutput, bool) bool) error {
 	return c.ListConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1950,14 +1947,13 @@ const opListObservabilityConfigurations = "ListObservabilityConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListObservabilityConfigurationsRequest method.
+//	req, resp := client.ListObservabilityConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListObservabilityConfigurationsRequest method.
-//    req, resp := client.ListObservabilityConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListObservabilityConfigurations
 func (c *AppRunner) ListObservabilityConfigurationsRequest(input *ListObservabilityConfigurationsInput) (req *request.Request, output *ListObservabilityConfigurationsOutput) {
@@ -2000,12 +1996,13 @@ func (c *AppRunner) ListObservabilityConfigurationsRequest(input *ListObservabil
 // API operation ListObservabilityConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListObservabilityConfigurations
 func (c *AppRunner) ListObservabilityConfigurations(input *ListObservabilityConfigurationsInput) (*ListObservabilityConfigurationsOutput, error) {
@@ -2037,15 +2034,14 @@ func (c *AppRunner) ListObservabilityConfigurationsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListObservabilityConfigurations operation.
-//    pageNum := 0
-//    err := client.ListObservabilityConfigurationsPages(params,
-//        func(page *apprunner.ListObservabilityConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListObservabilityConfigurations operation.
+//	pageNum := 0
+//	err := client.ListObservabilityConfigurationsPages(params,
+//	    func(page *apprunner.ListObservabilityConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListObservabilityConfigurationsPages(input *ListObservabilityConfigurationsInput, fn func(*ListObservabilityConfigurationsOutput, bool) bool) error {
 	return c.ListObservabilityConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2097,14 +2093,13 @@ const opListOperations = "ListOperations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOperationsRequest method.
+//	req, resp := client.ListOperationsRequest(params)
 //
-//    // Example sending a request using the ListOperationsRequest method.
-//    req, resp := client.ListOperationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListOperations
 func (c *AppRunner) ListOperationsRequest(input *ListOperationsInput) (req *request.Request, output *ListOperationsOutput) {
@@ -2144,16 +2139,17 @@ func (c *AppRunner) ListOperationsRequest(input *ListOperationsInput) (req *requ
 // API operation ListOperations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListOperations
 func (c *AppRunner) ListOperations(input *ListOperationsInput) (*ListOperationsOutput, error) {
@@ -2185,15 +2181,14 @@ func (c *AppRunner) ListOperationsWithContext(ctx aws.Context, input *ListOperat
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOperations operation.
-//    pageNum := 0
-//    err := client.ListOperationsPages(params,
-//        func(page *apprunner.ListOperationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOperations operation.
+//	pageNum := 0
+//	err := client.ListOperationsPages(params,
+//	    func(page *apprunner.ListOperationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListOperationsPages(input *ListOperationsInput, fn func(*ListOperationsOutput, bool) bool) error {
 	return c.ListOperationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2245,14 +2240,13 @@ const opListServices = "ListServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListServicesRequest method.
+//	req, resp := client.ListServicesRequest(params)
 //
-//    // Example sending a request using the ListServicesRequest method.
-//    req, resp := client.ListServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListServices
 func (c *AppRunner) ListServicesRequest(input *ListServicesInput) (req *request.Request, output *ListServicesOutput) {
@@ -2290,12 +2284,13 @@ func (c *AppRunner) ListServicesRequest(input *ListServicesInput) (req *request.
 // API operation ListServices for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListServices
 func (c *AppRunner) ListServices(input *ListServicesInput) (*ListServicesOutput, error) {
@@ -2327,15 +2322,14 @@ func (c *AppRunner) ListServicesWithContext(ctx aws.Context, input *ListServices
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListServices operation.
-//    pageNum := 0
-//    err := client.ListServicesPages(params,
-//        func(page *apprunner.ListServicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListServices operation.
+//	pageNum := 0
+//	err := client.ListServicesPages(params,
+//	    func(page *apprunner.ListServicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListServicesPages(input *ListServicesInput, fn func(*ListServicesOutput, bool) bool) error {
 	return c.ListServicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2387,14 +2381,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListTagsForResource
 func (c *AppRunner) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2426,19 +2419,20 @@ func (c *AppRunner) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListTagsForResource
 func (c *AppRunner) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2478,14 +2472,13 @@ const opListVpcConnectors = "ListVpcConnectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVpcConnectorsRequest method.
+//	req, resp := client.ListVpcConnectorsRequest(params)
 //
-//    // Example sending a request using the ListVpcConnectorsRequest method.
-//    req, resp := client.ListVpcConnectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListVpcConnectors
 func (c *AppRunner) ListVpcConnectorsRequest(input *ListVpcConnectorsInput) (req *request.Request, output *ListVpcConnectorsOutput) {
@@ -2522,12 +2515,13 @@ func (c *AppRunner) ListVpcConnectorsRequest(input *ListVpcConnectorsInput) (req
 // API operation ListVpcConnectors for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ListVpcConnectors
 func (c *AppRunner) ListVpcConnectors(input *ListVpcConnectorsInput) (*ListVpcConnectorsOutput, error) {
@@ -2559,15 +2553,14 @@ func (c *AppRunner) ListVpcConnectorsWithContext(ctx aws.Context, input *ListVpc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListVpcConnectors operation.
-//    pageNum := 0
-//    err := client.ListVpcConnectorsPages(params,
-//        func(page *apprunner.ListVpcConnectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListVpcConnectors operation.
+//	pageNum := 0
+//	err := client.ListVpcConnectorsPages(params,
+//	    func(page *apprunner.ListVpcConnectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppRunner) ListVpcConnectorsPages(input *ListVpcConnectorsInput, fn func(*ListVpcConnectorsOutput, bool) bool) error {
 	return c.ListVpcConnectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2619,14 +2612,13 @@ const opPauseService = "PauseService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PauseServiceRequest method.
+//	req, resp := client.PauseServiceRequest(params)
 //
-//    // Example sending a request using the PauseServiceRequest method.
-//    req, resp := client.PauseServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/PauseService
 func (c *AppRunner) PauseServiceRequest(input *PauseServiceInput) (req *request.Request, output *PauseServiceOutput) {
@@ -2662,19 +2654,20 @@ func (c *AppRunner) PauseServiceRequest(input *PauseServiceInput) (req *request.
 // API operation PauseService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/PauseService
 func (c *AppRunner) PauseService(input *PauseServiceInput) (*PauseServiceOutput, error) {
@@ -2714,14 +2707,13 @@ const opResumeService = "ResumeService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResumeServiceRequest method.
+//	req, resp := client.ResumeServiceRequest(params)
 //
-//    // Example sending a request using the ResumeServiceRequest method.
-//    req, resp := client.ResumeServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ResumeService
 func (c *AppRunner) ResumeServiceRequest(input *ResumeServiceInput) (req *request.Request, output *ResumeServiceOutput) {
@@ -2757,19 +2749,20 @@ func (c *AppRunner) ResumeServiceRequest(input *ResumeServiceInput) (req *reques
 // API operation ResumeService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/ResumeService
 func (c *AppRunner) ResumeService(input *ResumeServiceInput) (*ResumeServiceOutput, error) {
@@ -2809,14 +2802,13 @@ const opStartDeployment = "StartDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeploymentRequest method.
+//	req, resp := client.StartDeploymentRequest(params)
 //
-//    // Example sending a request using the StartDeploymentRequest method.
-//    req, resp := client.StartDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/StartDeployment
 func (c *AppRunner) StartDeploymentRequest(input *StartDeploymentInput) (req *request.Request, output *StartDeploymentOutput) {
@@ -2857,16 +2849,17 @@ func (c *AppRunner) StartDeploymentRequest(input *StartDeploymentInput) (req *re
 // API operation StartDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/StartDeployment
 func (c *AppRunner) StartDeployment(input *StartDeploymentInput) (*StartDeploymentOutput, error) {
@@ -2906,14 +2899,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/TagResource
 func (c *AppRunner) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2946,19 +2938,20 @@ func (c *AppRunner) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/TagResource
 func (c *AppRunner) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2998,14 +2991,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/UntagResource
 func (c *AppRunner) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3037,19 +3029,20 @@ func (c *AppRunner) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
+//
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/UntagResource
 func (c *AppRunner) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3089,14 +3082,13 @@ const opUpdateService = "UpdateService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateServiceRequest method.
+//	req, resp := client.UpdateServiceRequest(params)
 //
-//    // Example sending a request using the UpdateServiceRequest method.
-//    req, resp := client.UpdateServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/UpdateService
 func (c *AppRunner) UpdateServiceRequest(input *UpdateServiceInput) (req *request.Request, output *UpdateServiceOutput) {
@@ -3138,19 +3130,20 @@ func (c *AppRunner) UpdateServiceRequest(input *UpdateServiceInput) (req *reques
 // API operation UpdateService for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more input parameters aren't valid. Refer to the API action's document
-//   page, correct the input parameters, and try the action again.
 //
-//   * ResourceNotFoundException
-//   A resource doesn't exist for the specified Amazon Resource Name (ARN) in
-//   your Amazon Web Services account.
+//   - InvalidRequestException
+//     One or more input parameters aren't valid. Refer to the API action's document
+//     page, correct the input parameters, and try the action again.
 //
-//   * InvalidStateException
-//   You can't perform this action when the resource is in its current state.
+//   - ResourceNotFoundException
+//     A resource doesn't exist for the specified Amazon Resource Name (ARN) in
+//     your Amazon Web Services account.
 //
-//   * InternalServiceErrorException
-//   An unexpected service exception occurred.
+//   - InvalidStateException
+//     You can't perform this action when the resource is in its current state.
+//
+//   - InternalServiceErrorException
+//     An unexpected service exception occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apprunner-2020-05-15/UpdateService
 func (c *AppRunner) UpdateService(input *UpdateServiceInput) (*UpdateServiceOutput, error) {

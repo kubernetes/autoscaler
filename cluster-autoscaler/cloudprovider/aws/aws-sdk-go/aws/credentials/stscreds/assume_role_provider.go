@@ -9,7 +9,7 @@ to refresh the credentials will be synchronized. But, the SDK is unable to
 ensure synchronous usage of the AssumeRoleProvider if the value is shared
 between multiple Credentials, Sessions or service clients.
 
-Assume Role
+# Assume Role
 
 To assume an IAM role using STS with the SDK you can create a new Credentials
 with the SDKs's stscreds package.
@@ -27,7 +27,7 @@ with the SDKs's stscreds package.
 	// from assumed role.
 	svc := s3.New(sess, &aws.Config{Credentials: creds})
 
-Assume Role with static MFA Token
+# Assume Role with static MFA Token
 
 To assume an IAM role with a MFA token you can either specify a MFA token code
 directly or provide a function to prompt the user each time the credentials
@@ -49,7 +49,7 @@ credentials.
 	// from assumed role.
 	svc := s3.New(sess, &aws.Config{Credentials: creds})
 
-Assume Role with MFA Token Provider
+# Assume Role with MFA Token Provider
 
 To assume an IAM role with MFA for longer running tasks where the credentials
 may need to be refreshed setting the TokenProvider field of AssumeRoleProvider
@@ -74,7 +74,6 @@ single Credentials with an AssumeRoleProvider can be shared safely.
 	// Create service client value configured for credentials
 	// from assumed role.
 	svc := s3.New(sess, &aws.Config{Credentials: creds})
-
 */
 package stscreds
 

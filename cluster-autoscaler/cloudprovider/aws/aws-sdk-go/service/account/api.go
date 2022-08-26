@@ -28,14 +28,13 @@ const opDeleteAlternateContact = "DeleteAlternateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAlternateContactRequest method.
+//	req, resp := client.DeleteAlternateContactRequest(params)
 //
-//    // Example sending a request using the DeleteAlternateContactRequest method.
-//    req, resp := client.DeleteAlternateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/DeleteAlternateContact
 func (c *Account) DeleteAlternateContactRequest(input *DeleteAlternateContactInput) (req *request.Request, output *DeleteAlternateContactOutput) {
@@ -70,23 +69,24 @@ func (c *Account) DeleteAlternateContactRequest(input *DeleteAlternateContactInp
 // API operation DeleteAlternateContact for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation failed because it specified a resource that can't be found.
 //
-//   * ValidationException
-//   The operation failed because one of the input parameters was invalid.
+//   - ResourceNotFoundException
+//     The operation failed because it specified a resource that can't be found.
 //
-//   * AccessDeniedException
-//   The operation failed because the calling identity doesn't have the minimum
-//   required permissions.
+//   - ValidationException
+//     The operation failed because one of the input parameters was invalid.
 //
-//   * TooManyRequestsException
-//   The operation failed because it was called too frequently and exceeded a
-//   throttle limit.
+//   - AccessDeniedException
+//     The operation failed because the calling identity doesn't have the minimum
+//     required permissions.
 //
-//   * InternalServerException
-//   The operation failed because of an error internal to Amazon Web Services.
-//   Try your operation again later.
+//   - TooManyRequestsException
+//     The operation failed because it was called too frequently and exceeded a
+//     throttle limit.
+//
+//   - InternalServerException
+//     The operation failed because of an error internal to Amazon Web Services.
+//     Try your operation again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/DeleteAlternateContact
 func (c *Account) DeleteAlternateContact(input *DeleteAlternateContactInput) (*DeleteAlternateContactOutput, error) {
@@ -126,14 +126,13 @@ const opGetAlternateContact = "GetAlternateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAlternateContactRequest method.
+//	req, resp := client.GetAlternateContactRequest(params)
 //
-//    // Example sending a request using the GetAlternateContactRequest method.
-//    req, resp := client.GetAlternateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/GetAlternateContact
 func (c *Account) GetAlternateContactRequest(input *GetAlternateContactInput) (req *request.Request, output *GetAlternateContactOutput) {
@@ -168,23 +167,24 @@ func (c *Account) GetAlternateContactRequest(input *GetAlternateContactInput) (r
 // API operation GetAlternateContact for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The operation failed because it specified a resource that can't be found.
 //
-//   * ValidationException
-//   The operation failed because one of the input parameters was invalid.
+//   - ResourceNotFoundException
+//     The operation failed because it specified a resource that can't be found.
 //
-//   * AccessDeniedException
-//   The operation failed because the calling identity doesn't have the minimum
-//   required permissions.
+//   - ValidationException
+//     The operation failed because one of the input parameters was invalid.
 //
-//   * TooManyRequestsException
-//   The operation failed because it was called too frequently and exceeded a
-//   throttle limit.
+//   - AccessDeniedException
+//     The operation failed because the calling identity doesn't have the minimum
+//     required permissions.
 //
-//   * InternalServerException
-//   The operation failed because of an error internal to Amazon Web Services.
-//   Try your operation again later.
+//   - TooManyRequestsException
+//     The operation failed because it was called too frequently and exceeded a
+//     throttle limit.
+//
+//   - InternalServerException
+//     The operation failed because of an error internal to Amazon Web Services.
+//     Try your operation again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/GetAlternateContact
 func (c *Account) GetAlternateContact(input *GetAlternateContactInput) (*GetAlternateContactOutput, error) {
@@ -224,14 +224,13 @@ const opPutAlternateContact = "PutAlternateContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAlternateContactRequest method.
+//	req, resp := client.PutAlternateContactRequest(params)
 //
-//    // Example sending a request using the PutAlternateContactRequest method.
-//    req, resp := client.PutAlternateContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/PutAlternateContact
 func (c *Account) PutAlternateContactRequest(input *PutAlternateContactInput) (req *request.Request, output *PutAlternateContactOutput) {
@@ -267,20 +266,21 @@ func (c *Account) PutAlternateContactRequest(input *PutAlternateContactInput) (r
 // API operation PutAlternateContact for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The operation failed because one of the input parameters was invalid.
 //
-//   * AccessDeniedException
-//   The operation failed because the calling identity doesn't have the minimum
-//   required permissions.
+//   - ValidationException
+//     The operation failed because one of the input parameters was invalid.
 //
-//   * TooManyRequestsException
-//   The operation failed because it was called too frequently and exceeded a
-//   throttle limit.
+//   - AccessDeniedException
+//     The operation failed because the calling identity doesn't have the minimum
+//     required permissions.
 //
-//   * InternalServerException
-//   The operation failed because of an error internal to Amazon Web Services.
-//   Try your operation again later.
+//   - TooManyRequestsException
+//     The operation failed because it was called too frequently and exceeded a
+//     throttle limit.
+//
+//   - InternalServerException
+//     The operation failed because of an error internal to Amazon Web Services.
+//     Try your operation again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/account-2021-02-01/PutAlternateContact
 func (c *Account) PutAlternateContact(input *PutAlternateContactInput) (*PutAlternateContactOutput, error) {

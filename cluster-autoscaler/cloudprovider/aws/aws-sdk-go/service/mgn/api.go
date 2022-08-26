@@ -28,14 +28,13 @@ const opChangeServerLifeCycleState = "ChangeServerLifeCycleState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ChangeServerLifeCycleStateRequest method.
+//	req, resp := client.ChangeServerLifeCycleStateRequest(params)
 //
-//    // Example sending a request using the ChangeServerLifeCycleStateRequest method.
-//    req, resp := client.ChangeServerLifeCycleStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/ChangeServerLifeCycleState
 func (c *Mgn) ChangeServerLifeCycleStateRequest(input *ChangeServerLifeCycleStateInput) (req *request.Request, output *ChangeServerLifeCycleStateOutput) {
@@ -69,18 +68,19 @@ func (c *Mgn) ChangeServerLifeCycleStateRequest(input *ChangeServerLifeCycleStat
 // API operation ChangeServerLifeCycleState for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/ChangeServerLifeCycleState
 func (c *Mgn) ChangeServerLifeCycleState(input *ChangeServerLifeCycleStateInput) (*ChangeServerLifeCycleStateOutput, error) {
@@ -120,14 +120,13 @@ const opCreateReplicationConfigurationTemplate = "CreateReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplicationConfigurationTemplateRequest method.
+//	req, resp := client.CreateReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the CreateReplicationConfigurationTemplateRequest method.
-//    req, resp := client.CreateReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/CreateReplicationConfigurationTemplate
 func (c *Mgn) CreateReplicationConfigurationTemplateRequest(input *CreateReplicationConfigurationTemplateInput) (req *request.Request, output *CreateReplicationConfigurationTemplateOutput) {
@@ -158,14 +157,15 @@ func (c *Mgn) CreateReplicationConfigurationTemplateRequest(input *CreateReplica
 // API operation CreateReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
+//
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/CreateReplicationConfigurationTemplate
 func (c *Mgn) CreateReplicationConfigurationTemplate(input *CreateReplicationConfigurationTemplateInput) (*CreateReplicationConfigurationTemplateOutput, error) {
@@ -205,14 +205,13 @@ const opDeleteJob = "DeleteJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobRequest method.
+//	req, resp := client.DeleteJobRequest(params)
 //
-//    // Example sending a request using the DeleteJobRequest method.
-//    req, resp := client.DeleteJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteJob
 func (c *Mgn) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, output *DeleteJobOutput) {
@@ -244,15 +243,16 @@ func (c *Mgn) DeleteJobRequest(input *DeleteJobInput) (req *request.Request, out
 // API operation DeleteJob for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteJob
 func (c *Mgn) DeleteJob(input *DeleteJobInput) (*DeleteJobOutput, error) {
@@ -292,14 +292,13 @@ const opDeleteReplicationConfigurationTemplate = "DeleteReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReplicationConfigurationTemplateRequest method.
+//	req, resp := client.DeleteReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteReplicationConfigurationTemplateRequest method.
-//    req, resp := client.DeleteReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteReplicationConfigurationTemplate
 func (c *Mgn) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplicationConfigurationTemplateInput) (req *request.Request, output *DeleteReplicationConfigurationTemplateOutput) {
@@ -321,7 +320,7 @@ func (c *Mgn) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplica
 
 // DeleteReplicationConfigurationTemplate API operation for Application Migration Service.
 //
-// Deletes a single Replication Configuration Template by ID
+// # Deletes a single Replication Configuration Template by ID
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -331,15 +330,16 @@ func (c *Mgn) DeleteReplicationConfigurationTemplateRequest(input *DeleteReplica
 // API operation DeleteReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteReplicationConfigurationTemplate
 func (c *Mgn) DeleteReplicationConfigurationTemplate(input *DeleteReplicationConfigurationTemplateInput) (*DeleteReplicationConfigurationTemplateOutput, error) {
@@ -379,14 +379,13 @@ const opDeleteSourceServer = "DeleteSourceServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSourceServerRequest method.
+//	req, resp := client.DeleteSourceServerRequest(params)
 //
-//    // Example sending a request using the DeleteSourceServerRequest method.
-//    req, resp := client.DeleteSourceServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteSourceServer
 func (c *Mgn) DeleteSourceServerRequest(input *DeleteSourceServerInput) (req *request.Request, output *DeleteSourceServerOutput) {
@@ -418,15 +417,16 @@ func (c *Mgn) DeleteSourceServerRequest(input *DeleteSourceServerInput) (req *re
 // API operation DeleteSourceServer for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteSourceServer
 func (c *Mgn) DeleteSourceServer(input *DeleteSourceServerInput) (*DeleteSourceServerOutput, error) {
@@ -466,14 +466,13 @@ const opDeleteVcenterClient = "DeleteVcenterClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVcenterClientRequest method.
+//	req, resp := client.DeleteVcenterClientRequest(params)
 //
-//    // Example sending a request using the DeleteVcenterClientRequest method.
-//    req, resp := client.DeleteVcenterClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteVcenterClient
 func (c *Mgn) DeleteVcenterClientRequest(input *DeleteVcenterClientInput) (req *request.Request, output *DeleteVcenterClientOutput) {
@@ -505,14 +504,15 @@ func (c *Mgn) DeleteVcenterClientRequest(input *DeleteVcenterClientInput) (req *
 // API operation DeleteVcenterClient for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DeleteVcenterClient
 func (c *Mgn) DeleteVcenterClient(input *DeleteVcenterClientInput) (*DeleteVcenterClientOutput, error) {
@@ -552,14 +552,13 @@ const opDescribeJobLogItems = "DescribeJobLogItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobLogItemsRequest method.
+//	req, resp := client.DescribeJobLogItemsRequest(params)
 //
-//    // Example sending a request using the DescribeJobLogItemsRequest method.
-//    req, resp := client.DescribeJobLogItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeJobLogItems
 func (c *Mgn) DescribeJobLogItemsRequest(input *DescribeJobLogItemsInput) (req *request.Request, output *DescribeJobLogItemsOutput) {
@@ -596,11 +595,12 @@ func (c *Mgn) DescribeJobLogItemsRequest(input *DescribeJobLogItemsInput) (req *
 // API operation DescribeJobLogItems for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeJobLogItems
 func (c *Mgn) DescribeJobLogItems(input *DescribeJobLogItemsInput) (*DescribeJobLogItemsOutput, error) {
@@ -632,15 +632,14 @@ func (c *Mgn) DescribeJobLogItemsWithContext(ctx aws.Context, input *DescribeJob
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeJobLogItems operation.
-//    pageNum := 0
-//    err := client.DescribeJobLogItemsPages(params,
-//        func(page *mgn.DescribeJobLogItemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeJobLogItems operation.
+//	pageNum := 0
+//	err := client.DescribeJobLogItemsPages(params,
+//	    func(page *mgn.DescribeJobLogItemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mgn) DescribeJobLogItemsPages(input *DescribeJobLogItemsInput, fn func(*DescribeJobLogItemsOutput, bool) bool) error {
 	return c.DescribeJobLogItemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -692,14 +691,13 @@ const opDescribeJobs = "DescribeJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobsRequest method.
+//	req, resp := client.DescribeJobsRequest(params)
 //
-//    // Example sending a request using the DescribeJobsRequest method.
-//    req, resp := client.DescribeJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeJobs
 func (c *Mgn) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Request, output *DescribeJobsOutput) {
@@ -741,11 +739,12 @@ func (c *Mgn) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Reques
 // API operation DescribeJobs for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeJobs
 func (c *Mgn) DescribeJobs(input *DescribeJobsInput) (*DescribeJobsOutput, error) {
@@ -777,15 +776,14 @@ func (c *Mgn) DescribeJobsWithContext(ctx aws.Context, input *DescribeJobsInput,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeJobs operation.
-//    pageNum := 0
-//    err := client.DescribeJobsPages(params,
-//        func(page *mgn.DescribeJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeJobs operation.
+//	pageNum := 0
+//	err := client.DescribeJobsPages(params,
+//	    func(page *mgn.DescribeJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mgn) DescribeJobsPages(input *DescribeJobsInput, fn func(*DescribeJobsOutput, bool) bool) error {
 	return c.DescribeJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -837,14 +835,13 @@ const opDescribeReplicationConfigurationTemplates = "DescribeReplicationConfigur
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplicationConfigurationTemplatesRequest method.
+//	req, resp := client.DescribeReplicationConfigurationTemplatesRequest(params)
 //
-//    // Example sending a request using the DescribeReplicationConfigurationTemplatesRequest method.
-//    req, resp := client.DescribeReplicationConfigurationTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeReplicationConfigurationTemplates
 func (c *Mgn) DescribeReplicationConfigurationTemplatesRequest(input *DescribeReplicationConfigurationTemplatesInput) (req *request.Request, output *DescribeReplicationConfigurationTemplatesOutput) {
@@ -881,14 +878,15 @@ func (c *Mgn) DescribeReplicationConfigurationTemplatesRequest(input *DescribeRe
 // API operation DescribeReplicationConfigurationTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeReplicationConfigurationTemplates
 func (c *Mgn) DescribeReplicationConfigurationTemplates(input *DescribeReplicationConfigurationTemplatesInput) (*DescribeReplicationConfigurationTemplatesOutput, error) {
@@ -920,15 +918,14 @@ func (c *Mgn) DescribeReplicationConfigurationTemplatesWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReplicationConfigurationTemplates operation.
-//    pageNum := 0
-//    err := client.DescribeReplicationConfigurationTemplatesPages(params,
-//        func(page *mgn.DescribeReplicationConfigurationTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReplicationConfigurationTemplates operation.
+//	pageNum := 0
+//	err := client.DescribeReplicationConfigurationTemplatesPages(params,
+//	    func(page *mgn.DescribeReplicationConfigurationTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mgn) DescribeReplicationConfigurationTemplatesPages(input *DescribeReplicationConfigurationTemplatesInput, fn func(*DescribeReplicationConfigurationTemplatesOutput, bool) bool) error {
 	return c.DescribeReplicationConfigurationTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -980,14 +977,13 @@ const opDescribeSourceServers = "DescribeSourceServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSourceServersRequest method.
+//	req, resp := client.DescribeSourceServersRequest(params)
 //
-//    // Example sending a request using the DescribeSourceServersRequest method.
-//    req, resp := client.DescribeSourceServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeSourceServers
 func (c *Mgn) DescribeSourceServersRequest(input *DescribeSourceServersInput) (req *request.Request, output *DescribeSourceServersOutput) {
@@ -1024,11 +1020,12 @@ func (c *Mgn) DescribeSourceServersRequest(input *DescribeSourceServersInput) (r
 // API operation DescribeSourceServers for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeSourceServers
 func (c *Mgn) DescribeSourceServers(input *DescribeSourceServersInput) (*DescribeSourceServersOutput, error) {
@@ -1060,15 +1057,14 @@ func (c *Mgn) DescribeSourceServersWithContext(ctx aws.Context, input *DescribeS
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSourceServers operation.
-//    pageNum := 0
-//    err := client.DescribeSourceServersPages(params,
-//        func(page *mgn.DescribeSourceServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSourceServers operation.
+//	pageNum := 0
+//	err := client.DescribeSourceServersPages(params,
+//	    func(page *mgn.DescribeSourceServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mgn) DescribeSourceServersPages(input *DescribeSourceServersInput, fn func(*DescribeSourceServersOutput, bool) bool) error {
 	return c.DescribeSourceServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1120,14 +1116,13 @@ const opDescribeVcenterClients = "DescribeVcenterClients"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVcenterClientsRequest method.
+//	req, resp := client.DescribeVcenterClientsRequest(params)
 //
-//    // Example sending a request using the DescribeVcenterClientsRequest method.
-//    req, resp := client.DescribeVcenterClientsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeVcenterClients
 func (c *Mgn) DescribeVcenterClientsRequest(input *DescribeVcenterClientsInput) (req *request.Request, output *DescribeVcenterClientsOutput) {
@@ -1164,14 +1159,15 @@ func (c *Mgn) DescribeVcenterClientsRequest(input *DescribeVcenterClientsInput) 
 // API operation DescribeVcenterClients for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DescribeVcenterClients
 func (c *Mgn) DescribeVcenterClients(input *DescribeVcenterClientsInput) (*DescribeVcenterClientsOutput, error) {
@@ -1203,15 +1199,14 @@ func (c *Mgn) DescribeVcenterClientsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVcenterClients operation.
-//    pageNum := 0
-//    err := client.DescribeVcenterClientsPages(params,
-//        func(page *mgn.DescribeVcenterClientsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVcenterClients operation.
+//	pageNum := 0
+//	err := client.DescribeVcenterClientsPages(params,
+//	    func(page *mgn.DescribeVcenterClientsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mgn) DescribeVcenterClientsPages(input *DescribeVcenterClientsInput, fn func(*DescribeVcenterClientsOutput, bool) bool) error {
 	return c.DescribeVcenterClientsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1263,14 +1258,13 @@ const opDisconnectFromService = "DisconnectFromService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectFromServiceRequest method.
+//	req, resp := client.DisconnectFromServiceRequest(params)
 //
-//    // Example sending a request using the DisconnectFromServiceRequest method.
-//    req, resp := client.DisconnectFromServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DisconnectFromService
 func (c *Mgn) DisconnectFromServiceRequest(input *DisconnectFromServiceInput) (req *request.Request, output *DisconnectFromServiceOutput) {
@@ -1312,15 +1306,16 @@ func (c *Mgn) DisconnectFromServiceRequest(input *DisconnectFromServiceInput) (r
 // API operation DisconnectFromService for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/DisconnectFromService
 func (c *Mgn) DisconnectFromService(input *DisconnectFromServiceInput) (*DisconnectFromServiceOutput, error) {
@@ -1360,14 +1355,13 @@ const opFinalizeCutover = "FinalizeCutover"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the FinalizeCutoverRequest method.
+//	req, resp := client.FinalizeCutoverRequest(params)
 //
-//    // Example sending a request using the FinalizeCutoverRequest method.
-//    req, resp := client.FinalizeCutoverRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/FinalizeCutover
 func (c *Mgn) FinalizeCutoverRequest(input *FinalizeCutoverInput) (req *request.Request, output *FinalizeCutoverOutput) {
@@ -1407,18 +1401,19 @@ func (c *Mgn) FinalizeCutoverRequest(input *FinalizeCutoverInput) (req *request.
 // API operation FinalizeCutover for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/FinalizeCutover
 func (c *Mgn) FinalizeCutover(input *FinalizeCutoverInput) (*FinalizeCutoverOutput, error) {
@@ -1458,14 +1453,13 @@ const opGetLaunchConfiguration = "GetLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchConfigurationRequest method.
+//	req, resp := client.GetLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the GetLaunchConfigurationRequest method.
-//    req, resp := client.GetLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/GetLaunchConfiguration
 func (c *Mgn) GetLaunchConfigurationRequest(input *GetLaunchConfigurationInput) (req *request.Request, output *GetLaunchConfigurationOutput) {
@@ -1496,11 +1490,12 @@ func (c *Mgn) GetLaunchConfigurationRequest(input *GetLaunchConfigurationInput) 
 // API operation GetLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
+//
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/GetLaunchConfiguration
 func (c *Mgn) GetLaunchConfiguration(input *GetLaunchConfigurationInput) (*GetLaunchConfigurationOutput, error) {
@@ -1540,14 +1535,13 @@ const opGetReplicationConfiguration = "GetReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReplicationConfigurationRequest method.
+//	req, resp := client.GetReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetReplicationConfigurationRequest method.
-//    req, resp := client.GetReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/GetReplicationConfiguration
 func (c *Mgn) GetReplicationConfigurationRequest(input *GetReplicationConfigurationInput) (req *request.Request, output *GetReplicationConfigurationOutput) {
@@ -1578,11 +1572,12 @@ func (c *Mgn) GetReplicationConfigurationRequest(input *GetReplicationConfigurat
 // API operation GetReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
+//
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/GetReplicationConfiguration
 func (c *Mgn) GetReplicationConfiguration(input *GetReplicationConfigurationInput) (*GetReplicationConfigurationOutput, error) {
@@ -1622,14 +1617,13 @@ const opInitializeService = "InitializeService"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InitializeServiceRequest method.
+//	req, resp := client.InitializeServiceRequest(params)
 //
-//    // Example sending a request using the InitializeServiceRequest method.
-//    req, resp := client.InitializeServiceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/InitializeService
 func (c *Mgn) InitializeServiceRequest(input *InitializeServiceInput) (req *request.Request, output *InitializeServiceOutput) {
@@ -1661,11 +1655,12 @@ func (c *Mgn) InitializeServiceRequest(input *InitializeServiceInput) (req *requ
 // API operation InitializeService for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validate exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
+//
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/InitializeService
 func (c *Mgn) InitializeService(input *InitializeServiceInput) (*InitializeServiceOutput, error) {
@@ -1705,14 +1700,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/ListTagsForResource
 func (c *Mgn) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1743,21 +1737,22 @@ func (c *Mgn) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found exception.
 //
-//   * ThrottlingException
-//   Reached throttling quota exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ThrottlingException
+//     Reached throttling quota exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
 //
-//   * InternalServerException
-//   The server encountered an unexpected condition that prevented it from fulfilling
-//   the request.
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
+//
+//   - InternalServerException
+//     The server encountered an unexpected condition that prevented it from fulfilling
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/ListTagsForResource
 func (c *Mgn) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1797,14 +1792,13 @@ const opMarkAsArchived = "MarkAsArchived"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MarkAsArchivedRequest method.
+//	req, resp := client.MarkAsArchivedRequest(params)
 //
-//    // Example sending a request using the MarkAsArchivedRequest method.
-//    req, resp := client.MarkAsArchivedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/MarkAsArchived
 func (c *Mgn) MarkAsArchivedRequest(input *MarkAsArchivedInput) (req *request.Request, output *MarkAsArchivedOutput) {
@@ -1837,15 +1831,16 @@ func (c *Mgn) MarkAsArchivedRequest(input *MarkAsArchivedInput) (req *request.Re
 // API operation MarkAsArchived for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/MarkAsArchived
 func (c *Mgn) MarkAsArchived(input *MarkAsArchivedInput) (*MarkAsArchivedOutput, error) {
@@ -1885,14 +1880,13 @@ const opRetryDataReplication = "RetryDataReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetryDataReplicationRequest method.
+//	req, resp := client.RetryDataReplicationRequest(params)
 //
-//    // Example sending a request using the RetryDataReplicationRequest method.
-//    req, resp := client.RetryDataReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/RetryDataReplication
 func (c *Mgn) RetryDataReplicationRequest(input *RetryDataReplicationInput) (req *request.Request, output *RetryDataReplicationOutput) {
@@ -1926,14 +1920,15 @@ func (c *Mgn) RetryDataReplicationRequest(input *RetryDataReplicationInput) (req
 // API operation RetryDataReplication for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
+//
+//   - ValidationException
+//     Validate exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/RetryDataReplication
 func (c *Mgn) RetryDataReplication(input *RetryDataReplicationInput) (*RetryDataReplicationOutput, error) {
@@ -1973,14 +1968,13 @@ const opStartCutover = "StartCutover"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCutoverRequest method.
+//	req, resp := client.StartCutoverRequest(params)
 //
-//    // Example sending a request using the StartCutoverRequest method.
-//    req, resp := client.StartCutoverRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartCutover
 func (c *Mgn) StartCutoverRequest(input *StartCutoverInput) (req *request.Request, output *StartCutoverOutput) {
@@ -2013,15 +2007,16 @@ func (c *Mgn) StartCutoverRequest(input *StartCutoverInput) (req *request.Reques
 // API operation StartCutover for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartCutover
 func (c *Mgn) StartCutover(input *StartCutoverInput) (*StartCutoverOutput, error) {
@@ -2061,14 +2056,13 @@ const opStartReplication = "StartReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartReplicationRequest method.
+//	req, resp := client.StartReplicationRequest(params)
 //
-//    // Example sending a request using the StartReplicationRequest method.
-//    req, resp := client.StartReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartReplication
 func (c *Mgn) StartReplicationRequest(input *StartReplicationInput) (req *request.Request, output *StartReplicationOutput) {
@@ -2099,21 +2093,22 @@ func (c *Mgn) StartReplicationRequest(input *StartReplicationInput) (req *reques
 // API operation StartReplication for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ServiceQuotaExceededException
-//   The request could not be completed because its exceeded the service quota.
+//   - ValidationException
+//     Validate exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ServiceQuotaExceededException
+//     The request could not be completed because its exceeded the service quota.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartReplication
 func (c *Mgn) StartReplication(input *StartReplicationInput) (*StartReplicationOutput, error) {
@@ -2153,14 +2148,13 @@ const opStartTest = "StartTest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTestRequest method.
+//	req, resp := client.StartTestRequest(params)
 //
-//    // Example sending a request using the StartTestRequest method.
-//    req, resp := client.StartTestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartTest
 func (c *Mgn) StartTestRequest(input *StartTestInput) (req *request.Request, output *StartTestOutput) {
@@ -2193,15 +2187,16 @@ func (c *Mgn) StartTestRequest(input *StartTestInput) (req *request.Request, out
 // API operation StartTest for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/StartTest
 func (c *Mgn) StartTest(input *StartTestInput) (*StartTestOutput, error) {
@@ -2241,14 +2236,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/TagResource
 func (c *Mgn) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2283,21 +2277,22 @@ func (c *Mgn) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found exception.
 //
-//   * ThrottlingException
-//   Reached throttling quota exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ThrottlingException
+//     Reached throttling quota exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
 //
-//   * InternalServerException
-//   The server encountered an unexpected condition that prevented it from fulfilling
-//   the request.
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
+//
+//   - InternalServerException
+//     The server encountered an unexpected condition that prevented it from fulfilling
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/TagResource
 func (c *Mgn) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2337,14 +2332,13 @@ const opTerminateTargetInstances = "TerminateTargetInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateTargetInstancesRequest method.
+//	req, resp := client.TerminateTargetInstancesRequest(params)
 //
-//    // Example sending a request using the TerminateTargetInstancesRequest method.
-//    req, resp := client.TerminateTargetInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/TerminateTargetInstances
 func (c *Mgn) TerminateTargetInstancesRequest(input *TerminateTargetInstancesInput) (req *request.Request, output *TerminateTargetInstancesOutput) {
@@ -2377,15 +2371,16 @@ func (c *Mgn) TerminateTargetInstancesRequest(input *TerminateTargetInstancesInp
 // API operation TerminateTargetInstances for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/TerminateTargetInstances
 func (c *Mgn) TerminateTargetInstances(input *TerminateTargetInstancesInput) (*TerminateTargetInstancesOutput, error) {
@@ -2425,14 +2420,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UntagResource
 func (c *Mgn) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2465,21 +2459,22 @@ func (c *Mgn) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Resource not found exception.
 //
-//   * ThrottlingException
-//   Reached throttling quota exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ThrottlingException
+//     Reached throttling quota exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
 //
-//   * InternalServerException
-//   The server encountered an unexpected condition that prevented it from fulfilling
-//   the request.
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
+//
+//   - InternalServerException
+//     The server encountered an unexpected condition that prevented it from fulfilling
+//     the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UntagResource
 func (c *Mgn) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2519,14 +2514,13 @@ const opUpdateLaunchConfiguration = "UpdateLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLaunchConfigurationRequest method.
+//	req, resp := client.UpdateLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateLaunchConfigurationRequest method.
-//    req, resp := client.UpdateLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateLaunchConfiguration
 func (c *Mgn) UpdateLaunchConfigurationRequest(input *UpdateLaunchConfigurationInput) (req *request.Request, output *UpdateLaunchConfigurationOutput) {
@@ -2557,18 +2551,19 @@ func (c *Mgn) UpdateLaunchConfigurationRequest(input *UpdateLaunchConfigurationI
 // API operation UpdateLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateLaunchConfiguration
 func (c *Mgn) UpdateLaunchConfiguration(input *UpdateLaunchConfigurationInput) (*UpdateLaunchConfigurationOutput, error) {
@@ -2608,14 +2603,13 @@ const opUpdateReplicationConfiguration = "UpdateReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationConfigurationRequest method.
+//	req, resp := client.UpdateReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationConfigurationRequest method.
-//    req, resp := client.UpdateReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateReplicationConfiguration
 func (c *Mgn) UpdateReplicationConfigurationRequest(input *UpdateReplicationConfigurationInput) (req *request.Request, output *UpdateReplicationConfigurationOutput) {
@@ -2647,21 +2641,22 @@ func (c *Mgn) UpdateReplicationConfigurationRequest(input *UpdateReplicationConf
 // API operation UpdateReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateReplicationConfiguration
 func (c *Mgn) UpdateReplicationConfiguration(input *UpdateReplicationConfigurationInput) (*UpdateReplicationConfigurationOutput, error) {
@@ -2701,14 +2696,13 @@ const opUpdateReplicationConfigurationTemplate = "UpdateReplicationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationConfigurationTemplateRequest method.
+//	req, resp := client.UpdateReplicationConfigurationTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationConfigurationTemplateRequest method.
-//    req, resp := client.UpdateReplicationConfigurationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateReplicationConfigurationTemplate
 func (c *Mgn) UpdateReplicationConfigurationTemplateRequest(input *UpdateReplicationConfigurationTemplateInput) (req *request.Request, output *UpdateReplicationConfigurationTemplateOutput) {
@@ -2739,17 +2733,18 @@ func (c *Mgn) UpdateReplicationConfigurationTemplateRequest(input *UpdateReplica
 // API operation UpdateReplicationConfigurationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * AccessDeniedException
-//   Operating denied due to a file permission or access check error.
+//   - ValidationException
+//     Validate exception.
+//
+//   - AccessDeniedException
+//     Operating denied due to a file permission or access check error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateReplicationConfigurationTemplate
 func (c *Mgn) UpdateReplicationConfigurationTemplate(input *UpdateReplicationConfigurationTemplateInput) (*UpdateReplicationConfigurationTemplateOutput, error) {
@@ -2789,14 +2784,13 @@ const opUpdateSourceServerReplicationType = "UpdateSourceServerReplicationType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSourceServerReplicationTypeRequest method.
+//	req, resp := client.UpdateSourceServerReplicationTypeRequest(params)
 //
-//    // Example sending a request using the UpdateSourceServerReplicationTypeRequest method.
-//    req, resp := client.UpdateSourceServerReplicationTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateSourceServerReplicationType
 func (c *Mgn) UpdateSourceServerReplicationTypeRequest(input *UpdateSourceServerReplicationTypeInput) (req *request.Request, output *UpdateSourceServerReplicationTypeOutput) {
@@ -2828,18 +2822,19 @@ func (c *Mgn) UpdateSourceServerReplicationTypeRequest(input *UpdateSourceServer
 // API operation UpdateSourceServerReplicationType for usage and error information.
 //
 // Returned Error Types:
-//   * UninitializedAccountException
-//   Uninitialized account exception.
 //
-//   * ResourceNotFoundException
-//   Resource not found exception.
+//   - UninitializedAccountException
+//     Uninitialized account exception.
 //
-//   * ValidationException
-//   Validate exception.
+//   - ResourceNotFoundException
+//     Resource not found exception.
 //
-//   * ConflictException
-//   The request could not be completed due to a conflict with the current state
-//   of the target resource.
+//   - ValidationException
+//     Validate exception.
+//
+//   - ConflictException
+//     The request could not be completed due to a conflict with the current state
+//     of the target resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mgn-2020-02-26/UpdateSourceServerReplicationType
 func (c *Mgn) UpdateSourceServerReplicationType(input *UpdateSourceServerReplicationTypeInput) (*UpdateSourceServerReplicationTypeOutput, error) {

@@ -28,14 +28,13 @@ const opDeleteReportDefinition = "DeleteReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReportDefinitionRequest method.
+//	req, resp := client.DeleteReportDefinitionRequest(params)
 //
-//    // Example sending a request using the DeleteReportDefinitionRequest method.
-//    req, resp := client.DeleteReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/DeleteReportDefinition
 func (c *ApplicationCostProfiler) DeleteReportDefinitionRequest(input *DeleteReportDefinitionInput) (req *request.Request, output *DeleteReportDefinitionOutput) {
@@ -67,18 +66,19 @@ func (c *ApplicationCostProfiler) DeleteReportDefinitionRequest(input *DeleteRep
 // API operation DeleteReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
+//
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/DeleteReportDefinition
 func (c *ApplicationCostProfiler) DeleteReportDefinition(input *DeleteReportDefinitionInput) (*DeleteReportDefinitionOutput, error) {
@@ -118,14 +118,13 @@ const opGetReportDefinition = "GetReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReportDefinitionRequest method.
+//	req, resp := client.GetReportDefinitionRequest(params)
 //
-//    // Example sending a request using the GetReportDefinitionRequest method.
-//    req, resp := client.GetReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/GetReportDefinition
 func (c *ApplicationCostProfiler) GetReportDefinitionRequest(input *GetReportDefinitionInput) (req *request.Request, output *GetReportDefinitionOutput) {
@@ -157,18 +156,19 @@ func (c *ApplicationCostProfiler) GetReportDefinitionRequest(input *GetReportDef
 // API operation GetReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
+//
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/GetReportDefinition
 func (c *ApplicationCostProfiler) GetReportDefinition(input *GetReportDefinitionInput) (*GetReportDefinitionOutput, error) {
@@ -208,14 +208,13 @@ const opImportApplicationUsage = "ImportApplicationUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportApplicationUsageRequest method.
+//	req, resp := client.ImportApplicationUsageRequest(params)
 //
-//    // Example sending a request using the ImportApplicationUsageRequest method.
-//    req, resp := client.ImportApplicationUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/ImportApplicationUsage
 func (c *ApplicationCostProfiler) ImportApplicationUsageRequest(input *ImportApplicationUsageInput) (req *request.Request, output *ImportApplicationUsageOutput) {
@@ -251,18 +250,19 @@ func (c *ApplicationCostProfiler) ImportApplicationUsageRequest(input *ImportApp
 // API operation ImportApplicationUsage for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
+//
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/ImportApplicationUsage
 func (c *ApplicationCostProfiler) ImportApplicationUsage(input *ImportApplicationUsageInput) (*ImportApplicationUsageOutput, error) {
@@ -302,14 +302,13 @@ const opListReportDefinitions = "ListReportDefinitions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReportDefinitionsRequest method.
+//	req, resp := client.ListReportDefinitionsRequest(params)
 //
-//    // Example sending a request using the ListReportDefinitionsRequest method.
-//    req, resp := client.ListReportDefinitionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/ListReportDefinitions
 func (c *ApplicationCostProfiler) ListReportDefinitionsRequest(input *ListReportDefinitionsInput) (req *request.Request, output *ListReportDefinitionsOutput) {
@@ -348,18 +347,19 @@ func (c *ApplicationCostProfiler) ListReportDefinitionsRequest(input *ListReport
 // API operation ListReportDefinitions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
+//
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/ListReportDefinitions
 func (c *ApplicationCostProfiler) ListReportDefinitions(input *ListReportDefinitionsInput) (*ListReportDefinitionsOutput, error) {
@@ -391,15 +391,14 @@ func (c *ApplicationCostProfiler) ListReportDefinitionsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReportDefinitions operation.
-//    pageNum := 0
-//    err := client.ListReportDefinitionsPages(params,
-//        func(page *applicationcostprofiler.ListReportDefinitionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReportDefinitions operation.
+//	pageNum := 0
+//	err := client.ListReportDefinitionsPages(params,
+//	    func(page *applicationcostprofiler.ListReportDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationCostProfiler) ListReportDefinitionsPages(input *ListReportDefinitionsInput, fn func(*ListReportDefinitionsOutput, bool) bool) error {
 	return c.ListReportDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -451,14 +450,13 @@ const opPutReportDefinition = "PutReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutReportDefinitionRequest method.
+//	req, resp := client.PutReportDefinitionRequest(params)
 //
-//    // Example sending a request using the PutReportDefinitionRequest method.
-//    req, resp := client.PutReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/PutReportDefinition
 func (c *ApplicationCostProfiler) PutReportDefinitionRequest(input *PutReportDefinitionInput) (req *request.Request, output *PutReportDefinitionOutput) {
@@ -489,21 +487,22 @@ func (c *ApplicationCostProfiler) PutReportDefinitionRequest(input *PutReportDef
 // API operation PutReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
 //
-//   * ServiceQuotaExceededException
-//   Your request exceeds one or more of the service quotas.
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
+//
+//   - ServiceQuotaExceededException
+//     Your request exceeds one or more of the service quotas.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/PutReportDefinition
 func (c *ApplicationCostProfiler) PutReportDefinition(input *PutReportDefinitionInput) (*PutReportDefinitionOutput, error) {
@@ -543,14 +542,13 @@ const opUpdateReportDefinition = "UpdateReportDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReportDefinitionRequest method.
+//	req, resp := client.UpdateReportDefinitionRequest(params)
 //
-//    // Example sending a request using the UpdateReportDefinitionRequest method.
-//    req, resp := client.UpdateReportDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/UpdateReportDefinition
 func (c *ApplicationCostProfiler) UpdateReportDefinitionRequest(input *UpdateReportDefinitionInput) (req *request.Request, output *UpdateReportDefinitionOutput) {
@@ -581,18 +579,19 @@ func (c *ApplicationCostProfiler) UpdateReportDefinitionRequest(input *UpdateRep
 // API operation UpdateReportDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ThrottlingException
-//   The calls to AWS Application Cost Profiler API are throttled. The request
-//   was denied.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints for the API.
+//   - ThrottlingException
+//     The calls to AWS Application Cost Profiler API are throttled. The request
+//     was denied.
 //
-//   * AccessDeniedException
-//   You do not have permission to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints for the API.
+//
+//   - AccessDeniedException
+//     You do not have permission to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/AWSApplicationCostProfiler-2020-09-10/UpdateReportDefinition
 func (c *ApplicationCostProfiler) UpdateReportDefinition(input *UpdateReportDefinitionInput) (*UpdateReportDefinitionOutput, error) {

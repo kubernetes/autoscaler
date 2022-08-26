@@ -11,7 +11,7 @@ import (
 
 // UpdateDrgRouteDistributionStatementsRequest wrapper for the UpdateDrgRouteDistributionStatements operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateDrgRouteDistributionStatements.go.html to see an example of how to use UpdateDrgRouteDistributionStatementsRequest.
 type UpdateDrgRouteDistributionStatementsRequest struct {

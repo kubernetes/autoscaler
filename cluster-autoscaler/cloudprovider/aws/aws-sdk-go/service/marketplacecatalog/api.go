@@ -27,14 +27,13 @@ const opCancelChangeSet = "CancelChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelChangeSetRequest method.
+//	req, resp := client.CancelChangeSetRequest(params)
 //
-//    // Example sending a request using the CancelChangeSetRequest method.
-//    req, resp := client.CancelChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/CancelChangeSet
 func (c *MarketplaceCatalog) CancelChangeSetRequest(input *CancelChangeSetInput) (req *request.Request, output *CancelChangeSetOutput) {
@@ -68,23 +67,24 @@ func (c *MarketplaceCatalog) CancelChangeSetRequest(input *CancelChangeSetInput)
 // API operation CancelChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ResourceNotFoundException
-//   The specified resource wasn't found.
+//   - ValidationException
+//     An error occurred during validation.
 //
-//   * ResourceInUseException
-//   The resource is currently in use.
+//   - ResourceNotFoundException
+//     The specified resource wasn't found.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ResourceInUseException
+//     The resource is currently in use.
+//
+//   - ThrottlingException
+//     Too many requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/CancelChangeSet
 func (c *MarketplaceCatalog) CancelChangeSet(input *CancelChangeSetInput) (*CancelChangeSetOutput, error) {
@@ -124,14 +124,13 @@ const opDescribeChangeSet = "DescribeChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChangeSetRequest method.
+//	req, resp := client.DescribeChangeSetRequest(params)
 //
-//    // Example sending a request using the DescribeChangeSetRequest method.
-//    req, resp := client.DescribeChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/DescribeChangeSet
 func (c *MarketplaceCatalog) DescribeChangeSetRequest(input *DescribeChangeSetInput) (req *request.Request, output *DescribeChangeSetOutput) {
@@ -162,20 +161,21 @@ func (c *MarketplaceCatalog) DescribeChangeSetRequest(input *DescribeChangeSetIn
 // API operation DescribeChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ResourceNotFoundException
-//   The specified resource wasn't found.
+//   - ValidationException
+//     An error occurred during validation.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ResourceNotFoundException
+//     The specified resource wasn't found.
+//
+//   - ThrottlingException
+//     Too many requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/DescribeChangeSet
 func (c *MarketplaceCatalog) DescribeChangeSet(input *DescribeChangeSetInput) (*DescribeChangeSetOutput, error) {
@@ -215,14 +215,13 @@ const opDescribeEntity = "DescribeEntity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntityRequest method.
+//	req, resp := client.DescribeEntityRequest(params)
 //
-//    // Example sending a request using the DescribeEntityRequest method.
-//    req, resp := client.DescribeEntityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/DescribeEntity
 func (c *MarketplaceCatalog) DescribeEntityRequest(input *DescribeEntityInput) (req *request.Request, output *DescribeEntityOutput) {
@@ -253,23 +252,24 @@ func (c *MarketplaceCatalog) DescribeEntityRequest(input *DescribeEntityInput) (
 // API operation DescribeEntity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ResourceNotSupportedException
-//   Currently, the specified resource is not supported.
+//   - ValidationException
+//     An error occurred during validation.
 //
-//   * ResourceNotFoundException
-//   The specified resource wasn't found.
+//   - ResourceNotSupportedException
+//     Currently, the specified resource is not supported.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ResourceNotFoundException
+//     The specified resource wasn't found.
+//
+//   - ThrottlingException
+//     Too many requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/DescribeEntity
 func (c *MarketplaceCatalog) DescribeEntity(input *DescribeEntityInput) (*DescribeEntityOutput, error) {
@@ -309,14 +309,13 @@ const opListChangeSets = "ListChangeSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChangeSetsRequest method.
+//	req, resp := client.ListChangeSetsRequest(params)
 //
-//    // Example sending a request using the ListChangeSetsRequest method.
-//    req, resp := client.ListChangeSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/ListChangeSets
 func (c *MarketplaceCatalog) ListChangeSetsRequest(input *ListChangeSetsInput) (req *request.Request, output *ListChangeSetsOutput) {
@@ -359,17 +358,18 @@ func (c *MarketplaceCatalog) ListChangeSetsRequest(input *ListChangeSetsInput) (
 // API operation ListChangeSets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ValidationException
+//     An error occurred during validation.
+//
+//   - ThrottlingException
+//     Too many requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/ListChangeSets
 func (c *MarketplaceCatalog) ListChangeSets(input *ListChangeSetsInput) (*ListChangeSetsOutput, error) {
@@ -401,15 +401,14 @@ func (c *MarketplaceCatalog) ListChangeSetsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChangeSets operation.
-//    pageNum := 0
-//    err := client.ListChangeSetsPages(params,
-//        func(page *marketplacecatalog.ListChangeSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChangeSets operation.
+//	pageNum := 0
+//	err := client.ListChangeSetsPages(params,
+//	    func(page *marketplacecatalog.ListChangeSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MarketplaceCatalog) ListChangeSetsPages(input *ListChangeSetsInput, fn func(*ListChangeSetsOutput, bool) bool) error {
 	return c.ListChangeSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -461,14 +460,13 @@ const opListEntities = "ListEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitiesRequest method.
+//	req, resp := client.ListEntitiesRequest(params)
 //
-//    // Example sending a request using the ListEntitiesRequest method.
-//    req, resp := client.ListEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/ListEntities
 func (c *MarketplaceCatalog) ListEntitiesRequest(input *ListEntitiesInput) (req *request.Request, output *ListEntitiesOutput) {
@@ -505,20 +503,21 @@ func (c *MarketplaceCatalog) ListEntitiesRequest(input *ListEntitiesInput) (req 
 // API operation ListEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ResourceNotFoundException
-//   The specified resource wasn't found.
+//   - ValidationException
+//     An error occurred during validation.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ResourceNotFoundException
+//     The specified resource wasn't found.
+//
+//   - ThrottlingException
+//     Too many requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/ListEntities
 func (c *MarketplaceCatalog) ListEntities(input *ListEntitiesInput) (*ListEntitiesOutput, error) {
@@ -550,15 +549,14 @@ func (c *MarketplaceCatalog) ListEntitiesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntities operation.
-//    pageNum := 0
-//    err := client.ListEntitiesPages(params,
-//        func(page *marketplacecatalog.ListEntitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntities operation.
+//	pageNum := 0
+//	err := client.ListEntitiesPages(params,
+//	    func(page *marketplacecatalog.ListEntitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MarketplaceCatalog) ListEntitiesPages(input *ListEntitiesInput, fn func(*ListEntitiesOutput, bool) bool) error {
 	return c.ListEntitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -610,14 +608,13 @@ const opStartChangeSet = "StartChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartChangeSetRequest method.
+//	req, resp := client.StartChangeSetRequest(params)
 //
-//    // Example sending a request using the StartChangeSetRequest method.
-//    req, resp := client.StartChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/StartChangeSet
 func (c *MarketplaceCatalog) StartChangeSetRequest(input *StartChangeSetInput) (req *request.Request, output *StartChangeSetOutput) {
@@ -661,26 +658,27 @@ func (c *MarketplaceCatalog) StartChangeSetRequest(input *StartChangeSetInput) (
 // API operation StartChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   There was an internal service exception.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServiceException
+//     There was an internal service exception.
 //
-//   * ValidationException
-//   An error occurred during validation.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ResourceNotFoundException
-//   The specified resource wasn't found.
+//   - ValidationException
+//     An error occurred during validation.
 //
-//   * ResourceInUseException
-//   The resource is currently in use.
+//   - ResourceNotFoundException
+//     The specified resource wasn't found.
 //
-//   * ThrottlingException
-//   Too many requests.
+//   - ResourceInUseException
+//     The resource is currently in use.
 //
-//   * ServiceQuotaExceededException
-//   The maximum number of open requests per account has been exceeded.
+//   - ThrottlingException
+//     Too many requests.
+//
+//   - ServiceQuotaExceededException
+//     The maximum number of open requests per account has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplace-catalog-2018-09-17/StartChangeSet
 func (c *MarketplaceCatalog) StartChangeSet(input *StartChangeSetInput) (*StartChangeSetOutput, error) {
