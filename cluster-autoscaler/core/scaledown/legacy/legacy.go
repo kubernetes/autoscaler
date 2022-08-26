@@ -323,8 +323,6 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	}
 
 	candidateNames := make([]string, 0)
-	readinessMap := make(map[string]bool)
-	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
 
 	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
 	if errCP != nil {
@@ -354,7 +352,6 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		}
 
 		ready, _, _ := kube_util.GetReadinessState(node)
-		readinessMap[node.Name] = ready
 
 		nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
@@ -431,7 +428,6 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		}
 
 		candidateNames = append(candidateNames, node.Name)
-		candidateNodeGroups[node.Name] = nodeGroup
 	}
 
 	if len(candidateNames) == 0 {
