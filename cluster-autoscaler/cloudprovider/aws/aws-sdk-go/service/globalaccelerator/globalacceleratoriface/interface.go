@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Global Accelerator.
-//    func myFunc(svc globalacceleratoriface.GlobalAcceleratorAPI) bool {
-//        // Make svc.AddCustomRoutingEndpoints request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Global Accelerator.
+//	func myFunc(svc globalacceleratoriface.GlobalAcceleratorAPI) bool {
+//	    // Make svc.AddCustomRoutingEndpoints request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := globalaccelerator.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := globalaccelerator.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockGlobalAcceleratorClient struct {
-//        globalacceleratoriface.GlobalAcceleratorAPI
-//    }
-//    func (m *mockGlobalAcceleratorClient) AddCustomRoutingEndpoints(input *globalaccelerator.AddCustomRoutingEndpointsInput) (*globalaccelerator.AddCustomRoutingEndpointsOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockGlobalAcceleratorClient struct {
+//	    globalacceleratoriface.GlobalAcceleratorAPI
+//	}
+//	func (m *mockGlobalAcceleratorClient) AddCustomRoutingEndpoints(input *globalaccelerator.AddCustomRoutingEndpointsInput) (*globalaccelerator.AddCustomRoutingEndpointsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockGlobalAcceleratorClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockGlobalAcceleratorClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

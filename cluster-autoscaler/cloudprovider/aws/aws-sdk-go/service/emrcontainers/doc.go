@@ -13,23 +13,23 @@
 // Amazon EMR containers is the API name for Amazon EMR on EKS. The emr-containers
 // prefix is used in the following scenarios:
 //
-//    * It is the prefix in the CLI commands for Amazon EMR on EKS. For example,
-//    aws emr-containers start-job-run.
+//   - It is the prefix in the CLI commands for Amazon EMR on EKS. For example,
+//     aws emr-containers start-job-run.
 //
-//    * It is the prefix before IAM policy actions for Amazon EMR on EKS. For
-//    example, "Action": [ "emr-containers:StartJobRun"]. For more information,
-//    see Policy actions for Amazon EMR on EKS (https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/security_iam_service-with-iam.html#security_iam_service-with-iam-id-based-policies-actions).
+//   - It is the prefix before IAM policy actions for Amazon EMR on EKS. For
+//     example, "Action": [ "emr-containers:StartJobRun"]. For more information,
+//     see Policy actions for Amazon EMR on EKS (https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/security_iam_service-with-iam.html#security_iam_service-with-iam-id-based-policies-actions).
 //
-//    * It is the prefix used in Amazon EMR on EKS service endpoints. For example,
-//    emr-containers.us-east-2.amazonaws.com. For more information, see Amazon
-//    EMR on EKS Service Endpoints (https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/service-quotas.html#service-endpoints).
+//   - It is the prefix used in Amazon EMR on EKS service endpoints. For example,
+//     emr-containers.us-east-2.amazonaws.com. For more information, see Amazon
+//     EMR on EKS Service Endpoints (https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/service-quotas.html#service-endpoints).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/emr-containers-2020-10-01 for more information on this service.
 //
 // See emrcontainers package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/emrcontainers/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon EMR Containers with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

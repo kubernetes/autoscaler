@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AppStream client from just a session.
-//     svc := appstream.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AppStream client with additional configuration
-//     svc := appstream.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AppStream client from just a session.
+//	svc := appstream.New(mySession)
+//
+//	// Create a AppStream client with additional configuration
+//	svc := appstream.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AppStream {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

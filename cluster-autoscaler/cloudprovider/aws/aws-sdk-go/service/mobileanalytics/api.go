@@ -28,14 +28,13 @@ const opPutEvents = "PutEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventsRequest method.
+//	req, resp := client.PutEventsRequest(params)
 //
-//    // Example sending a request using the PutEventsRequest method.
-//    req, resp := client.PutEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MobileAnalytics) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
 	op := &request.Operation{
 		Name:       opPutEvents,
@@ -67,9 +66,8 @@ func (c *MobileAnalytics) PutEventsRequest(input *PutEventsInput) (req *request.
 // API operation PutEvents for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   An exception object returned when a request fails.
-//
+//   - BadRequestException
+//     An exception object returned when a request fails.
 func (c *MobileAnalytics) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
 	req, out := c.PutEventsRequest(input)
 	return out, req.Send()

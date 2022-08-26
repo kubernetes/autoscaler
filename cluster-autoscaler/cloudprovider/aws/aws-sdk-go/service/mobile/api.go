@@ -28,14 +28,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/CreateProject
 func (c *Mobile) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -66,33 +65,34 @@ func (c *Mobile) CreateProjectRequest(input *CreateProjectInput) (req *request.R
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
 //
-//   * LimitExceededException
-//   There are too many AWS Mobile Hub projects in the account or the account
-//   has exceeded the maximum number of resources in some AWS service. You should
-//   create another sub-account using AWS Organizations or remove some resources
-//   and retry your request.
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
+//
+//   - LimitExceededException
+//     There are too many AWS Mobile Hub projects in the account or the account
+//     has exceeded the maximum number of resources in some AWS service. You should
+//     create another sub-account using AWS Organizations or remove some resources
+//     and retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/CreateProject
 func (c *Mobile) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -132,14 +132,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DeleteProject
 func (c *Mobile) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -170,23 +169,24 @@ func (c *Mobile) DeleteProjectRequest(input *DeleteProjectInput) (req *request.R
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
+//
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DeleteProject
 func (c *Mobile) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -226,14 +226,13 @@ const opDescribeBundle = "DescribeBundle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBundleRequest method.
+//	req, resp := client.DescribeBundleRequest(params)
 //
-//    // Example sending a request using the DescribeBundleRequest method.
-//    req, resp := client.DescribeBundleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DescribeBundle
 func (c *Mobile) DescribeBundleRequest(input *DescribeBundleInput) (req *request.Request, output *DescribeBundleOutput) {
@@ -264,27 +263,28 @@ func (c *Mobile) DescribeBundleRequest(input *DescribeBundleInput) (req *request
 // API operation DescribeBundle for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
+//
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DescribeBundle
 func (c *Mobile) DescribeBundle(input *DescribeBundleInput) (*DescribeBundleOutput, error) {
@@ -324,14 +324,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DescribeProject
 func (c *Mobile) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -362,27 +361,28 @@ func (c *Mobile) DescribeProjectRequest(input *DescribeProjectInput) (req *reque
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
+//
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/DescribeProject
 func (c *Mobile) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -422,14 +422,13 @@ const opExportBundle = "ExportBundle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportBundleRequest method.
+//	req, resp := client.ExportBundleRequest(params)
 //
-//    // Example sending a request using the ExportBundleRequest method.
-//    req, resp := client.ExportBundleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ExportBundle
 func (c *Mobile) ExportBundleRequest(input *ExportBundleInput) (req *request.Request, output *ExportBundleOutput) {
@@ -461,27 +460,28 @@ func (c *Mobile) ExportBundleRequest(input *ExportBundleInput) (req *request.Req
 // API operation ExportBundle for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
+//
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ExportBundle
 func (c *Mobile) ExportBundle(input *ExportBundleInput) (*ExportBundleOutput, error) {
@@ -521,14 +521,13 @@ const opExportProject = "ExportProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportProjectRequest method.
+//	req, resp := client.ExportProjectRequest(params)
 //
-//    // Example sending a request using the ExportProjectRequest method.
-//    req, resp := client.ExportProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ExportProject
 func (c *Mobile) ExportProjectRequest(input *ExportProjectInput) (req *request.Request, output *ExportProjectOutput) {
@@ -561,27 +560,28 @@ func (c *Mobile) ExportProjectRequest(input *ExportProjectInput) (req *request.R
 // API operation ExportProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
+//
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ExportProject
 func (c *Mobile) ExportProject(input *ExportProjectInput) (*ExportProjectOutput, error) {
@@ -621,14 +621,13 @@ const opListBundles = "ListBundles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBundlesRequest method.
+//	req, resp := client.ListBundlesRequest(params)
 //
-//    // Example sending a request using the ListBundlesRequest method.
-//    req, resp := client.ListBundlesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ListBundles
 func (c *Mobile) ListBundlesRequest(input *ListBundlesInput) (req *request.Request, output *ListBundlesOutput) {
@@ -665,24 +664,25 @@ func (c *Mobile) ListBundlesRequest(input *ListBundlesInput) (req *request.Reque
 // API operation ListBundles for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
+//
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ListBundles
 func (c *Mobile) ListBundles(input *ListBundlesInput) (*ListBundlesOutput, error) {
@@ -714,15 +714,14 @@ func (c *Mobile) ListBundlesWithContext(ctx aws.Context, input *ListBundlesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBundles operation.
-//    pageNum := 0
-//    err := client.ListBundlesPages(params,
-//        func(page *mobile.ListBundlesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBundles operation.
+//	pageNum := 0
+//	err := client.ListBundlesPages(params,
+//	    func(page *mobile.ListBundlesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mobile) ListBundlesPages(input *ListBundlesInput, fn func(*ListBundlesOutput, bool) bool) error {
 	return c.ListBundlesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -774,14 +773,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ListProjects
 func (c *Mobile) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -818,24 +816,25 @@ func (c *Mobile) ListProjectsRequest(input *ListProjectsInput) (req *request.Req
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
+//
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/ListProjects
 func (c *Mobile) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -867,15 +866,14 @@ func (c *Mobile) ListProjectsWithContext(ctx aws.Context, input *ListProjectsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *mobile.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *mobile.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Mobile) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -927,14 +925,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/UpdateProject
 func (c *Mobile) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -965,36 +962,37 @@ func (c *Mobile) UpdateProjectRequest(input *UpdateProjectInput) (req *request.R
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   The service has encountered an unexpected error condition which prevents
-//   it from servicing the request.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable. The request should be retried after
-//   some time delay.
+//   - InternalFailureException
+//     The service has encountered an unexpected error condition which prevents
+//     it from servicing the request.
 //
-//   * UnauthorizedException
-//   Credentials of the caller are insufficient to authorize the request.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable. The request should be retried after
+//     some time delay.
 //
-//   * TooManyRequestsException
-//   Too many requests have been received for this AWS account in too short a
-//   time. The request should be retried after some time delay.
+//   - UnauthorizedException
+//     Credentials of the caller are insufficient to authorize the request.
 //
-//   * BadRequestException
-//   The request cannot be processed because some parameter is not valid or the
-//   project state prevents the operation from being performed.
+//   - TooManyRequestsException
+//     Too many requests have been received for this AWS account in too short a
+//     time. The request should be retried after some time delay.
 //
-//   * NotFoundException
-//   No entity can be found with the specified identifier.
+//   - BadRequestException
+//     The request cannot be processed because some parameter is not valid or the
+//     project state prevents the operation from being performed.
 //
-//   * AccountActionRequiredException
-//   Account Action is required in order to continue the request.
+//   - NotFoundException
+//     No entity can be found with the specified identifier.
 //
-//   * LimitExceededException
-//   There are too many AWS Mobile Hub projects in the account or the account
-//   has exceeded the maximum number of resources in some AWS service. You should
-//   create another sub-account using AWS Organizations or remove some resources
-//   and retry your request.
+//   - AccountActionRequiredException
+//     Account Action is required in order to continue the request.
+//
+//   - LimitExceededException
+//     There are too many AWS Mobile Hub projects in the account or the account
+//     has exceeded the maximum number of resources in some AWS service. You should
+//     create another sub-account using AWS Organizations or remove some resources
+//     and retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mobile-2017-07-01/UpdateProject
 func (c *Mobile) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {

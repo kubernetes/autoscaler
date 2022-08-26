@@ -29,14 +29,13 @@ const opCreateAssistant = "CreateAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssistantRequest method.
+//	req, resp := client.CreateAssistantRequest(params)
 //
-//    // Example sending a request using the CreateAssistantRequest method.
-//    req, resp := client.CreateAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistant
 func (c *ConnectWisdomService) CreateAssistantRequest(input *CreateAssistantInput) (req *request.Request, output *CreateAssistantOutput) {
@@ -67,22 +66,23 @@ func (c *ConnectWisdomService) CreateAssistantRequest(input *CreateAssistantInpu
 // API operation CreateAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistant
 func (c *ConnectWisdomService) CreateAssistant(input *CreateAssistantInput) (*CreateAssistantOutput, error) {
@@ -122,14 +122,13 @@ const opCreateAssistantAssociation = "CreateAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssistantAssociationRequest method.
+//	req, resp := client.CreateAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the CreateAssistantAssociationRequest method.
-//    req, resp := client.CreateAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistantAssociation
 func (c *ConnectWisdomService) CreateAssistantAssociationRequest(input *CreateAssistantAssociationInput) (req *request.Request, output *CreateAssistantAssociationOutput) {
@@ -162,25 +161,26 @@ func (c *ConnectWisdomService) CreateAssistantAssociationRequest(input *CreateAs
 // API operation CreateAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistantAssociation
 func (c *ConnectWisdomService) CreateAssistantAssociation(input *CreateAssistantAssociationInput) (*CreateAssistantAssociationOutput, error) {
@@ -220,14 +220,13 @@ const opCreateContent = "CreateContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContentRequest method.
+//	req, resp := client.CreateContentRequest(params)
 //
-//    // Example sending a request using the CreateContentRequest method.
-//    req, resp := client.CreateContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateContent
 func (c *ConnectWisdomService) CreateContentRequest(input *CreateContentInput) (req *request.Request, output *CreateContentOutput) {
@@ -260,25 +259,26 @@ func (c *ConnectWisdomService) CreateContentRequest(input *CreateContentInput) (
 // API operation CreateContent for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateContent
 func (c *ConnectWisdomService) CreateContent(input *CreateContentInput) (*CreateContentOutput, error) {
@@ -318,14 +318,13 @@ const opCreateKnowledgeBase = "CreateKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKnowledgeBaseRequest method.
+//	req, resp := client.CreateKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the CreateKnowledgeBaseRequest method.
-//    req, resp := client.CreateKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateKnowledgeBase
 func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledgeBaseInput) (req *request.Request, output *CreateKnowledgeBaseOutput) {
@@ -352,13 +351,13 @@ func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledge
 // DataIntegrations with external knowledge bases such as Salesforce and ServiceNow.
 // If you do, you'll get an InvalidRequestException error.
 //
-//    <p>For example, you're programmatically managing your external knowledge
-//    base, and you want to add or remove one of the fields that is being ingested
-//    from Salesforce. Do the following:</p> <ol> <li> <p>Call <a href="https://docs.aws.amazon.com/wisdom/latest/APIReference/API_DeleteKnowledgeBase.html">DeleteKnowledgeBase</a>.</p>
-//    </li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html">DeleteDataIntegration</a>.</p>
-//    </li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html">CreateDataIntegration</a>
-//    to recreate the DataIntegration or a create different one.</p> </li> <li>
-//    <p>Call CreateKnowledgeBase.</p> </li> </ol> </note>
+//	<p>For example, you're programmatically managing your external knowledge
+//	base, and you want to add or remove one of the fields that is being ingested
+//	from Salesforce. Do the following:</p> <ol> <li> <p>Call <a href="https://docs.aws.amazon.com/wisdom/latest/APIReference/API_DeleteKnowledgeBase.html">DeleteKnowledgeBase</a>.</p>
+//	</li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html">DeleteDataIntegration</a>.</p>
+//	</li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html">CreateDataIntegration</a>
+//	to recreate the DataIntegration or a create different one.</p> </li> <li>
+//	<p>Call CreateKnowledgeBase.</p> </li> </ol> </note>
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -368,22 +367,23 @@ func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledge
 // API operation CreateKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateKnowledgeBase
 func (c *ConnectWisdomService) CreateKnowledgeBase(input *CreateKnowledgeBaseInput) (*CreateKnowledgeBaseOutput, error) {
@@ -423,14 +423,13 @@ const opCreateSession = "CreateSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSessionRequest method.
+//	req, resp := client.CreateSessionRequest(params)
 //
-//    // Example sending a request using the CreateSessionRequest method.
-//    req, resp := client.CreateSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateSession
 func (c *ConnectWisdomService) CreateSessionRequest(input *CreateSessionInput) (req *request.Request, output *CreateSessionOutput) {
@@ -463,17 +462,18 @@ func (c *ConnectWisdomService) CreateSessionRequest(input *CreateSessionInput) (
 // API operation CreateSession for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateSession
 func (c *ConnectWisdomService) CreateSession(input *CreateSessionInput) (*CreateSessionOutput, error) {
@@ -513,14 +513,13 @@ const opDeleteAssistant = "DeleteAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssistantRequest method.
+//	req, resp := client.DeleteAssistantRequest(params)
 //
-//    // Example sending a request using the DeleteAssistantRequest method.
-//    req, resp := client.DeleteAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistant
 func (c *ConnectWisdomService) DeleteAssistantRequest(input *DeleteAssistantInput) (req *request.Request, output *DeleteAssistantOutput) {
@@ -552,14 +551,15 @@ func (c *ConnectWisdomService) DeleteAssistantRequest(input *DeleteAssistantInpu
 // API operation DeleteAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistant
 func (c *ConnectWisdomService) DeleteAssistant(input *DeleteAssistantInput) (*DeleteAssistantOutput, error) {
@@ -599,14 +599,13 @@ const opDeleteAssistantAssociation = "DeleteAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssistantAssociationRequest method.
+//	req, resp := client.DeleteAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteAssistantAssociationRequest method.
-//    req, resp := client.DeleteAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistantAssociation
 func (c *ConnectWisdomService) DeleteAssistantAssociationRequest(input *DeleteAssistantAssociationInput) (req *request.Request, output *DeleteAssistantAssociationOutput) {
@@ -638,14 +637,15 @@ func (c *ConnectWisdomService) DeleteAssistantAssociationRequest(input *DeleteAs
 // API operation DeleteAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistantAssociation
 func (c *ConnectWisdomService) DeleteAssistantAssociation(input *DeleteAssistantAssociationInput) (*DeleteAssistantAssociationOutput, error) {
@@ -685,14 +685,13 @@ const opDeleteContent = "DeleteContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContentRequest method.
+//	req, resp := client.DeleteContentRequest(params)
 //
-//    // Example sending a request using the DeleteContentRequest method.
-//    req, resp := client.DeleteContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteContent
 func (c *ConnectWisdomService) DeleteContentRequest(input *DeleteContentInput) (req *request.Request, output *DeleteContentOutput) {
@@ -724,14 +723,15 @@ func (c *ConnectWisdomService) DeleteContentRequest(input *DeleteContentInput) (
 // API operation DeleteContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteContent
 func (c *ConnectWisdomService) DeleteContent(input *DeleteContentInput) (*DeleteContentOutput, error) {
@@ -771,14 +771,13 @@ const opDeleteKnowledgeBase = "DeleteKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKnowledgeBaseRequest method.
+//	req, resp := client.DeleteKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the DeleteKnowledgeBaseRequest method.
-//    req, resp := client.DeleteKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteKnowledgeBase
 func (c *ConnectWisdomService) DeleteKnowledgeBaseRequest(input *DeleteKnowledgeBaseInput) (req *request.Request, output *DeleteKnowledgeBaseOutput) {
@@ -818,20 +817,21 @@ func (c *ConnectWisdomService) DeleteKnowledgeBaseRequest(input *DeleteKnowledge
 // API operation DeleteKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteKnowledgeBase
 func (c *ConnectWisdomService) DeleteKnowledgeBase(input *DeleteKnowledgeBaseInput) (*DeleteKnowledgeBaseOutput, error) {
@@ -871,14 +871,13 @@ const opGetAssistant = "GetAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssistantRequest method.
+//	req, resp := client.GetAssistantRequest(params)
 //
-//    // Example sending a request using the GetAssistantRequest method.
-//    req, resp := client.GetAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistant
 func (c *ConnectWisdomService) GetAssistantRequest(input *GetAssistantInput) (req *request.Request, output *GetAssistantOutput) {
@@ -909,14 +908,15 @@ func (c *ConnectWisdomService) GetAssistantRequest(input *GetAssistantInput) (re
 // API operation GetAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistant
 func (c *ConnectWisdomService) GetAssistant(input *GetAssistantInput) (*GetAssistantOutput, error) {
@@ -956,14 +956,13 @@ const opGetAssistantAssociation = "GetAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssistantAssociationRequest method.
+//	req, resp := client.GetAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the GetAssistantAssociationRequest method.
-//    req, resp := client.GetAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistantAssociation
 func (c *ConnectWisdomService) GetAssistantAssociationRequest(input *GetAssistantAssociationInput) (req *request.Request, output *GetAssistantAssociationOutput) {
@@ -994,14 +993,15 @@ func (c *ConnectWisdomService) GetAssistantAssociationRequest(input *GetAssistan
 // API operation GetAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistantAssociation
 func (c *ConnectWisdomService) GetAssistantAssociation(input *GetAssistantAssociationInput) (*GetAssistantAssociationOutput, error) {
@@ -1041,14 +1041,13 @@ const opGetContent = "GetContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContentRequest method.
+//	req, resp := client.GetContentRequest(params)
 //
-//    // Example sending a request using the GetContentRequest method.
-//    req, resp := client.GetContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContent
 func (c *ConnectWisdomService) GetContentRequest(input *GetContentInput) (req *request.Request, output *GetContentOutput) {
@@ -1079,14 +1078,15 @@ func (c *ConnectWisdomService) GetContentRequest(input *GetContentInput) (req *r
 // API operation GetContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContent
 func (c *ConnectWisdomService) GetContent(input *GetContentInput) (*GetContentOutput, error) {
@@ -1126,14 +1126,13 @@ const opGetContentSummary = "GetContentSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContentSummaryRequest method.
+//	req, resp := client.GetContentSummaryRequest(params)
 //
-//    // Example sending a request using the GetContentSummaryRequest method.
-//    req, resp := client.GetContentSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContentSummary
 func (c *ConnectWisdomService) GetContentSummaryRequest(input *GetContentSummaryInput) (req *request.Request, output *GetContentSummaryOutput) {
@@ -1164,14 +1163,15 @@ func (c *ConnectWisdomService) GetContentSummaryRequest(input *GetContentSummary
 // API operation GetContentSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContentSummary
 func (c *ConnectWisdomService) GetContentSummary(input *GetContentSummaryInput) (*GetContentSummaryOutput, error) {
@@ -1211,14 +1211,13 @@ const opGetKnowledgeBase = "GetKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetKnowledgeBaseRequest method.
+//	req, resp := client.GetKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the GetKnowledgeBaseRequest method.
-//    req, resp := client.GetKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetKnowledgeBase
 func (c *ConnectWisdomService) GetKnowledgeBaseRequest(input *GetKnowledgeBaseInput) (req *request.Request, output *GetKnowledgeBaseOutput) {
@@ -1249,14 +1248,15 @@ func (c *ConnectWisdomService) GetKnowledgeBaseRequest(input *GetKnowledgeBaseIn
 // API operation GetKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetKnowledgeBase
 func (c *ConnectWisdomService) GetKnowledgeBase(input *GetKnowledgeBaseInput) (*GetKnowledgeBaseOutput, error) {
@@ -1296,14 +1296,13 @@ const opGetRecommendations = "GetRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationsRequest method.
+//	req, resp := client.GetRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetRecommendationsRequest method.
-//    req, resp := client.GetRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetRecommendations
 func (c *ConnectWisdomService) GetRecommendationsRequest(input *GetRecommendationsInput) (req *request.Request, output *GetRecommendationsOutput) {
@@ -1340,14 +1339,15 @@ func (c *ConnectWisdomService) GetRecommendationsRequest(input *GetRecommendatio
 // API operation GetRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetRecommendations
 func (c *ConnectWisdomService) GetRecommendations(input *GetRecommendationsInput) (*GetRecommendationsOutput, error) {
@@ -1387,14 +1387,13 @@ const opGetSession = "GetSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSessionRequest method.
+//	req, resp := client.GetSessionRequest(params)
 //
-//    // Example sending a request using the GetSessionRequest method.
-//    req, resp := client.GetSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetSession
 func (c *ConnectWisdomService) GetSessionRequest(input *GetSessionInput) (req *request.Request, output *GetSessionOutput) {
@@ -1425,14 +1424,15 @@ func (c *ConnectWisdomService) GetSessionRequest(input *GetSessionInput) (req *r
 // API operation GetSession for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetSession
 func (c *ConnectWisdomService) GetSession(input *GetSessionInput) (*GetSessionOutput, error) {
@@ -1472,14 +1472,13 @@ const opListAssistantAssociations = "ListAssistantAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssistantAssociationsRequest method.
+//	req, resp := client.ListAssistantAssociationsRequest(params)
 //
-//    // Example sending a request using the ListAssistantAssociationsRequest method.
-//    req, resp := client.ListAssistantAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistantAssociations
 func (c *ConnectWisdomService) ListAssistantAssociationsRequest(input *ListAssistantAssociationsInput) (req *request.Request, output *ListAssistantAssociationsOutput) {
@@ -1516,14 +1515,15 @@ func (c *ConnectWisdomService) ListAssistantAssociationsRequest(input *ListAssis
 // API operation ListAssistantAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistantAssociations
 func (c *ConnectWisdomService) ListAssistantAssociations(input *ListAssistantAssociationsInput) (*ListAssistantAssociationsOutput, error) {
@@ -1555,15 +1555,14 @@ func (c *ConnectWisdomService) ListAssistantAssociationsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssistantAssociations operation.
-//    pageNum := 0
-//    err := client.ListAssistantAssociationsPages(params,
-//        func(page *connectwisdomservice.ListAssistantAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssistantAssociations operation.
+//	pageNum := 0
+//	err := client.ListAssistantAssociationsPages(params,
+//	    func(page *connectwisdomservice.ListAssistantAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListAssistantAssociationsPages(input *ListAssistantAssociationsInput, fn func(*ListAssistantAssociationsOutput, bool) bool) error {
 	return c.ListAssistantAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1615,14 +1614,13 @@ const opListAssistants = "ListAssistants"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssistantsRequest method.
+//	req, resp := client.ListAssistantsRequest(params)
 //
-//    // Example sending a request using the ListAssistantsRequest method.
-//    req, resp := client.ListAssistantsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistants
 func (c *ConnectWisdomService) ListAssistantsRequest(input *ListAssistantsInput) (req *request.Request, output *ListAssistantsOutput) {
@@ -1659,11 +1657,12 @@ func (c *ConnectWisdomService) ListAssistantsRequest(input *ListAssistantsInput)
 // API operation ListAssistants for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistants
 func (c *ConnectWisdomService) ListAssistants(input *ListAssistantsInput) (*ListAssistantsOutput, error) {
@@ -1695,15 +1694,14 @@ func (c *ConnectWisdomService) ListAssistantsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssistants operation.
-//    pageNum := 0
-//    err := client.ListAssistantsPages(params,
-//        func(page *connectwisdomservice.ListAssistantsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssistants operation.
+//	pageNum := 0
+//	err := client.ListAssistantsPages(params,
+//	    func(page *connectwisdomservice.ListAssistantsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListAssistantsPages(input *ListAssistantsInput, fn func(*ListAssistantsOutput, bool) bool) error {
 	return c.ListAssistantsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1755,14 +1753,13 @@ const opListContents = "ListContents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContentsRequest method.
+//	req, resp := client.ListContentsRequest(params)
 //
-//    // Example sending a request using the ListContentsRequest method.
-//    req, resp := client.ListContentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListContents
 func (c *ConnectWisdomService) ListContentsRequest(input *ListContentsInput) (req *request.Request, output *ListContentsOutput) {
@@ -1799,14 +1796,15 @@ func (c *ConnectWisdomService) ListContentsRequest(input *ListContentsInput) (re
 // API operation ListContents for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListContents
 func (c *ConnectWisdomService) ListContents(input *ListContentsInput) (*ListContentsOutput, error) {
@@ -1838,15 +1836,14 @@ func (c *ConnectWisdomService) ListContentsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContents operation.
-//    pageNum := 0
-//    err := client.ListContentsPages(params,
-//        func(page *connectwisdomservice.ListContentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContents operation.
+//	pageNum := 0
+//	err := client.ListContentsPages(params,
+//	    func(page *connectwisdomservice.ListContentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListContentsPages(input *ListContentsInput, fn func(*ListContentsOutput, bool) bool) error {
 	return c.ListContentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1898,14 +1895,13 @@ const opListKnowledgeBases = "ListKnowledgeBases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKnowledgeBasesRequest method.
+//	req, resp := client.ListKnowledgeBasesRequest(params)
 //
-//    // Example sending a request using the ListKnowledgeBasesRequest method.
-//    req, resp := client.ListKnowledgeBasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListKnowledgeBases
 func (c *ConnectWisdomService) ListKnowledgeBasesRequest(input *ListKnowledgeBasesInput) (req *request.Request, output *ListKnowledgeBasesOutput) {
@@ -1942,11 +1938,12 @@ func (c *ConnectWisdomService) ListKnowledgeBasesRequest(input *ListKnowledgeBas
 // API operation ListKnowledgeBases for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListKnowledgeBases
 func (c *ConnectWisdomService) ListKnowledgeBases(input *ListKnowledgeBasesInput) (*ListKnowledgeBasesOutput, error) {
@@ -1978,15 +1975,14 @@ func (c *ConnectWisdomService) ListKnowledgeBasesWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKnowledgeBases operation.
-//    pageNum := 0
-//    err := client.ListKnowledgeBasesPages(params,
-//        func(page *connectwisdomservice.ListKnowledgeBasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKnowledgeBases operation.
+//	pageNum := 0
+//	err := client.ListKnowledgeBasesPages(params,
+//	    func(page *connectwisdomservice.ListKnowledgeBasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListKnowledgeBasesPages(input *ListKnowledgeBasesInput, fn func(*ListKnowledgeBasesOutput, bool) bool) error {
 	return c.ListKnowledgeBasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2038,14 +2034,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListTagsForResource
 func (c *ConnectWisdomService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2076,8 +2071,8 @@ func (c *ConnectWisdomService) ListTagsForResourceRequest(input *ListTagsForReso
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListTagsForResource
 func (c *ConnectWisdomService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2117,14 +2112,13 @@ const opNotifyRecommendationsReceived = "NotifyRecommendationsReceived"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyRecommendationsReceivedRequest method.
+//	req, resp := client.NotifyRecommendationsReceivedRequest(params)
 //
-//    // Example sending a request using the NotifyRecommendationsReceivedRequest method.
-//    req, resp := client.NotifyRecommendationsReceivedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/NotifyRecommendationsReceived
 func (c *ConnectWisdomService) NotifyRecommendationsReceivedRequest(input *NotifyRecommendationsReceivedInput) (req *request.Request, output *NotifyRecommendationsReceivedOutput) {
@@ -2159,14 +2153,15 @@ func (c *ConnectWisdomService) NotifyRecommendationsReceivedRequest(input *Notif
 // API operation NotifyRecommendationsReceived for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/NotifyRecommendationsReceived
 func (c *ConnectWisdomService) NotifyRecommendationsReceived(input *NotifyRecommendationsReceivedInput) (*NotifyRecommendationsReceivedOutput, error) {
@@ -2206,14 +2201,13 @@ const opQueryAssistant = "QueryAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the QueryAssistantRequest method.
+//	req, resp := client.QueryAssistantRequest(params)
 //
-//    // Example sending a request using the QueryAssistantRequest method.
-//    req, resp := client.QueryAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/QueryAssistant
 func (c *ConnectWisdomService) QueryAssistantRequest(input *QueryAssistantInput) (req *request.Request, output *QueryAssistantOutput) {
@@ -2251,14 +2245,15 @@ func (c *ConnectWisdomService) QueryAssistantRequest(input *QueryAssistantInput)
 // API operation QueryAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/QueryAssistant
 func (c *ConnectWisdomService) QueryAssistant(input *QueryAssistantInput) (*QueryAssistantOutput, error) {
@@ -2290,15 +2285,14 @@ func (c *ConnectWisdomService) QueryAssistantWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a QueryAssistant operation.
-//    pageNum := 0
-//    err := client.QueryAssistantPages(params,
-//        func(page *connectwisdomservice.QueryAssistantOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a QueryAssistant operation.
+//	pageNum := 0
+//	err := client.QueryAssistantPages(params,
+//	    func(page *connectwisdomservice.QueryAssistantOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) QueryAssistantPages(input *QueryAssistantInput, fn func(*QueryAssistantOutput, bool) bool) error {
 	return c.QueryAssistantPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2350,14 +2344,13 @@ const opRemoveKnowledgeBaseTemplateUri = "RemoveKnowledgeBaseTemplateUri"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveKnowledgeBaseTemplateUriRequest method.
+//	req, resp := client.RemoveKnowledgeBaseTemplateUriRequest(params)
 //
-//    // Example sending a request using the RemoveKnowledgeBaseTemplateUriRequest method.
-//    req, resp := client.RemoveKnowledgeBaseTemplateUriRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/RemoveKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUriRequest(input *RemoveKnowledgeBaseTemplateUriInput) (req *request.Request, output *RemoveKnowledgeBaseTemplateUriOutput) {
@@ -2389,14 +2382,15 @@ func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUriRequest(input *Remo
 // API operation RemoveKnowledgeBaseTemplateUri for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/RemoveKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUri(input *RemoveKnowledgeBaseTemplateUriInput) (*RemoveKnowledgeBaseTemplateUriOutput, error) {
@@ -2436,14 +2430,13 @@ const opSearchContent = "SearchContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchContentRequest method.
+//	req, resp := client.SearchContentRequest(params)
 //
-//    // Example sending a request using the SearchContentRequest method.
-//    req, resp := client.SearchContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchContent
 func (c *ConnectWisdomService) SearchContentRequest(input *SearchContentInput) (req *request.Request, output *SearchContentOutput) {
@@ -2481,14 +2474,15 @@ func (c *ConnectWisdomService) SearchContentRequest(input *SearchContentInput) (
 // API operation SearchContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchContent
 func (c *ConnectWisdomService) SearchContent(input *SearchContentInput) (*SearchContentOutput, error) {
@@ -2520,15 +2514,14 @@ func (c *ConnectWisdomService) SearchContentWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchContent operation.
-//    pageNum := 0
-//    err := client.SearchContentPages(params,
-//        func(page *connectwisdomservice.SearchContentOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchContent operation.
+//	pageNum := 0
+//	err := client.SearchContentPages(params,
+//	    func(page *connectwisdomservice.SearchContentOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) SearchContentPages(input *SearchContentInput, fn func(*SearchContentOutput, bool) bool) error {
 	return c.SearchContentPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2580,14 +2573,13 @@ const opSearchSessions = "SearchSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSessionsRequest method.
+//	req, resp := client.SearchSessionsRequest(params)
 //
-//    // Example sending a request using the SearchSessionsRequest method.
-//    req, resp := client.SearchSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchSessions
 func (c *ConnectWisdomService) SearchSessionsRequest(input *SearchSessionsInput) (req *request.Request, output *SearchSessionsOutput) {
@@ -2624,14 +2616,15 @@ func (c *ConnectWisdomService) SearchSessionsRequest(input *SearchSessionsInput)
 // API operation SearchSessions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchSessions
 func (c *ConnectWisdomService) SearchSessions(input *SearchSessionsInput) (*SearchSessionsOutput, error) {
@@ -2663,15 +2656,14 @@ func (c *ConnectWisdomService) SearchSessionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSessions operation.
-//    pageNum := 0
-//    err := client.SearchSessionsPages(params,
-//        func(page *connectwisdomservice.SearchSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSessions operation.
+//	pageNum := 0
+//	err := client.SearchSessionsPages(params,
+//	    func(page *connectwisdomservice.SearchSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) SearchSessionsPages(input *SearchSessionsInput, fn func(*SearchSessionsOutput, bool) bool) error {
 	return c.SearchSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2723,14 +2715,13 @@ const opStartContentUpload = "StartContentUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartContentUploadRequest method.
+//	req, resp := client.StartContentUploadRequest(params)
 //
-//    // Example sending a request using the StartContentUploadRequest method.
-//    req, resp := client.StartContentUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartContentUpload
 func (c *ConnectWisdomService) StartContentUploadRequest(input *StartContentUploadInput) (req *request.Request, output *StartContentUploadOutput) {
@@ -2766,14 +2757,15 @@ func (c *ConnectWisdomService) StartContentUploadRequest(input *StartContentUplo
 // API operation StartContentUpload for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartContentUpload
 func (c *ConnectWisdomService) StartContentUpload(input *StartContentUploadInput) (*StartContentUploadOutput, error) {
@@ -2813,14 +2805,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/TagResource
 func (c *ConnectWisdomService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2852,12 +2843,13 @@ func (c *ConnectWisdomService) TagResourceRequest(input *TagResourceInput) (req 
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyTagsException
-//   Amazon Connect Wisdom throws this exception if you have too many tags in
-//   your tag set.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - TooManyTagsException
+//     Amazon Connect Wisdom throws this exception if you have too many tags in
+//     your tag set.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/TagResource
 func (c *ConnectWisdomService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2897,14 +2889,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UntagResource
 func (c *ConnectWisdomService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2936,8 +2927,8 @@ func (c *ConnectWisdomService) UntagResourceRequest(input *UntagResourceInput) (
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UntagResource
 func (c *ConnectWisdomService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2977,14 +2968,13 @@ const opUpdateContent = "UpdateContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateContentRequest method.
+//	req, resp := client.UpdateContentRequest(params)
 //
-//    // Example sending a request using the UpdateContentRequest method.
-//    req, resp := client.UpdateContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateContent
 func (c *ConnectWisdomService) UpdateContentRequest(input *UpdateContentInput) (req *request.Request, output *UpdateContentOutput) {
@@ -3015,18 +3005,19 @@ func (c *ConnectWisdomService) UpdateContentRequest(input *UpdateContentInput) (
 // API operation UpdateContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * PreconditionFailedException
-//   The provided revisionId does not match, indicating the content has been modified
-//   since it was last read.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - PreconditionFailedException
+//     The provided revisionId does not match, indicating the content has been modified
+//     since it was last read.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateContent
 func (c *ConnectWisdomService) UpdateContent(input *UpdateContentInput) (*UpdateContentOutput, error) {
@@ -3066,14 +3057,13 @@ const opUpdateKnowledgeBaseTemplateUri = "UpdateKnowledgeBaseTemplateUri"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateKnowledgeBaseTemplateUriRequest method.
+//	req, resp := client.UpdateKnowledgeBaseTemplateUriRequest(params)
 //
-//    // Example sending a request using the UpdateKnowledgeBaseTemplateUriRequest method.
-//    req, resp := client.UpdateKnowledgeBaseTemplateUriRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUriRequest(input *UpdateKnowledgeBaseTemplateUriInput) (req *request.Request, output *UpdateKnowledgeBaseTemplateUriOutput) {
@@ -3108,14 +3098,15 @@ func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUriRequest(input *Upda
 // API operation UpdateKnowledgeBaseTemplateUri for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUri(input *UpdateKnowledgeBaseTemplateUriInput) (*UpdateKnowledgeBaseTemplateUriOutput, error) {

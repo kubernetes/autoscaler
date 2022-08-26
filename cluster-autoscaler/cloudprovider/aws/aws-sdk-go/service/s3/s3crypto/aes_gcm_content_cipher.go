@@ -37,11 +37,11 @@ func AESGCMContentCipherBuilderV2(generator CipherDataGeneratorWithCEKAlg) Conte
 // RegisterAESGCMContentCipher registers the AES/GCM content cipher algorithm with the provided CryptoRegistry.
 //
 // Example:
+//
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterAESGCMContentCipher(cr); err != nil {
 //		panic(err) // handle error
 //	}
-//
 func RegisterAESGCMContentCipher(registry *CryptoRegistry) error {
 	if registry == nil {
 		return errNilCryptoRegistry

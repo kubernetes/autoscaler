@@ -3,7 +3,6 @@
 // Package wafregional provides the client and types for making API
 // requests to AWS WAF Regional.
 //
-//
 // This is AWS WAF Classic Regional documentation. For more information, see
 // AWS WAF Classic (https://docs.aws.amazon.com/waf/latest/developerguide/classic-waf-chapter.html)
 // in the developer guide.
@@ -30,7 +29,7 @@
 // See wafregional package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/wafregional/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS WAF Regional with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

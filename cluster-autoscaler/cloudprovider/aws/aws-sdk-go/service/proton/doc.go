@@ -35,7 +35,7 @@
 // To learn more about deploying serverless and containerized applications on
 // Proton, see the Proton User Guide (https://docs.aws.amazon.com/proton/latest/userguide/Welcome.html).
 //
-// Ensuring Idempotency
+// # Ensuring Idempotency
 //
 // When you make a mutating API request, the request typically returns a result
 // before the asynchronous workflows of the operation are complete. Operations
@@ -56,7 +56,7 @@
 // The following lists of APIs are grouped according to methods that ensure
 // idempotency.
 //
-// Idempotent create APIs with a client token
+// # Idempotent create APIs with a client token
 //
 // The API actions in this list support idempotency with the use of a client
 // token. The corresponding Amazon Web Services CLI commands also support idempotency
@@ -85,13 +85,13 @@
 //
 // Idempotent create APIs with a client token:
 //
-//    * CreateEnvironmentTemplateVersion
+//   - CreateEnvironmentTemplateVersion
 //
-//    * CreateServiceTemplateVersion
+//   - CreateServiceTemplateVersion
 //
-//    * CreateEnvironmentAccountConnection
+//   - CreateEnvironmentAccountConnection
 //
-// Idempotent create APIs
+// # Idempotent create APIs
 //
 // Given a request action that has succeeded:
 //
@@ -106,15 +106,15 @@
 //
 // Idempotent create APIs:
 //
-//    * CreateEnvironmentTemplate
+//   - CreateEnvironmentTemplate
 //
-//    * CreateServiceTemplate
+//   - CreateServiceTemplate
 //
-//    * CreateEnvironment
+//   - CreateEnvironment
 //
-//    * CreateService
+//   - CreateService
 //
-// Idempotent delete APIs
+// # Idempotent delete APIs
 //
 // Given a request action that has succeeded:
 //
@@ -127,17 +127,17 @@
 //
 // Idempotent delete APIs:
 //
-//    * DeleteEnvironmentTemplate
+//   - DeleteEnvironmentTemplate
 //
-//    * DeleteEnvironmentTemplateVersion
+//   - DeleteEnvironmentTemplateVersion
 //
-//    * DeleteServiceTemplate
+//   - DeleteServiceTemplate
 //
-//    * DeleteServiceTemplateVersion
+//   - DeleteServiceTemplateVersion
 //
-//    * DeleteEnvironmentAccountConnection
+//   - DeleteEnvironmentAccountConnection
 //
-// Asynchronous idempotent delete APIs
+// # Asynchronous idempotent delete APIs
 //
 // Given a request action that has succeeded:
 //
@@ -150,16 +150,16 @@
 //
 // Asynchronous idempotent delete APIs:
 //
-//    * DeleteEnvironment
+//   - DeleteEnvironment
 //
-//    * DeleteService
+//   - DeleteService
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/proton-2020-07-20 for more information on this service.
 //
 // See proton package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/proton/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Proton with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

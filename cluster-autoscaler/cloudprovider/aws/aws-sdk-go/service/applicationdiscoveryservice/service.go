@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ApplicationDiscoveryService client from just a session.
-//     svc := applicationdiscoveryservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ApplicationDiscoveryService client with additional configuration
-//     svc := applicationdiscoveryservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ApplicationDiscoveryService client from just a session.
+//	svc := applicationdiscoveryservice.New(mySession)
+//
+//	// Create a ApplicationDiscoveryService client with additional configuration
+//	svc := applicationdiscoveryservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ApplicationDiscoveryService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

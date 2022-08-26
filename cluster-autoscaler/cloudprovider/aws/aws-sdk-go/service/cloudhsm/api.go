@@ -27,14 +27,13 @@ const opAddTagsToResource = "AddTagsToResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToResourceRequest method.
+//	req, resp := client.AddTagsToResourceRequest(params)
 //
-//    // Example sending a request using the AddTagsToResourceRequest method.
-//    req, resp := client.AddTagsToResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResource
 func (c *CloudHSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *AddTagsToResourceOutput) {
@@ -76,14 +75,15 @@ func (c *CloudHSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req 
 // API operation AddTagsToResource for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/AddTagsToResource
 func (c *CloudHSM) AddTagsToResource(input *AddTagsToResourceInput) (*AddTagsToResourceOutput, error) {
@@ -123,14 +123,13 @@ const opCreateHapg = "CreateHapg"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHapgRequest method.
+//	req, resp := client.CreateHapgRequest(params)
 //
-//    // Example sending a request using the CreateHapgRequest method.
-//    req, resp := client.CreateHapgRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapg
 func (c *CloudHSM) CreateHapgRequest(input *CreateHapgInput) (req *request.Request, output *CreateHapgOutput) {
@@ -171,14 +170,15 @@ func (c *CloudHSM) CreateHapgRequest(input *CreateHapgInput) (req *request.Reque
 // API operation CreateHapg for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHapg
 func (c *CloudHSM) CreateHapg(input *CreateHapgInput) (*CreateHapgOutput, error) {
@@ -218,14 +218,13 @@ const opCreateHsm = "CreateHsm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHsmRequest method.
+//	req, resp := client.CreateHsmRequest(params)
 //
-//    // Example sending a request using the CreateHsmRequest method.
-//    req, resp := client.CreateHsmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsm
 func (c *CloudHSM) CreateHsmRequest(input *CreateHsmInput) (req *request.Request, output *CreateHsmOutput) {
@@ -275,14 +274,15 @@ func (c *CloudHSM) CreateHsmRequest(input *CreateHsmInput) (req *request.Request
 // API operation CreateHsm for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateHsm
 func (c *CloudHSM) CreateHsm(input *CreateHsmInput) (*CreateHsmOutput, error) {
@@ -322,14 +322,13 @@ const opCreateLunaClient = "CreateLunaClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLunaClientRequest method.
+//	req, resp := client.CreateLunaClientRequest(params)
 //
-//    // Example sending a request using the CreateLunaClientRequest method.
-//    req, resp := client.CreateLunaClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClient
 func (c *CloudHSM) CreateLunaClientRequest(input *CreateLunaClientInput) (req *request.Request, output *CreateLunaClientOutput) {
@@ -369,14 +368,15 @@ func (c *CloudHSM) CreateLunaClientRequest(input *CreateLunaClientInput) (req *r
 // API operation CreateLunaClient for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/CreateLunaClient
 func (c *CloudHSM) CreateLunaClient(input *CreateLunaClientInput) (*CreateLunaClientOutput, error) {
@@ -416,14 +416,13 @@ const opDeleteHapg = "DeleteHapg"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHapgRequest method.
+//	req, resp := client.DeleteHapgRequest(params)
 //
-//    // Example sending a request using the DeleteHapgRequest method.
-//    req, resp := client.DeleteHapgRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapg
 func (c *CloudHSM) DeleteHapgRequest(input *DeleteHapgInput) (req *request.Request, output *DeleteHapgOutput) {
@@ -463,14 +462,15 @@ func (c *CloudHSM) DeleteHapgRequest(input *DeleteHapgInput) (req *request.Reque
 // API operation DeleteHapg for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHapg
 func (c *CloudHSM) DeleteHapg(input *DeleteHapgInput) (*DeleteHapgOutput, error) {
@@ -510,14 +510,13 @@ const opDeleteHsm = "DeleteHsm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHsmRequest method.
+//	req, resp := client.DeleteHsmRequest(params)
 //
-//    // Example sending a request using the DeleteHsmRequest method.
-//    req, resp := client.DeleteHsmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsm
 func (c *CloudHSM) DeleteHsmRequest(input *DeleteHsmInput) (req *request.Request, output *DeleteHsmOutput) {
@@ -558,14 +557,15 @@ func (c *CloudHSM) DeleteHsmRequest(input *DeleteHsmInput) (req *request.Request
 // API operation DeleteHsm for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteHsm
 func (c *CloudHSM) DeleteHsm(input *DeleteHsmInput) (*DeleteHsmOutput, error) {
@@ -605,14 +605,13 @@ const opDeleteLunaClient = "DeleteLunaClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLunaClientRequest method.
+//	req, resp := client.DeleteLunaClientRequest(params)
 //
-//    // Example sending a request using the DeleteLunaClientRequest method.
-//    req, resp := client.DeleteLunaClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClient
 func (c *CloudHSM) DeleteLunaClientRequest(input *DeleteLunaClientInput) (req *request.Request, output *DeleteLunaClientOutput) {
@@ -652,14 +651,15 @@ func (c *CloudHSM) DeleteLunaClientRequest(input *DeleteLunaClientInput) (req *r
 // API operation DeleteLunaClient for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DeleteLunaClient
 func (c *CloudHSM) DeleteLunaClient(input *DeleteLunaClientInput) (*DeleteLunaClientOutput, error) {
@@ -699,14 +699,13 @@ const opDescribeHapg = "DescribeHapg"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHapgRequest method.
+//	req, resp := client.DescribeHapgRequest(params)
 //
-//    // Example sending a request using the DescribeHapgRequest method.
-//    req, resp := client.DescribeHapgRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapg
 func (c *CloudHSM) DescribeHapgRequest(input *DescribeHapgInput) (req *request.Request, output *DescribeHapgOutput) {
@@ -746,14 +745,15 @@ func (c *CloudHSM) DescribeHapgRequest(input *DescribeHapgInput) (req *request.R
 // API operation DescribeHapg for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHapg
 func (c *CloudHSM) DescribeHapg(input *DescribeHapgInput) (*DescribeHapgOutput, error) {
@@ -793,14 +793,13 @@ const opDescribeHsm = "DescribeHsm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHsmRequest method.
+//	req, resp := client.DescribeHsmRequest(params)
 //
-//    // Example sending a request using the DescribeHsmRequest method.
-//    req, resp := client.DescribeHsmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsm
 func (c *CloudHSM) DescribeHsmRequest(input *DescribeHsmInput) (req *request.Request, output *DescribeHsmOutput) {
@@ -841,14 +840,15 @@ func (c *CloudHSM) DescribeHsmRequest(input *DescribeHsmInput) (req *request.Req
 // API operation DescribeHsm for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeHsm
 func (c *CloudHSM) DescribeHsm(input *DescribeHsmInput) (*DescribeHsmOutput, error) {
@@ -888,14 +888,13 @@ const opDescribeLunaClient = "DescribeLunaClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLunaClientRequest method.
+//	req, resp := client.DescribeLunaClientRequest(params)
 //
-//    // Example sending a request using the DescribeLunaClientRequest method.
-//    req, resp := client.DescribeLunaClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClient
 func (c *CloudHSM) DescribeLunaClientRequest(input *DescribeLunaClientInput) (req *request.Request, output *DescribeLunaClientOutput) {
@@ -935,14 +934,15 @@ func (c *CloudHSM) DescribeLunaClientRequest(input *DescribeLunaClientInput) (re
 // API operation DescribeLunaClient for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/DescribeLunaClient
 func (c *CloudHSM) DescribeLunaClient(input *DescribeLunaClientInput) (*DescribeLunaClientOutput, error) {
@@ -982,14 +982,13 @@ const opGetConfig = "GetConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigRequest method.
+//	req, resp := client.GetConfigRequest(params)
 //
-//    // Example sending a request using the GetConfigRequest method.
-//    req, resp := client.GetConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfig
 func (c *CloudHSM) GetConfigRequest(input *GetConfigInput) (req *request.Request, output *GetConfigOutput) {
@@ -1030,14 +1029,15 @@ func (c *CloudHSM) GetConfigRequest(input *GetConfigInput) (req *request.Request
 // API operation GetConfig for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/GetConfig
 func (c *CloudHSM) GetConfig(input *GetConfigInput) (*GetConfigOutput, error) {
@@ -1077,14 +1077,13 @@ const opListAvailableZones = "ListAvailableZones"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAvailableZonesRequest method.
+//	req, resp := client.ListAvailableZonesRequest(params)
 //
-//    // Example sending a request using the ListAvailableZonesRequest method.
-//    req, resp := client.ListAvailableZonesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZones
 func (c *CloudHSM) ListAvailableZonesRequest(input *ListAvailableZonesInput) (req *request.Request, output *ListAvailableZonesOutput) {
@@ -1124,14 +1123,15 @@ func (c *CloudHSM) ListAvailableZonesRequest(input *ListAvailableZonesInput) (re
 // API operation ListAvailableZones for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListAvailableZones
 func (c *CloudHSM) ListAvailableZones(input *ListAvailableZonesInput) (*ListAvailableZonesOutput, error) {
@@ -1171,14 +1171,13 @@ const opListHapgs = "ListHapgs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHapgsRequest method.
+//	req, resp := client.ListHapgsRequest(params)
 //
-//    // Example sending a request using the ListHapgsRequest method.
-//    req, resp := client.ListHapgsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgs
 func (c *CloudHSM) ListHapgsRequest(input *ListHapgsInput) (req *request.Request, output *ListHapgsOutput) {
@@ -1223,14 +1222,15 @@ func (c *CloudHSM) ListHapgsRequest(input *ListHapgsInput) (req *request.Request
 // API operation ListHapgs for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHapgs
 func (c *CloudHSM) ListHapgs(input *ListHapgsInput) (*ListHapgsOutput, error) {
@@ -1270,14 +1270,13 @@ const opListHsms = "ListHsms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHsmsRequest method.
+//	req, resp := client.ListHsmsRequest(params)
 //
-//    // Example sending a request using the ListHsmsRequest method.
-//    req, resp := client.ListHsmsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsms
 func (c *CloudHSM) ListHsmsRequest(input *ListHsmsInput) (req *request.Request, output *ListHsmsOutput) {
@@ -1323,14 +1322,15 @@ func (c *CloudHSM) ListHsmsRequest(input *ListHsmsInput) (req *request.Request, 
 // API operation ListHsms for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListHsms
 func (c *CloudHSM) ListHsms(input *ListHsmsInput) (*ListHsmsOutput, error) {
@@ -1370,14 +1370,13 @@ const opListLunaClients = "ListLunaClients"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLunaClientsRequest method.
+//	req, resp := client.ListLunaClientsRequest(params)
 //
-//    // Example sending a request using the ListLunaClientsRequest method.
-//    req, resp := client.ListLunaClientsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClients
 func (c *CloudHSM) ListLunaClientsRequest(input *ListLunaClientsInput) (req *request.Request, output *ListLunaClientsOutput) {
@@ -1422,14 +1421,15 @@ func (c *CloudHSM) ListLunaClientsRequest(input *ListLunaClientsInput) (req *req
 // API operation ListLunaClients for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListLunaClients
 func (c *CloudHSM) ListLunaClients(input *ListLunaClientsInput) (*ListLunaClientsOutput, error) {
@@ -1469,14 +1469,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResource
 func (c *CloudHSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1516,14 +1515,15 @@ func (c *CloudHSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ListTagsForResource
 func (c *CloudHSM) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1563,14 +1563,13 @@ const opModifyHapg = "ModifyHapg"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyHapgRequest method.
+//	req, resp := client.ModifyHapgRequest(params)
 //
-//    // Example sending a request using the ModifyHapgRequest method.
-//    req, resp := client.ModifyHapgRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapg
 func (c *CloudHSM) ModifyHapgRequest(input *ModifyHapgInput) (req *request.Request, output *ModifyHapgOutput) {
@@ -1610,14 +1609,15 @@ func (c *CloudHSM) ModifyHapgRequest(input *ModifyHapgInput) (req *request.Reque
 // API operation ModifyHapg for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHapg
 func (c *CloudHSM) ModifyHapg(input *ModifyHapgInput) (*ModifyHapgOutput, error) {
@@ -1657,14 +1657,13 @@ const opModifyHsm = "ModifyHsm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyHsmRequest method.
+//	req, resp := client.ModifyHsmRequest(params)
 //
-//    // Example sending a request using the ModifyHsmRequest method.
-//    req, resp := client.ModifyHsmRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsm
 func (c *CloudHSM) ModifyHsmRequest(input *ModifyHsmInput) (req *request.Request, output *ModifyHsmOutput) {
@@ -1710,14 +1709,15 @@ func (c *CloudHSM) ModifyHsmRequest(input *ModifyHsmInput) (req *request.Request
 // API operation ModifyHsm for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyHsm
 func (c *CloudHSM) ModifyHsm(input *ModifyHsmInput) (*ModifyHsmOutput, error) {
@@ -1757,14 +1757,13 @@ const opModifyLunaClient = "ModifyLunaClient"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyLunaClientRequest method.
+//	req, resp := client.ModifyLunaClientRequest(params)
 //
-//    // Example sending a request using the ModifyLunaClientRequest method.
-//    req, resp := client.ModifyLunaClientRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClient
 func (c *CloudHSM) ModifyLunaClientRequest(input *ModifyLunaClientInput) (req *request.Request, output *ModifyLunaClientOutput) {
@@ -1807,8 +1806,8 @@ func (c *CloudHSM) ModifyLunaClientRequest(input *ModifyLunaClientInput) (req *r
 // API operation ModifyLunaClient for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/ModifyLunaClient
 func (c *CloudHSM) ModifyLunaClient(input *ModifyLunaClientInput) (*ModifyLunaClientOutput, error) {
@@ -1848,14 +1847,13 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromResourceRequest method.
+//	req, resp := client.RemoveTagsFromResourceRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromResourceRequest method.
-//    req, resp := client.RemoveTagsFromResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResource
 func (c *CloudHSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *RemoveTagsFromResourceOutput) {
@@ -1898,14 +1896,15 @@ func (c *CloudHSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceIn
 // API operation RemoveTagsFromResource for usage and error information.
 //
 // Returned Error Types:
-//   * CloudHsmServiceException
-//   Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * CloudHsmInternalException
-//   Indicates that an internal error occurred.
+//   - CloudHsmServiceException
+//     Indicates that an exception occurred in the AWS CloudHSM service.
 //
-//   * InvalidRequestException
-//   Indicates that one or more of the request parameters are not valid.
+//   - CloudHsmInternalException
+//     Indicates that an internal error occurred.
+//
+//   - InvalidRequestException
+//     Indicates that one or more of the request parameters are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudhsm-2014-05-30/RemoveTagsFromResource
 func (c *CloudHSM) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*RemoveTagsFromResourceOutput, error) {
@@ -4361,9 +4360,9 @@ func HsmStatus_Values() []string {
 
 // Specifies the type of subscription for the HSM.
 //
-//    * PRODUCTION - The HSM is being used in a production environment.
+//   - PRODUCTION - The HSM is being used in a production environment.
 //
-//    * TRIAL - The HSM is being used in a product trial.
+//   - TRIAL - The HSM is being used in a product trial.
 const (
 	// SubscriptionTypeProduction is a SubscriptionType enum value
 	SubscriptionTypeProduction = "PRODUCTION"

@@ -29,14 +29,13 @@ const opBatchAssociateScramSecret = "BatchAssociateScramSecret"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAssociateScramSecretRequest method.
+//	req, resp := client.BatchAssociateScramSecretRequest(params)
 //
-//    // Example sending a request using the BatchAssociateScramSecretRequest method.
-//    req, resp := client.BatchAssociateScramSecretRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchAssociateScramSecret
 func (c *Kafka) BatchAssociateScramSecretRequest(input *BatchAssociateScramSecretInput) (req *request.Request, output *BatchAssociateScramSecretOutput) {
@@ -67,26 +66,27 @@ func (c *Kafka) BatchAssociateScramSecretRequest(input *BatchAssociateScramSecre
 // API operation BatchAssociateScramSecret for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchAssociateScramSecret
 func (c *Kafka) BatchAssociateScramSecret(input *BatchAssociateScramSecretInput) (*BatchAssociateScramSecretOutput, error) {
@@ -126,14 +126,13 @@ const opBatchDisassociateScramSecret = "BatchDisassociateScramSecret"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisassociateScramSecretRequest method.
+//	req, resp := client.BatchDisassociateScramSecretRequest(params)
 //
-//    // Example sending a request using the BatchDisassociateScramSecretRequest method.
-//    req, resp := client.BatchDisassociateScramSecretRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchDisassociateScramSecret
 func (c *Kafka) BatchDisassociateScramSecretRequest(input *BatchDisassociateScramSecretInput) (req *request.Request, output *BatchDisassociateScramSecretOutput) {
@@ -164,26 +163,27 @@ func (c *Kafka) BatchDisassociateScramSecretRequest(input *BatchDisassociateScra
 // API operation BatchDisassociateScramSecret for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/BatchDisassociateScramSecret
 func (c *Kafka) BatchDisassociateScramSecret(input *BatchDisassociateScramSecretInput) (*BatchDisassociateScramSecretOutput, error) {
@@ -223,14 +223,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateCluster
 func (c *Kafka) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -261,26 +260,27 @@ func (c *Kafka) CreateClusterRequest(input *CreateClusterInput) (req *request.Re
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateCluster
 func (c *Kafka) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -320,14 +320,13 @@ const opCreateClusterV2 = "CreateClusterV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterV2Request method.
+//	req, resp := client.CreateClusterV2Request(params)
 //
-//    // Example sending a request using the CreateClusterV2Request method.
-//    req, resp := client.CreateClusterV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateClusterV2
 func (c *Kafka) CreateClusterV2Request(input *CreateClusterV2Input) (req *request.Request, output *CreateClusterV2Output) {
@@ -359,26 +358,27 @@ func (c *Kafka) CreateClusterV2Request(input *CreateClusterV2Input) (req *reques
 // API operation CreateClusterV2 for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateClusterV2
 func (c *Kafka) CreateClusterV2(input *CreateClusterV2Input) (*CreateClusterV2Output, error) {
@@ -418,14 +418,13 @@ const opCreateConfiguration = "CreateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationRequest method.
+//	req, resp := client.CreateConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationRequest method.
-//    req, resp := client.CreateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateConfiguration
 func (c *Kafka) CreateConfigurationRequest(input *CreateConfigurationInput) (req *request.Request, output *CreateConfigurationOutput) {
@@ -456,26 +455,27 @@ func (c *Kafka) CreateConfigurationRequest(input *CreateConfigurationInput) (req
 // API operation CreateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - TooManyRequestsException
+//     Returns information about an error.
+//
+//   - ConflictException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/CreateConfiguration
 func (c *Kafka) CreateConfiguration(input *CreateConfigurationInput) (*CreateConfigurationOutput, error) {
@@ -515,14 +515,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteCluster
 func (c *Kafka) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -554,17 +553,18 @@ func (c *Kafka) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Re
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteCluster
 func (c *Kafka) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -604,14 +604,13 @@ const opDeleteConfiguration = "DeleteConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationRequest method.
+//	req, resp := client.DeleteConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationRequest method.
-//    req, resp := client.DeleteConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteConfiguration
 func (c *Kafka) DeleteConfigurationRequest(input *DeleteConfigurationInput) (req *request.Request, output *DeleteConfigurationOutput) {
@@ -643,17 +642,18 @@ func (c *Kafka) DeleteConfigurationRequest(input *DeleteConfigurationInput) (req
 // API operation DeleteConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DeleteConfiguration
 func (c *Kafka) DeleteConfiguration(input *DeleteConfigurationInput) (*DeleteConfigurationOutput, error) {
@@ -693,14 +693,13 @@ const opDescribeCluster = "DescribeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterRequest method.
+//	req, resp := client.DescribeClusterRequest(params)
 //
-//    // Example sending a request using the DescribeClusterRequest method.
-//    req, resp := client.DescribeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeCluster
 func (c *Kafka) DescribeClusterRequest(input *DescribeClusterInput) (req *request.Request, output *DescribeClusterOutput) {
@@ -732,20 +731,21 @@ func (c *Kafka) DescribeClusterRequest(input *DescribeClusterInput) (req *reques
 // API operation DescribeCluster for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeCluster
 func (c *Kafka) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutput, error) {
@@ -785,14 +785,13 @@ const opDescribeClusterOperation = "DescribeClusterOperation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterOperationRequest method.
+//	req, resp := client.DescribeClusterOperationRequest(params)
 //
-//    // Example sending a request using the DescribeClusterOperationRequest method.
-//    req, resp := client.DescribeClusterOperationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperation
 func (c *Kafka) DescribeClusterOperationRequest(input *DescribeClusterOperationInput) (req *request.Request, output *DescribeClusterOperationOutput) {
@@ -823,20 +822,21 @@ func (c *Kafka) DescribeClusterOperationRequest(input *DescribeClusterOperationI
 // API operation DescribeClusterOperation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterOperation
 func (c *Kafka) DescribeClusterOperation(input *DescribeClusterOperationInput) (*DescribeClusterOperationOutput, error) {
@@ -876,14 +876,13 @@ const opDescribeClusterV2 = "DescribeClusterV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterV2Request method.
+//	req, resp := client.DescribeClusterV2Request(params)
 //
-//    // Example sending a request using the DescribeClusterV2Request method.
-//    req, resp := client.DescribeClusterV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterV2
 func (c *Kafka) DescribeClusterV2Request(input *DescribeClusterV2Input) (req *request.Request, output *DescribeClusterV2Output) {
@@ -915,20 +914,21 @@ func (c *Kafka) DescribeClusterV2Request(input *DescribeClusterV2Input) (req *re
 // API operation DescribeClusterV2 for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeClusterV2
 func (c *Kafka) DescribeClusterV2(input *DescribeClusterV2Input) (*DescribeClusterV2Output, error) {
@@ -968,14 +968,13 @@ const opDescribeConfiguration = "DescribeConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRequest method.
+//	req, resp := client.DescribeConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRequest method.
-//    req, resp := client.DescribeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfiguration
 func (c *Kafka) DescribeConfigurationRequest(input *DescribeConfigurationInput) (req *request.Request, output *DescribeConfigurationOutput) {
@@ -1006,23 +1005,24 @@ func (c *Kafka) DescribeConfigurationRequest(input *DescribeConfigurationInput) 
 // API operation DescribeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfiguration
 func (c *Kafka) DescribeConfiguration(input *DescribeConfigurationInput) (*DescribeConfigurationOutput, error) {
@@ -1062,14 +1062,13 @@ const opDescribeConfigurationRevision = "DescribeConfigurationRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationRevisionRequest method.
+//	req, resp := client.DescribeConfigurationRevisionRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationRevisionRequest method.
-//    req, resp := client.DescribeConfigurationRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfigurationRevision
 func (c *Kafka) DescribeConfigurationRevisionRequest(input *DescribeConfigurationRevisionInput) (req *request.Request, output *DescribeConfigurationRevisionOutput) {
@@ -1100,23 +1099,24 @@ func (c *Kafka) DescribeConfigurationRevisionRequest(input *DescribeConfiguratio
 // API operation DescribeConfigurationRevision for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/DescribeConfigurationRevision
 func (c *Kafka) DescribeConfigurationRevision(input *DescribeConfigurationRevisionInput) (*DescribeConfigurationRevisionOutput, error) {
@@ -1156,14 +1156,13 @@ const opGetBootstrapBrokers = "GetBootstrapBrokers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBootstrapBrokersRequest method.
+//	req, resp := client.GetBootstrapBrokersRequest(params)
 //
-//    // Example sending a request using the GetBootstrapBrokersRequest method.
-//    req, resp := client.GetBootstrapBrokersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetBootstrapBrokers
 func (c *Kafka) GetBootstrapBrokersRequest(input *GetBootstrapBrokersInput) (req *request.Request, output *GetBootstrapBrokersOutput) {
@@ -1194,20 +1193,21 @@ func (c *Kafka) GetBootstrapBrokersRequest(input *GetBootstrapBrokersInput) (req
 // API operation GetBootstrapBrokers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ConflictException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - ConflictException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetBootstrapBrokers
 func (c *Kafka) GetBootstrapBrokers(input *GetBootstrapBrokersInput) (*GetBootstrapBrokersOutput, error) {
@@ -1247,14 +1247,13 @@ const opGetCompatibleKafkaVersions = "GetCompatibleKafkaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCompatibleKafkaVersionsRequest method.
+//	req, resp := client.GetCompatibleKafkaVersionsRequest(params)
 //
-//    // Example sending a request using the GetCompatibleKafkaVersionsRequest method.
-//    req, resp := client.GetCompatibleKafkaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetCompatibleKafkaVersions
 func (c *Kafka) GetCompatibleKafkaVersionsRequest(input *GetCompatibleKafkaVersionsInput) (req *request.Request, output *GetCompatibleKafkaVersionsOutput) {
@@ -1285,26 +1284,27 @@ func (c *Kafka) GetCompatibleKafkaVersionsRequest(input *GetCompatibleKafkaVersi
 // API operation GetCompatibleKafkaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/GetCompatibleKafkaVersions
 func (c *Kafka) GetCompatibleKafkaVersions(input *GetCompatibleKafkaVersionsInput) (*GetCompatibleKafkaVersionsOutput, error) {
@@ -1344,14 +1344,13 @@ const opListClusterOperations = "ListClusterOperations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClusterOperationsRequest method.
+//	req, resp := client.ListClusterOperationsRequest(params)
 //
-//    // Example sending a request using the ListClusterOperationsRequest method.
-//    req, resp := client.ListClusterOperationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperations
 func (c *Kafka) ListClusterOperationsRequest(input *ListClusterOperationsInput) (req *request.Request, output *ListClusterOperationsOutput) {
@@ -1389,17 +1388,18 @@ func (c *Kafka) ListClusterOperationsRequest(input *ListClusterOperationsInput) 
 // API operation ListClusterOperations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusterOperations
 func (c *Kafka) ListClusterOperations(input *ListClusterOperationsInput) (*ListClusterOperationsOutput, error) {
@@ -1431,15 +1431,14 @@ func (c *Kafka) ListClusterOperationsWithContext(ctx aws.Context, input *ListClu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusterOperations operation.
-//    pageNum := 0
-//    err := client.ListClusterOperationsPages(params,
-//        func(page *kafka.ListClusterOperationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusterOperations operation.
+//	pageNum := 0
+//	err := client.ListClusterOperationsPages(params,
+//	    func(page *kafka.ListClusterOperationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClusterOperationsPages(input *ListClusterOperationsInput, fn func(*ListClusterOperationsOutput, bool) bool) error {
 	return c.ListClusterOperationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1491,14 +1490,13 @@ const opListClusters = "ListClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersRequest method.
+//	req, resp := client.ListClustersRequest(params)
 //
-//    // Example sending a request using the ListClustersRequest method.
-//    req, resp := client.ListClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusters
 func (c *Kafka) ListClustersRequest(input *ListClustersInput) (req *request.Request, output *ListClustersOutput) {
@@ -1535,17 +1533,18 @@ func (c *Kafka) ListClustersRequest(input *ListClustersInput) (req *request.Requ
 // API operation ListClusters for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClusters
 func (c *Kafka) ListClusters(input *ListClustersInput) (*ListClustersOutput, error) {
@@ -1577,15 +1576,14 @@ func (c *Kafka) ListClustersWithContext(ctx aws.Context, input *ListClustersInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusters operation.
-//    pageNum := 0
-//    err := client.ListClustersPages(params,
-//        func(page *kafka.ListClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusters operation.
+//	pageNum := 0
+//	err := client.ListClustersPages(params,
+//	    func(page *kafka.ListClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClustersPages(input *ListClustersInput, fn func(*ListClustersOutput, bool) bool) error {
 	return c.ListClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1637,14 +1635,13 @@ const opListClustersV2 = "ListClustersV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersV2Request method.
+//	req, resp := client.ListClustersV2Request(params)
 //
-//    // Example sending a request using the ListClustersV2Request method.
-//    req, resp := client.ListClustersV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClustersV2
 func (c *Kafka) ListClustersV2Request(input *ListClustersV2Input) (req *request.Request, output *ListClustersV2Output) {
@@ -1681,17 +1678,18 @@ func (c *Kafka) ListClustersV2Request(input *ListClustersV2Input) (req *request.
 // API operation ListClustersV2 for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListClustersV2
 func (c *Kafka) ListClustersV2(input *ListClustersV2Input) (*ListClustersV2Output, error) {
@@ -1723,15 +1721,14 @@ func (c *Kafka) ListClustersV2WithContext(ctx aws.Context, input *ListClustersV2
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClustersV2 operation.
-//    pageNum := 0
-//    err := client.ListClustersV2Pages(params,
-//        func(page *kafka.ListClustersV2Output, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClustersV2 operation.
+//	pageNum := 0
+//	err := client.ListClustersV2Pages(params,
+//	    func(page *kafka.ListClustersV2Output, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListClustersV2Pages(input *ListClustersV2Input, fn func(*ListClustersV2Output, bool) bool) error {
 	return c.ListClustersV2PagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1783,14 +1780,13 @@ const opListConfigurationRevisions = "ListConfigurationRevisions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationRevisionsRequest method.
+//	req, resp := client.ListConfigurationRevisionsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationRevisionsRequest method.
-//    req, resp := client.ListConfigurationRevisionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurationRevisions
 func (c *Kafka) ListConfigurationRevisionsRequest(input *ListConfigurationRevisionsInput) (req *request.Request, output *ListConfigurationRevisionsOutput) {
@@ -1827,23 +1823,24 @@ func (c *Kafka) ListConfigurationRevisionsRequest(input *ListConfigurationRevisi
 // API operation ListConfigurationRevisions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurationRevisions
 func (c *Kafka) ListConfigurationRevisions(input *ListConfigurationRevisionsInput) (*ListConfigurationRevisionsOutput, error) {
@@ -1875,15 +1872,14 @@ func (c *Kafka) ListConfigurationRevisionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationRevisions operation.
-//    pageNum := 0
-//    err := client.ListConfigurationRevisionsPages(params,
-//        func(page *kafka.ListConfigurationRevisionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationRevisions operation.
+//	pageNum := 0
+//	err := client.ListConfigurationRevisionsPages(params,
+//	    func(page *kafka.ListConfigurationRevisionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListConfigurationRevisionsPages(input *ListConfigurationRevisionsInput, fn func(*ListConfigurationRevisionsOutput, bool) bool) error {
 	return c.ListConfigurationRevisionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1935,14 +1931,13 @@ const opListConfigurations = "ListConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationsRequest method.
+//	req, resp := client.ListConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListConfigurationsRequest method.
-//    req, resp := client.ListConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurations
 func (c *Kafka) ListConfigurationsRequest(input *ListConfigurationsInput) (req *request.Request, output *ListConfigurationsOutput) {
@@ -1979,20 +1974,21 @@ func (c *Kafka) ListConfigurationsRequest(input *ListConfigurationsInput) (req *
 // API operation ListConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListConfigurations
 func (c *Kafka) ListConfigurations(input *ListConfigurationsInput) (*ListConfigurationsOutput, error) {
@@ -2024,15 +2020,14 @@ func (c *Kafka) ListConfigurationsWithContext(ctx aws.Context, input *ListConfig
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurations operation.
-//    pageNum := 0
-//    err := client.ListConfigurationsPages(params,
-//        func(page *kafka.ListConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurations operation.
+//	pageNum := 0
+//	err := client.ListConfigurationsPages(params,
+//	    func(page *kafka.ListConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListConfigurationsPages(input *ListConfigurationsInput, fn func(*ListConfigurationsOutput, bool) bool) error {
 	return c.ListConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2084,14 +2079,13 @@ const opListKafkaVersions = "ListKafkaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKafkaVersionsRequest method.
+//	req, resp := client.ListKafkaVersionsRequest(params)
 //
-//    // Example sending a request using the ListKafkaVersionsRequest method.
-//    req, resp := client.ListKafkaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListKafkaVersions
 func (c *Kafka) ListKafkaVersionsRequest(input *ListKafkaVersionsInput) (req *request.Request, output *ListKafkaVersionsOutput) {
@@ -2128,17 +2122,18 @@ func (c *Kafka) ListKafkaVersionsRequest(input *ListKafkaVersionsInput) (req *re
 // API operation ListKafkaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListKafkaVersions
 func (c *Kafka) ListKafkaVersions(input *ListKafkaVersionsInput) (*ListKafkaVersionsOutput, error) {
@@ -2170,15 +2165,14 @@ func (c *Kafka) ListKafkaVersionsWithContext(ctx aws.Context, input *ListKafkaVe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKafkaVersions operation.
-//    pageNum := 0
-//    err := client.ListKafkaVersionsPages(params,
-//        func(page *kafka.ListKafkaVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKafkaVersions operation.
+//	pageNum := 0
+//	err := client.ListKafkaVersionsPages(params,
+//	    func(page *kafka.ListKafkaVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListKafkaVersionsPages(input *ListKafkaVersionsInput, fn func(*ListKafkaVersionsOutput, bool) bool) error {
 	return c.ListKafkaVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2230,14 +2224,13 @@ const opListNodes = "ListNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNodesRequest method.
+//	req, resp := client.ListNodesRequest(params)
 //
-//    // Example sending a request using the ListNodesRequest method.
-//    req, resp := client.ListNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListNodes
 func (c *Kafka) ListNodesRequest(input *ListNodesInput) (req *request.Request, output *ListNodesOutput) {
@@ -2274,17 +2267,18 @@ func (c *Kafka) ListNodesRequest(input *ListNodesInput) (req *request.Request, o
 // API operation ListNodes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListNodes
 func (c *Kafka) ListNodes(input *ListNodesInput) (*ListNodesOutput, error) {
@@ -2316,15 +2310,14 @@ func (c *Kafka) ListNodesWithContext(ctx aws.Context, input *ListNodesInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNodes operation.
-//    pageNum := 0
-//    err := client.ListNodesPages(params,
-//        func(page *kafka.ListNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNodes operation.
+//	pageNum := 0
+//	err := client.ListNodesPages(params,
+//	    func(page *kafka.ListNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListNodesPages(input *ListNodesInput, fn func(*ListNodesOutput, bool) bool) error {
 	return c.ListNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2376,14 +2369,13 @@ const opListScramSecrets = "ListScramSecrets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListScramSecretsRequest method.
+//	req, resp := client.ListScramSecretsRequest(params)
 //
-//    // Example sending a request using the ListScramSecretsRequest method.
-//    req, resp := client.ListScramSecretsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListScramSecrets
 func (c *Kafka) ListScramSecretsRequest(input *ListScramSecretsInput) (req *request.Request, output *ListScramSecretsOutput) {
@@ -2420,26 +2412,27 @@ func (c *Kafka) ListScramSecretsRequest(input *ListScramSecretsInput) (req *requ
 // API operation ListScramSecrets for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListScramSecrets
 func (c *Kafka) ListScramSecrets(input *ListScramSecretsInput) (*ListScramSecretsOutput, error) {
@@ -2471,15 +2464,14 @@ func (c *Kafka) ListScramSecretsWithContext(ctx aws.Context, input *ListScramSec
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListScramSecrets operation.
-//    pageNum := 0
-//    err := client.ListScramSecretsPages(params,
-//        func(page *kafka.ListScramSecretsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListScramSecrets operation.
+//	pageNum := 0
+//	err := client.ListScramSecretsPages(params,
+//	    func(page *kafka.ListScramSecretsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Kafka) ListScramSecretsPages(input *ListScramSecretsInput, fn func(*ListScramSecretsOutput, bool) bool) error {
 	return c.ListScramSecretsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2531,14 +2523,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListTagsForResource
 func (c *Kafka) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2569,14 +2560,15 @@ func (c *Kafka) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/ListTagsForResource
 func (c *Kafka) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2616,14 +2608,13 @@ const opRebootBroker = "RebootBroker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootBrokerRequest method.
+//	req, resp := client.RebootBrokerRequest(params)
 //
-//    // Example sending a request using the RebootBrokerRequest method.
-//    req, resp := client.RebootBrokerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RebootBroker
 func (c *Kafka) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Request, output *RebootBrokerOutput) {
@@ -2654,26 +2645,27 @@ func (c *Kafka) RebootBrokerRequest(input *RebootBrokerInput) (req *request.Requ
 // API operation RebootBroker for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/RebootBroker
 func (c *Kafka) RebootBroker(input *RebootBrokerInput) (*RebootBrokerOutput, error) {
@@ -2713,14 +2705,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/TagResource
 func (c *Kafka) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2752,14 +2743,15 @@ func (c *Kafka) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/TagResource
 func (c *Kafka) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2799,14 +2791,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UntagResource
 func (c *Kafka) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2838,14 +2829,15 @@ func (c *Kafka) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
+//
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UntagResource
 func (c *Kafka) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2885,14 +2877,13 @@ const opUpdateBrokerCount = "UpdateBrokerCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerCountRequest method.
+//	req, resp := client.UpdateBrokerCountRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerCountRequest method.
-//    req, resp := client.UpdateBrokerCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerCount
 func (c *Kafka) UpdateBrokerCountRequest(input *UpdateBrokerCountInput) (req *request.Request, output *UpdateBrokerCountOutput) {
@@ -2925,20 +2916,21 @@ func (c *Kafka) UpdateBrokerCountRequest(input *UpdateBrokerCountInput) (req *re
 // API operation UpdateBrokerCount for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerCount
 func (c *Kafka) UpdateBrokerCount(input *UpdateBrokerCountInput) (*UpdateBrokerCountOutput, error) {
@@ -2978,14 +2970,13 @@ const opUpdateBrokerStorage = "UpdateBrokerStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerStorageRequest method.
+//	req, resp := client.UpdateBrokerStorageRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerStorageRequest method.
-//    req, resp := client.UpdateBrokerStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerStorage
 func (c *Kafka) UpdateBrokerStorageRequest(input *UpdateBrokerStorageInput) (req *request.Request, output *UpdateBrokerStorageOutput) {
@@ -3016,20 +3007,21 @@ func (c *Kafka) UpdateBrokerStorageRequest(input *UpdateBrokerStorageInput) (req
 // API operation UpdateBrokerStorage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerStorage
 func (c *Kafka) UpdateBrokerStorage(input *UpdateBrokerStorageInput) (*UpdateBrokerStorageOutput, error) {
@@ -3069,14 +3061,13 @@ const opUpdateBrokerType = "UpdateBrokerType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrokerTypeRequest method.
+//	req, resp := client.UpdateBrokerTypeRequest(params)
 //
-//    // Example sending a request using the UpdateBrokerTypeRequest method.
-//    req, resp := client.UpdateBrokerTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerType
 func (c *Kafka) UpdateBrokerTypeRequest(input *UpdateBrokerTypeInput) (req *request.Request, output *UpdateBrokerTypeOutput) {
@@ -3107,26 +3098,27 @@ func (c *Kafka) UpdateBrokerTypeRequest(input *UpdateBrokerTypeInput) (req *requ
 // API operation UpdateBrokerType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateBrokerType
 func (c *Kafka) UpdateBrokerType(input *UpdateBrokerTypeInput) (*UpdateBrokerTypeOutput, error) {
@@ -3166,14 +3158,13 @@ const opUpdateClusterConfiguration = "UpdateClusterConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterConfigurationRequest method.
+//	req, resp := client.UpdateClusterConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateClusterConfigurationRequest method.
-//    req, resp := client.UpdateClusterConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterConfiguration
 func (c *Kafka) UpdateClusterConfigurationRequest(input *UpdateClusterConfigurationInput) (req *request.Request, output *UpdateClusterConfigurationOutput) {
@@ -3205,23 +3196,24 @@ func (c *Kafka) UpdateClusterConfigurationRequest(input *UpdateClusterConfigurat
 // API operation UpdateClusterConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
+//
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterConfiguration
 func (c *Kafka) UpdateClusterConfiguration(input *UpdateClusterConfigurationInput) (*UpdateClusterConfigurationOutput, error) {
@@ -3261,14 +3253,13 @@ const opUpdateClusterKafkaVersion = "UpdateClusterKafkaVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateClusterKafkaVersionRequest method.
+//	req, resp := client.UpdateClusterKafkaVersionRequest(params)
 //
-//    // Example sending a request using the UpdateClusterKafkaVersionRequest method.
-//    req, resp := client.UpdateClusterKafkaVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterKafkaVersion
 func (c *Kafka) UpdateClusterKafkaVersionRequest(input *UpdateClusterKafkaVersionInput) (req *request.Request, output *UpdateClusterKafkaVersionOutput) {
@@ -3299,26 +3290,27 @@ func (c *Kafka) UpdateClusterKafkaVersionRequest(input *UpdateClusterKafkaVersio
 // API operation UpdateClusterKafkaVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateClusterKafkaVersion
 func (c *Kafka) UpdateClusterKafkaVersion(input *UpdateClusterKafkaVersionInput) (*UpdateClusterKafkaVersionOutput, error) {
@@ -3358,14 +3350,13 @@ const opUpdateConfiguration = "UpdateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationRequest method.
+//	req, resp := client.UpdateConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationRequest method.
-//    req, resp := client.UpdateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConfiguration
 func (c *Kafka) UpdateConfigurationRequest(input *UpdateConfigurationInput) (req *request.Request, output *UpdateConfigurationOutput) {
@@ -3397,20 +3388,21 @@ func (c *Kafka) UpdateConfigurationRequest(input *UpdateConfigurationInput) (req
 // API operation UpdateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConfiguration
 func (c *Kafka) UpdateConfiguration(input *UpdateConfigurationInput) (*UpdateConfigurationOutput, error) {
@@ -3450,14 +3442,13 @@ const opUpdateConnectivity = "UpdateConnectivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectivityRequest method.
+//	req, resp := client.UpdateConnectivityRequest(params)
 //
-//    // Example sending a request using the UpdateConnectivityRequest method.
-//    req, resp := client.UpdateConnectivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConnectivity
 func (c *Kafka) UpdateConnectivityRequest(input *UpdateConnectivityInput) (req *request.Request, output *UpdateConnectivityOutput) {
@@ -3488,26 +3479,27 @@ func (c *Kafka) UpdateConnectivityRequest(input *UpdateConnectivityInput) (req *
 // API operation UpdateConnectivity for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateConnectivity
 func (c *Kafka) UpdateConnectivity(input *UpdateConnectivityInput) (*UpdateConnectivityOutput, error) {
@@ -3547,14 +3539,13 @@ const opUpdateMonitoring = "UpdateMonitoring"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMonitoringRequest method.
+//	req, resp := client.UpdateMonitoringRequest(params)
 //
-//    // Example sending a request using the UpdateMonitoringRequest method.
-//    req, resp := client.UpdateMonitoringRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateMonitoring
 func (c *Kafka) UpdateMonitoringRequest(input *UpdateMonitoringInput) (req *request.Request, output *UpdateMonitoringOutput) {
@@ -3587,20 +3578,21 @@ func (c *Kafka) UpdateMonitoringRequest(input *UpdateMonitoringInput) (req *requ
 // API operation UpdateMonitoring for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Returns information about an error.
 //
-//   * BadRequestException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
+//
+//   - ForbiddenException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateMonitoring
 func (c *Kafka) UpdateMonitoring(input *UpdateMonitoringInput) (*UpdateMonitoringOutput, error) {
@@ -3640,14 +3632,13 @@ const opUpdateSecurity = "UpdateSecurity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSecurityRequest method.
+//	req, resp := client.UpdateSecurityRequest(params)
 //
-//    // Example sending a request using the UpdateSecurityRequest method.
-//    req, resp := client.UpdateSecurityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateSecurity
 func (c *Kafka) UpdateSecurityRequest(input *UpdateSecurityInput) (req *request.Request, output *UpdateSecurityOutput) {
@@ -3679,26 +3670,27 @@ func (c *Kafka) UpdateSecurityRequest(input *UpdateSecurityInput) (req *request.
 // API operation UpdateSecurity for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returns information about an error.
 //
-//   * UnauthorizedException
-//   Returns information about an error.
+//   - BadRequestException
+//     Returns information about an error.
 //
-//   * InternalServerErrorException
-//   Returns information about an error.
+//   - UnauthorizedException
+//     Returns information about an error.
 //
-//   * ForbiddenException
-//   Returns information about an error.
+//   - InternalServerErrorException
+//     Returns information about an error.
 //
-//   * NotFoundException
-//   Returns information about an error.
+//   - ForbiddenException
+//     Returns information about an error.
 //
-//   * ServiceUnavailableException
-//   Returns information about an error.
+//   - NotFoundException
+//     Returns information about an error.
 //
-//   * TooManyRequestsException
-//   Returns information about an error.
+//   - ServiceUnavailableException
+//     Returns information about an error.
+//
+//   - TooManyRequestsException
+//     Returns information about an error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kafka-2018-11-14/UpdateSecurity
 func (c *Kafka) UpdateSecurity(input *UpdateSecurityInput) (*UpdateSecurityOutput, error) {

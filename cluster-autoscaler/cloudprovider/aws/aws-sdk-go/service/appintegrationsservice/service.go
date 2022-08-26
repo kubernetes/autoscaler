@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AppIntegrationsService client from just a session.
-//     svc := appintegrationsservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AppIntegrationsService client with additional configuration
-//     svc := appintegrationsservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AppIntegrationsService client from just a session.
+//	svc := appintegrationsservice.New(mySession)
+//
+//	// Create a AppIntegrationsService client with additional configuration
+//	svc := appintegrationsservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AppIntegrationsService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ResourceGroups client from just a session.
-//     svc := resourcegroups.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ResourceGroups client with additional configuration
-//     svc := resourcegroups.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ResourceGroups client from just a session.
+//	svc := resourcegroups.New(mySession)
+//
+//	// Create a ResourceGroups client with additional configuration
+//	svc := resourcegroups.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ResourceGroups {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

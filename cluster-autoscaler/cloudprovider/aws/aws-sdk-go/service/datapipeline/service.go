@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a DataPipeline client from just a session.
-//     svc := datapipeline.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a DataPipeline client with additional configuration
-//     svc := datapipeline.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a DataPipeline client from just a session.
+//	svc := datapipeline.New(mySession)
+//
+//	// Create a DataPipeline client with additional configuration
+//	svc := datapipeline.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *DataPipeline {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

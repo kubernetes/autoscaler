@@ -28,14 +28,13 @@ const opBatchGetRecord = "BatchGetRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetRecordRequest method.
+//	req, resp := client.BatchGetRecordRequest(params)
 //
-//    // Example sending a request using the BatchGetRecordRequest method.
-//    req, resp := client.BatchGetRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/BatchGetRecord
 func (c *SageMakerFeatureStoreRuntime) BatchGetRecordRequest(input *BatchGetRecordInput) (req *request.Request, output *BatchGetRecordOutput) {
@@ -66,18 +65,19 @@ func (c *SageMakerFeatureStoreRuntime) BatchGetRecordRequest(input *BatchGetReco
 // API operation BatchGetRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationError
-//   There was an error validating your request.
 //
-//   * InternalFailure
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - ValidationError
+//     There was an error validating your request.
 //
-//   * ServiceUnavailable
-//   The service is currently unavailable.
+//   - InternalFailure
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
-//   * AccessForbidden
-//   You do not have permission to perform an action.
+//   - ServiceUnavailable
+//     The service is currently unavailable.
+//
+//   - AccessForbidden
+//     You do not have permission to perform an action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/BatchGetRecord
 func (c *SageMakerFeatureStoreRuntime) BatchGetRecord(input *BatchGetRecordInput) (*BatchGetRecordOutput, error) {
@@ -117,14 +117,13 @@ const opDeleteRecord = "DeleteRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecordRequest method.
+//	req, resp := client.DeleteRecordRequest(params)
 //
-//    // Example sending a request using the DeleteRecordRequest method.
-//    req, resp := client.DeleteRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/DeleteRecord
 func (c *SageMakerFeatureStoreRuntime) DeleteRecordRequest(input *DeleteRecordInput) (req *request.Request, output *DeleteRecordOutput) {
@@ -158,18 +157,19 @@ func (c *SageMakerFeatureStoreRuntime) DeleteRecordRequest(input *DeleteRecordIn
 // API operation DeleteRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationError
-//   There was an error validating your request.
 //
-//   * InternalFailure
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - ValidationError
+//     There was an error validating your request.
 //
-//   * ServiceUnavailable
-//   The service is currently unavailable.
+//   - InternalFailure
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
-//   * AccessForbidden
-//   You do not have permission to perform an action.
+//   - ServiceUnavailable
+//     The service is currently unavailable.
+//
+//   - AccessForbidden
+//     You do not have permission to perform an action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/DeleteRecord
 func (c *SageMakerFeatureStoreRuntime) DeleteRecord(input *DeleteRecordInput) (*DeleteRecordOutput, error) {
@@ -209,14 +209,13 @@ const opGetRecord = "GetRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecordRequest method.
+//	req, resp := client.GetRecordRequest(params)
 //
-//    // Example sending a request using the GetRecordRequest method.
-//    req, resp := client.GetRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/GetRecord
 func (c *SageMakerFeatureStoreRuntime) GetRecordRequest(input *GetRecordInput) (req *request.Request, output *GetRecordOutput) {
@@ -249,21 +248,22 @@ func (c *SageMakerFeatureStoreRuntime) GetRecordRequest(input *GetRecordInput) (
 // API operation GetRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationError
-//   There was an error validating your request.
 //
-//   * ResourceNotFound
-//   A resource that is required to perform an action was not found.
+//   - ValidationError
+//     There was an error validating your request.
 //
-//   * InternalFailure
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - ResourceNotFound
+//     A resource that is required to perform an action was not found.
 //
-//   * ServiceUnavailable
-//   The service is currently unavailable.
+//   - InternalFailure
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
-//   * AccessForbidden
-//   You do not have permission to perform an action.
+//   - ServiceUnavailable
+//     The service is currently unavailable.
+//
+//   - AccessForbidden
+//     You do not have permission to perform an action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/GetRecord
 func (c *SageMakerFeatureStoreRuntime) GetRecord(input *GetRecordInput) (*GetRecordOutput, error) {
@@ -303,14 +303,13 @@ const opPutRecord = "PutRecord"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecordRequest method.
+//	req, resp := client.PutRecordRequest(params)
 //
-//    // Example sending a request using the PutRecordRequest method.
-//    req, resp := client.PutRecordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/PutRecord
 func (c *SageMakerFeatureStoreRuntime) PutRecordRequest(input *PutRecordInput) (req *request.Request, output *PutRecordOutput) {
@@ -346,18 +345,19 @@ func (c *SageMakerFeatureStoreRuntime) PutRecordRequest(input *PutRecordInput) (
 // API operation PutRecord for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationError
-//   There was an error validating your request.
 //
-//   * InternalFailure
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - ValidationError
+//     There was an error validating your request.
 //
-//   * ServiceUnavailable
-//   The service is currently unavailable.
+//   - InternalFailure
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
-//   * AccessForbidden
-//   You do not have permission to perform an action.
+//   - ServiceUnavailable
+//     The service is currently unavailable.
+//
+//   - AccessForbidden
+//     You do not have permission to perform an action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-featurestore-runtime-2020-07-01/PutRecord
 func (c *SageMakerFeatureStoreRuntime) PutRecord(input *PutRecordInput) (*PutRecordOutput, error) {

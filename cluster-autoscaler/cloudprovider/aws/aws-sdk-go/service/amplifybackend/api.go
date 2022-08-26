@@ -27,14 +27,13 @@ const opCloneBackend = "CloneBackend"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CloneBackendRequest method.
+//	req, resp := client.CloneBackendRequest(params)
 //
-//    // Example sending a request using the CloneBackendRequest method.
-//    req, resp := client.CloneBackendRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CloneBackend
 func (c *AmplifyBackend) CloneBackendRequest(input *CloneBackendInput) (req *request.Request, output *CloneBackendOutput) {
@@ -65,17 +64,18 @@ func (c *AmplifyBackend) CloneBackendRequest(input *CloneBackendInput) (req *req
 // API operation CloneBackend for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CloneBackend
 func (c *AmplifyBackend) CloneBackend(input *CloneBackendInput) (*CloneBackendOutput, error) {
@@ -115,14 +115,13 @@ const opCreateBackend = "CreateBackend"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendRequest method.
+//	req, resp := client.CreateBackendRequest(params)
 //
-//    // Example sending a request using the CreateBackendRequest method.
-//    req, resp := client.CreateBackendRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackend
 func (c *AmplifyBackend) CreateBackendRequest(input *CreateBackendInput) (req *request.Request, output *CreateBackendOutput) {
@@ -154,17 +153,18 @@ func (c *AmplifyBackend) CreateBackendRequest(input *CreateBackendInput) (req *r
 // API operation CreateBackend for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackend
 func (c *AmplifyBackend) CreateBackend(input *CreateBackendInput) (*CreateBackendOutput, error) {
@@ -204,14 +204,13 @@ const opCreateBackendAPI = "CreateBackendAPI"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendAPIRequest method.
+//	req, resp := client.CreateBackendAPIRequest(params)
 //
-//    // Example sending a request using the CreateBackendAPIRequest method.
-//    req, resp := client.CreateBackendAPIRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendAPI
 func (c *AmplifyBackend) CreateBackendAPIRequest(input *CreateBackendAPIInput) (req *request.Request, output *CreateBackendAPIOutput) {
@@ -242,17 +241,18 @@ func (c *AmplifyBackend) CreateBackendAPIRequest(input *CreateBackendAPIInput) (
 // API operation CreateBackendAPI for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendAPI
 func (c *AmplifyBackend) CreateBackendAPI(input *CreateBackendAPIInput) (*CreateBackendAPIOutput, error) {
@@ -292,14 +292,13 @@ const opCreateBackendAuth = "CreateBackendAuth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendAuthRequest method.
+//	req, resp := client.CreateBackendAuthRequest(params)
 //
-//    // Example sending a request using the CreateBackendAuthRequest method.
-//    req, resp := client.CreateBackendAuthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendAuth
 func (c *AmplifyBackend) CreateBackendAuthRequest(input *CreateBackendAuthInput) (req *request.Request, output *CreateBackendAuthOutput) {
@@ -330,17 +329,18 @@ func (c *AmplifyBackend) CreateBackendAuthRequest(input *CreateBackendAuthInput)
 // API operation CreateBackendAuth for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendAuth
 func (c *AmplifyBackend) CreateBackendAuth(input *CreateBackendAuthInput) (*CreateBackendAuthOutput, error) {
@@ -380,14 +380,13 @@ const opCreateBackendConfig = "CreateBackendConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendConfigRequest method.
+//	req, resp := client.CreateBackendConfigRequest(params)
 //
-//    // Example sending a request using the CreateBackendConfigRequest method.
-//    req, resp := client.CreateBackendConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendConfig
 func (c *AmplifyBackend) CreateBackendConfigRequest(input *CreateBackendConfigInput) (req *request.Request, output *CreateBackendConfigOutput) {
@@ -418,17 +417,18 @@ func (c *AmplifyBackend) CreateBackendConfigRequest(input *CreateBackendConfigIn
 // API operation CreateBackendConfig for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendConfig
 func (c *AmplifyBackend) CreateBackendConfig(input *CreateBackendConfigInput) (*CreateBackendConfigOutput, error) {
@@ -468,14 +468,13 @@ const opCreateBackendStorage = "CreateBackendStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackendStorageRequest method.
+//	req, resp := client.CreateBackendStorageRequest(params)
 //
-//    // Example sending a request using the CreateBackendStorageRequest method.
-//    req, resp := client.CreateBackendStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendStorage
 func (c *AmplifyBackend) CreateBackendStorageRequest(input *CreateBackendStorageInput) (req *request.Request, output *CreateBackendStorageOutput) {
@@ -506,17 +505,18 @@ func (c *AmplifyBackend) CreateBackendStorageRequest(input *CreateBackendStorage
 // API operation CreateBackendStorage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateBackendStorage
 func (c *AmplifyBackend) CreateBackendStorage(input *CreateBackendStorageInput) (*CreateBackendStorageOutput, error) {
@@ -556,14 +556,13 @@ const opCreateToken = "CreateToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTokenRequest method.
+//	req, resp := client.CreateTokenRequest(params)
 //
-//    // Example sending a request using the CreateTokenRequest method.
-//    req, resp := client.CreateTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateToken
 func (c *AmplifyBackend) CreateTokenRequest(input *CreateTokenInput) (req *request.Request, output *CreateTokenOutput) {
@@ -595,17 +594,18 @@ func (c *AmplifyBackend) CreateTokenRequest(input *CreateTokenInput) (req *reque
 // API operation CreateToken for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/CreateToken
 func (c *AmplifyBackend) CreateToken(input *CreateTokenInput) (*CreateTokenOutput, error) {
@@ -645,14 +645,13 @@ const opDeleteBackend = "DeleteBackend"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackendRequest method.
+//	req, resp := client.DeleteBackendRequest(params)
 //
-//    // Example sending a request using the DeleteBackendRequest method.
-//    req, resp := client.DeleteBackendRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackend
 func (c *AmplifyBackend) DeleteBackendRequest(input *DeleteBackendInput) (req *request.Request, output *DeleteBackendOutput) {
@@ -683,17 +682,18 @@ func (c *AmplifyBackend) DeleteBackendRequest(input *DeleteBackendInput) (req *r
 // API operation DeleteBackend for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackend
 func (c *AmplifyBackend) DeleteBackend(input *DeleteBackendInput) (*DeleteBackendOutput, error) {
@@ -733,14 +733,13 @@ const opDeleteBackendAPI = "DeleteBackendAPI"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackendAPIRequest method.
+//	req, resp := client.DeleteBackendAPIRequest(params)
 //
-//    // Example sending a request using the DeleteBackendAPIRequest method.
-//    req, resp := client.DeleteBackendAPIRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendAPI
 func (c *AmplifyBackend) DeleteBackendAPIRequest(input *DeleteBackendAPIInput) (req *request.Request, output *DeleteBackendAPIOutput) {
@@ -771,17 +770,18 @@ func (c *AmplifyBackend) DeleteBackendAPIRequest(input *DeleteBackendAPIInput) (
 // API operation DeleteBackendAPI for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendAPI
 func (c *AmplifyBackend) DeleteBackendAPI(input *DeleteBackendAPIInput) (*DeleteBackendAPIOutput, error) {
@@ -821,14 +821,13 @@ const opDeleteBackendAuth = "DeleteBackendAuth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackendAuthRequest method.
+//	req, resp := client.DeleteBackendAuthRequest(params)
 //
-//    // Example sending a request using the DeleteBackendAuthRequest method.
-//    req, resp := client.DeleteBackendAuthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendAuth
 func (c *AmplifyBackend) DeleteBackendAuthRequest(input *DeleteBackendAuthInput) (req *request.Request, output *DeleteBackendAuthOutput) {
@@ -859,17 +858,18 @@ func (c *AmplifyBackend) DeleteBackendAuthRequest(input *DeleteBackendAuthInput)
 // API operation DeleteBackendAuth for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendAuth
 func (c *AmplifyBackend) DeleteBackendAuth(input *DeleteBackendAuthInput) (*DeleteBackendAuthOutput, error) {
@@ -909,14 +909,13 @@ const opDeleteBackendStorage = "DeleteBackendStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackendStorageRequest method.
+//	req, resp := client.DeleteBackendStorageRequest(params)
 //
-//    // Example sending a request using the DeleteBackendStorageRequest method.
-//    req, resp := client.DeleteBackendStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendStorage
 func (c *AmplifyBackend) DeleteBackendStorageRequest(input *DeleteBackendStorageInput) (req *request.Request, output *DeleteBackendStorageOutput) {
@@ -947,17 +946,18 @@ func (c *AmplifyBackend) DeleteBackendStorageRequest(input *DeleteBackendStorage
 // API operation DeleteBackendStorage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteBackendStorage
 func (c *AmplifyBackend) DeleteBackendStorage(input *DeleteBackendStorageInput) (*DeleteBackendStorageOutput, error) {
@@ -997,14 +997,13 @@ const opDeleteToken = "DeleteToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTokenRequest method.
+//	req, resp := client.DeleteTokenRequest(params)
 //
-//    // Example sending a request using the DeleteTokenRequest method.
-//    req, resp := client.DeleteTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteToken
 func (c *AmplifyBackend) DeleteTokenRequest(input *DeleteTokenInput) (req *request.Request, output *DeleteTokenOutput) {
@@ -1035,17 +1034,18 @@ func (c *AmplifyBackend) DeleteTokenRequest(input *DeleteTokenInput) (req *reque
 // API operation DeleteToken for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/DeleteToken
 func (c *AmplifyBackend) DeleteToken(input *DeleteTokenInput) (*DeleteTokenOutput, error) {
@@ -1085,14 +1085,13 @@ const opGenerateBackendAPIModels = "GenerateBackendAPIModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateBackendAPIModelsRequest method.
+//	req, resp := client.GenerateBackendAPIModelsRequest(params)
 //
-//    // Example sending a request using the GenerateBackendAPIModelsRequest method.
-//    req, resp := client.GenerateBackendAPIModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GenerateBackendAPIModels
 func (c *AmplifyBackend) GenerateBackendAPIModelsRequest(input *GenerateBackendAPIModelsInput) (req *request.Request, output *GenerateBackendAPIModelsOutput) {
@@ -1123,17 +1122,18 @@ func (c *AmplifyBackend) GenerateBackendAPIModelsRequest(input *GenerateBackendA
 // API operation GenerateBackendAPIModels for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GenerateBackendAPIModels
 func (c *AmplifyBackend) GenerateBackendAPIModels(input *GenerateBackendAPIModelsInput) (*GenerateBackendAPIModelsOutput, error) {
@@ -1173,14 +1173,13 @@ const opGetBackend = "GetBackend"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendRequest method.
+//	req, resp := client.GetBackendRequest(params)
 //
-//    // Example sending a request using the GetBackendRequest method.
-//    req, resp := client.GetBackendRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackend
 func (c *AmplifyBackend) GetBackendRequest(input *GetBackendInput) (req *request.Request, output *GetBackendOutput) {
@@ -1211,17 +1210,18 @@ func (c *AmplifyBackend) GetBackendRequest(input *GetBackendInput) (req *request
 // API operation GetBackend for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackend
 func (c *AmplifyBackend) GetBackend(input *GetBackendInput) (*GetBackendOutput, error) {
@@ -1261,14 +1261,13 @@ const opGetBackendAPI = "GetBackendAPI"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendAPIRequest method.
+//	req, resp := client.GetBackendAPIRequest(params)
 //
-//    // Example sending a request using the GetBackendAPIRequest method.
-//    req, resp := client.GetBackendAPIRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAPI
 func (c *AmplifyBackend) GetBackendAPIRequest(input *GetBackendAPIInput) (req *request.Request, output *GetBackendAPIOutput) {
@@ -1299,17 +1298,18 @@ func (c *AmplifyBackend) GetBackendAPIRequest(input *GetBackendAPIInput) (req *r
 // API operation GetBackendAPI for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAPI
 func (c *AmplifyBackend) GetBackendAPI(input *GetBackendAPIInput) (*GetBackendAPIOutput, error) {
@@ -1349,14 +1349,13 @@ const opGetBackendAPIModels = "GetBackendAPIModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendAPIModelsRequest method.
+//	req, resp := client.GetBackendAPIModelsRequest(params)
 //
-//    // Example sending a request using the GetBackendAPIModelsRequest method.
-//    req, resp := client.GetBackendAPIModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAPIModels
 func (c *AmplifyBackend) GetBackendAPIModelsRequest(input *GetBackendAPIModelsInput) (req *request.Request, output *GetBackendAPIModelsOutput) {
@@ -1387,17 +1386,18 @@ func (c *AmplifyBackend) GetBackendAPIModelsRequest(input *GetBackendAPIModelsIn
 // API operation GetBackendAPIModels for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAPIModels
 func (c *AmplifyBackend) GetBackendAPIModels(input *GetBackendAPIModelsInput) (*GetBackendAPIModelsOutput, error) {
@@ -1437,14 +1437,13 @@ const opGetBackendAuth = "GetBackendAuth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendAuthRequest method.
+//	req, resp := client.GetBackendAuthRequest(params)
 //
-//    // Example sending a request using the GetBackendAuthRequest method.
-//    req, resp := client.GetBackendAuthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAuth
 func (c *AmplifyBackend) GetBackendAuthRequest(input *GetBackendAuthInput) (req *request.Request, output *GetBackendAuthOutput) {
@@ -1475,17 +1474,18 @@ func (c *AmplifyBackend) GetBackendAuthRequest(input *GetBackendAuthInput) (req 
 // API operation GetBackendAuth for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendAuth
 func (c *AmplifyBackend) GetBackendAuth(input *GetBackendAuthInput) (*GetBackendAuthOutput, error) {
@@ -1525,14 +1525,13 @@ const opGetBackendJob = "GetBackendJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendJobRequest method.
+//	req, resp := client.GetBackendJobRequest(params)
 //
-//    // Example sending a request using the GetBackendJobRequest method.
-//    req, resp := client.GetBackendJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendJob
 func (c *AmplifyBackend) GetBackendJobRequest(input *GetBackendJobInput) (req *request.Request, output *GetBackendJobOutput) {
@@ -1563,17 +1562,18 @@ func (c *AmplifyBackend) GetBackendJobRequest(input *GetBackendJobInput) (req *r
 // API operation GetBackendJob for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendJob
 func (c *AmplifyBackend) GetBackendJob(input *GetBackendJobInput) (*GetBackendJobOutput, error) {
@@ -1613,14 +1613,13 @@ const opGetBackendStorage = "GetBackendStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBackendStorageRequest method.
+//	req, resp := client.GetBackendStorageRequest(params)
 //
-//    // Example sending a request using the GetBackendStorageRequest method.
-//    req, resp := client.GetBackendStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendStorage
 func (c *AmplifyBackend) GetBackendStorageRequest(input *GetBackendStorageInput) (req *request.Request, output *GetBackendStorageOutput) {
@@ -1651,17 +1650,18 @@ func (c *AmplifyBackend) GetBackendStorageRequest(input *GetBackendStorageInput)
 // API operation GetBackendStorage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetBackendStorage
 func (c *AmplifyBackend) GetBackendStorage(input *GetBackendStorageInput) (*GetBackendStorageOutput, error) {
@@ -1701,14 +1701,13 @@ const opGetToken = "GetToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTokenRequest method.
+//	req, resp := client.GetTokenRequest(params)
 //
-//    // Example sending a request using the GetTokenRequest method.
-//    req, resp := client.GetTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetToken
 func (c *AmplifyBackend) GetTokenRequest(input *GetTokenInput) (req *request.Request, output *GetTokenOutput) {
@@ -1739,17 +1738,18 @@ func (c *AmplifyBackend) GetTokenRequest(input *GetTokenInput) (req *request.Req
 // API operation GetToken for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/GetToken
 func (c *AmplifyBackend) GetToken(input *GetTokenInput) (*GetTokenOutput, error) {
@@ -1789,14 +1789,13 @@ const opImportBackendAuth = "ImportBackendAuth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportBackendAuthRequest method.
+//	req, resp := client.ImportBackendAuthRequest(params)
 //
-//    // Example sending a request using the ImportBackendAuthRequest method.
-//    req, resp := client.ImportBackendAuthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ImportBackendAuth
 func (c *AmplifyBackend) ImportBackendAuthRequest(input *ImportBackendAuthInput) (req *request.Request, output *ImportBackendAuthOutput) {
@@ -1827,17 +1826,18 @@ func (c *AmplifyBackend) ImportBackendAuthRequest(input *ImportBackendAuthInput)
 // API operation ImportBackendAuth for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ImportBackendAuth
 func (c *AmplifyBackend) ImportBackendAuth(input *ImportBackendAuthInput) (*ImportBackendAuthOutput, error) {
@@ -1877,14 +1877,13 @@ const opImportBackendStorage = "ImportBackendStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportBackendStorageRequest method.
+//	req, resp := client.ImportBackendStorageRequest(params)
 //
-//    // Example sending a request using the ImportBackendStorageRequest method.
-//    req, resp := client.ImportBackendStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ImportBackendStorage
 func (c *AmplifyBackend) ImportBackendStorageRequest(input *ImportBackendStorageInput) (req *request.Request, output *ImportBackendStorageOutput) {
@@ -1915,17 +1914,18 @@ func (c *AmplifyBackend) ImportBackendStorageRequest(input *ImportBackendStorage
 // API operation ImportBackendStorage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ImportBackendStorage
 func (c *AmplifyBackend) ImportBackendStorage(input *ImportBackendStorageInput) (*ImportBackendStorageOutput, error) {
@@ -1965,14 +1965,13 @@ const opListBackendJobs = "ListBackendJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBackendJobsRequest method.
+//	req, resp := client.ListBackendJobsRequest(params)
 //
-//    // Example sending a request using the ListBackendJobsRequest method.
-//    req, resp := client.ListBackendJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ListBackendJobs
 func (c *AmplifyBackend) ListBackendJobsRequest(input *ListBackendJobsInput) (req *request.Request, output *ListBackendJobsOutput) {
@@ -2009,17 +2008,18 @@ func (c *AmplifyBackend) ListBackendJobsRequest(input *ListBackendJobsInput) (re
 // API operation ListBackendJobs for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ListBackendJobs
 func (c *AmplifyBackend) ListBackendJobs(input *ListBackendJobsInput) (*ListBackendJobsOutput, error) {
@@ -2051,15 +2051,14 @@ func (c *AmplifyBackend) ListBackendJobsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBackendJobs operation.
-//    pageNum := 0
-//    err := client.ListBackendJobsPages(params,
-//        func(page *amplifybackend.ListBackendJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBackendJobs operation.
+//	pageNum := 0
+//	err := client.ListBackendJobsPages(params,
+//	    func(page *amplifybackend.ListBackendJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AmplifyBackend) ListBackendJobsPages(input *ListBackendJobsInput, fn func(*ListBackendJobsOutput, bool) bool) error {
 	return c.ListBackendJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2111,14 +2110,13 @@ const opListS3Buckets = "ListS3Buckets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListS3BucketsRequest method.
+//	req, resp := client.ListS3BucketsRequest(params)
 //
-//    // Example sending a request using the ListS3BucketsRequest method.
-//    req, resp := client.ListS3BucketsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ListS3Buckets
 func (c *AmplifyBackend) ListS3BucketsRequest(input *ListS3BucketsInput) (req *request.Request, output *ListS3BucketsOutput) {
@@ -2149,17 +2147,18 @@ func (c *AmplifyBackend) ListS3BucketsRequest(input *ListS3BucketsInput) (req *r
 // API operation ListS3Buckets for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/ListS3Buckets
 func (c *AmplifyBackend) ListS3Buckets(input *ListS3BucketsInput) (*ListS3BucketsOutput, error) {
@@ -2199,14 +2198,13 @@ const opRemoveAllBackends = "RemoveAllBackends"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveAllBackendsRequest method.
+//	req, resp := client.RemoveAllBackendsRequest(params)
 //
-//    // Example sending a request using the RemoveAllBackendsRequest method.
-//    req, resp := client.RemoveAllBackendsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/RemoveAllBackends
 func (c *AmplifyBackend) RemoveAllBackendsRequest(input *RemoveAllBackendsInput) (req *request.Request, output *RemoveAllBackendsOutput) {
@@ -2237,17 +2235,18 @@ func (c *AmplifyBackend) RemoveAllBackendsRequest(input *RemoveAllBackendsInput)
 // API operation RemoveAllBackends for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/RemoveAllBackends
 func (c *AmplifyBackend) RemoveAllBackends(input *RemoveAllBackendsInput) (*RemoveAllBackendsOutput, error) {
@@ -2287,14 +2286,13 @@ const opRemoveBackendConfig = "RemoveBackendConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveBackendConfigRequest method.
+//	req, resp := client.RemoveBackendConfigRequest(params)
 //
-//    // Example sending a request using the RemoveBackendConfigRequest method.
-//    req, resp := client.RemoveBackendConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/RemoveBackendConfig
 func (c *AmplifyBackend) RemoveBackendConfigRequest(input *RemoveBackendConfigInput) (req *request.Request, output *RemoveBackendConfigOutput) {
@@ -2325,17 +2323,18 @@ func (c *AmplifyBackend) RemoveBackendConfigRequest(input *RemoveBackendConfigIn
 // API operation RemoveBackendConfig for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/RemoveBackendConfig
 func (c *AmplifyBackend) RemoveBackendConfig(input *RemoveBackendConfigInput) (*RemoveBackendConfigOutput, error) {
@@ -2375,14 +2374,13 @@ const opUpdateBackendAPI = "UpdateBackendAPI"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackendAPIRequest method.
+//	req, resp := client.UpdateBackendAPIRequest(params)
 //
-//    // Example sending a request using the UpdateBackendAPIRequest method.
-//    req, resp := client.UpdateBackendAPIRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendAPI
 func (c *AmplifyBackend) UpdateBackendAPIRequest(input *UpdateBackendAPIInput) (req *request.Request, output *UpdateBackendAPIOutput) {
@@ -2413,17 +2411,18 @@ func (c *AmplifyBackend) UpdateBackendAPIRequest(input *UpdateBackendAPIInput) (
 // API operation UpdateBackendAPI for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendAPI
 func (c *AmplifyBackend) UpdateBackendAPI(input *UpdateBackendAPIInput) (*UpdateBackendAPIOutput, error) {
@@ -2463,14 +2462,13 @@ const opUpdateBackendAuth = "UpdateBackendAuth"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackendAuthRequest method.
+//	req, resp := client.UpdateBackendAuthRequest(params)
 //
-//    // Example sending a request using the UpdateBackendAuthRequest method.
-//    req, resp := client.UpdateBackendAuthRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendAuth
 func (c *AmplifyBackend) UpdateBackendAuthRequest(input *UpdateBackendAuthInput) (req *request.Request, output *UpdateBackendAuthOutput) {
@@ -2501,17 +2499,18 @@ func (c *AmplifyBackend) UpdateBackendAuthRequest(input *UpdateBackendAuthInput)
 // API operation UpdateBackendAuth for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendAuth
 func (c *AmplifyBackend) UpdateBackendAuth(input *UpdateBackendAuthInput) (*UpdateBackendAuthOutput, error) {
@@ -2551,14 +2550,13 @@ const opUpdateBackendConfig = "UpdateBackendConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackendConfigRequest method.
+//	req, resp := client.UpdateBackendConfigRequest(params)
 //
-//    // Example sending a request using the UpdateBackendConfigRequest method.
-//    req, resp := client.UpdateBackendConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendConfig
 func (c *AmplifyBackend) UpdateBackendConfigRequest(input *UpdateBackendConfigInput) (req *request.Request, output *UpdateBackendConfigOutput) {
@@ -2589,17 +2587,18 @@ func (c *AmplifyBackend) UpdateBackendConfigRequest(input *UpdateBackendConfigIn
 // API operation UpdateBackendConfig for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendConfig
 func (c *AmplifyBackend) UpdateBackendConfig(input *UpdateBackendConfigInput) (*UpdateBackendConfigOutput, error) {
@@ -2639,14 +2638,13 @@ const opUpdateBackendJob = "UpdateBackendJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackendJobRequest method.
+//	req, resp := client.UpdateBackendJobRequest(params)
 //
-//    // Example sending a request using the UpdateBackendJobRequest method.
-//    req, resp := client.UpdateBackendJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendJob
 func (c *AmplifyBackend) UpdateBackendJobRequest(input *UpdateBackendJobInput) (req *request.Request, output *UpdateBackendJobOutput) {
@@ -2677,17 +2675,18 @@ func (c *AmplifyBackend) UpdateBackendJobRequest(input *UpdateBackendJobInput) (
 // API operation UpdateBackendJob for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendJob
 func (c *AmplifyBackend) UpdateBackendJob(input *UpdateBackendJobInput) (*UpdateBackendJobOutput, error) {
@@ -2727,14 +2726,13 @@ const opUpdateBackendStorage = "UpdateBackendStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBackendStorageRequest method.
+//	req, resp := client.UpdateBackendStorageRequest(params)
 //
-//    // Example sending a request using the UpdateBackendStorageRequest method.
-//    req, resp := client.UpdateBackendStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendStorage
 func (c *AmplifyBackend) UpdateBackendStorageRequest(input *UpdateBackendStorageInput) (req *request.Request, output *UpdateBackendStorageOutput) {
@@ -2765,17 +2763,18 @@ func (c *AmplifyBackend) UpdateBackendStorageRequest(input *UpdateBackendStorage
 // API operation UpdateBackendStorage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   An error returned when a specific resource type is not found.
 //
-//   * GatewayTimeoutException
-//   An error returned if there's a temporary issue with the service.
+//   - NotFoundException
+//     An error returned when a specific resource type is not found.
 //
-//   * TooManyRequestsException
-//   An error that is returned when a limit of a specific type has been exceeded.
+//   - GatewayTimeoutException
+//     An error returned if there's a temporary issue with the service.
 //
-//   * BadRequestException
-//   An error returned if a request is not formed properly.
+//   - TooManyRequestsException
+//     An error that is returned when a limit of a specific type has been exceeded.
+//
+//   - BadRequestException
+//     An error returned if a request is not formed properly.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amplifybackend-2020-08-11/UpdateBackendStorage
 func (c *AmplifyBackend) UpdateBackendStorage(input *UpdateBackendStorageInput) (*UpdateBackendStorageOutput, error) {

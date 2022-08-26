@@ -29,14 +29,13 @@ const opCreateApp = "CreateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppRequest method.
+//	req, resp := client.CreateAppRequest(params)
 //
-//    // Example sending a request using the CreateAppRequest method.
-//    req, resp := client.CreateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateApp
 func (c *SMS) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
@@ -68,21 +67,22 @@ func (c *SMS) CreateAppRequest(input *CreateAppInput) (req *request.Request, out
 // API operation CreateApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateApp
 func (c *SMS) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
@@ -122,14 +122,13 @@ const opCreateReplicationJob = "CreateReplicationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplicationJobRequest method.
+//	req, resp := client.CreateReplicationJobRequest(params)
 //
-//    // Example sending a request using the CreateReplicationJobRequest method.
-//    req, resp := client.CreateReplicationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJob
 func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req *request.Request, output *CreateReplicationJobOutput) {
@@ -162,33 +161,34 @@ func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req
 // API operation CreateReplicationJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServerCannotBeReplicatedException
-//   The specified server cannot be replicated.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
-//   * ReplicationJobAlreadyExistsException
-//   The specified replication job already exists.
+//   - ServerCannotBeReplicatedException
+//     The specified server cannot be replicated.
 //
-//   * NoConnectorsAvailableException
-//   There are no connectors available.
+//   - ReplicationJobAlreadyExistsException
+//     The specified replication job already exists.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - NoConnectorsAvailableException
+//     There are no connectors available.
 //
-//   * TemporarilyUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - TemporarilyUnavailableException
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/CreateReplicationJob
 func (c *SMS) CreateReplicationJob(input *CreateReplicationJobInput) (*CreateReplicationJobOutput, error) {
@@ -228,14 +228,13 @@ const opDeleteApp = "DeleteApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppRequest method.
+//	req, resp := client.DeleteAppRequest(params)
 //
-//    // Example sending a request using the DeleteAppRequest method.
-//    req, resp := client.DeleteAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteApp
 func (c *SMS) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
@@ -269,21 +268,22 @@ func (c *SMS) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, out
 // API operation DeleteApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteApp
 func (c *SMS) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
@@ -323,14 +323,13 @@ const opDeleteAppLaunchConfiguration = "DeleteAppLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppLaunchConfigurationRequest method.
+//	req, resp := client.DeleteAppLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteAppLaunchConfigurationRequest method.
-//    req, resp := client.DeleteAppLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppLaunchConfiguration
 func (c *SMS) DeleteAppLaunchConfigurationRequest(input *DeleteAppLaunchConfigurationInput) (req *request.Request, output *DeleteAppLaunchConfigurationOutput) {
@@ -362,21 +361,22 @@ func (c *SMS) DeleteAppLaunchConfigurationRequest(input *DeleteAppLaunchConfigur
 // API operation DeleteAppLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppLaunchConfiguration
 func (c *SMS) DeleteAppLaunchConfiguration(input *DeleteAppLaunchConfigurationInput) (*DeleteAppLaunchConfigurationOutput, error) {
@@ -416,14 +416,13 @@ const opDeleteAppReplicationConfiguration = "DeleteAppReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppReplicationConfigurationRequest method.
+//	req, resp := client.DeleteAppReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteAppReplicationConfigurationRequest method.
-//    req, resp := client.DeleteAppReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppReplicationConfiguration
 func (c *SMS) DeleteAppReplicationConfigurationRequest(input *DeleteAppReplicationConfigurationInput) (req *request.Request, output *DeleteAppReplicationConfigurationOutput) {
@@ -455,21 +454,22 @@ func (c *SMS) DeleteAppReplicationConfigurationRequest(input *DeleteAppReplicati
 // API operation DeleteAppReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppReplicationConfiguration
 func (c *SMS) DeleteAppReplicationConfiguration(input *DeleteAppReplicationConfigurationInput) (*DeleteAppReplicationConfigurationOutput, error) {
@@ -509,14 +509,13 @@ const opDeleteAppValidationConfiguration = "DeleteAppValidationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppValidationConfigurationRequest method.
+//	req, resp := client.DeleteAppValidationConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteAppValidationConfigurationRequest method.
-//    req, resp := client.DeleteAppValidationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppValidationConfiguration
 func (c *SMS) DeleteAppValidationConfigurationRequest(input *DeleteAppValidationConfigurationInput) (req *request.Request, output *DeleteAppValidationConfigurationOutput) {
@@ -548,21 +547,22 @@ func (c *SMS) DeleteAppValidationConfigurationRequest(input *DeleteAppValidation
 // API operation DeleteAppValidationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteAppValidationConfiguration
 func (c *SMS) DeleteAppValidationConfiguration(input *DeleteAppValidationConfigurationInput) (*DeleteAppValidationConfigurationOutput, error) {
@@ -602,14 +602,13 @@ const opDeleteReplicationJob = "DeleteReplicationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReplicationJobRequest method.
+//	req, resp := client.DeleteReplicationJobRequest(params)
 //
-//    // Example sending a request using the DeleteReplicationJobRequest method.
-//    req, resp := client.DeleteReplicationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJob
 func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req *request.Request, output *DeleteReplicationJobOutput) {
@@ -646,21 +645,22 @@ func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req
 // API operation DeleteReplicationJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ReplicationJobNotFoundException
-//   The specified replication job does not exist.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
+//
+//   - ReplicationJobNotFoundException
+//     The specified replication job does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteReplicationJob
 func (c *SMS) DeleteReplicationJob(input *DeleteReplicationJobInput) (*DeleteReplicationJobOutput, error) {
@@ -700,14 +700,13 @@ const opDeleteServerCatalog = "DeleteServerCatalog"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteServerCatalogRequest method.
+//	req, resp := client.DeleteServerCatalogRequest(params)
 //
-//    // Example sending a request using the DeleteServerCatalogRequest method.
-//    req, resp := client.DeleteServerCatalogRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalog
 func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *request.Request, output *DeleteServerCatalogOutput) {
@@ -739,18 +738,19 @@ func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *
 // API operation DeleteServerCatalog for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
+//
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DeleteServerCatalog
 func (c *SMS) DeleteServerCatalog(input *DeleteServerCatalogInput) (*DeleteServerCatalogOutput, error) {
@@ -790,14 +790,13 @@ const opDisassociateConnector = "DisassociateConnector"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateConnectorRequest method.
+//	req, resp := client.DisassociateConnectorRequest(params)
 //
-//    // Example sending a request using the DisassociateConnectorRequest method.
-//    req, resp := client.DisassociateConnectorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnector
 func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (req *request.Request, output *DisassociateConnectorOutput) {
@@ -832,18 +831,19 @@ func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (r
 // API operation DisassociateConnector for usage and error information.
 //
 // Returned Error Types:
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
+//
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/DisassociateConnector
 func (c *SMS) DisassociateConnector(input *DisassociateConnectorInput) (*DisassociateConnectorOutput, error) {
@@ -883,14 +883,13 @@ const opGenerateChangeSet = "GenerateChangeSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateChangeSetRequest method.
+//	req, resp := client.GenerateChangeSetRequest(params)
 //
-//    // Example sending a request using the GenerateChangeSetRequest method.
-//    req, resp := client.GenerateChangeSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GenerateChangeSet
 func (c *SMS) GenerateChangeSetRequest(input *GenerateChangeSetInput) (req *request.Request, output *GenerateChangeSetOutput) {
@@ -922,21 +921,22 @@ func (c *SMS) GenerateChangeSetRequest(input *GenerateChangeSetInput) (req *requ
 // API operation GenerateChangeSet for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GenerateChangeSet
 func (c *SMS) GenerateChangeSet(input *GenerateChangeSetInput) (*GenerateChangeSetOutput, error) {
@@ -976,14 +976,13 @@ const opGenerateTemplate = "GenerateTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateTemplateRequest method.
+//	req, resp := client.GenerateTemplateRequest(params)
 //
-//    // Example sending a request using the GenerateTemplateRequest method.
-//    req, resp := client.GenerateTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GenerateTemplate
 func (c *SMS) GenerateTemplateRequest(input *GenerateTemplateInput) (req *request.Request, output *GenerateTemplateOutput) {
@@ -1015,21 +1014,22 @@ func (c *SMS) GenerateTemplateRequest(input *GenerateTemplateInput) (req *reques
 // API operation GenerateTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GenerateTemplate
 func (c *SMS) GenerateTemplate(input *GenerateTemplateInput) (*GenerateTemplateOutput, error) {
@@ -1069,14 +1069,13 @@ const opGetApp = "GetApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppRequest method.
+//	req, resp := client.GetAppRequest(params)
 //
-//    // Example sending a request using the GetAppRequest method.
-//    req, resp := client.GetAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetApp
 func (c *SMS) GetAppRequest(input *GetAppInput) (req *request.Request, output *GetAppOutput) {
@@ -1107,21 +1106,22 @@ func (c *SMS) GetAppRequest(input *GetAppInput) (req *request.Request, output *G
 // API operation GetApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetApp
 func (c *SMS) GetApp(input *GetAppInput) (*GetAppOutput, error) {
@@ -1161,14 +1161,13 @@ const opGetAppLaunchConfiguration = "GetAppLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppLaunchConfigurationRequest method.
+//	req, resp := client.GetAppLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the GetAppLaunchConfigurationRequest method.
-//    req, resp := client.GetAppLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppLaunchConfiguration
 func (c *SMS) GetAppLaunchConfigurationRequest(input *GetAppLaunchConfigurationInput) (req *request.Request, output *GetAppLaunchConfigurationOutput) {
@@ -1200,21 +1199,22 @@ func (c *SMS) GetAppLaunchConfigurationRequest(input *GetAppLaunchConfigurationI
 // API operation GetAppLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppLaunchConfiguration
 func (c *SMS) GetAppLaunchConfiguration(input *GetAppLaunchConfigurationInput) (*GetAppLaunchConfigurationOutput, error) {
@@ -1254,14 +1254,13 @@ const opGetAppReplicationConfiguration = "GetAppReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppReplicationConfigurationRequest method.
+//	req, resp := client.GetAppReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetAppReplicationConfigurationRequest method.
-//    req, resp := client.GetAppReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppReplicationConfiguration
 func (c *SMS) GetAppReplicationConfigurationRequest(input *GetAppReplicationConfigurationInput) (req *request.Request, output *GetAppReplicationConfigurationOutput) {
@@ -1293,21 +1292,22 @@ func (c *SMS) GetAppReplicationConfigurationRequest(input *GetAppReplicationConf
 // API operation GetAppReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppReplicationConfiguration
 func (c *SMS) GetAppReplicationConfiguration(input *GetAppReplicationConfigurationInput) (*GetAppReplicationConfigurationOutput, error) {
@@ -1347,14 +1347,13 @@ const opGetAppValidationConfiguration = "GetAppValidationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppValidationConfigurationRequest method.
+//	req, resp := client.GetAppValidationConfigurationRequest(params)
 //
-//    // Example sending a request using the GetAppValidationConfigurationRequest method.
-//    req, resp := client.GetAppValidationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppValidationConfiguration
 func (c *SMS) GetAppValidationConfigurationRequest(input *GetAppValidationConfigurationInput) (req *request.Request, output *GetAppValidationConfigurationOutput) {
@@ -1385,21 +1384,22 @@ func (c *SMS) GetAppValidationConfigurationRequest(input *GetAppValidationConfig
 // API operation GetAppValidationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppValidationConfiguration
 func (c *SMS) GetAppValidationConfiguration(input *GetAppValidationConfigurationInput) (*GetAppValidationConfigurationOutput, error) {
@@ -1439,14 +1439,13 @@ const opGetAppValidationOutput = "GetAppValidationOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppValidationOutputRequest method.
+//	req, resp := client.GetAppValidationOutputRequest(params)
 //
-//    // Example sending a request using the GetAppValidationOutputRequest method.
-//    req, resp := client.GetAppValidationOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppValidationOutput
 func (c *SMS) GetAppValidationOutputRequest(input *GetAppValidationOutputInput) (req *request.Request, output *GetAppValidationOutputOutput) {
@@ -1477,21 +1476,22 @@ func (c *SMS) GetAppValidationOutputRequest(input *GetAppValidationOutputInput) 
 // API operation GetAppValidationOutput for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetAppValidationOutput
 func (c *SMS) GetAppValidationOutput(input *GetAppValidationOutputInput) (*GetAppValidationOutputOutput, error) {
@@ -1531,14 +1531,13 @@ const opGetConnectors = "GetConnectors"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConnectorsRequest method.
+//	req, resp := client.GetConnectorsRequest(params)
 //
-//    // Example sending a request using the GetConnectorsRequest method.
-//    req, resp := client.GetConnectorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectors
 func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Request, output *GetConnectorsOutput) {
@@ -1575,9 +1574,9 @@ func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Requ
 // API operation GetConnectors for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetConnectors
 func (c *SMS) GetConnectors(input *GetConnectorsInput) (*GetConnectorsOutput, error) {
@@ -1609,15 +1608,14 @@ func (c *SMS) GetConnectorsWithContext(ctx aws.Context, input *GetConnectorsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetConnectors operation.
-//    pageNum := 0
-//    err := client.GetConnectorsPages(params,
-//        func(page *sms.GetConnectorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetConnectors operation.
+//	pageNum := 0
+//	err := client.GetConnectorsPages(params,
+//	    func(page *sms.GetConnectorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SMS) GetConnectorsPages(input *GetConnectorsInput, fn func(*GetConnectorsOutput, bool) bool) error {
 	return c.GetConnectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1669,14 +1667,13 @@ const opGetReplicationJobs = "GetReplicationJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReplicationJobsRequest method.
+//	req, resp := client.GetReplicationJobsRequest(params)
 //
-//    // Example sending a request using the GetReplicationJobsRequest method.
-//    req, resp := client.GetReplicationJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobs
 func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *request.Request, output *GetReplicationJobsOutput) {
@@ -1713,15 +1710,16 @@ func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *re
 // API operation GetReplicationJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
+//
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationJobs
 func (c *SMS) GetReplicationJobs(input *GetReplicationJobsInput) (*GetReplicationJobsOutput, error) {
@@ -1753,15 +1751,14 @@ func (c *SMS) GetReplicationJobsWithContext(ctx aws.Context, input *GetReplicati
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReplicationJobs operation.
-//    pageNum := 0
-//    err := client.GetReplicationJobsPages(params,
-//        func(page *sms.GetReplicationJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReplicationJobs operation.
+//	pageNum := 0
+//	err := client.GetReplicationJobsPages(params,
+//	    func(page *sms.GetReplicationJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SMS) GetReplicationJobsPages(input *GetReplicationJobsInput, fn func(*GetReplicationJobsOutput, bool) bool) error {
 	return c.GetReplicationJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1813,14 +1810,13 @@ const opGetReplicationRuns = "GetReplicationRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReplicationRunsRequest method.
+//	req, resp := client.GetReplicationRunsRequest(params)
 //
-//    // Example sending a request using the GetReplicationRunsRequest method.
-//    req, resp := client.GetReplicationRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRuns
 func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *request.Request, output *GetReplicationRunsOutput) {
@@ -1857,15 +1853,16 @@ func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *re
 // API operation GetReplicationRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
+//
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetReplicationRuns
 func (c *SMS) GetReplicationRuns(input *GetReplicationRunsInput) (*GetReplicationRunsOutput, error) {
@@ -1897,15 +1894,14 @@ func (c *SMS) GetReplicationRunsWithContext(ctx aws.Context, input *GetReplicati
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReplicationRuns operation.
-//    pageNum := 0
-//    err := client.GetReplicationRunsPages(params,
-//        func(page *sms.GetReplicationRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReplicationRuns operation.
+//	pageNum := 0
+//	err := client.GetReplicationRunsPages(params,
+//	    func(page *sms.GetReplicationRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SMS) GetReplicationRunsPages(input *GetReplicationRunsInput, fn func(*GetReplicationRunsOutput, bool) bool) error {
 	return c.GetReplicationRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1957,14 +1953,13 @@ const opGetServers = "GetServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServersRequest method.
+//	req, resp := client.GetServersRequest(params)
 //
-//    // Example sending a request using the GetServersRequest method.
-//    req, resp := client.GetServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServers
 func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, output *GetServersOutput) {
@@ -2003,18 +1998,19 @@ func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, o
 // API operation GetServers for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
+//
+//   - InternalError
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/GetServers
 func (c *SMS) GetServers(input *GetServersInput) (*GetServersOutput, error) {
@@ -2046,15 +2042,14 @@ func (c *SMS) GetServersWithContext(ctx aws.Context, input *GetServersInput, opt
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetServers operation.
-//    pageNum := 0
-//    err := client.GetServersPages(params,
-//        func(page *sms.GetServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetServers operation.
+//	pageNum := 0
+//	err := client.GetServersPages(params,
+//	    func(page *sms.GetServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SMS) GetServersPages(input *GetServersInput, fn func(*GetServersOutput, bool) bool) error {
 	return c.GetServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2106,14 +2101,13 @@ const opImportAppCatalog = "ImportAppCatalog"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportAppCatalogRequest method.
+//	req, resp := client.ImportAppCatalogRequest(params)
 //
-//    // Example sending a request using the ImportAppCatalogRequest method.
-//    req, resp := client.ImportAppCatalogRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportAppCatalog
 func (c *SMS) ImportAppCatalogRequest(input *ImportAppCatalogInput) (req *request.Request, output *ImportAppCatalogOutput) {
@@ -2145,21 +2139,22 @@ func (c *SMS) ImportAppCatalogRequest(input *ImportAppCatalogInput) (req *reques
 // API operation ImportAppCatalog for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportAppCatalog
 func (c *SMS) ImportAppCatalog(input *ImportAppCatalogInput) (*ImportAppCatalogOutput, error) {
@@ -2199,14 +2194,13 @@ const opImportServerCatalog = "ImportServerCatalog"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportServerCatalogRequest method.
+//	req, resp := client.ImportServerCatalogRequest(params)
 //
-//    // Example sending a request using the ImportServerCatalogRequest method.
-//    req, resp := client.ImportServerCatalogRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalog
 func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *request.Request, output *ImportServerCatalogOutput) {
@@ -2242,21 +2236,22 @@ func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *
 // API operation ImportServerCatalog for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * NoConnectorsAvailableException
-//   There are no connectors available.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
+//
+//   - NoConnectorsAvailableException
+//     There are no connectors available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ImportServerCatalog
 func (c *SMS) ImportServerCatalog(input *ImportServerCatalogInput) (*ImportServerCatalogOutput, error) {
@@ -2296,14 +2291,13 @@ const opLaunchApp = "LaunchApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the LaunchAppRequest method.
+//	req, resp := client.LaunchAppRequest(params)
 //
-//    // Example sending a request using the LaunchAppRequest method.
-//    req, resp := client.LaunchAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/LaunchApp
 func (c *SMS) LaunchAppRequest(input *LaunchAppInput) (req *request.Request, output *LaunchAppOutput) {
@@ -2335,21 +2329,22 @@ func (c *SMS) LaunchAppRequest(input *LaunchAppInput) (req *request.Request, out
 // API operation LaunchApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/LaunchApp
 func (c *SMS) LaunchApp(input *LaunchAppInput) (*LaunchAppOutput, error) {
@@ -2389,14 +2384,13 @@ const opListApps = "ListApps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppsRequest method.
+//	req, resp := client.ListAppsRequest(params)
 //
-//    // Example sending a request using the ListAppsRequest method.
-//    req, resp := client.ListAppsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ListApps
 func (c *SMS) ListAppsRequest(input *ListAppsInput) (req *request.Request, output *ListAppsOutput) {
@@ -2427,21 +2421,22 @@ func (c *SMS) ListAppsRequest(input *ListAppsInput) (req *request.Request, outpu
 // API operation ListApps for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/ListApps
 func (c *SMS) ListApps(input *ListAppsInput) (*ListAppsOutput, error) {
@@ -2481,14 +2476,13 @@ const opNotifyAppValidationOutput = "NotifyAppValidationOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyAppValidationOutputRequest method.
+//	req, resp := client.NotifyAppValidationOutputRequest(params)
 //
-//    // Example sending a request using the NotifyAppValidationOutputRequest method.
-//    req, resp := client.NotifyAppValidationOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/NotifyAppValidationOutput
 func (c *SMS) NotifyAppValidationOutputRequest(input *NotifyAppValidationOutputInput) (req *request.Request, output *NotifyAppValidationOutputOutput) {
@@ -2521,21 +2515,22 @@ func (c *SMS) NotifyAppValidationOutputRequest(input *NotifyAppValidationOutputI
 // API operation NotifyAppValidationOutput for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/NotifyAppValidationOutput
 func (c *SMS) NotifyAppValidationOutput(input *NotifyAppValidationOutputInput) (*NotifyAppValidationOutputOutput, error) {
@@ -2575,14 +2570,13 @@ const opPutAppLaunchConfiguration = "PutAppLaunchConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAppLaunchConfigurationRequest method.
+//	req, resp := client.PutAppLaunchConfigurationRequest(params)
 //
-//    // Example sending a request using the PutAppLaunchConfigurationRequest method.
-//    req, resp := client.PutAppLaunchConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppLaunchConfiguration
 func (c *SMS) PutAppLaunchConfigurationRequest(input *PutAppLaunchConfigurationInput) (req *request.Request, output *PutAppLaunchConfigurationOutput) {
@@ -2614,21 +2608,22 @@ func (c *SMS) PutAppLaunchConfigurationRequest(input *PutAppLaunchConfigurationI
 // API operation PutAppLaunchConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppLaunchConfiguration
 func (c *SMS) PutAppLaunchConfiguration(input *PutAppLaunchConfigurationInput) (*PutAppLaunchConfigurationOutput, error) {
@@ -2668,14 +2663,13 @@ const opPutAppReplicationConfiguration = "PutAppReplicationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAppReplicationConfigurationRequest method.
+//	req, resp := client.PutAppReplicationConfigurationRequest(params)
 //
-//    // Example sending a request using the PutAppReplicationConfigurationRequest method.
-//    req, resp := client.PutAppReplicationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppReplicationConfiguration
 func (c *SMS) PutAppReplicationConfigurationRequest(input *PutAppReplicationConfigurationInput) (req *request.Request, output *PutAppReplicationConfigurationOutput) {
@@ -2707,21 +2701,22 @@ func (c *SMS) PutAppReplicationConfigurationRequest(input *PutAppReplicationConf
 // API operation PutAppReplicationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppReplicationConfiguration
 func (c *SMS) PutAppReplicationConfiguration(input *PutAppReplicationConfigurationInput) (*PutAppReplicationConfigurationOutput, error) {
@@ -2761,14 +2756,13 @@ const opPutAppValidationConfiguration = "PutAppValidationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAppValidationConfigurationRequest method.
+//	req, resp := client.PutAppValidationConfigurationRequest(params)
 //
-//    // Example sending a request using the PutAppValidationConfigurationRequest method.
-//    req, resp := client.PutAppValidationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppValidationConfiguration
 func (c *SMS) PutAppValidationConfigurationRequest(input *PutAppValidationConfigurationInput) (req *request.Request, output *PutAppValidationConfigurationOutput) {
@@ -2800,21 +2794,22 @@ func (c *SMS) PutAppValidationConfigurationRequest(input *PutAppValidationConfig
 // API operation PutAppValidationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/PutAppValidationConfiguration
 func (c *SMS) PutAppValidationConfiguration(input *PutAppValidationConfigurationInput) (*PutAppValidationConfigurationOutput, error) {
@@ -2854,14 +2849,13 @@ const opStartAppReplication = "StartAppReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartAppReplicationRequest method.
+//	req, resp := client.StartAppReplicationRequest(params)
 //
-//    // Example sending a request using the StartAppReplicationRequest method.
-//    req, resp := client.StartAppReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartAppReplication
 func (c *SMS) StartAppReplicationRequest(input *StartAppReplicationInput) (req *request.Request, output *StartAppReplicationOutput) {
@@ -2894,21 +2888,22 @@ func (c *SMS) StartAppReplicationRequest(input *StartAppReplicationInput) (req *
 // API operation StartAppReplication for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartAppReplication
 func (c *SMS) StartAppReplication(input *StartAppReplicationInput) (*StartAppReplicationOutput, error) {
@@ -2948,14 +2943,13 @@ const opStartOnDemandAppReplication = "StartOnDemandAppReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartOnDemandAppReplicationRequest method.
+//	req, resp := client.StartOnDemandAppReplicationRequest(params)
 //
-//    // Example sending a request using the StartOnDemandAppReplicationRequest method.
-//    req, resp := client.StartOnDemandAppReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandAppReplication
 func (c *SMS) StartOnDemandAppReplicationRequest(input *StartOnDemandAppReplicationInput) (req *request.Request, output *StartOnDemandAppReplicationOutput) {
@@ -2987,21 +2981,22 @@ func (c *SMS) StartOnDemandAppReplicationRequest(input *StartOnDemandAppReplicat
 // API operation StartOnDemandAppReplication for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandAppReplication
 func (c *SMS) StartOnDemandAppReplication(input *StartOnDemandAppReplicationInput) (*StartOnDemandAppReplicationOutput, error) {
@@ -3041,14 +3036,13 @@ const opStartOnDemandReplicationRun = "StartOnDemandReplicationRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartOnDemandReplicationRunRequest method.
+//	req, resp := client.StartOnDemandReplicationRunRequest(params)
 //
-//    // Example sending a request using the StartOnDemandReplicationRunRequest method.
-//    req, resp := client.StartOnDemandReplicationRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRun
 func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplicationRunInput) (req *request.Request, output *StartOnDemandReplicationRunOutput) {
@@ -3084,26 +3078,27 @@ func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplication
 // API operation StartOnDemandReplicationRun for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ReplicationRunLimitExceededException
-//   You have exceeded the number of on-demand replication runs you can request
-//   in a 24-hour period.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
-//   * DryRunOperationException
-//   The user has the required permissions, so the request would have succeeded,
-//   but a dry run was performed.
+//   - ReplicationRunLimitExceededException
+//     You have exceeded the number of on-demand replication runs you can request
+//     in a 24-hour period.
+//
+//   - DryRunOperationException
+//     The user has the required permissions, so the request would have succeeded,
+//     but a dry run was performed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StartOnDemandReplicationRun
 func (c *SMS) StartOnDemandReplicationRun(input *StartOnDemandReplicationRunInput) (*StartOnDemandReplicationRunOutput, error) {
@@ -3143,14 +3138,13 @@ const opStopAppReplication = "StopAppReplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopAppReplicationRequest method.
+//	req, resp := client.StopAppReplicationRequest(params)
 //
-//    // Example sending a request using the StopAppReplicationRequest method.
-//    req, resp := client.StopAppReplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StopAppReplication
 func (c *SMS) StopAppReplicationRequest(input *StopAppReplicationInput) (req *request.Request, output *StopAppReplicationOutput) {
@@ -3183,21 +3177,22 @@ func (c *SMS) StopAppReplicationRequest(input *StopAppReplicationInput) (req *re
 // API operation StopAppReplication for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/StopAppReplication
 func (c *SMS) StopAppReplication(input *StopAppReplicationInput) (*StopAppReplicationOutput, error) {
@@ -3237,14 +3232,13 @@ const opTerminateApp = "TerminateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateAppRequest method.
+//	req, resp := client.TerminateAppRequest(params)
 //
-//    // Example sending a request using the TerminateAppRequest method.
-//    req, resp := client.TerminateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/TerminateApp
 func (c *SMS) TerminateAppRequest(input *TerminateAppInput) (req *request.Request, output *TerminateAppOutput) {
@@ -3276,21 +3270,22 @@ func (c *SMS) TerminateAppRequest(input *TerminateAppInput) (req *request.Reques
 // API operation TerminateApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/TerminateApp
 func (c *SMS) TerminateApp(input *TerminateAppInput) (*TerminateAppOutput, error) {
@@ -3330,14 +3325,13 @@ const opUpdateApp = "UpdateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppRequest method.
+//	req, resp := client.UpdateAppRequest(params)
 //
-//    // Example sending a request using the UpdateAppRequest method.
-//    req, resp := client.UpdateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateApp
 func (c *SMS) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, output *UpdateAppOutput) {
@@ -3368,21 +3362,22 @@ func (c *SMS) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, out
 // API operation UpdateApp for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
 //
-//   * InvalidParameterException
-//   A specified parameter is not valid.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateApp
 func (c *SMS) UpdateApp(input *UpdateAppInput) (*UpdateAppOutput, error) {
@@ -3422,14 +3417,13 @@ const opUpdateReplicationJob = "UpdateReplicationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReplicationJobRequest method.
+//	req, resp := client.UpdateReplicationJobRequest(params)
 //
-//    // Example sending a request using the UpdateReplicationJobRequest method.
-//    req, resp := client.UpdateReplicationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJob
 func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req *request.Request, output *UpdateReplicationJobOutput) {
@@ -3461,30 +3455,31 @@ func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req
 // API operation UpdateReplicationJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   A specified parameter is not valid.
 //
-//   * MissingRequiredParameterException
-//   A required parameter is missing.
+//   - InvalidParameterException
+//     A specified parameter is not valid.
 //
-//   * OperationNotPermittedException
-//   This operation is not allowed.
+//   - MissingRequiredParameterException
+//     A required parameter is missing.
 //
-//   * UnauthorizedOperationException
-//   You lack permissions needed to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - OperationNotPermittedException
+//     This operation is not allowed.
 //
-//   * ServerCannotBeReplicatedException
-//   The specified server cannot be replicated.
+//   - UnauthorizedOperationException
+//     You lack permissions needed to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ReplicationJobNotFoundException
-//   The specified replication job does not exist.
+//   - ServerCannotBeReplicatedException
+//     The specified server cannot be replicated.
 //
-//   * InternalError
-//   An internal error occurred.
+//   - ReplicationJobNotFoundException
+//     The specified replication job does not exist.
 //
-//   * TemporarilyUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalError
+//     An internal error occurred.
+//
+//   - TemporarilyUnavailableException
+//     The service is temporarily unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sms-2016-10-24/UpdateReplicationJob
 func (c *SMS) UpdateReplicationJob(input *UpdateReplicationJobInput) (*UpdateReplicationJobOutput, error) {

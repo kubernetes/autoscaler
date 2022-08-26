@@ -54,17 +54,17 @@ func (r ApiBackupunitsDeleteRequest) Execute() (*APIResponse, error) {
 }
 
 /*
- * BackupunitsDelete Delete backup units
- * Remove the specified backup unit.
+  - BackupunitsDelete Delete backup units
+  - Remove the specified backup unit.
 
 This process will delete:
 1) The backup plans inside the backup unit
 2) All backups, associated with this backup unit
 3) The backup user
 4) The backup unit itself
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param backupunitId The unique ID of the backup unit.
- * @return ApiBackupunitsDeleteRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param backupunitId The unique ID of the backup unit.
+  - @return ApiBackupunitsDeleteRequest
 */
 func (a *BackupUnitsApiService) BackupunitsDelete(ctx _context.Context, backupunitId string) ApiBackupunitsDeleteRequest {
 	return ApiBackupunitsDeleteRequest{

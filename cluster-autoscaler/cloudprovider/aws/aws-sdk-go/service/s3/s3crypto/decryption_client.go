@@ -18,11 +18,12 @@ type CEKEntry func(CipherData) (ContentCipher, error)
 // DecryptionClient is an S3 crypto client. The decryption client
 // will handle all get object requests from Amazon S3.
 // Supported key wrapping algorithms:
+//
 //	*AWS KMS
 //
 // Supported content ciphers:
-//	* AES/GCM
-//	* AES/CBC
+//   - AES/GCM
+//   - AES/CBC
 //
 // deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 type DecryptionClient struct {
@@ -41,6 +42,7 @@ type DecryptionClient struct {
 // NewDecryptionClient instantiates a new S3 crypto client
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	svc := s3crypto.NewDecryptionClient(sess, func(svc *s3crypto.DecryptionClient{
 //		// Custom client options here
@@ -84,13 +86,14 @@ func NewDecryptionClient(prov client.ConfigProvider, options ...func(*Decryption
 // decryption will be done. The SDK only supports V2 reads of KMS and GCM.
 //
 // Example:
-//  sess := session.Must(session.NewSession())
-//	svc := s3crypto.NewDecryptionClient(sess)
-//	req, out := svc.GetObjectRequest(&s3.GetObjectInput {
-//	  Key: aws.String("testKey"),
-//	  Bucket: aws.String("testBucket"),
-//	})
-//	err := req.Send()
+//
+//	 sess := session.Must(session.NewSession())
+//		svc := s3crypto.NewDecryptionClient(sess)
+//		req, out := svc.GetObjectRequest(&s3.GetObjectInput {
+//		  Key: aws.String("testKey"),
+//		  Bucket: aws.String("testBucket"),
+//		})
+//		err := req.Send()
 //
 // deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *DecryptionClient) GetObjectRequest(input *s3.GetObjectInput) (*request.Request, *s3.GetObjectOutput) {

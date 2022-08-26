@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaSecurityGroupCommonGroup struct {
 	// 对端安全组的名称
 

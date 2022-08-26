@@ -3,7 +3,7 @@
 // Package redshift provides the client and types for making API
 // requests to Amazon Redshift.
 //
-// Overview
+// # Overview
 //
 // This is an interface reference for Amazon Redshift. It contains documentation
 // for one of the programming or command line interfaces you can use to manage
@@ -33,7 +33,7 @@
 // See redshift package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/redshift/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Redshift with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

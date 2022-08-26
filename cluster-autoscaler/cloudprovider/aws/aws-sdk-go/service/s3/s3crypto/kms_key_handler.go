@@ -27,6 +27,7 @@ type kmsKeyHandler struct {
 // description.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cmkID := "arn to key"
 //	matdesc := s3crypto.MaterialDescription{}
@@ -60,6 +61,7 @@ func newKMSKeyHandler(client kmsiface.KMSAPI, cmkID string, matdesc MaterialDesc
 // description.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cmkID := "arn to key"
 //	matdesc := s3crypto.MaterialDescription{}
@@ -73,6 +75,7 @@ func NewKMSKeyGeneratorWithMatDesc(kmsClient kmsiface.KMSAPI, cmkID string, matd
 // NewKMSWrapEntry builds returns a new KMS key provider and its decrypt handler.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	customKMSClient := kms.New(sess)
 //	decryptHandler := s3crypto.NewKMSWrapEntry(customKMSClient)
@@ -91,6 +94,7 @@ func NewKMSWrapEntry(kmsClient kmsiface.KMSAPI) WrapEntry {
 // configured to call KMS Decrypt with the provided CMK.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterKMSWrapWithCMK(cr, kms.New(sess), "cmkId"); err != nil {
@@ -109,6 +113,7 @@ func RegisterKMSWrapWithCMK(registry *CryptoRegistry, client kmsiface.KMSAPI, cm
 // configured to call KMS Decrypt without providing a CMK.
 //
 // Example:
+//
 //	sess := session.Must(session.NewSession())
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterKMSWrapWithAnyCMK(cr, kms.New(sess)); err != nil {

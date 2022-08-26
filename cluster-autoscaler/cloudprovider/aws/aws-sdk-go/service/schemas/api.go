@@ -29,14 +29,13 @@ const opCreateDiscoverer = "CreateDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDiscovererRequest method.
+//	req, resp := client.CreateDiscovererRequest(params)
 //
-//    // Example sending a request using the CreateDiscovererRequest method.
-//    req, resp := client.CreateDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateDiscoverer
 func (c *Schemas) CreateDiscovererRequest(input *CreateDiscovererInput) (req *request.Request, output *CreateDiscovererOutput) {
@@ -67,17 +66,18 @@ func (c *Schemas) CreateDiscovererRequest(input *CreateDiscovererInput) (req *re
 // API operation CreateDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * UnauthorizedException
+//   - InternalServerErrorException
 //
-//   * ForbiddenException
+//   - UnauthorizedException
 //
-//   * ServiceUnavailableException
+//   - ForbiddenException
 //
-//   * ConflictException
+//   - ServiceUnavailableException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateDiscoverer
 func (c *Schemas) CreateDiscoverer(input *CreateDiscovererInput) (*CreateDiscovererOutput, error) {
@@ -117,14 +117,13 @@ const opCreateRegistry = "CreateRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRegistryRequest method.
+//	req, resp := client.CreateRegistryRequest(params)
 //
-//    // Example sending a request using the CreateRegistryRequest method.
-//    req, resp := client.CreateRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateRegistry
 func (c *Schemas) CreateRegistryRequest(input *CreateRegistryInput) (req *request.Request, output *CreateRegistryOutput) {
@@ -155,17 +154,18 @@ func (c *Schemas) CreateRegistryRequest(input *CreateRegistryInput) (req *reques
 // API operation CreateRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * UnauthorizedException
+//   - InternalServerErrorException
 //
-//   * ForbiddenException
+//   - UnauthorizedException
 //
-//   * ServiceUnavailableException
+//   - ForbiddenException
 //
-//   * ConflictException
+//   - ServiceUnavailableException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateRegistry
 func (c *Schemas) CreateRegistry(input *CreateRegistryInput) (*CreateRegistryOutput, error) {
@@ -205,14 +205,13 @@ const opCreateSchema = "CreateSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSchemaRequest method.
+//	req, resp := client.CreateSchemaRequest(params)
 //
-//    // Example sending a request using the CreateSchemaRequest method.
-//    req, resp := client.CreateSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateSchema
 func (c *Schemas) CreateSchemaRequest(input *CreateSchemaInput) (req *request.Request, output *CreateSchemaOutput) {
@@ -245,13 +244,14 @@ func (c *Schemas) CreateSchemaRequest(input *CreateSchemaInput) (req *request.Re
 // API operation CreateSchema for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/CreateSchema
 func (c *Schemas) CreateSchema(input *CreateSchemaInput) (*CreateSchemaOutput, error) {
@@ -291,14 +291,13 @@ const opDeleteDiscoverer = "DeleteDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDiscovererRequest method.
+//	req, resp := client.DeleteDiscovererRequest(params)
 //
-//    // Example sending a request using the DeleteDiscovererRequest method.
-//    req, resp := client.DeleteDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteDiscoverer
 func (c *Schemas) DeleteDiscovererRequest(input *DeleteDiscovererInput) (req *request.Request, output *DeleteDiscovererOutput) {
@@ -330,17 +329,18 @@ func (c *Schemas) DeleteDiscovererRequest(input *DeleteDiscovererInput) (req *re
 // API operation DeleteDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteDiscoverer
 func (c *Schemas) DeleteDiscoverer(input *DeleteDiscovererInput) (*DeleteDiscovererOutput, error) {
@@ -380,14 +380,13 @@ const opDeleteRegistry = "DeleteRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRegistryRequest method.
+//	req, resp := client.DeleteRegistryRequest(params)
 //
-//    // Example sending a request using the DeleteRegistryRequest method.
-//    req, resp := client.DeleteRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteRegistry
 func (c *Schemas) DeleteRegistryRequest(input *DeleteRegistryInput) (req *request.Request, output *DeleteRegistryOutput) {
@@ -419,17 +418,18 @@ func (c *Schemas) DeleteRegistryRequest(input *DeleteRegistryInput) (req *reques
 // API operation DeleteRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteRegistry
 func (c *Schemas) DeleteRegistry(input *DeleteRegistryInput) (*DeleteRegistryOutput, error) {
@@ -469,14 +469,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteResourcePolicy
 func (c *Schemas) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -508,17 +507,18 @@ func (c *Schemas) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) 
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteResourcePolicy
 func (c *Schemas) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -558,14 +558,13 @@ const opDeleteSchema = "DeleteSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSchemaRequest method.
+//	req, resp := client.DeleteSchemaRequest(params)
 //
-//    // Example sending a request using the DeleteSchemaRequest method.
-//    req, resp := client.DeleteSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteSchema
 func (c *Schemas) DeleteSchemaRequest(input *DeleteSchemaInput) (req *request.Request, output *DeleteSchemaOutput) {
@@ -597,17 +596,18 @@ func (c *Schemas) DeleteSchemaRequest(input *DeleteSchemaInput) (req *request.Re
 // API operation DeleteSchema for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteSchema
 func (c *Schemas) DeleteSchema(input *DeleteSchemaInput) (*DeleteSchemaOutput, error) {
@@ -647,14 +647,13 @@ const opDeleteSchemaVersion = "DeleteSchemaVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSchemaVersionRequest method.
+//	req, resp := client.DeleteSchemaVersionRequest(params)
 //
-//    // Example sending a request using the DeleteSchemaVersionRequest method.
-//    req, resp := client.DeleteSchemaVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteSchemaVersion
 func (c *Schemas) DeleteSchemaVersionRequest(input *DeleteSchemaVersionInput) (req *request.Request, output *DeleteSchemaVersionOutput) {
@@ -676,7 +675,7 @@ func (c *Schemas) DeleteSchemaVersionRequest(input *DeleteSchemaVersionInput) (r
 
 // DeleteSchemaVersion API operation for Schemas.
 //
-// Delete the schema version definition
+// # Delete the schema version definition
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -686,17 +685,18 @@ func (c *Schemas) DeleteSchemaVersionRequest(input *DeleteSchemaVersionInput) (r
 // API operation DeleteSchemaVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DeleteSchemaVersion
 func (c *Schemas) DeleteSchemaVersion(input *DeleteSchemaVersionInput) (*DeleteSchemaVersionOutput, error) {
@@ -736,14 +736,13 @@ const opDescribeCodeBinding = "DescribeCodeBinding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCodeBindingRequest method.
+//	req, resp := client.DescribeCodeBindingRequest(params)
 //
-//    // Example sending a request using the DescribeCodeBindingRequest method.
-//    req, resp := client.DescribeCodeBindingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeCodeBinding
 func (c *Schemas) DescribeCodeBindingRequest(input *DescribeCodeBindingInput) (req *request.Request, output *DescribeCodeBindingOutput) {
@@ -774,17 +773,18 @@ func (c *Schemas) DescribeCodeBindingRequest(input *DescribeCodeBindingInput) (r
 // API operation DescribeCodeBinding for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * TooManyRequestsException
+//   - NotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeCodeBinding
 func (c *Schemas) DescribeCodeBinding(input *DescribeCodeBindingInput) (*DescribeCodeBindingOutput, error) {
@@ -824,14 +824,13 @@ const opDescribeDiscoverer = "DescribeDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDiscovererRequest method.
+//	req, resp := client.DescribeDiscovererRequest(params)
 //
-//    // Example sending a request using the DescribeDiscovererRequest method.
-//    req, resp := client.DescribeDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeDiscoverer
 func (c *Schemas) DescribeDiscovererRequest(input *DescribeDiscovererInput) (req *request.Request, output *DescribeDiscovererOutput) {
@@ -862,17 +861,18 @@ func (c *Schemas) DescribeDiscovererRequest(input *DescribeDiscovererInput) (req
 // API operation DescribeDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeDiscoverer
 func (c *Schemas) DescribeDiscoverer(input *DescribeDiscovererInput) (*DescribeDiscovererOutput, error) {
@@ -912,14 +912,13 @@ const opDescribeRegistry = "DescribeRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRegistryRequest method.
+//	req, resp := client.DescribeRegistryRequest(params)
 //
-//    // Example sending a request using the DescribeRegistryRequest method.
-//    req, resp := client.DescribeRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeRegistry
 func (c *Schemas) DescribeRegistryRequest(input *DescribeRegistryInput) (req *request.Request, output *DescribeRegistryOutput) {
@@ -950,17 +949,18 @@ func (c *Schemas) DescribeRegistryRequest(input *DescribeRegistryInput) (req *re
 // API operation DescribeRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeRegistry
 func (c *Schemas) DescribeRegistry(input *DescribeRegistryInput) (*DescribeRegistryOutput, error) {
@@ -1000,14 +1000,13 @@ const opDescribeSchema = "DescribeSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSchemaRequest method.
+//	req, resp := client.DescribeSchemaRequest(params)
 //
-//    // Example sending a request using the DescribeSchemaRequest method.
-//    req, resp := client.DescribeSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeSchema
 func (c *Schemas) DescribeSchemaRequest(input *DescribeSchemaInput) (req *request.Request, output *DescribeSchemaOutput) {
@@ -1038,17 +1037,18 @@ func (c *Schemas) DescribeSchemaRequest(input *DescribeSchemaInput) (req *reques
 // API operation DescribeSchema for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/DescribeSchema
 func (c *Schemas) DescribeSchema(input *DescribeSchemaInput) (*DescribeSchemaOutput, error) {
@@ -1088,14 +1088,13 @@ const opExportSchema = "ExportSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportSchemaRequest method.
+//	req, resp := client.ExportSchemaRequest(params)
 //
-//    // Example sending a request using the ExportSchemaRequest method.
-//    req, resp := client.ExportSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ExportSchema
 func (c *Schemas) ExportSchemaRequest(input *ExportSchemaInput) (req *request.Request, output *ExportSchemaOutput) {
@@ -1126,19 +1125,20 @@ func (c *Schemas) ExportSchemaRequest(input *ExportSchemaInput) (req *request.Re
 // API operation ExportSchema for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ExportSchema
 func (c *Schemas) ExportSchema(input *ExportSchemaInput) (*ExportSchemaOutput, error) {
@@ -1178,14 +1178,13 @@ const opGetCodeBindingSource = "GetCodeBindingSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCodeBindingSourceRequest method.
+//	req, resp := client.GetCodeBindingSourceRequest(params)
 //
-//    // Example sending a request using the GetCodeBindingSourceRequest method.
-//    req, resp := client.GetCodeBindingSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetCodeBindingSource
 func (c *Schemas) GetCodeBindingSourceRequest(input *GetCodeBindingSourceInput) (req *request.Request, output *GetCodeBindingSourceOutput) {
@@ -1216,17 +1215,18 @@ func (c *Schemas) GetCodeBindingSourceRequest(input *GetCodeBindingSourceInput) 
 // API operation GetCodeBindingSource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * TooManyRequestsException
+//   - NotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetCodeBindingSource
 func (c *Schemas) GetCodeBindingSource(input *GetCodeBindingSourceInput) (*GetCodeBindingSourceOutput, error) {
@@ -1266,14 +1266,13 @@ const opGetDiscoveredSchema = "GetDiscoveredSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDiscoveredSchemaRequest method.
+//	req, resp := client.GetDiscoveredSchemaRequest(params)
 //
-//    // Example sending a request using the GetDiscoveredSchemaRequest method.
-//    req, resp := client.GetDiscoveredSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetDiscoveredSchema
 func (c *Schemas) GetDiscoveredSchemaRequest(input *GetDiscoveredSchemaInput) (req *request.Request, output *GetDiscoveredSchemaOutput) {
@@ -1304,15 +1303,16 @@ func (c *Schemas) GetDiscoveredSchemaRequest(input *GetDiscoveredSchemaInput) (r
 // API operation GetDiscoveredSchema for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetDiscoveredSchema
 func (c *Schemas) GetDiscoveredSchema(input *GetDiscoveredSchemaInput) (*GetDiscoveredSchemaOutput, error) {
@@ -1352,14 +1352,13 @@ const opGetResourcePolicy = "GetResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
 //
-//    // Example sending a request using the GetResourcePolicyRequest method.
-//    req, resp := client.GetResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetResourcePolicy
 func (c *Schemas) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
@@ -1390,17 +1389,18 @@ func (c *Schemas) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *
 // API operation GetResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/GetResourcePolicy
 func (c *Schemas) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
@@ -1440,14 +1440,13 @@ const opListDiscoverers = "ListDiscoverers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDiscoverersRequest method.
+//	req, resp := client.ListDiscoverersRequest(params)
 //
-//    // Example sending a request using the ListDiscoverersRequest method.
-//    req, resp := client.ListDiscoverersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListDiscoverers
 func (c *Schemas) ListDiscoverersRequest(input *ListDiscoverersInput) (req *request.Request, output *ListDiscoverersOutput) {
@@ -1484,15 +1483,16 @@ func (c *Schemas) ListDiscoverersRequest(input *ListDiscoverersInput) (req *requ
 // API operation ListDiscoverers for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListDiscoverers
 func (c *Schemas) ListDiscoverers(input *ListDiscoverersInput) (*ListDiscoverersOutput, error) {
@@ -1524,15 +1524,14 @@ func (c *Schemas) ListDiscoverersWithContext(ctx aws.Context, input *ListDiscove
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDiscoverers operation.
-//    pageNum := 0
-//    err := client.ListDiscoverersPages(params,
-//        func(page *schemas.ListDiscoverersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDiscoverers operation.
+//	pageNum := 0
+//	err := client.ListDiscoverersPages(params,
+//	    func(page *schemas.ListDiscoverersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Schemas) ListDiscoverersPages(input *ListDiscoverersInput, fn func(*ListDiscoverersOutput, bool) bool) error {
 	return c.ListDiscoverersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1584,14 +1583,13 @@ const opListRegistries = "ListRegistries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRegistriesRequest method.
+//	req, resp := client.ListRegistriesRequest(params)
 //
-//    // Example sending a request using the ListRegistriesRequest method.
-//    req, resp := client.ListRegistriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListRegistries
 func (c *Schemas) ListRegistriesRequest(input *ListRegistriesInput) (req *request.Request, output *ListRegistriesOutput) {
@@ -1628,15 +1626,16 @@ func (c *Schemas) ListRegistriesRequest(input *ListRegistriesInput) (req *reques
 // API operation ListRegistries for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListRegistries
 func (c *Schemas) ListRegistries(input *ListRegistriesInput) (*ListRegistriesOutput, error) {
@@ -1668,15 +1667,14 @@ func (c *Schemas) ListRegistriesWithContext(ctx aws.Context, input *ListRegistri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRegistries operation.
-//    pageNum := 0
-//    err := client.ListRegistriesPages(params,
-//        func(page *schemas.ListRegistriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRegistries operation.
+//	pageNum := 0
+//	err := client.ListRegistriesPages(params,
+//	    func(page *schemas.ListRegistriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Schemas) ListRegistriesPages(input *ListRegistriesInput, fn func(*ListRegistriesOutput, bool) bool) error {
 	return c.ListRegistriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1728,14 +1726,13 @@ const opListSchemaVersions = "ListSchemaVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchemaVersionsRequest method.
+//	req, resp := client.ListSchemaVersionsRequest(params)
 //
-//    // Example sending a request using the ListSchemaVersionsRequest method.
-//    req, resp := client.ListSchemaVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListSchemaVersions
 func (c *Schemas) ListSchemaVersionsRequest(input *ListSchemaVersionsInput) (req *request.Request, output *ListSchemaVersionsOutput) {
@@ -1772,17 +1769,18 @@ func (c *Schemas) ListSchemaVersionsRequest(input *ListSchemaVersionsInput) (req
 // API operation ListSchemaVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListSchemaVersions
 func (c *Schemas) ListSchemaVersions(input *ListSchemaVersionsInput) (*ListSchemaVersionsOutput, error) {
@@ -1814,15 +1812,14 @@ func (c *Schemas) ListSchemaVersionsWithContext(ctx aws.Context, input *ListSche
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSchemaVersions operation.
-//    pageNum := 0
-//    err := client.ListSchemaVersionsPages(params,
-//        func(page *schemas.ListSchemaVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSchemaVersions operation.
+//	pageNum := 0
+//	err := client.ListSchemaVersionsPages(params,
+//	    func(page *schemas.ListSchemaVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Schemas) ListSchemaVersionsPages(input *ListSchemaVersionsInput, fn func(*ListSchemaVersionsOutput, bool) bool) error {
 	return c.ListSchemaVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1874,14 +1871,13 @@ const opListSchemas = "ListSchemas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSchemasRequest method.
+//	req, resp := client.ListSchemasRequest(params)
 //
-//    // Example sending a request using the ListSchemasRequest method.
-//    req, resp := client.ListSchemasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListSchemas
 func (c *Schemas) ListSchemasRequest(input *ListSchemasInput) (req *request.Request, output *ListSchemasOutput) {
@@ -1918,15 +1914,16 @@ func (c *Schemas) ListSchemasRequest(input *ListSchemasInput) (req *request.Requ
 // API operation ListSchemas for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListSchemas
 func (c *Schemas) ListSchemas(input *ListSchemasInput) (*ListSchemasOutput, error) {
@@ -1958,15 +1955,14 @@ func (c *Schemas) ListSchemasWithContext(ctx aws.Context, input *ListSchemasInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSchemas operation.
-//    pageNum := 0
-//    err := client.ListSchemasPages(params,
-//        func(page *schemas.ListSchemasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSchemas operation.
+//	pageNum := 0
+//	err := client.ListSchemasPages(params,
+//	    func(page *schemas.ListSchemasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Schemas) ListSchemasPages(input *ListSchemasInput, fn func(*ListSchemasOutput, bool) bool) error {
 	return c.ListSchemasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2018,14 +2014,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListTagsForResource
 func (c *Schemas) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2056,13 +2051,14 @@ func (c *Schemas) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/ListTagsForResource
 func (c *Schemas) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2102,14 +2098,13 @@ const opPutCodeBinding = "PutCodeBinding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutCodeBindingRequest method.
+//	req, resp := client.PutCodeBindingRequest(params)
 //
-//    // Example sending a request using the PutCodeBindingRequest method.
-//    req, resp := client.PutCodeBindingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/PutCodeBinding
 func (c *Schemas) PutCodeBindingRequest(input *PutCodeBindingInput) (req *request.Request, output *PutCodeBindingOutput) {
@@ -2130,7 +2125,7 @@ func (c *Schemas) PutCodeBindingRequest(input *PutCodeBindingInput) (req *reques
 
 // PutCodeBinding API operation for Schemas.
 //
-// Put code binding URI
+// # Put code binding URI
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2140,19 +2135,20 @@ func (c *Schemas) PutCodeBindingRequest(input *PutCodeBindingInput) (req *reques
 // API operation PutCodeBinding for usage and error information.
 //
 // Returned Error Types:
-//   * GoneException
 //
-//   * BadRequestException
+//   - GoneException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * TooManyRequestsException
+//   - NotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/PutCodeBinding
 func (c *Schemas) PutCodeBinding(input *PutCodeBindingInput) (*PutCodeBindingOutput, error) {
@@ -2192,14 +2188,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/PutResourcePolicy
 func (c *Schemas) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -2230,19 +2225,20 @@ func (c *Schemas) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * PreconditionFailedException
+//   - UnauthorizedException
 //
-//   * InternalServerErrorException
+//   - PreconditionFailedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/PutResourcePolicy
 func (c *Schemas) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -2282,14 +2278,13 @@ const opSearchSchemas = "SearchSchemas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSchemasRequest method.
+//	req, resp := client.SearchSchemasRequest(params)
 //
-//    // Example sending a request using the SearchSchemasRequest method.
-//    req, resp := client.SearchSchemasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/SearchSchemas
 func (c *Schemas) SearchSchemasRequest(input *SearchSchemasInput) (req *request.Request, output *SearchSchemasOutput) {
@@ -2316,7 +2311,7 @@ func (c *Schemas) SearchSchemasRequest(input *SearchSchemasInput) (req *request.
 
 // SearchSchemas API operation for Schemas.
 //
-// Search the schemas
+// # Search the schemas
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2326,15 +2321,16 @@ func (c *Schemas) SearchSchemasRequest(input *SearchSchemasInput) (req *request.
 // API operation SearchSchemas for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
 //
-//   * BadRequestException
+//   - ServiceUnavailableException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/SearchSchemas
 func (c *Schemas) SearchSchemas(input *SearchSchemasInput) (*SearchSchemasOutput, error) {
@@ -2366,15 +2362,14 @@ func (c *Schemas) SearchSchemasWithContext(ctx aws.Context, input *SearchSchemas
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSchemas operation.
-//    pageNum := 0
-//    err := client.SearchSchemasPages(params,
-//        func(page *schemas.SearchSchemasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSchemas operation.
+//	pageNum := 0
+//	err := client.SearchSchemasPages(params,
+//	    func(page *schemas.SearchSchemasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Schemas) SearchSchemasPages(input *SearchSchemasInput, fn func(*SearchSchemasOutput, bool) bool) error {
 	return c.SearchSchemasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2426,14 +2421,13 @@ const opStartDiscoverer = "StartDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDiscovererRequest method.
+//	req, resp := client.StartDiscovererRequest(params)
 //
-//    // Example sending a request using the StartDiscovererRequest method.
-//    req, resp := client.StartDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/StartDiscoverer
 func (c *Schemas) StartDiscovererRequest(input *StartDiscovererInput) (req *request.Request, output *StartDiscovererOutput) {
@@ -2454,7 +2448,7 @@ func (c *Schemas) StartDiscovererRequest(input *StartDiscovererInput) (req *requ
 
 // StartDiscoverer API operation for Schemas.
 //
-// Starts the discoverer
+// # Starts the discoverer
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2464,17 +2458,18 @@ func (c *Schemas) StartDiscovererRequest(input *StartDiscovererInput) (req *requ
 // API operation StartDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/StartDiscoverer
 func (c *Schemas) StartDiscoverer(input *StartDiscovererInput) (*StartDiscovererOutput, error) {
@@ -2514,14 +2509,13 @@ const opStopDiscoverer = "StopDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopDiscovererRequest method.
+//	req, resp := client.StopDiscovererRequest(params)
 //
-//    // Example sending a request using the StopDiscovererRequest method.
-//    req, resp := client.StopDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/StopDiscoverer
 func (c *Schemas) StopDiscovererRequest(input *StopDiscovererInput) (req *request.Request, output *StopDiscovererOutput) {
@@ -2542,7 +2536,7 @@ func (c *Schemas) StopDiscovererRequest(input *StopDiscovererInput) (req *reques
 
 // StopDiscoverer API operation for Schemas.
 //
-// Stops the discoverer
+// # Stops the discoverer
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2552,17 +2546,18 @@ func (c *Schemas) StopDiscovererRequest(input *StopDiscovererInput) (req *reques
 // API operation StopDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/StopDiscoverer
 func (c *Schemas) StopDiscoverer(input *StopDiscovererInput) (*StopDiscovererOutput, error) {
@@ -2602,14 +2597,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/TagResource
 func (c *Schemas) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2641,13 +2635,14 @@ func (c *Schemas) TagResourceRequest(input *TagResourceInput) (req *request.Requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/TagResource
 func (c *Schemas) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2687,14 +2682,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UntagResource
 func (c *Schemas) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2726,13 +2720,14 @@ func (c *Schemas) UntagResourceRequest(input *UntagResourceInput) (req *request.
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UntagResource
 func (c *Schemas) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2772,14 +2767,13 @@ const opUpdateDiscoverer = "UpdateDiscoverer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDiscovererRequest method.
+//	req, resp := client.UpdateDiscovererRequest(params)
 //
-//    // Example sending a request using the UpdateDiscovererRequest method.
-//    req, resp := client.UpdateDiscovererRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateDiscoverer
 func (c *Schemas) UpdateDiscovererRequest(input *UpdateDiscovererInput) (req *request.Request, output *UpdateDiscovererOutput) {
@@ -2800,7 +2794,7 @@ func (c *Schemas) UpdateDiscovererRequest(input *UpdateDiscovererInput) (req *re
 
 // UpdateDiscoverer API operation for Schemas.
 //
-// Updates the discoverer
+// # Updates the discoverer
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2810,17 +2804,18 @@ func (c *Schemas) UpdateDiscovererRequest(input *UpdateDiscovererInput) (req *re
 // API operation UpdateDiscoverer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateDiscoverer
 func (c *Schemas) UpdateDiscoverer(input *UpdateDiscovererInput) (*UpdateDiscovererOutput, error) {
@@ -2860,14 +2855,13 @@ const opUpdateRegistry = "UpdateRegistry"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRegistryRequest method.
+//	req, resp := client.UpdateRegistryRequest(params)
 //
-//    // Example sending a request using the UpdateRegistryRequest method.
-//    req, resp := client.UpdateRegistryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateRegistry
 func (c *Schemas) UpdateRegistryRequest(input *UpdateRegistryInput) (req *request.Request, output *UpdateRegistryOutput) {
@@ -2898,17 +2892,18 @@ func (c *Schemas) UpdateRegistryRequest(input *UpdateRegistryInput) (req *reques
 // API operation UpdateRegistry for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnauthorizedException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnauthorizedException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateRegistry
 func (c *Schemas) UpdateRegistry(input *UpdateRegistryInput) (*UpdateRegistryOutput, error) {
@@ -2948,14 +2943,13 @@ const opUpdateSchema = "UpdateSchema"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSchemaRequest method.
+//	req, resp := client.UpdateSchemaRequest(params)
 //
-//    // Example sending a request using the UpdateSchemaRequest method.
-//    req, resp := client.UpdateSchemaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateSchema
 func (c *Schemas) UpdateSchemaRequest(input *UpdateSchemaInput) (req *request.Request, output *UpdateSchemaOutput) {
@@ -2976,7 +2970,7 @@ func (c *Schemas) UpdateSchemaRequest(input *UpdateSchemaInput) (req *request.Re
 
 // UpdateSchema API operation for Schemas.
 //
-// Updates the schema definition
+// # Updates the schema definition
 //
 // Inactive schemas will be deleted after two years.
 //
@@ -2988,15 +2982,16 @@ func (c *Schemas) UpdateSchemaRequest(input *UpdateSchemaInput) (req *request.Re
 // API operation UpdateSchema for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
+//
+//   - ServiceUnavailableException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/schemas-2019-12-02/UpdateSchema
 func (c *Schemas) UpdateSchema(input *UpdateSchemaInput) (*UpdateSchemaOutput, error) {

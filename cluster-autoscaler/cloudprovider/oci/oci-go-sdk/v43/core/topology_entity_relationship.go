@@ -79,12 +79,12 @@ func (m *topologyentityrelationship) UnmarshalPolymorphicJSON(data []byte) (inte
 	}
 }
 
-//GetId1 returns Id1
+// GetId1 returns Id1
 func (m topologyentityrelationship) GetId1() *string {
 	return m.Id1
 }
 
-//GetId2 returns Id2
+// GetId2 returns Id2
 func (m topologyentityrelationship) GetId2() *string {
 	return m.Id2
 }

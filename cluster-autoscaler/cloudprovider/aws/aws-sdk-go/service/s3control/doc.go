@@ -11,7 +11,7 @@
 // See s3control package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/s3control/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS S3 Control with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

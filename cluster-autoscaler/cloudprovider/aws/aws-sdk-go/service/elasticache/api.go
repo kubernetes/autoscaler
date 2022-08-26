@@ -29,14 +29,13 @@ const opAddTagsToResource = "AddTagsToResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToResourceRequest method.
+//	req, resp := client.AddTagsToResourceRequest(params)
 //
-//    // Example sending a request using the AddTagsToResourceRequest method.
-//    req, resp := client.AddTagsToResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/AddTagsToResource
 func (c *ElastiCache) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req *request.Request, output *TagListMessage) {
@@ -81,46 +80,47 @@ func (c *ElastiCache) AddTagsToResourceRequest(input *AddTagsToResourceInput) (r
 // API operation AddTagsToResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
-//   The requested reserved cache node was not found.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
+//   - ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
+//     The requested reserved cache node was not found.
 //
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeInvalidARNFault "InvalidARN"
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
+//
+//   - ErrCodeInvalidARNFault "InvalidARN"
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/AddTagsToResource
 func (c *ElastiCache) AddTagsToResource(input *AddTagsToResourceInput) (*TagListMessage, error) {
@@ -160,14 +160,13 @@ const opAuthorizeCacheSecurityGroupIngress = "AuthorizeCacheSecurityGroupIngress
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeCacheSecurityGroupIngressRequest method.
+//	req, resp := client.AuthorizeCacheSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the AuthorizeCacheSecurityGroupIngressRequest method.
-//    req, resp := client.AuthorizeCacheSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/AuthorizeCacheSecurityGroupIngress
 func (c *ElastiCache) AuthorizeCacheSecurityGroupIngressRequest(input *AuthorizeCacheSecurityGroupIngressInput) (req *request.Request, output *AuthorizeCacheSecurityGroupIngressOutput) {
@@ -203,22 +202,23 @@ func (c *ElastiCache) AuthorizeCacheSecurityGroupIngressRequest(input *Authorize
 // API operation AuthorizeCacheSecurityGroupIngress for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
 //
-//   * ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
-//   The current state of the cache security group does not allow deletion.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
-//   The specified Amazon EC2 security group is already authorized for the specified
-//   cache security group.
+//   - ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
+//     The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeAuthorizationAlreadyExistsFault "AuthorizationAlreadyExists"
+//     The specified Amazon EC2 security group is already authorized for the specified
+//     cache security group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/AuthorizeCacheSecurityGroupIngress
 func (c *ElastiCache) AuthorizeCacheSecurityGroupIngress(input *AuthorizeCacheSecurityGroupIngressInput) (*AuthorizeCacheSecurityGroupIngressOutput, error) {
@@ -258,14 +258,13 @@ const opBatchApplyUpdateAction = "BatchApplyUpdateAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchApplyUpdateActionRequest method.
+//	req, resp := client.BatchApplyUpdateActionRequest(params)
 //
-//    // Example sending a request using the BatchApplyUpdateActionRequest method.
-//    req, resp := client.BatchApplyUpdateActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/BatchApplyUpdateAction
 func (c *ElastiCache) BatchApplyUpdateActionRequest(input *BatchApplyUpdateActionInput) (req *request.Request, output *BatchApplyUpdateActionOutput) {
@@ -297,11 +296,12 @@ func (c *ElastiCache) BatchApplyUpdateActionRequest(input *BatchApplyUpdateActio
 // API operation BatchApplyUpdateAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
-//   The service update doesn't exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
+//     The service update doesn't exist
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/BatchApplyUpdateAction
 func (c *ElastiCache) BatchApplyUpdateAction(input *BatchApplyUpdateActionInput) (*BatchApplyUpdateActionOutput, error) {
@@ -341,14 +341,13 @@ const opBatchStopUpdateAction = "BatchStopUpdateAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchStopUpdateActionRequest method.
+//	req, resp := client.BatchStopUpdateActionRequest(params)
 //
-//    // Example sending a request using the BatchStopUpdateActionRequest method.
-//    req, resp := client.BatchStopUpdateActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/BatchStopUpdateAction
 func (c *ElastiCache) BatchStopUpdateActionRequest(input *BatchStopUpdateActionInput) (req *request.Request, output *BatchStopUpdateActionOutput) {
@@ -380,11 +379,12 @@ func (c *ElastiCache) BatchStopUpdateActionRequest(input *BatchStopUpdateActionI
 // API operation BatchStopUpdateAction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
-//   The service update doesn't exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
+//     The service update doesn't exist
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/BatchStopUpdateAction
 func (c *ElastiCache) BatchStopUpdateAction(input *BatchStopUpdateActionInput) (*BatchStopUpdateActionOutput, error) {
@@ -424,14 +424,13 @@ const opCompleteMigration = "CompleteMigration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CompleteMigrationRequest method.
+//	req, resp := client.CompleteMigrationRequest(params)
 //
-//    // Example sending a request using the CompleteMigrationRequest method.
-//    req, resp := client.CompleteMigrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CompleteMigration
 func (c *ElastiCache) CompleteMigrationRequest(input *CompleteMigrationInput) (req *request.Request, output *CompleteMigrationOutput) {
@@ -462,14 +461,15 @@ func (c *ElastiCache) CompleteMigrationRequest(input *CompleteMigrationInput) (r
 // API operation CompleteMigration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeReplicationGroupNotUnderMigrationFault "ReplicationGroupNotUnderMigrationFault"
-//   The designated replication group is not available for data migration.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
+//
+//   - ErrCodeReplicationGroupNotUnderMigrationFault "ReplicationGroupNotUnderMigrationFault"
+//     The designated replication group is not available for data migration.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CompleteMigration
 func (c *ElastiCache) CompleteMigration(input *CompleteMigrationInput) (*CompleteMigrationOutput, error) {
@@ -509,14 +509,13 @@ const opCopySnapshot = "CopySnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopySnapshotRequest method.
+//	req, resp := client.CopySnapshotRequest(params)
 //
-//    // Example sending a request using the CopySnapshotRequest method.
-//    req, resp := client.CopySnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CopySnapshot
 func (c *ElastiCache) CopySnapshotRequest(input *CopySnapshotInput) (req *request.Request, output *CopySnapshotOutput) {
@@ -552,47 +551,47 @@ func (c *ElastiCache) CopySnapshotRequest(input *CopySnapshotInput) (req *reques
 //
 // Error Messages
 //
-//    * Error Message: The S3 bucket %s is outside of the region. Solution:
-//    Create an Amazon S3 bucket in the same region as your snapshot. For more
-//    information, see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
-//    in the ElastiCache User Guide.
+//   - Error Message: The S3 bucket %s is outside of the region. Solution:
+//     Create an Amazon S3 bucket in the same region as your snapshot. For more
+//     information, see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
+//     in the ElastiCache User Guide.
 //
-//    * Error Message: The S3 bucket %s does not exist. Solution: Create an
-//    Amazon S3 bucket in the same region as your snapshot. For more information,
-//    see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
-//    in the ElastiCache User Guide.
+//   - Error Message: The S3 bucket %s does not exist. Solution: Create an
+//     Amazon S3 bucket in the same region as your snapshot. For more information,
+//     see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
+//     in the ElastiCache User Guide.
 //
-//    * Error Message: The S3 bucket %s is not owned by the authenticated user.
-//    Solution: Create an Amazon S3 bucket in the same region as your snapshot.
-//    For more information, see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
-//    in the ElastiCache User Guide.
+//   - Error Message: The S3 bucket %s is not owned by the authenticated user.
+//     Solution: Create an Amazon S3 bucket in the same region as your snapshot.
+//     For more information, see Step 1: Create an Amazon S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-create-s3-bucket)
+//     in the ElastiCache User Guide.
 //
-//    * Error Message: The authenticated user does not have sufficient permissions
-//    to perform the desired activity. Solution: Contact your system administrator
-//    to get the needed permissions.
+//   - Error Message: The authenticated user does not have sufficient permissions
+//     to perform the desired activity. Solution: Contact your system administrator
+//     to get the needed permissions.
 //
-//    * Error Message: The S3 bucket %s already contains an object with key
-//    %s. Solution: Give the TargetSnapshotName a new and unique value. If exporting
-//    a snapshot, you could alternatively create a new Amazon S3 bucket and
-//    use this same value for TargetSnapshotName.
+//   - Error Message: The S3 bucket %s already contains an object with key
+//     %s. Solution: Give the TargetSnapshotName a new and unique value. If exporting
+//     a snapshot, you could alternatively create a new Amazon S3 bucket and
+//     use this same value for TargetSnapshotName.
 //
-//    * Error Message: ElastiCache has not been granted READ permissions %s
-//    on the S3 Bucket. Solution: Add List and Read permissions on the bucket.
-//    For more information, see Step 2: Grant ElastiCache Access to Your Amazon
-//    S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
-//    in the ElastiCache User Guide.
+//   - Error Message: ElastiCache has not been granted READ permissions %s
+//     on the S3 Bucket. Solution: Add List and Read permissions on the bucket.
+//     For more information, see Step 2: Grant ElastiCache Access to Your Amazon
+//     S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
+//     in the ElastiCache User Guide.
 //
-//    * Error Message: ElastiCache has not been granted WRITE permissions %s
-//    on the S3 Bucket. Solution: Add Upload/Delete permissions on the bucket.
-//    For more information, see Step 2: Grant ElastiCache Access to Your Amazon
-//    S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
-//    in the ElastiCache User Guide.
+//   - Error Message: ElastiCache has not been granted WRITE permissions %s
+//     on the S3 Bucket. Solution: Add Upload/Delete permissions on the bucket.
+//     For more information, see Step 2: Grant ElastiCache Access to Your Amazon
+//     S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
+//     in the ElastiCache User Guide.
 //
-//    * Error Message: ElastiCache has not been granted READ_ACP permissions
-//    %s on the S3 Bucket. Solution: Add View Permissions on the bucket. For
-//    more information, see Step 2: Grant ElastiCache Access to Your Amazon
-//    S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
-//    in the ElastiCache User Guide.
+//   - Error Message: ElastiCache has not been granted READ_ACP permissions
+//     %s on the S3 Bucket. Solution: Add View Permissions on the bucket. For
+//     more information, see Step 2: Grant ElastiCache Access to Your Amazon
+//     S3 Bucket (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/backups-exporting.html#backups-exporting-grant-access)
+//     in the ElastiCache User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -602,30 +601,31 @@ func (c *ElastiCache) CopySnapshotRequest(input *CopySnapshotInput) (req *reques
 // API operation CopySnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
-//   You already have a snapshot with the given name.
 //
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
+//   - ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
+//     You already have a snapshot with the given name.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
-//   The request cannot be processed because it would exceed the maximum number
-//   of snapshots.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeInvalidSnapshotStateFault "InvalidSnapshotState"
-//   The current state of the snapshot does not allow the requested operation
-//   to occur.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
+//     The request cannot be processed because it would exceed the maximum number
+//     of snapshots.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidSnapshotStateFault "InvalidSnapshotState"
+//     The current state of the snapshot does not allow the requested operation
+//     to occur.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CopySnapshot
 func (c *ElastiCache) CopySnapshot(input *CopySnapshotInput) (*CopySnapshotOutput, error) {
@@ -665,14 +665,13 @@ const opCreateCacheCluster = "CreateCacheCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCacheClusterRequest method.
+//	req, resp := client.CreateCacheClusterRequest(params)
 //
-//    // Example sending a request using the CreateCacheClusterRequest method.
-//    req, resp := client.CreateCacheClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheCluster
 func (c *ElastiCache) CreateCacheClusterRequest(input *CreateCacheClusterInput) (req *request.Request, output *CreateCacheClusterOutput) {
@@ -706,57 +705,58 @@ func (c *ElastiCache) CreateCacheClusterRequest(input *CreateCacheClusterInput) 
 // API operation CreateCacheCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeCacheClusterAlreadyExistsFault "CacheClusterAlreadyExists"
-//   You already have a cluster with the given identifier.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeCacheClusterAlreadyExistsFault "CacheClusterAlreadyExists"
+//     You already have a cluster with the given identifier.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of clusters per customer.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes in a single cluster.
+//   - ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of clusters per customer.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes in a single cluster.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheCluster
 func (c *ElastiCache) CreateCacheCluster(input *CreateCacheClusterInput) (*CreateCacheClusterOutput, error) {
@@ -796,14 +796,13 @@ const opCreateCacheParameterGroup = "CreateCacheParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCacheParameterGroupRequest method.
+//	req, resp := client.CreateCacheParameterGroupRequest(params)
 //
-//    // Example sending a request using the CreateCacheParameterGroupRequest method.
-//    req, resp := client.CreateCacheParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheParameterGroup
 func (c *ElastiCache) CreateCacheParameterGroupRequest(input *CreateCacheParameterGroupInput) (req *request.Request, output *CreateCacheParameterGroupOutput) {
@@ -833,11 +832,11 @@ func (c *ElastiCache) CreateCacheParameterGroupRequest(input *CreateCacheParamet
 // created CacheParameterGroup you can change the values of specific parameters.
 // For more information, see:
 //
-//    * ModifyCacheParameterGroup (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_ModifyCacheParameterGroup.html)
-//    in the ElastiCache API Reference.
+//   - ModifyCacheParameterGroup (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_ModifyCacheParameterGroup.html)
+//     in the ElastiCache API Reference.
 //
-//    * Parameters and Parameter Groups (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ParameterGroups.html)
-//    in the ElastiCache User Guide.
+//   - Parameters and Parameter Groups (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ParameterGroups.html)
+//     in the ElastiCache User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -847,27 +846,28 @@ func (c *ElastiCache) CreateCacheParameterGroupRequest(input *CreateCacheParamet
 // API operation CreateCacheParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheParameterGroupQuotaExceededFault "CacheParameterGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the maximum number
-//   of cache security groups.
 //
-//   * ErrCodeCacheParameterGroupAlreadyExistsFault "CacheParameterGroupAlreadyExists"
-//   A cache parameter group with the requested name already exists.
+//   - ErrCodeCacheParameterGroupQuotaExceededFault "CacheParameterGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the maximum number
+//     of cache security groups.
 //
-//   * ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
-//   The current state of the cache parameter group does not allow the requested
-//   operation to occur.
+//   - ErrCodeCacheParameterGroupAlreadyExistsFault "CacheParameterGroupAlreadyExists"
+//     A cache parameter group with the requested name already exists.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
+//     The current state of the cache parameter group does not allow the requested
+//     operation to occur.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheParameterGroup
 func (c *ElastiCache) CreateCacheParameterGroup(input *CreateCacheParameterGroupInput) (*CreateCacheParameterGroupOutput, error) {
@@ -907,14 +907,13 @@ const opCreateCacheSecurityGroup = "CreateCacheSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCacheSecurityGroupRequest method.
+//	req, resp := client.CreateCacheSecurityGroupRequest(params)
 //
-//    // Example sending a request using the CreateCacheSecurityGroupRequest method.
-//    req, resp := client.CreateCacheSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheSecurityGroup
 func (c *ElastiCache) CreateCacheSecurityGroupRequest(input *CreateCacheSecurityGroupInput) (req *request.Request, output *CreateCacheSecurityGroupOutput) {
@@ -951,23 +950,24 @@ func (c *ElastiCache) CreateCacheSecurityGroupRequest(input *CreateCacheSecurity
 // API operation CreateCacheSecurityGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSecurityGroupAlreadyExistsFault "CacheSecurityGroupAlreadyExists"
-//   A cache security group with the specified name already exists.
 //
-//   * ErrCodeCacheSecurityGroupQuotaExceededFault "QuotaExceeded.CacheSecurityGroup"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache security groups.
+//   - ErrCodeCacheSecurityGroupAlreadyExistsFault "CacheSecurityGroupAlreadyExists"
+//     A cache security group with the specified name already exists.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeCacheSecurityGroupQuotaExceededFault "QuotaExceeded.CacheSecurityGroup"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache security groups.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheSecurityGroup
 func (c *ElastiCache) CreateCacheSecurityGroup(input *CreateCacheSecurityGroupInput) (*CreateCacheSecurityGroupOutput, error) {
@@ -1007,14 +1007,13 @@ const opCreateCacheSubnetGroup = "CreateCacheSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCacheSubnetGroupRequest method.
+//	req, resp := client.CreateCacheSubnetGroupRequest(params)
 //
-//    // Example sending a request using the CreateCacheSubnetGroupRequest method.
-//    req, resp := client.CreateCacheSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheSubnetGroup
 func (c *ElastiCache) CreateCacheSubnetGroupRequest(input *CreateCacheSubnetGroupInput) (req *request.Request, output *CreateCacheSubnetGroupOutput) {
@@ -1048,31 +1047,32 @@ func (c *ElastiCache) CreateCacheSubnetGroupRequest(input *CreateCacheSubnetGrou
 // API operation CreateCacheSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSubnetGroupAlreadyExistsFault "CacheSubnetGroupAlreadyExists"
-//   The requested cache subnet group name is already in use by an existing cache
-//   subnet group.
 //
-//   * ErrCodeCacheSubnetGroupQuotaExceededFault "CacheSubnetGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache subnet groups.
+//   - ErrCodeCacheSubnetGroupAlreadyExistsFault "CacheSubnetGroupAlreadyExists"
+//     The requested cache subnet group name is already in use by an existing cache
+//     subnet group.
 //
-//   * ErrCodeCacheSubnetQuotaExceededFault "CacheSubnetQuotaExceededFault"
-//   The request cannot be processed because it would exceed the allowed number
-//   of subnets in a cache subnet group.
+//   - ErrCodeCacheSubnetGroupQuotaExceededFault "CacheSubnetGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache subnet groups.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeCacheSubnetQuotaExceededFault "CacheSubnetQuotaExceededFault"
+//     The request cannot be processed because it would exceed the allowed number
+//     of subnets in a cache subnet group.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   An invalid subnet identifier was specified.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeSubnetNotAllowedFault "SubnetNotAllowedFault"
-//   At least one subnet ID does not match the other subnet IDs. This mismatch
-//   typically occurs when a user sets one subnet ID to a regional Availability
-//   Zone and a different one to an outpost. Or when a user sets the subnet ID
-//   to an Outpost when not subscribed on this service.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     An invalid subnet identifier was specified.
+//
+//   - ErrCodeSubnetNotAllowedFault "SubnetNotAllowedFault"
+//     At least one subnet ID does not match the other subnet IDs. This mismatch
+//     typically occurs when a user sets one subnet ID to a regional Availability
+//     Zone and a different one to an outpost. Or when a user sets the subnet ID
+//     to an Outpost when not subscribed on this service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateCacheSubnetGroup
 func (c *ElastiCache) CreateCacheSubnetGroup(input *CreateCacheSubnetGroupInput) (*CreateCacheSubnetGroupOutput, error) {
@@ -1112,14 +1112,13 @@ const opCreateGlobalReplicationGroup = "CreateGlobalReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGlobalReplicationGroupRequest method.
+//	req, resp := client.CreateGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the CreateGlobalReplicationGroupRequest method.
-//    req, resp := client.CreateGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateGlobalReplicationGroup
 func (c *ElastiCache) CreateGlobalReplicationGroupRequest(input *CreateGlobalReplicationGroupInput) (req *request.Request, output *CreateGlobalReplicationGroupOutput) {
@@ -1146,10 +1145,10 @@ func (c *ElastiCache) CreateGlobalReplicationGroupRequest(input *CreateGlobalRep
 // reads and disaster recovery across regions. For more information, see Replication
 // Across Regions Using Global Datastore (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Redis-Global-Datastore.html).
 //
-//    * The GlobalReplicationGroupIdSuffix is the name of the Global datastore.
+//   - The GlobalReplicationGroupIdSuffix is the name of the Global datastore.
 //
-//    * The PrimaryReplicationGroupId represents the name of the primary cluster
-//    that accepts writes and will replicate updates to the secondary cluster.
+//   - The PrimaryReplicationGroupId represents the name of the primary cluster
+//     that accepts writes and will replicate updates to the secondary cluster.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1159,20 +1158,21 @@ func (c *ElastiCache) CreateGlobalReplicationGroupRequest(input *CreateGlobalRep
 // API operation CreateGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeGlobalReplicationGroupAlreadyExistsFault "GlobalReplicationGroupAlreadyExistsFault"
-//   The Global datastore name already exists.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeGlobalReplicationGroupAlreadyExistsFault "GlobalReplicationGroupAlreadyExistsFault"
+//     The Global datastore name already exists.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateGlobalReplicationGroup
 func (c *ElastiCache) CreateGlobalReplicationGroup(input *CreateGlobalReplicationGroupInput) (*CreateGlobalReplicationGroupOutput, error) {
@@ -1212,14 +1212,13 @@ const opCreateReplicationGroup = "CreateReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReplicationGroupRequest method.
+//	req, resp := client.CreateReplicationGroupRequest(params)
 //
-//    // Example sending a request using the CreateReplicationGroupRequest method.
-//    req, resp := client.CreateReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateReplicationGroup
 func (c *ElastiCache) CreateReplicationGroupRequest(input *CreateReplicationGroupInput) (req *request.Request, output *CreateReplicationGroupOutput) {
@@ -1285,74 +1284,75 @@ func (c *ElastiCache) CreateReplicationGroupRequest(input *CreateReplicationGrou
 // API operation CreateReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeReplicationGroupAlreadyExistsFault "ReplicationGroupAlreadyExists"
-//   The specified replication group already exists.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
-//   The user group is not in an active state.
+//   - ErrCodeReplicationGroupAlreadyExistsFault "ReplicationGroupAlreadyExists"
+//     The specified replication group already exists.
 //
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
+//   - ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
+//     The user group is not in an active state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of clusters per customer.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes in a single cluster.
+//   - ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of clusters per customer.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes in a single cluster.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the maximum allowed
-//   number of node groups (shards) in a single replication group. The default
-//   maximum is 90
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
+//   - ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the maximum allowed
+//     number of node groups (shards) in a single replication group. The default
+//     maximum is 90
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateReplicationGroup
 func (c *ElastiCache) CreateReplicationGroup(input *CreateReplicationGroupInput) (*CreateReplicationGroupOutput, error) {
@@ -1392,14 +1392,13 @@ const opCreateSnapshot = "CreateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotRequest method.
+//	req, resp := client.CreateSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotRequest method.
-//    req, resp := client.CreateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateSnapshot
 func (c *ElastiCache) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Request, output *CreateSnapshotOutput) {
@@ -1433,46 +1432,47 @@ func (c *ElastiCache) CreateSnapshotRequest(input *CreateSnapshotInput) (req *re
 // API operation CreateSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
-//   You already have a snapshot with the given name.
 //
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
+//   - ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
+//     You already have a snapshot with the given name.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
-//   The request cannot be processed because it would exceed the maximum number
-//   of snapshots.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
-//   You attempted one of the following operations:
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
+//     The request cannot be processed because it would exceed the maximum number
+//     of snapshots.
 //
-//      * Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
-//      node.
+//   - ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
+//     You attempted one of the following operations:
 //
-//      * Creating a snapshot of a cluster that is running Memcached rather than
-//      Redis.
+//   - Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
+//     node.
 //
-//   Neither of these are supported by ElastiCache.
+//   - Creating a snapshot of a cluster that is running Memcached rather than
+//     Redis.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//     Neither of these are supported by ElastiCache.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateSnapshot
 func (c *ElastiCache) CreateSnapshot(input *CreateSnapshotInput) (*CreateSnapshotOutput, error) {
@@ -1512,14 +1512,13 @@ const opCreateUser = "CreateUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserRequest method.
+//	req, resp := client.CreateUserRequest(params)
 //
-//    // Example sending a request using the CreateUserRequest method.
-//    req, resp := client.CreateUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateUser
 func (c *ElastiCache) CreateUserRequest(input *CreateUserInput) (req *request.Request, output *CreateUserOutput) {
@@ -1551,28 +1550,29 @@ func (c *ElastiCache) CreateUserRequest(input *CreateUserInput) (req *request.Re
 // API operation CreateUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserAlreadyExistsFault "UserAlreadyExists"
-//   A user with this ID already exists.
 //
-//   * ErrCodeUserQuotaExceededFault "UserQuotaExceeded"
-//   The quota of users has been exceeded.
+//   - ErrCodeUserAlreadyExistsFault "UserAlreadyExists"
+//     A user with this ID already exists.
 //
-//   * ErrCodeDuplicateUserNameFault "DuplicateUserName"
-//   A user with this username already exists.
+//   - ErrCodeUserQuotaExceededFault "UserQuotaExceeded"
+//     The quota of users has been exceeded.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeDuplicateUserNameFault "DuplicateUserName"
+//     A user with this username already exists.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
+//
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateUser
 func (c *ElastiCache) CreateUser(input *CreateUserInput) (*CreateUserOutput, error) {
@@ -1612,14 +1612,13 @@ const opCreateUserGroup = "CreateUserGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserGroupRequest method.
+//	req, resp := client.CreateUserGroupRequest(params)
 //
-//    // Example sending a request using the CreateUserGroupRequest method.
-//    req, resp := client.CreateUserGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateUserGroup
 func (c *ElastiCache) CreateUserGroupRequest(input *CreateUserGroupInput) (req *request.Request, output *CreateUserGroupOutput) {
@@ -1651,31 +1650,32 @@ func (c *ElastiCache) CreateUserGroupRequest(input *CreateUserGroupInput) (req *
 // API operation CreateUserGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
 //
-//   * ErrCodeDuplicateUserNameFault "DuplicateUserName"
-//   A user with this username already exists.
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeUserGroupAlreadyExistsFault "UserGroupAlreadyExists"
-//   The user group with this ID already exists.
+//   - ErrCodeDuplicateUserNameFault "DuplicateUserName"
+//     A user with this username already exists.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeUserGroupAlreadyExistsFault "UserGroupAlreadyExists"
+//     The user group with this ID already exists.
 //
-//   * ErrCodeDefaultUserRequired "DefaultUserRequired"
-//   You must add default user to a user group.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeUserGroupQuotaExceededFault "UserGroupQuotaExceeded"
-//   The number of users exceeds the user group limit.
+//   - ErrCodeDefaultUserRequired "DefaultUserRequired"
+//     You must add default user to a user group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeUserGroupQuotaExceededFault "UserGroupQuotaExceeded"
+//     The number of users exceeds the user group limit.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/CreateUserGroup
 func (c *ElastiCache) CreateUserGroup(input *CreateUserGroupInput) (*CreateUserGroupOutput, error) {
@@ -1715,14 +1715,13 @@ const opDecreaseNodeGroupsInGlobalReplicationGroup = "DecreaseNodeGroupsInGlobal
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DecreaseNodeGroupsInGlobalReplicationGroupRequest method.
+//	req, resp := client.DecreaseNodeGroupsInGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the DecreaseNodeGroupsInGlobalReplicationGroupRequest method.
-//    req, resp := client.DecreaseNodeGroupsInGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DecreaseNodeGroupsInGlobalReplicationGroup
 func (c *ElastiCache) DecreaseNodeGroupsInGlobalReplicationGroupRequest(input *DecreaseNodeGroupsInGlobalReplicationGroupInput) (req *request.Request, output *DecreaseNodeGroupsInGlobalReplicationGroupOutput) {
@@ -1743,7 +1742,7 @@ func (c *ElastiCache) DecreaseNodeGroupsInGlobalReplicationGroupRequest(input *D
 
 // DecreaseNodeGroupsInGlobalReplicationGroup API operation for Amazon ElastiCache.
 //
-// Decreases the number of node groups in a Global datastore
+// # Decreases the number of node groups in a Global datastore
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1753,17 +1752,18 @@ func (c *ElastiCache) DecreaseNodeGroupsInGlobalReplicationGroupRequest(input *D
 // API operation DecreaseNodeGroupsInGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DecreaseNodeGroupsInGlobalReplicationGroup
 func (c *ElastiCache) DecreaseNodeGroupsInGlobalReplicationGroup(input *DecreaseNodeGroupsInGlobalReplicationGroupInput) (*DecreaseNodeGroupsInGlobalReplicationGroupOutput, error) {
@@ -1803,14 +1803,13 @@ const opDecreaseReplicaCount = "DecreaseReplicaCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DecreaseReplicaCountRequest method.
+//	req, resp := client.DecreaseReplicaCountRequest(params)
 //
-//    // Example sending a request using the DecreaseReplicaCountRequest method.
-//    req, resp := client.DecreaseReplicaCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DecreaseReplicaCount
 func (c *ElastiCache) DecreaseReplicaCountRequest(input *DecreaseReplicaCountInput) (req *request.Request, output *DecreaseReplicaCountOutput) {
@@ -1844,47 +1843,48 @@ func (c *ElastiCache) DecreaseReplicaCountRequest(input *DecreaseReplicaCountInp
 // API operation DecreaseReplicaCount for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of clusters per customer.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the maximum allowed
-//   number of node groups (shards) in a single replication group. The default
-//   maximum is 90
+//   - ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of clusters per customer.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the maximum allowed
+//     number of node groups (shards) in a single replication group. The default
+//     maximum is 90
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeNoOperationFault "NoOperationFault"
-//   The operation was not performed because no changes were required.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeNoOperationFault "NoOperationFault"
+//     The operation was not performed because no changes were required.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DecreaseReplicaCount
 func (c *ElastiCache) DecreaseReplicaCount(input *DecreaseReplicaCountInput) (*DecreaseReplicaCountOutput, error) {
@@ -1924,14 +1924,13 @@ const opDeleteCacheCluster = "DeleteCacheCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCacheClusterRequest method.
+//	req, resp := client.DeleteCacheClusterRequest(params)
 //
-//    // Example sending a request using the DeleteCacheClusterRequest method.
-//    req, resp := client.DeleteCacheClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheCluster
 func (c *ElastiCache) DeleteCacheClusterRequest(input *DeleteCacheClusterInput) (req *request.Request, output *DeleteCacheClusterOutput) {
@@ -1959,19 +1958,19 @@ func (c *ElastiCache) DeleteCacheClusterRequest(input *DeleteCacheClusterInput) 
 //
 // This operation is not valid for:
 //
-//    * Redis (cluster mode enabled) clusters
+//   - Redis (cluster mode enabled) clusters
 //
-//    * Redis (cluster mode disabled) clusters
+//   - Redis (cluster mode disabled) clusters
 //
-//    * A cluster that is the last read replica of a replication group
+//   - A cluster that is the last read replica of a replication group
 //
-//    * A cluster that is the primary node of a replication group
+//   - A cluster that is the primary node of a replication group
 //
-//    * A node group (shard) that has Multi-AZ mode enabled
+//   - A node group (shard) that has Multi-AZ mode enabled
 //
-//    * A cluster from a Redis (cluster mode enabled) replication group
+//   - A cluster from a Redis (cluster mode enabled) replication group
 //
-//    * A cluster that is not in the available state
+//   - A cluster that is not in the available state
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1981,35 +1980,36 @@ func (c *ElastiCache) DeleteCacheClusterRequest(input *DeleteCacheClusterInput) 
 // API operation DeleteCacheCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
-//   You already have a snapshot with the given name.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
-//   You attempted one of the following operations:
+//   - ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
+//     You already have a snapshot with the given name.
 //
-//      * Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
-//      node.
+//   - ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
+//     You attempted one of the following operations:
 //
-//      * Creating a snapshot of a cluster that is running Memcached rather than
-//      Redis.
+//   - Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
+//     node.
 //
-//   Neither of these are supported by ElastiCache.
+//   - Creating a snapshot of a cluster that is running Memcached rather than
+//     Redis.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
-//   The request cannot be processed because it would exceed the maximum number
-//   of snapshots.
+//     Neither of these are supported by ElastiCache.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
+//     The request cannot be processed because it would exceed the maximum number
+//     of snapshots.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheCluster
 func (c *ElastiCache) DeleteCacheCluster(input *DeleteCacheClusterInput) (*DeleteCacheClusterOutput, error) {
@@ -2049,14 +2049,13 @@ const opDeleteCacheParameterGroup = "DeleteCacheParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCacheParameterGroupRequest method.
+//	req, resp := client.DeleteCacheParameterGroupRequest(params)
 //
-//    // Example sending a request using the DeleteCacheParameterGroupRequest method.
-//    req, resp := client.DeleteCacheParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheParameterGroup
 func (c *ElastiCache) DeleteCacheParameterGroupRequest(input *DeleteCacheParameterGroupInput) (req *request.Request, output *DeleteCacheParameterGroupOutput) {
@@ -2090,19 +2089,20 @@ func (c *ElastiCache) DeleteCacheParameterGroupRequest(input *DeleteCacheParamet
 // API operation DeleteCacheParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
-//   The current state of the cache parameter group does not allow the requested
-//   operation to occur.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
+//     The current state of the cache parameter group does not allow the requested
+//     operation to occur.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheParameterGroup
 func (c *ElastiCache) DeleteCacheParameterGroup(input *DeleteCacheParameterGroupInput) (*DeleteCacheParameterGroupOutput, error) {
@@ -2142,14 +2142,13 @@ const opDeleteCacheSecurityGroup = "DeleteCacheSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCacheSecurityGroupRequest method.
+//	req, resp := client.DeleteCacheSecurityGroupRequest(params)
 //
-//    // Example sending a request using the DeleteCacheSecurityGroupRequest method.
-//    req, resp := client.DeleteCacheSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheSecurityGroup
 func (c *ElastiCache) DeleteCacheSecurityGroupRequest(input *DeleteCacheSecurityGroupInput) (req *request.Request, output *DeleteCacheSecurityGroupOutput) {
@@ -2183,18 +2182,19 @@ func (c *ElastiCache) DeleteCacheSecurityGroupRequest(input *DeleteCacheSecurity
 // API operation DeleteCacheSecurityGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
-//   The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
+//     The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheSecurityGroup
 func (c *ElastiCache) DeleteCacheSecurityGroup(input *DeleteCacheSecurityGroupInput) (*DeleteCacheSecurityGroupOutput, error) {
@@ -2234,14 +2234,13 @@ const opDeleteCacheSubnetGroup = "DeleteCacheSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCacheSubnetGroupRequest method.
+//	req, resp := client.DeleteCacheSubnetGroupRequest(params)
 //
-//    // Example sending a request using the DeleteCacheSubnetGroupRequest method.
-//    req, resp := client.DeleteCacheSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheSubnetGroup
 func (c *ElastiCache) DeleteCacheSubnetGroupRequest(input *DeleteCacheSubnetGroupInput) (req *request.Request, output *DeleteCacheSubnetGroupOutput) {
@@ -2276,12 +2275,13 @@ func (c *ElastiCache) DeleteCacheSubnetGroupRequest(input *DeleteCacheSubnetGrou
 // API operation DeleteCacheSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSubnetGroupInUse "CacheSubnetGroupInUse"
-//   The requested cache subnet group is currently in use.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSubnetGroupInUse "CacheSubnetGroupInUse"
+//     The requested cache subnet group is currently in use.
+//
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteCacheSubnetGroup
 func (c *ElastiCache) DeleteCacheSubnetGroup(input *DeleteCacheSubnetGroupInput) (*DeleteCacheSubnetGroupOutput, error) {
@@ -2321,14 +2321,13 @@ const opDeleteGlobalReplicationGroup = "DeleteGlobalReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGlobalReplicationGroupRequest method.
+//	req, resp := client.DeleteGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the DeleteGlobalReplicationGroupRequest method.
-//    req, resp := client.DeleteGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteGlobalReplicationGroup
 func (c *ElastiCache) DeleteGlobalReplicationGroupRequest(input *DeleteGlobalReplicationGroupInput) (req *request.Request, output *DeleteGlobalReplicationGroupOutput) {
@@ -2351,12 +2350,12 @@ func (c *ElastiCache) DeleteGlobalReplicationGroupRequest(input *DeleteGlobalRep
 //
 // Deleting a Global datastore is a two-step process:
 //
-//    * First, you must DisassociateGlobalReplicationGroup to remove the secondary
-//    clusters in the Global datastore.
+//   - First, you must DisassociateGlobalReplicationGroup to remove the secondary
+//     clusters in the Global datastore.
 //
-//    * Once the Global datastore contains only the primary cluster, you can
-//    use the DeleteGlobalReplicationGroup API to delete the Global datastore
-//    while retainining the primary cluster using RetainPrimaryReplicationGroup=true.
+//   - Once the Global datastore contains only the primary cluster, you can
+//     use the DeleteGlobalReplicationGroup API to delete the Global datastore
+//     while retainining the primary cluster using RetainPrimaryReplicationGroup=true.
 //
 // Since the Global Datastore has only a primary cluster, you can delete the
 // Global Datastore while retaining the primary by setting RetainPrimaryReplicationGroup=true.
@@ -2375,14 +2374,15 @@ func (c *ElastiCache) DeleteGlobalReplicationGroupRequest(input *DeleteGlobalRep
 // API operation DeleteGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteGlobalReplicationGroup
 func (c *ElastiCache) DeleteGlobalReplicationGroup(input *DeleteGlobalReplicationGroupInput) (*DeleteGlobalReplicationGroupOutput, error) {
@@ -2422,14 +2422,13 @@ const opDeleteReplicationGroup = "DeleteReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReplicationGroupRequest method.
+//	req, resp := client.DeleteReplicationGroupRequest(params)
 //
-//    // Example sending a request using the DeleteReplicationGroupRequest method.
-//    req, resp := client.DeleteReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteReplicationGroup
 func (c *ElastiCache) DeleteReplicationGroupRequest(input *DeleteReplicationGroupInput) (req *request.Request, output *DeleteReplicationGroupOutput) {
@@ -2470,35 +2469,36 @@ func (c *ElastiCache) DeleteReplicationGroupRequest(input *DeleteReplicationGrou
 // API operation DeleteReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
-//   You already have a snapshot with the given name.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
-//   You attempted one of the following operations:
+//   - ErrCodeSnapshotAlreadyExistsFault "SnapshotAlreadyExistsFault"
+//     You already have a snapshot with the given name.
 //
-//      * Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
-//      node.
+//   - ErrCodeSnapshotFeatureNotSupportedFault "SnapshotFeatureNotSupportedFault"
+//     You attempted one of the following operations:
 //
-//      * Creating a snapshot of a cluster that is running Memcached rather than
-//      Redis.
+//   - Creating a snapshot of a Redis cluster running on a cache.t1.micro cache
+//     node.
 //
-//   Neither of these are supported by ElastiCache.
+//   - Creating a snapshot of a cluster that is running Memcached rather than
+//     Redis.
 //
-//   * ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
-//   The request cannot be processed because it would exceed the maximum number
-//   of snapshots.
+//     Neither of these are supported by ElastiCache.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeSnapshotQuotaExceededFault "SnapshotQuotaExceededFault"
+//     The request cannot be processed because it would exceed the maximum number
+//     of snapshots.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteReplicationGroup
 func (c *ElastiCache) DeleteReplicationGroup(input *DeleteReplicationGroupInput) (*DeleteReplicationGroupOutput, error) {
@@ -2538,14 +2538,13 @@ const opDeleteSnapshot = "DeleteSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotRequest method.
+//	req, resp := client.DeleteSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotRequest method.
-//    req, resp := client.DeleteSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteSnapshot
 func (c *ElastiCache) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *request.Request, output *DeleteSnapshotOutput) {
@@ -2580,18 +2579,19 @@ func (c *ElastiCache) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *re
 // API operation DeleteSnapshot for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeInvalidSnapshotStateFault "InvalidSnapshotState"
-//   The current state of the snapshot does not allow the requested operation
-//   to occur.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidSnapshotStateFault "InvalidSnapshotState"
+//     The current state of the snapshot does not allow the requested operation
+//     to occur.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteSnapshot
 func (c *ElastiCache) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
@@ -2631,14 +2631,13 @@ const opDeleteUser = "DeleteUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserRequest method.
+//	req, resp := client.DeleteUserRequest(params)
 //
-//    // Example sending a request using the DeleteUserRequest method.
-//    req, resp := client.DeleteUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteUser
 func (c *ElastiCache) DeleteUserRequest(input *DeleteUserInput) (req *request.Request, output *DeleteUserOutput) {
@@ -2671,20 +2670,21 @@ func (c *ElastiCache) DeleteUserRequest(input *DeleteUserInput) (req *request.Re
 // API operation DeleteUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidUserStateFault "InvalidUserState"
-//   The user is not in active state.
 //
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
+//   - ErrCodeInvalidUserStateFault "InvalidUserState"
+//     The user is not in active state.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeDefaultUserAssociatedToUserGroupFault "DefaultUserAssociatedToUserGroup"
-//   The default user assigned to the user group.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeDefaultUserAssociatedToUserGroupFault "DefaultUserAssociatedToUserGroup"
+//     The default user assigned to the user group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteUser
 func (c *ElastiCache) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error) {
@@ -2724,14 +2724,13 @@ const opDeleteUserGroup = "DeleteUserGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserGroupRequest method.
+//	req, resp := client.DeleteUserGroupRequest(params)
 //
-//    // Example sending a request using the DeleteUserGroupRequest method.
-//    req, resp := client.DeleteUserGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteUserGroup
 func (c *ElastiCache) DeleteUserGroupRequest(input *DeleteUserGroupInput) (req *request.Request, output *DeleteUserGroupOutput) {
@@ -2764,17 +2763,18 @@ func (c *ElastiCache) DeleteUserGroupRequest(input *DeleteUserGroupInput) (req *
 // API operation DeleteUserGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
 //
-//   * ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
-//   The user group is not in an active state.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
+//     The user group is not in an active state.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DeleteUserGroup
 func (c *ElastiCache) DeleteUserGroup(input *DeleteUserGroupInput) (*DeleteUserGroupOutput, error) {
@@ -2814,14 +2814,13 @@ const opDescribeCacheClusters = "DescribeCacheClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheClustersRequest method.
+//	req, resp := client.DescribeCacheClustersRequest(params)
 //
-//    // Example sending a request using the DescribeCacheClustersRequest method.
-//    req, resp := client.DescribeCacheClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheClusters
 func (c *ElastiCache) DescribeCacheClustersRequest(input *DescribeCacheClustersInput) (req *request.Request, output *DescribeCacheClustersOutput) {
@@ -2879,14 +2878,15 @@ func (c *ElastiCache) DescribeCacheClustersRequest(input *DescribeCacheClustersI
 // API operation DescribeCacheClusters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheClusters
 func (c *ElastiCache) DescribeCacheClusters(input *DescribeCacheClustersInput) (*DescribeCacheClustersOutput, error) {
@@ -2918,15 +2918,14 @@ func (c *ElastiCache) DescribeCacheClustersWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheClusters operation.
-//    pageNum := 0
-//    err := client.DescribeCacheClustersPages(params,
-//        func(page *elasticache.DescribeCacheClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheClusters operation.
+//	pageNum := 0
+//	err := client.DescribeCacheClustersPages(params,
+//	    func(page *elasticache.DescribeCacheClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheClustersPages(input *DescribeCacheClustersInput, fn func(*DescribeCacheClustersOutput, bool) bool) error {
 	return c.DescribeCacheClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2978,14 +2977,13 @@ const opDescribeCacheEngineVersions = "DescribeCacheEngineVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheEngineVersionsRequest method.
+//	req, resp := client.DescribeCacheEngineVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeCacheEngineVersionsRequest method.
-//    req, resp := client.DescribeCacheEngineVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheEngineVersions
 func (c *ElastiCache) DescribeCacheEngineVersionsRequest(input *DescribeCacheEngineVersionsInput) (req *request.Request, output *DescribeCacheEngineVersionsOutput) {
@@ -3050,15 +3048,14 @@ func (c *ElastiCache) DescribeCacheEngineVersionsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheEngineVersions operation.
-//    pageNum := 0
-//    err := client.DescribeCacheEngineVersionsPages(params,
-//        func(page *elasticache.DescribeCacheEngineVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheEngineVersions operation.
+//	pageNum := 0
+//	err := client.DescribeCacheEngineVersionsPages(params,
+//	    func(page *elasticache.DescribeCacheEngineVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheEngineVersionsPages(input *DescribeCacheEngineVersionsInput, fn func(*DescribeCacheEngineVersionsOutput, bool) bool) error {
 	return c.DescribeCacheEngineVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3110,14 +3107,13 @@ const opDescribeCacheParameterGroups = "DescribeCacheParameterGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheParameterGroupsRequest method.
+//	req, resp := client.DescribeCacheParameterGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeCacheParameterGroupsRequest method.
-//    req, resp := client.DescribeCacheParameterGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheParameterGroups
 func (c *ElastiCache) DescribeCacheParameterGroupsRequest(input *DescribeCacheParameterGroupsInput) (req *request.Request, output *DescribeCacheParameterGroupsOutput) {
@@ -3156,15 +3152,16 @@ func (c *ElastiCache) DescribeCacheParameterGroupsRequest(input *DescribeCachePa
 // API operation DescribeCacheParameterGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheParameterGroups
 func (c *ElastiCache) DescribeCacheParameterGroups(input *DescribeCacheParameterGroupsInput) (*DescribeCacheParameterGroupsOutput, error) {
@@ -3196,15 +3193,14 @@ func (c *ElastiCache) DescribeCacheParameterGroupsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheParameterGroups operation.
-//    pageNum := 0
-//    err := client.DescribeCacheParameterGroupsPages(params,
-//        func(page *elasticache.DescribeCacheParameterGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheParameterGroups operation.
+//	pageNum := 0
+//	err := client.DescribeCacheParameterGroupsPages(params,
+//	    func(page *elasticache.DescribeCacheParameterGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheParameterGroupsPages(input *DescribeCacheParameterGroupsInput, fn func(*DescribeCacheParameterGroupsOutput, bool) bool) error {
 	return c.DescribeCacheParameterGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3256,14 +3252,13 @@ const opDescribeCacheParameters = "DescribeCacheParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheParametersRequest method.
+//	req, resp := client.DescribeCacheParametersRequest(params)
 //
-//    // Example sending a request using the DescribeCacheParametersRequest method.
-//    req, resp := client.DescribeCacheParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheParameters
 func (c *ElastiCache) DescribeCacheParametersRequest(input *DescribeCacheParametersInput) (req *request.Request, output *DescribeCacheParametersOutput) {
@@ -3300,15 +3295,16 @@ func (c *ElastiCache) DescribeCacheParametersRequest(input *DescribeCacheParamet
 // API operation DescribeCacheParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheParameters
 func (c *ElastiCache) DescribeCacheParameters(input *DescribeCacheParametersInput) (*DescribeCacheParametersOutput, error) {
@@ -3340,15 +3336,14 @@ func (c *ElastiCache) DescribeCacheParametersWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheParameters operation.
-//    pageNum := 0
-//    err := client.DescribeCacheParametersPages(params,
-//        func(page *elasticache.DescribeCacheParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheParameters operation.
+//	pageNum := 0
+//	err := client.DescribeCacheParametersPages(params,
+//	    func(page *elasticache.DescribeCacheParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheParametersPages(input *DescribeCacheParametersInput, fn func(*DescribeCacheParametersOutput, bool) bool) error {
 	return c.DescribeCacheParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3400,14 +3395,13 @@ const opDescribeCacheSecurityGroups = "DescribeCacheSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheSecurityGroupsRequest method.
+//	req, resp := client.DescribeCacheSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeCacheSecurityGroupsRequest method.
-//    req, resp := client.DescribeCacheSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheSecurityGroups
 func (c *ElastiCache) DescribeCacheSecurityGroupsRequest(input *DescribeCacheSecurityGroupsInput) (req *request.Request, output *DescribeCacheSecurityGroupsOutput) {
@@ -3446,15 +3440,16 @@ func (c *ElastiCache) DescribeCacheSecurityGroupsRequest(input *DescribeCacheSec
 // API operation DescribeCacheSecurityGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheSecurityGroups
 func (c *ElastiCache) DescribeCacheSecurityGroups(input *DescribeCacheSecurityGroupsInput) (*DescribeCacheSecurityGroupsOutput, error) {
@@ -3486,15 +3481,14 @@ func (c *ElastiCache) DescribeCacheSecurityGroupsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheSecurityGroups operation.
-//    pageNum := 0
-//    err := client.DescribeCacheSecurityGroupsPages(params,
-//        func(page *elasticache.DescribeCacheSecurityGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheSecurityGroups operation.
+//	pageNum := 0
+//	err := client.DescribeCacheSecurityGroupsPages(params,
+//	    func(page *elasticache.DescribeCacheSecurityGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheSecurityGroupsPages(input *DescribeCacheSecurityGroupsInput, fn func(*DescribeCacheSecurityGroupsOutput, bool) bool) error {
 	return c.DescribeCacheSecurityGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3546,14 +3540,13 @@ const opDescribeCacheSubnetGroups = "DescribeCacheSubnetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCacheSubnetGroupsRequest method.
+//	req, resp := client.DescribeCacheSubnetGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeCacheSubnetGroupsRequest method.
-//    req, resp := client.DescribeCacheSubnetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheSubnetGroups
 func (c *ElastiCache) DescribeCacheSubnetGroupsRequest(input *DescribeCacheSubnetGroupsInput) (req *request.Request, output *DescribeCacheSubnetGroupsOutput) {
@@ -3593,9 +3586,9 @@ func (c *ElastiCache) DescribeCacheSubnetGroupsRequest(input *DescribeCacheSubne
 // API operation DescribeCacheSubnetGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeCacheSubnetGroups
 func (c *ElastiCache) DescribeCacheSubnetGroups(input *DescribeCacheSubnetGroupsInput) (*DescribeCacheSubnetGroupsOutput, error) {
@@ -3627,15 +3620,14 @@ func (c *ElastiCache) DescribeCacheSubnetGroupsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCacheSubnetGroups operation.
-//    pageNum := 0
-//    err := client.DescribeCacheSubnetGroupsPages(params,
-//        func(page *elasticache.DescribeCacheSubnetGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCacheSubnetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeCacheSubnetGroupsPages(params,
+//	    func(page *elasticache.DescribeCacheSubnetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeCacheSubnetGroupsPages(input *DescribeCacheSubnetGroupsInput, fn func(*DescribeCacheSubnetGroupsOutput, bool) bool) error {
 	return c.DescribeCacheSubnetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3687,14 +3679,13 @@ const opDescribeEngineDefaultParameters = "DescribeEngineDefaultParameters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEngineDefaultParametersRequest method.
+//	req, resp := client.DescribeEngineDefaultParametersRequest(params)
 //
-//    // Example sending a request using the DescribeEngineDefaultParametersRequest method.
-//    req, resp := client.DescribeEngineDefaultParametersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeEngineDefaultParameters
 func (c *ElastiCache) DescribeEngineDefaultParametersRequest(input *DescribeEngineDefaultParametersInput) (req *request.Request, output *DescribeEngineDefaultParametersOutput) {
@@ -3732,11 +3723,12 @@ func (c *ElastiCache) DescribeEngineDefaultParametersRequest(input *DescribeEngi
 // API operation DescribeEngineDefaultParameters for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeEngineDefaultParameters
 func (c *ElastiCache) DescribeEngineDefaultParameters(input *DescribeEngineDefaultParametersInput) (*DescribeEngineDefaultParametersOutput, error) {
@@ -3768,15 +3760,14 @@ func (c *ElastiCache) DescribeEngineDefaultParametersWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEngineDefaultParameters operation.
-//    pageNum := 0
-//    err := client.DescribeEngineDefaultParametersPages(params,
-//        func(page *elasticache.DescribeEngineDefaultParametersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEngineDefaultParameters operation.
+//	pageNum := 0
+//	err := client.DescribeEngineDefaultParametersPages(params,
+//	    func(page *elasticache.DescribeEngineDefaultParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeEngineDefaultParametersPages(input *DescribeEngineDefaultParametersInput, fn func(*DescribeEngineDefaultParametersOutput, bool) bool) error {
 	return c.DescribeEngineDefaultParametersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3828,14 +3819,13 @@ const opDescribeEvents = "DescribeEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsRequest method.
+//	req, resp := client.DescribeEventsRequest(params)
 //
-//    // Example sending a request using the DescribeEventsRequest method.
-//    req, resp := client.DescribeEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeEvents
 func (c *ElastiCache) DescribeEventsRequest(input *DescribeEventsInput) (req *request.Request, output *DescribeEventsOutput) {
@@ -3877,11 +3867,12 @@ func (c *ElastiCache) DescribeEventsRequest(input *DescribeEventsInput) (req *re
 // API operation DescribeEvents for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeEvents
 func (c *ElastiCache) DescribeEvents(input *DescribeEventsInput) (*DescribeEventsOutput, error) {
@@ -3913,15 +3904,14 @@ func (c *ElastiCache) DescribeEventsWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvents operation.
-//    pageNum := 0
-//    err := client.DescribeEventsPages(params,
-//        func(page *elasticache.DescribeEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *elasticache.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
 	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3973,14 +3963,13 @@ const opDescribeGlobalReplicationGroups = "DescribeGlobalReplicationGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGlobalReplicationGroupsRequest method.
+//	req, resp := client.DescribeGlobalReplicationGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeGlobalReplicationGroupsRequest method.
-//    req, resp := client.DescribeGlobalReplicationGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeGlobalReplicationGroups
 func (c *ElastiCache) DescribeGlobalReplicationGroupsRequest(input *DescribeGlobalReplicationGroupsInput) (req *request.Request, output *DescribeGlobalReplicationGroupsOutput) {
@@ -4018,14 +4007,15 @@ func (c *ElastiCache) DescribeGlobalReplicationGroupsRequest(input *DescribeGlob
 // API operation DescribeGlobalReplicationGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeGlobalReplicationGroups
 func (c *ElastiCache) DescribeGlobalReplicationGroups(input *DescribeGlobalReplicationGroupsInput) (*DescribeGlobalReplicationGroupsOutput, error) {
@@ -4057,15 +4047,14 @@ func (c *ElastiCache) DescribeGlobalReplicationGroupsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGlobalReplicationGroups operation.
-//    pageNum := 0
-//    err := client.DescribeGlobalReplicationGroupsPages(params,
-//        func(page *elasticache.DescribeGlobalReplicationGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGlobalReplicationGroups operation.
+//	pageNum := 0
+//	err := client.DescribeGlobalReplicationGroupsPages(params,
+//	    func(page *elasticache.DescribeGlobalReplicationGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeGlobalReplicationGroupsPages(input *DescribeGlobalReplicationGroupsInput, fn func(*DescribeGlobalReplicationGroupsOutput, bool) bool) error {
 	return c.DescribeGlobalReplicationGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4117,14 +4106,13 @@ const opDescribeReplicationGroups = "DescribeReplicationGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReplicationGroupsRequest method.
+//	req, resp := client.DescribeReplicationGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeReplicationGroupsRequest method.
-//    req, resp := client.DescribeReplicationGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReplicationGroups
 func (c *ElastiCache) DescribeReplicationGroupsRequest(input *DescribeReplicationGroupsInput) (req *request.Request, output *DescribeReplicationGroupsOutput) {
@@ -4165,14 +4153,15 @@ func (c *ElastiCache) DescribeReplicationGroupsRequest(input *DescribeReplicatio
 // API operation DescribeReplicationGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReplicationGroups
 func (c *ElastiCache) DescribeReplicationGroups(input *DescribeReplicationGroupsInput) (*DescribeReplicationGroupsOutput, error) {
@@ -4204,15 +4193,14 @@ func (c *ElastiCache) DescribeReplicationGroupsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReplicationGroups operation.
-//    pageNum := 0
-//    err := client.DescribeReplicationGroupsPages(params,
-//        func(page *elasticache.DescribeReplicationGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReplicationGroups operation.
+//	pageNum := 0
+//	err := client.DescribeReplicationGroupsPages(params,
+//	    func(page *elasticache.DescribeReplicationGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeReplicationGroupsPages(input *DescribeReplicationGroupsInput, fn func(*DescribeReplicationGroupsOutput, bool) bool) error {
 	return c.DescribeReplicationGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4264,14 +4252,13 @@ const opDescribeReservedCacheNodes = "DescribeReservedCacheNodes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedCacheNodesRequest method.
+//	req, resp := client.DescribeReservedCacheNodesRequest(params)
 //
-//    // Example sending a request using the DescribeReservedCacheNodesRequest method.
-//    req, resp := client.DescribeReservedCacheNodesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReservedCacheNodes
 func (c *ElastiCache) DescribeReservedCacheNodesRequest(input *DescribeReservedCacheNodesInput) (req *request.Request, output *DescribeReservedCacheNodesOutput) {
@@ -4309,14 +4296,15 @@ func (c *ElastiCache) DescribeReservedCacheNodesRequest(input *DescribeReservedC
 // API operation DescribeReservedCacheNodes for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
-//   The requested reserved cache node was not found.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
+//     The requested reserved cache node was not found.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReservedCacheNodes
 func (c *ElastiCache) DescribeReservedCacheNodes(input *DescribeReservedCacheNodesInput) (*DescribeReservedCacheNodesOutput, error) {
@@ -4348,15 +4336,14 @@ func (c *ElastiCache) DescribeReservedCacheNodesWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedCacheNodes operation.
-//    pageNum := 0
-//    err := client.DescribeReservedCacheNodesPages(params,
-//        func(page *elasticache.DescribeReservedCacheNodesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedCacheNodes operation.
+//	pageNum := 0
+//	err := client.DescribeReservedCacheNodesPages(params,
+//	    func(page *elasticache.DescribeReservedCacheNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeReservedCacheNodesPages(input *DescribeReservedCacheNodesInput, fn func(*DescribeReservedCacheNodesOutput, bool) bool) error {
 	return c.DescribeReservedCacheNodesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4408,14 +4395,13 @@ const opDescribeReservedCacheNodesOfferings = "DescribeReservedCacheNodesOfferin
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedCacheNodesOfferingsRequest method.
+//	req, resp := client.DescribeReservedCacheNodesOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedCacheNodesOfferingsRequest method.
-//    req, resp := client.DescribeReservedCacheNodesOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReservedCacheNodesOfferings
 func (c *ElastiCache) DescribeReservedCacheNodesOfferingsRequest(input *DescribeReservedCacheNodesOfferingsInput) (req *request.Request, output *DescribeReservedCacheNodesOfferingsOutput) {
@@ -4452,14 +4438,15 @@ func (c *ElastiCache) DescribeReservedCacheNodesOfferingsRequest(input *Describe
 // API operation DescribeReservedCacheNodesOfferings for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedCacheNodesOfferingNotFoundFault "ReservedCacheNodesOfferingNotFound"
-//   The requested cache node offering does not exist.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeReservedCacheNodesOfferingNotFoundFault "ReservedCacheNodesOfferingNotFound"
+//     The requested cache node offering does not exist.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeReservedCacheNodesOfferings
 func (c *ElastiCache) DescribeReservedCacheNodesOfferings(input *DescribeReservedCacheNodesOfferingsInput) (*DescribeReservedCacheNodesOfferingsOutput, error) {
@@ -4491,15 +4478,14 @@ func (c *ElastiCache) DescribeReservedCacheNodesOfferingsWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedCacheNodesOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeReservedCacheNodesOfferingsPages(params,
-//        func(page *elasticache.DescribeReservedCacheNodesOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedCacheNodesOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedCacheNodesOfferingsPages(params,
+//	    func(page *elasticache.DescribeReservedCacheNodesOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeReservedCacheNodesOfferingsPages(input *DescribeReservedCacheNodesOfferingsInput, fn func(*DescribeReservedCacheNodesOfferingsOutput, bool) bool) error {
 	return c.DescribeReservedCacheNodesOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4551,14 +4537,13 @@ const opDescribeServiceUpdates = "DescribeServiceUpdates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServiceUpdatesRequest method.
+//	req, resp := client.DescribeServiceUpdatesRequest(params)
 //
-//    // Example sending a request using the DescribeServiceUpdatesRequest method.
-//    req, resp := client.DescribeServiceUpdatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeServiceUpdates
 func (c *ElastiCache) DescribeServiceUpdatesRequest(input *DescribeServiceUpdatesInput) (req *request.Request, output *DescribeServiceUpdatesOutput) {
@@ -4585,7 +4570,7 @@ func (c *ElastiCache) DescribeServiceUpdatesRequest(input *DescribeServiceUpdate
 
 // DescribeServiceUpdates API operation for Amazon ElastiCache.
 //
-// Returns details of the service updates
+// # Returns details of the service updates
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4595,14 +4580,15 @@ func (c *ElastiCache) DescribeServiceUpdatesRequest(input *DescribeServiceUpdate
 // API operation DescribeServiceUpdates for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
-//   The service update doesn't exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceUpdateNotFoundFault "ServiceUpdateNotFoundFault"
+//     The service update doesn't exist
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeServiceUpdates
 func (c *ElastiCache) DescribeServiceUpdates(input *DescribeServiceUpdatesInput) (*DescribeServiceUpdatesOutput, error) {
@@ -4634,15 +4620,14 @@ func (c *ElastiCache) DescribeServiceUpdatesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeServiceUpdates operation.
-//    pageNum := 0
-//    err := client.DescribeServiceUpdatesPages(params,
-//        func(page *elasticache.DescribeServiceUpdatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeServiceUpdates operation.
+//	pageNum := 0
+//	err := client.DescribeServiceUpdatesPages(params,
+//	    func(page *elasticache.DescribeServiceUpdatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeServiceUpdatesPages(input *DescribeServiceUpdatesInput, fn func(*DescribeServiceUpdatesOutput, bool) bool) error {
 	return c.DescribeServiceUpdatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4694,14 +4679,13 @@ const opDescribeSnapshots = "DescribeSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotsRequest method.
+//	req, resp := client.DescribeSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotsRequest method.
-//    req, resp := client.DescribeSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeSnapshots
 func (c *ElastiCache) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *request.Request, output *DescribeSnapshotsOutput) {
@@ -4743,17 +4727,18 @@ func (c *ElastiCache) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (r
 // API operation DescribeSnapshots for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeSnapshots
 func (c *ElastiCache) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
@@ -4785,15 +4770,14 @@ func (c *ElastiCache) DescribeSnapshotsWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotsPages(params,
-//        func(page *elasticache.DescribeSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotsPages(params,
+//	    func(page *elasticache.DescribeSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeSnapshotsPages(input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool) error {
 	return c.DescribeSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4845,14 +4829,13 @@ const opDescribeUpdateActions = "DescribeUpdateActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUpdateActionsRequest method.
+//	req, resp := client.DescribeUpdateActionsRequest(params)
 //
-//    // Example sending a request using the DescribeUpdateActionsRequest method.
-//    req, resp := client.DescribeUpdateActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUpdateActions
 func (c *ElastiCache) DescribeUpdateActionsRequest(input *DescribeUpdateActionsInput) (req *request.Request, output *DescribeUpdateActionsOutput) {
@@ -4879,7 +4862,7 @@ func (c *ElastiCache) DescribeUpdateActionsRequest(input *DescribeUpdateActionsI
 
 // DescribeUpdateActions API operation for Amazon ElastiCache.
 //
-// Returns details of the update actions
+// # Returns details of the update actions
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4889,11 +4872,12 @@ func (c *ElastiCache) DescribeUpdateActionsRequest(input *DescribeUpdateActionsI
 // API operation DescribeUpdateActions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUpdateActions
 func (c *ElastiCache) DescribeUpdateActions(input *DescribeUpdateActionsInput) (*DescribeUpdateActionsOutput, error) {
@@ -4925,15 +4909,14 @@ func (c *ElastiCache) DescribeUpdateActionsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeUpdateActions operation.
-//    pageNum := 0
-//    err := client.DescribeUpdateActionsPages(params,
-//        func(page *elasticache.DescribeUpdateActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeUpdateActions operation.
+//	pageNum := 0
+//	err := client.DescribeUpdateActionsPages(params,
+//	    func(page *elasticache.DescribeUpdateActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeUpdateActionsPages(input *DescribeUpdateActionsInput, fn func(*DescribeUpdateActionsOutput, bool) bool) error {
 	return c.DescribeUpdateActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4985,14 +4968,13 @@ const opDescribeUserGroups = "DescribeUserGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUserGroupsRequest method.
+//	req, resp := client.DescribeUserGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeUserGroupsRequest method.
-//    req, resp := client.DescribeUserGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUserGroups
 func (c *ElastiCache) DescribeUserGroupsRequest(input *DescribeUserGroupsInput) (req *request.Request, output *DescribeUserGroupsOutput) {
@@ -5029,14 +5011,15 @@ func (c *ElastiCache) DescribeUserGroupsRequest(input *DescribeUserGroupsInput) 
 // API operation DescribeUserGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUserGroups
 func (c *ElastiCache) DescribeUserGroups(input *DescribeUserGroupsInput) (*DescribeUserGroupsOutput, error) {
@@ -5068,15 +5051,14 @@ func (c *ElastiCache) DescribeUserGroupsWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeUserGroups operation.
-//    pageNum := 0
-//    err := client.DescribeUserGroupsPages(params,
-//        func(page *elasticache.DescribeUserGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeUserGroups operation.
+//	pageNum := 0
+//	err := client.DescribeUserGroupsPages(params,
+//	    func(page *elasticache.DescribeUserGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeUserGroupsPages(input *DescribeUserGroupsInput, fn func(*DescribeUserGroupsOutput, bool) bool) error {
 	return c.DescribeUserGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5128,14 +5110,13 @@ const opDescribeUsers = "DescribeUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeUsersRequest method.
+//	req, resp := client.DescribeUsersRequest(params)
 //
-//    // Example sending a request using the DescribeUsersRequest method.
-//    req, resp := client.DescribeUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUsers
 func (c *ElastiCache) DescribeUsersRequest(input *DescribeUsersInput) (req *request.Request, output *DescribeUsersOutput) {
@@ -5172,14 +5153,15 @@ func (c *ElastiCache) DescribeUsersRequest(input *DescribeUsersInput) (req *requ
 // API operation DescribeUsers for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DescribeUsers
 func (c *ElastiCache) DescribeUsers(input *DescribeUsersInput) (*DescribeUsersOutput, error) {
@@ -5211,15 +5193,14 @@ func (c *ElastiCache) DescribeUsersWithContext(ctx aws.Context, input *DescribeU
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeUsers operation.
-//    pageNum := 0
-//    err := client.DescribeUsersPages(params,
-//        func(page *elasticache.DescribeUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeUsers operation.
+//	pageNum := 0
+//	err := client.DescribeUsersPages(params,
+//	    func(page *elasticache.DescribeUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElastiCache) DescribeUsersPages(input *DescribeUsersInput, fn func(*DescribeUsersOutput, bool) bool) error {
 	return c.DescribeUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5271,14 +5252,13 @@ const opDisassociateGlobalReplicationGroup = "DisassociateGlobalReplicationGroup
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateGlobalReplicationGroupRequest method.
+//	req, resp := client.DisassociateGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the DisassociateGlobalReplicationGroupRequest method.
-//    req, resp := client.DisassociateGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DisassociateGlobalReplicationGroup
 func (c *ElastiCache) DisassociateGlobalReplicationGroupRequest(input *DisassociateGlobalReplicationGroupInput) (req *request.Request, output *DisassociateGlobalReplicationGroupOutput) {
@@ -5311,17 +5291,18 @@ func (c *ElastiCache) DisassociateGlobalReplicationGroupRequest(input *Disassoci
 // API operation DisassociateGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/DisassociateGlobalReplicationGroup
 func (c *ElastiCache) DisassociateGlobalReplicationGroup(input *DisassociateGlobalReplicationGroupInput) (*DisassociateGlobalReplicationGroupOutput, error) {
@@ -5361,14 +5342,13 @@ const opFailoverGlobalReplicationGroup = "FailoverGlobalReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the FailoverGlobalReplicationGroupRequest method.
+//	req, resp := client.FailoverGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the FailoverGlobalReplicationGroupRequest method.
-//    req, resp := client.FailoverGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/FailoverGlobalReplicationGroup
 func (c *ElastiCache) FailoverGlobalReplicationGroupRequest(input *FailoverGlobalReplicationGroupInput) (req *request.Request, output *FailoverGlobalReplicationGroupOutput) {
@@ -5401,17 +5381,18 @@ func (c *ElastiCache) FailoverGlobalReplicationGroupRequest(input *FailoverGloba
 // API operation FailoverGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/FailoverGlobalReplicationGroup
 func (c *ElastiCache) FailoverGlobalReplicationGroup(input *FailoverGlobalReplicationGroupInput) (*FailoverGlobalReplicationGroupOutput, error) {
@@ -5451,14 +5432,13 @@ const opIncreaseNodeGroupsInGlobalReplicationGroup = "IncreaseNodeGroupsInGlobal
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IncreaseNodeGroupsInGlobalReplicationGroupRequest method.
+//	req, resp := client.IncreaseNodeGroupsInGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the IncreaseNodeGroupsInGlobalReplicationGroupRequest method.
-//    req, resp := client.IncreaseNodeGroupsInGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/IncreaseNodeGroupsInGlobalReplicationGroup
 func (c *ElastiCache) IncreaseNodeGroupsInGlobalReplicationGroupRequest(input *IncreaseNodeGroupsInGlobalReplicationGroupInput) (req *request.Request, output *IncreaseNodeGroupsInGlobalReplicationGroupOutput) {
@@ -5479,7 +5459,7 @@ func (c *ElastiCache) IncreaseNodeGroupsInGlobalReplicationGroupRequest(input *I
 
 // IncreaseNodeGroupsInGlobalReplicationGroup API operation for Amazon ElastiCache.
 //
-// Increase the number of node groups in the Global datastore
+// # Increase the number of node groups in the Global datastore
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5489,14 +5469,15 @@ func (c *ElastiCache) IncreaseNodeGroupsInGlobalReplicationGroupRequest(input *I
 // API operation IncreaseNodeGroupsInGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/IncreaseNodeGroupsInGlobalReplicationGroup
 func (c *ElastiCache) IncreaseNodeGroupsInGlobalReplicationGroup(input *IncreaseNodeGroupsInGlobalReplicationGroupInput) (*IncreaseNodeGroupsInGlobalReplicationGroupOutput, error) {
@@ -5536,14 +5517,13 @@ const opIncreaseReplicaCount = "IncreaseReplicaCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the IncreaseReplicaCountRequest method.
+//	req, resp := client.IncreaseReplicaCountRequest(params)
 //
-//    // Example sending a request using the IncreaseReplicaCountRequest method.
-//    req, resp := client.IncreaseReplicaCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/IncreaseReplicaCount
 func (c *ElastiCache) IncreaseReplicaCountRequest(input *IncreaseReplicaCountInput) (req *request.Request, output *IncreaseReplicaCountOutput) {
@@ -5577,47 +5557,48 @@ func (c *ElastiCache) IncreaseReplicaCountRequest(input *IncreaseReplicaCountInp
 // API operation IncreaseReplicaCount for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of clusters per customer.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the maximum allowed
-//   number of node groups (shards) in a single replication group. The default
-//   maximum is 90
+//   - ErrCodeClusterQuotaForCustomerExceededFault "ClusterQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of clusters per customer.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the maximum allowed
+//     number of node groups (shards) in a single replication group. The default
+//     maximum is 90
 //
-//   * ErrCodeNoOperationFault "NoOperationFault"
-//   The operation was not performed because no changes were required.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
-//   The KMS key supplied is not valid.
+//   - ErrCodeNoOperationFault "NoOperationFault"
+//     The operation was not performed because no changes were required.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
+//     The KMS key supplied is not valid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/IncreaseReplicaCount
 func (c *ElastiCache) IncreaseReplicaCount(input *IncreaseReplicaCountInput) (*IncreaseReplicaCountOutput, error) {
@@ -5657,14 +5638,13 @@ const opListAllowedNodeTypeModifications = "ListAllowedNodeTypeModifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAllowedNodeTypeModificationsRequest method.
+//	req, resp := client.ListAllowedNodeTypeModificationsRequest(params)
 //
-//    // Example sending a request using the ListAllowedNodeTypeModificationsRequest method.
-//    req, resp := client.ListAllowedNodeTypeModificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ListAllowedNodeTypeModifications
 func (c *ElastiCache) ListAllowedNodeTypeModificationsRequest(input *ListAllowedNodeTypeModificationsInput) (req *request.Request, output *ListAllowedNodeTypeModificationsOutput) {
@@ -5700,17 +5680,18 @@ func (c *ElastiCache) ListAllowedNodeTypeModificationsRequest(input *ListAllowed
 // API operation ListAllowedNodeTypeModifications for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ListAllowedNodeTypeModifications
 func (c *ElastiCache) ListAllowedNodeTypeModifications(input *ListAllowedNodeTypeModificationsInput) (*ListAllowedNodeTypeModificationsOutput, error) {
@@ -5750,14 +5731,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ListTagsForResource
 func (c *ElastiCache) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *TagListMessage) {
@@ -5797,41 +5777,42 @@ func (c *ElastiCache) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
-//   The requested reserved cache node was not found.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
+//   - ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
+//     The requested reserved cache node was not found.
 //
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeInvalidARNFault "InvalidARN"
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
+//
+//   - ErrCodeInvalidARNFault "InvalidARN"
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ListTagsForResource
 func (c *ElastiCache) ListTagsForResource(input *ListTagsForResourceInput) (*TagListMessage, error) {
@@ -5871,14 +5852,13 @@ const opModifyCacheCluster = "ModifyCacheCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyCacheClusterRequest method.
+//	req, resp := client.ModifyCacheClusterRequest(params)
 //
-//    // Example sending a request using the ModifyCacheClusterRequest method.
-//    req, resp := client.ModifyCacheClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheCluster
 func (c *ElastiCache) ModifyCacheClusterRequest(input *ModifyCacheClusterInput) (req *request.Request, output *ModifyCacheClusterOutput) {
@@ -5911,44 +5891,45 @@ func (c *ElastiCache) ModifyCacheClusterRequest(input *ModifyCacheClusterInput) 
 // API operation ModifyCacheCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
 //
-//   * ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
-//   The current state of the cache security group does not allow deletion.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
+//     The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes in a single cluster.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes in a single cluster.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheCluster
 func (c *ElastiCache) ModifyCacheCluster(input *ModifyCacheClusterInput) (*ModifyCacheClusterOutput, error) {
@@ -5988,14 +5969,13 @@ const opModifyCacheParameterGroup = "ModifyCacheParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyCacheParameterGroupRequest method.
+//	req, resp := client.ModifyCacheParameterGroupRequest(params)
 //
-//    // Example sending a request using the ModifyCacheParameterGroupRequest method.
-//    req, resp := client.ModifyCacheParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheParameterGroup
 func (c *ElastiCache) ModifyCacheParameterGroupRequest(input *ModifyCacheParameterGroupInput) (req *request.Request, output *CacheParameterGroupNameMessage) {
@@ -6028,22 +6008,23 @@ func (c *ElastiCache) ModifyCacheParameterGroupRequest(input *ModifyCacheParamet
 // API operation ModifyCacheParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
 //
-//   * ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
-//   The current state of the cache parameter group does not allow the requested
-//   operation to occur.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
+//     The current state of the cache parameter group does not allow the requested
+//     operation to occur.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
+//
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheParameterGroup
 func (c *ElastiCache) ModifyCacheParameterGroup(input *ModifyCacheParameterGroupInput) (*CacheParameterGroupNameMessage, error) {
@@ -6083,14 +6064,13 @@ const opModifyCacheSubnetGroup = "ModifyCacheSubnetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyCacheSubnetGroupRequest method.
+//	req, resp := client.ModifyCacheSubnetGroupRequest(params)
 //
-//    // Example sending a request using the ModifyCacheSubnetGroupRequest method.
-//    req, resp := client.ModifyCacheSubnetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheSubnetGroup
 func (c *ElastiCache) ModifyCacheSubnetGroupRequest(input *ModifyCacheSubnetGroupInput) (req *request.Request, output *ModifyCacheSubnetGroupOutput) {
@@ -6121,25 +6101,26 @@ func (c *ElastiCache) ModifyCacheSubnetGroupRequest(input *ModifyCacheSubnetGrou
 // API operation ModifyCacheSubnetGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
 //
-//   * ErrCodeCacheSubnetQuotaExceededFault "CacheSubnetQuotaExceededFault"
-//   The request cannot be processed because it would exceed the allowed number
-//   of subnets in a cache subnet group.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeSubnetInUse "SubnetInUse"
-//   The requested subnet is being used by another cache subnet group.
+//   - ErrCodeCacheSubnetQuotaExceededFault "CacheSubnetQuotaExceededFault"
+//     The request cannot be processed because it would exceed the allowed number
+//     of subnets in a cache subnet group.
 //
-//   * ErrCodeInvalidSubnet "InvalidSubnet"
-//   An invalid subnet identifier was specified.
+//   - ErrCodeSubnetInUse "SubnetInUse"
+//     The requested subnet is being used by another cache subnet group.
 //
-//   * ErrCodeSubnetNotAllowedFault "SubnetNotAllowedFault"
-//   At least one subnet ID does not match the other subnet IDs. This mismatch
-//   typically occurs when a user sets one subnet ID to a regional Availability
-//   Zone and a different one to an outpost. Or when a user sets the subnet ID
-//   to an Outpost when not subscribed on this service.
+//   - ErrCodeInvalidSubnet "InvalidSubnet"
+//     An invalid subnet identifier was specified.
+//
+//   - ErrCodeSubnetNotAllowedFault "SubnetNotAllowedFault"
+//     At least one subnet ID does not match the other subnet IDs. This mismatch
+//     typically occurs when a user sets one subnet ID to a regional Availability
+//     Zone and a different one to an outpost. Or when a user sets the subnet ID
+//     to an Outpost when not subscribed on this service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyCacheSubnetGroup
 func (c *ElastiCache) ModifyCacheSubnetGroup(input *ModifyCacheSubnetGroupInput) (*ModifyCacheSubnetGroupOutput, error) {
@@ -6179,14 +6160,13 @@ const opModifyGlobalReplicationGroup = "ModifyGlobalReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyGlobalReplicationGroupRequest method.
+//	req, resp := client.ModifyGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the ModifyGlobalReplicationGroupRequest method.
-//    req, resp := client.ModifyGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyGlobalReplicationGroup
 func (c *ElastiCache) ModifyGlobalReplicationGroupRequest(input *ModifyGlobalReplicationGroupInput) (req *request.Request, output *ModifyGlobalReplicationGroupOutput) {
@@ -6217,14 +6197,15 @@ func (c *ElastiCache) ModifyGlobalReplicationGroupRequest(input *ModifyGlobalRep
 // API operation ModifyGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyGlobalReplicationGroup
 func (c *ElastiCache) ModifyGlobalReplicationGroup(input *ModifyGlobalReplicationGroupInput) (*ModifyGlobalReplicationGroupOutput, error) {
@@ -6264,14 +6245,13 @@ const opModifyReplicationGroup = "ModifyReplicationGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyReplicationGroupRequest method.
+//	req, resp := client.ModifyReplicationGroupRequest(params)
 //
-//    // Example sending a request using the ModifyReplicationGroupRequest method.
-//    req, resp := client.ModifyReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyReplicationGroup
 func (c *ElastiCache) ModifyReplicationGroupRequest(input *ModifyReplicationGroupInput) (req *request.Request, output *ModifyReplicationGroupOutput) {
@@ -6294,11 +6274,11 @@ func (c *ElastiCache) ModifyReplicationGroupRequest(input *ModifyReplicationGrou
 //
 // Modifies the settings for a replication group.
 //
-//    * Scaling for Amazon ElastiCache for Redis (cluster mode enabled) (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/scaling-redis-cluster-mode-enabled.html)
-//    in the ElastiCache User Guide
+//   - Scaling for Amazon ElastiCache for Redis (cluster mode enabled) (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/scaling-redis-cluster-mode-enabled.html)
+//     in the ElastiCache User Guide
 //
-//    * ModifyReplicationGroupShardConfiguration (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_ModifyReplicationGroupShardConfiguration.html)
-//    in the ElastiCache API Reference
+//   - ModifyReplicationGroupShardConfiguration (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_ModifyReplicationGroupShardConfiguration.html)
+//     in the ElastiCache API Reference
 //
 // This operation is valid for Redis only.
 //
@@ -6310,59 +6290,60 @@ func (c *ElastiCache) ModifyReplicationGroupRequest(input *ModifyReplicationGrou
 // API operation ModifyReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
-//   The user group is not in an active state.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
+//   - ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
+//     The user group is not in an active state.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
-//   The current state of the cache security group does not allow deletion.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
+//     The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes in a single cluster.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeQuotaForClusterExceededFault "NodeQuotaForClusterExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes in a single cluster.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
-//   The KMS key supplied is not valid.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
+//     The KMS key supplied is not valid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyReplicationGroup
 func (c *ElastiCache) ModifyReplicationGroup(input *ModifyReplicationGroupInput) (*ModifyReplicationGroupOutput, error) {
@@ -6402,14 +6383,13 @@ const opModifyReplicationGroupShardConfiguration = "ModifyReplicationGroupShardC
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyReplicationGroupShardConfigurationRequest method.
+//	req, resp := client.ModifyReplicationGroupShardConfigurationRequest(params)
 //
-//    // Example sending a request using the ModifyReplicationGroupShardConfigurationRequest method.
-//    req, resp := client.ModifyReplicationGroupShardConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyReplicationGroupShardConfiguration
 func (c *ElastiCache) ModifyReplicationGroupShardConfigurationRequest(input *ModifyReplicationGroupShardConfigurationInput) (req *request.Request, output *ModifyReplicationGroupShardConfigurationOutput) {
@@ -6441,40 +6421,41 @@ func (c *ElastiCache) ModifyReplicationGroupShardConfigurationRequest(input *Mod
 // API operation ModifyReplicationGroupShardConfiguration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
-//   The VPC network is in an invalid state.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
-//   The requested cache node type is not available in the specified Availability
-//   Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
-//   in the ElastiCache User Guide.
+//   - ErrCodeInvalidVPCNetworkStateFault "InvalidVPCNetworkStateFault"
+//     The VPC network is in an invalid state.
 //
-//   * ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
-//   The request cannot be processed because it would exceed the maximum allowed
-//   number of node groups (shards) in a single replication group. The default
-//   maximum is 90
+//   - ErrCodeInsufficientCacheClusterCapacityFault "InsufficientCacheClusterCapacity"
+//     The requested cache node type is not available in the specified Availability
+//     Zone. For more information, see InsufficientCacheClusterCapacity (http://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ErrorMessages.html#ErrorMessages.INSUFFICIENT_CACHE_CLUSTER_CAPACITY)
+//     in the ElastiCache User Guide.
 //
-//   * ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
-//   The request cannot be processed because it would exceed the allowed number
-//   of cache nodes per customer.
+//   - ErrCodeNodeGroupsPerReplicationGroupQuotaExceededFault "NodeGroupsPerReplicationGroupQuotaExceeded"
+//     The request cannot be processed because it would exceed the maximum allowed
+//     number of node groups (shards) in a single replication group. The default
+//     maximum is 90
 //
-//   * ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
-//   The KMS key supplied is not valid.
+//   - ErrCodeNodeQuotaForCustomerExceededFault "NodeQuotaForCustomerExceeded"
+//     The request cannot be processed because it would exceed the allowed number
+//     of cache nodes per customer.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
+//     The KMS key supplied is not valid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyReplicationGroupShardConfiguration
 func (c *ElastiCache) ModifyReplicationGroupShardConfiguration(input *ModifyReplicationGroupShardConfigurationInput) (*ModifyReplicationGroupShardConfigurationOutput, error) {
@@ -6514,14 +6495,13 @@ const opModifyUser = "ModifyUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyUserRequest method.
+//	req, resp := client.ModifyUserRequest(params)
 //
-//    // Example sending a request using the ModifyUserRequest method.
-//    req, resp := client.ModifyUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyUser
 func (c *ElastiCache) ModifyUserRequest(input *ModifyUserInput) (req *request.Request, output *ModifyUserOutput) {
@@ -6552,20 +6532,21 @@ func (c *ElastiCache) ModifyUserRequest(input *ModifyUserInput) (req *request.Re
 // API operation ModifyUser for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
 //
-//   * ErrCodeInvalidUserStateFault "InvalidUserState"
-//   The user is not in active state.
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeInvalidUserStateFault "InvalidUserState"
+//     The user is not in active state.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyUser
 func (c *ElastiCache) ModifyUser(input *ModifyUserInput) (*ModifyUserOutput, error) {
@@ -6605,14 +6586,13 @@ const opModifyUserGroup = "ModifyUserGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyUserGroupRequest method.
+//	req, resp := client.ModifyUserGroupRequest(params)
 //
-//    // Example sending a request using the ModifyUserGroupRequest method.
-//    req, resp := client.ModifyUserGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyUserGroup
 func (c *ElastiCache) ModifyUserGroupRequest(input *ModifyUserGroupInput) (req *request.Request, output *ModifyUserGroupOutput) {
@@ -6643,29 +6623,30 @@ func (c *ElastiCache) ModifyUserGroupRequest(input *ModifyUserGroupInput) (req *
 // API operation ModifyUserGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
 //
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeDuplicateUserNameFault "DuplicateUserName"
-//   A user with this username already exists.
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
-//   The specified service linked role (SLR) was not found.
+//   - ErrCodeDuplicateUserNameFault "DuplicateUserName"
+//     A user with this username already exists.
 //
-//   * ErrCodeDefaultUserRequired "DefaultUserRequired"
-//   You must add default user to a user group.
+//   - ErrCodeServiceLinkedRoleNotFoundFault "ServiceLinkedRoleNotFoundFault"
+//     The specified service linked role (SLR) was not found.
 //
-//   * ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
-//   The user group is not in an active state.
+//   - ErrCodeDefaultUserRequired "DefaultUserRequired"
+//     You must add default user to a user group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidUserGroupStateFault "InvalidUserGroupState"
+//     The user group is not in an active state.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ModifyUserGroup
 func (c *ElastiCache) ModifyUserGroup(input *ModifyUserGroupInput) (*ModifyUserGroupOutput, error) {
@@ -6705,14 +6686,13 @@ const opPurchaseReservedCacheNodesOffering = "PurchaseReservedCacheNodesOffering
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseReservedCacheNodesOfferingRequest method.
+//	req, resp := client.PurchaseReservedCacheNodesOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseReservedCacheNodesOfferingRequest method.
-//    req, resp := client.PurchaseReservedCacheNodesOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/PurchaseReservedCacheNodesOffering
 func (c *ElastiCache) PurchaseReservedCacheNodesOfferingRequest(input *PurchaseReservedCacheNodesOfferingInput) (req *request.Request, output *PurchaseReservedCacheNodesOfferingOutput) {
@@ -6747,26 +6727,27 @@ func (c *ElastiCache) PurchaseReservedCacheNodesOfferingRequest(input *PurchaseR
 // API operation PurchaseReservedCacheNodesOffering for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReservedCacheNodesOfferingNotFoundFault "ReservedCacheNodesOfferingNotFound"
-//   The requested cache node offering does not exist.
 //
-//   * ErrCodeReservedCacheNodeAlreadyExistsFault "ReservedCacheNodeAlreadyExists"
-//   You already have a reservation with the given identifier.
+//   - ErrCodeReservedCacheNodesOfferingNotFoundFault "ReservedCacheNodesOfferingNotFound"
+//     The requested cache node offering does not exist.
 //
-//   * ErrCodeReservedCacheNodeQuotaExceededFault "ReservedCacheNodeQuotaExceeded"
-//   The request cannot be processed because it would exceed the user's cache
-//   node quota.
+//   - ErrCodeReservedCacheNodeAlreadyExistsFault "ReservedCacheNodeAlreadyExists"
+//     You already have a reservation with the given identifier.
 //
-//   * ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
-//   The request cannot be processed because it would cause the resource to have
-//   more than the allowed number of tags. The maximum number of tags permitted
-//   on a resource is 50.
+//   - ErrCodeReservedCacheNodeQuotaExceededFault "ReservedCacheNodeQuotaExceeded"
+//     The request cannot be processed because it would exceed the user's cache
+//     node quota.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeTagQuotaPerResourceExceeded "TagQuotaPerResourceExceeded"
+//     The request cannot be processed because it would cause the resource to have
+//     more than the allowed number of tags. The maximum number of tags permitted
+//     on a resource is 50.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/PurchaseReservedCacheNodesOffering
 func (c *ElastiCache) PurchaseReservedCacheNodesOffering(input *PurchaseReservedCacheNodesOfferingInput) (*PurchaseReservedCacheNodesOfferingOutput, error) {
@@ -6806,14 +6787,13 @@ const opRebalanceSlotsInGlobalReplicationGroup = "RebalanceSlotsInGlobalReplicat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebalanceSlotsInGlobalReplicationGroupRequest method.
+//	req, resp := client.RebalanceSlotsInGlobalReplicationGroupRequest(params)
 //
-//    // Example sending a request using the RebalanceSlotsInGlobalReplicationGroupRequest method.
-//    req, resp := client.RebalanceSlotsInGlobalReplicationGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RebalanceSlotsInGlobalReplicationGroup
 func (c *ElastiCache) RebalanceSlotsInGlobalReplicationGroupRequest(input *RebalanceSlotsInGlobalReplicationGroupInput) (req *request.Request, output *RebalanceSlotsInGlobalReplicationGroupOutput) {
@@ -6845,14 +6825,15 @@ func (c *ElastiCache) RebalanceSlotsInGlobalReplicationGroupRequest(input *Rebal
 // API operation RebalanceSlotsInGlobalReplicationGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
-//   The Global datastore does not exist
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeGlobalReplicationGroupNotFoundFault "GlobalReplicationGroupNotFoundFault"
+//     The Global datastore does not exist
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RebalanceSlotsInGlobalReplicationGroup
 func (c *ElastiCache) RebalanceSlotsInGlobalReplicationGroup(input *RebalanceSlotsInGlobalReplicationGroupInput) (*RebalanceSlotsInGlobalReplicationGroupOutput, error) {
@@ -6892,14 +6873,13 @@ const opRebootCacheCluster = "RebootCacheCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootCacheClusterRequest method.
+//	req, resp := client.RebootCacheClusterRequest(params)
 //
-//    // Example sending a request using the RebootCacheClusterRequest method.
-//    req, resp := client.RebootCacheClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RebootCacheCluster
 func (c *ElastiCache) RebootCacheClusterRequest(input *RebootCacheClusterInput) (req *request.Request, output *RebootCacheClusterOutput) {
@@ -6946,11 +6926,12 @@ func (c *ElastiCache) RebootCacheClusterRequest(input *RebootCacheClusterInput) 
 // API operation RebootCacheCluster for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
 //
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
+//
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RebootCacheCluster
 func (c *ElastiCache) RebootCacheCluster(input *RebootCacheClusterInput) (*RebootCacheClusterOutput, error) {
@@ -6990,14 +6971,13 @@ const opRemoveTagsFromResource = "RemoveTagsFromResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromResourceRequest method.
+//	req, resp := client.RemoveTagsFromResourceRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromResourceRequest method.
-//    req, resp := client.RemoveTagsFromResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RemoveTagsFromResource
 func (c *ElastiCache) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceInput) (req *request.Request, output *TagListMessage) {
@@ -7033,44 +7013,45 @@ func (c *ElastiCache) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourc
 // API operation RemoveTagsFromResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
-//   The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeCacheClusterNotFoundFault "CacheClusterNotFound"
+//     The requested cluster ID does not refer to an existing cluster.
 //
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
-//   The requested cache subnet group name does not refer to an existing cache
-//   subnet group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeCacheSubnetGroupNotFoundFault "CacheSubnetGroupNotFoundFault"
+//     The requested cache subnet group name does not refer to an existing cache
+//     subnet group.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
-//   The requested reserved cache node was not found.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
-//   The requested snapshot name does not refer to an existing snapshot.
+//   - ErrCodeReservedCacheNodeNotFoundFault "ReservedCacheNodeNotFound"
+//     The requested reserved cache node was not found.
 //
-//   * ErrCodeUserNotFoundFault "UserNotFound"
-//   The user does not exist or could not be found.
+//   - ErrCodeSnapshotNotFoundFault "SnapshotNotFoundFault"
+//     The requested snapshot name does not refer to an existing snapshot.
 //
-//   * ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
-//   The user group was not found or does not exist
+//   - ErrCodeUserNotFoundFault "UserNotFound"
+//     The user does not exist or could not be found.
 //
-//   * ErrCodeInvalidARNFault "InvalidARN"
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ErrCodeUserGroupNotFoundFault "UserGroupNotFound"
+//     The user group was not found or does not exist
 //
-//   * ErrCodeTagNotFoundFault "TagNotFound"
-//   The requested tag was not found on this resource.
+//   - ErrCodeInvalidARNFault "InvalidARN"
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - ErrCodeTagNotFoundFault "TagNotFound"
+//     The requested tag was not found on this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RemoveTagsFromResource
 func (c *ElastiCache) RemoveTagsFromResource(input *RemoveTagsFromResourceInput) (*TagListMessage, error) {
@@ -7110,14 +7091,13 @@ const opResetCacheParameterGroup = "ResetCacheParameterGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetCacheParameterGroupRequest method.
+//	req, resp := client.ResetCacheParameterGroupRequest(params)
 //
-//    // Example sending a request using the ResetCacheParameterGroupRequest method.
-//    req, resp := client.ResetCacheParameterGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ResetCacheParameterGroup
 func (c *ElastiCache) ResetCacheParameterGroupRequest(input *ResetCacheParameterGroupInput) (req *request.Request, output *CacheParameterGroupNameMessage) {
@@ -7151,22 +7131,23 @@ func (c *ElastiCache) ResetCacheParameterGroupRequest(input *ResetCacheParameter
 // API operation ResetCacheParameterGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
-//   The current state of the cache parameter group does not allow the requested
-//   operation to occur.
 //
-//   * ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
-//   The requested cache parameter group name does not refer to an existing cache
-//   parameter group.
+//   - ErrCodeInvalidCacheParameterGroupStateFault "InvalidCacheParameterGroupState"
+//     The current state of the cache parameter group does not allow the requested
+//     operation to occur.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeCacheParameterGroupNotFoundFault "CacheParameterGroupNotFound"
+//     The requested cache parameter group name does not refer to an existing cache
+//     parameter group.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
-//   * ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
-//   The Global datastore is not available or in primary-only state.
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
+//
+//   - ErrCodeInvalidGlobalReplicationGroupStateFault "InvalidGlobalReplicationGroupState"
+//     The Global datastore is not available or in primary-only state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/ResetCacheParameterGroup
 func (c *ElastiCache) ResetCacheParameterGroup(input *ResetCacheParameterGroupInput) (*CacheParameterGroupNameMessage, error) {
@@ -7206,14 +7187,13 @@ const opRevokeCacheSecurityGroupIngress = "RevokeCacheSecurityGroupIngress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeCacheSecurityGroupIngressRequest method.
+//	req, resp := client.RevokeCacheSecurityGroupIngressRequest(params)
 //
-//    // Example sending a request using the RevokeCacheSecurityGroupIngressRequest method.
-//    req, resp := client.RevokeCacheSecurityGroupIngressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RevokeCacheSecurityGroupIngress
 func (c *ElastiCache) RevokeCacheSecurityGroupIngressRequest(input *RevokeCacheSecurityGroupIngressInput) (req *request.Request, output *RevokeCacheSecurityGroupIngressOutput) {
@@ -7245,22 +7225,23 @@ func (c *ElastiCache) RevokeCacheSecurityGroupIngressRequest(input *RevokeCacheS
 // API operation RevokeCacheSecurityGroupIngress for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
-//   The requested cache security group name does not refer to an existing cache
-//   security group.
 //
-//   * ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
-//   The specified Amazon EC2 security group is not authorized for the specified
-//   cache security group.
+//   - ErrCodeCacheSecurityGroupNotFoundFault "CacheSecurityGroupNotFound"
+//     The requested cache security group name does not refer to an existing cache
+//     security group.
 //
-//   * ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
-//   The current state of the cache security group does not allow deletion.
+//   - ErrCodeAuthorizationNotFoundFault "AuthorizationNotFound"
+//     The specified Amazon EC2 security group is not authorized for the specified
+//     cache security group.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidCacheSecurityGroupStateFault "InvalidCacheSecurityGroupState"
+//     The current state of the cache security group does not allow deletion.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/RevokeCacheSecurityGroupIngress
 func (c *ElastiCache) RevokeCacheSecurityGroupIngress(input *RevokeCacheSecurityGroupIngressInput) (*RevokeCacheSecurityGroupIngressOutput, error) {
@@ -7300,14 +7281,13 @@ const opStartMigration = "StartMigration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMigrationRequest method.
+//	req, resp := client.StartMigrationRequest(params)
 //
-//    // Example sending a request using the StartMigrationRequest method.
-//    req, resp := client.StartMigrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/StartMigration
 func (c *ElastiCache) StartMigrationRequest(input *StartMigrationInput) (req *request.Request, output *StartMigrationOutput) {
@@ -7338,17 +7318,18 @@ func (c *ElastiCache) StartMigrationRequest(input *StartMigrationInput) (req *re
 // API operation StartMigration for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeReplicationGroupAlreadyUnderMigrationFault "ReplicationGroupAlreadyUnderMigrationFault"
-//   The targeted replication group is not available.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeReplicationGroupAlreadyUnderMigrationFault "ReplicationGroupAlreadyUnderMigrationFault"
+//     The targeted replication group is not available.
+//
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/StartMigration
 func (c *ElastiCache) StartMigration(input *StartMigrationInput) (*StartMigrationOutput, error) {
@@ -7388,14 +7369,13 @@ const opTestFailover = "TestFailover"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestFailoverRequest method.
+//	req, resp := client.TestFailoverRequest(params)
 //
-//    // Example sending a request using the TestFailoverRequest method.
-//    req, resp := client.TestFailoverRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/TestFailover
 func (c *ElastiCache) TestFailoverRequest(input *TestFailoverInput) (req *request.Request, output *TestFailoverOutput) {
@@ -7428,29 +7408,29 @@ func (c *ElastiCache) TestFailoverRequest(input *TestFailoverInput) (req *reques
 //
 // Note the following
 //
-//    * A customer can use this operation to test automatic failover on up to
-//    5 shards (called node groups in the ElastiCache API and Amazon CLI) in
-//    any rolling 24-hour period.
+//   - A customer can use this operation to test automatic failover on up to
+//     5 shards (called node groups in the ElastiCache API and Amazon CLI) in
+//     any rolling 24-hour period.
 //
-//    * If calling this operation on shards in different clusters (called replication
-//    groups in the API and CLI), the calls can be made concurrently.
+//   - If calling this operation on shards in different clusters (called replication
+//     groups in the API and CLI), the calls can be made concurrently.
 //
-//    * If calling this operation multiple times on different shards in the
-//    same Redis (cluster mode enabled) replication group, the first node replacement
-//    must complete before a subsequent call can be made.
+//   - If calling this operation multiple times on different shards in the
+//     same Redis (cluster mode enabled) replication group, the first node replacement
+//     must complete before a subsequent call can be made.
 //
-//    * To determine whether the node replacement is complete you can check
-//    Events using the Amazon ElastiCache console, the Amazon CLI, or the ElastiCache
-//    API. Look for the following automatic failover related events, listed
-//    here in order of occurrance: Replication group message: Test Failover
-//    API called for node group <node-group-id> Cache cluster message: Failover
-//    from primary node <primary-node-id> to replica node <node-id> completed
-//    Replication group message: Failover from primary node <primary-node-id>
-//    to replica node <node-id> completed Cache cluster message: Recovering
-//    cache nodes <node-id> Cache cluster message: Finished recovery for cache
-//    nodes <node-id> For more information see: Viewing ElastiCache Events (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ECEvents.Viewing.html)
-//    in the ElastiCache User Guide DescribeEvents (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_DescribeEvents.html)
-//    in the ElastiCache API Reference
+//   - To determine whether the node replacement is complete you can check
+//     Events using the Amazon ElastiCache console, the Amazon CLI, or the ElastiCache
+//     API. Look for the following automatic failover related events, listed
+//     here in order of occurrance: Replication group message: Test Failover
+//     API called for node group <node-group-id> Cache cluster message: Failover
+//     from primary node <primary-node-id> to replica node <node-id> completed
+//     Replication group message: Failover from primary node <primary-node-id>
+//     to replica node <node-id> completed Cache cluster message: Recovering
+//     cache nodes <node-id> Cache cluster message: Finished recovery for cache
+//     nodes <node-id> For more information see: Viewing ElastiCache Events (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/ECEvents.Viewing.html)
+//     in the ElastiCache User Guide DescribeEvents (https://docs.aws.amazon.com/AmazonElastiCache/latest/APIReference/API_DescribeEvents.html)
+//     in the ElastiCache API Reference
 //
 // Also see, Testing Multi-AZ (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/AutoFailover.html#auto-failover-test)
 // in the ElastiCache User Guide.
@@ -7463,34 +7443,35 @@ func (c *ElastiCache) TestFailoverRequest(input *TestFailoverInput) (req *reques
 // API operation TestFailover for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAPICallRateForCustomerExceededFault "APICallRateForCustomerExceeded"
-//   The customer has exceeded the allowed rate of API calls.
 //
-//   * ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
-//   The requested cluster is not in the available state.
+//   - ErrCodeAPICallRateForCustomerExceededFault "APICallRateForCustomerExceeded"
+//     The customer has exceeded the allowed rate of API calls.
 //
-//   * ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
-//   The requested replication group is not in the available state.
+//   - ErrCodeInvalidCacheClusterStateFault "InvalidCacheClusterState"
+//     The requested cluster is not in the available state.
 //
-//   * ErrCodeNodeGroupNotFoundFault "NodeGroupNotFoundFault"
-//   The node group specified by the NodeGroupId parameter could not be found.
-//   Please verify that the node group exists and that you spelled the NodeGroupId
-//   value correctly.
+//   - ErrCodeInvalidReplicationGroupStateFault "InvalidReplicationGroupState"
+//     The requested replication group is not in the available state.
 //
-//   * ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
-//   The specified replication group does not exist.
+//   - ErrCodeNodeGroupNotFoundFault "NodeGroupNotFoundFault"
+//     The node group specified by the NodeGroupId parameter could not be found.
+//     Please verify that the node group exists and that you spelled the NodeGroupId
+//     value correctly.
 //
-//   * ErrCodeTestFailoverNotAvailableFault "TestFailoverNotAvailableFault"
-//   The TestFailover action is not available.
+//   - ErrCodeReplicationGroupNotFoundFault "ReplicationGroupNotFoundFault"
+//     The specified replication group does not exist.
 //
-//   * ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
-//   The KMS key supplied is not valid.
+//   - ErrCodeTestFailoverNotAvailableFault "TestFailoverNotAvailableFault"
+//     The TestFailover action is not available.
 //
-//   * ErrCodeInvalidParameterValueException "InvalidParameterValue"
-//   The value for a parameter is invalid.
+//   - ErrCodeInvalidKMSKeyFault "InvalidKMSKeyFault"
+//     The KMS key supplied is not valid.
 //
-//   * ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
-//   Two or more incompatible parameters were specified.
+//   - ErrCodeInvalidParameterValueException "InvalidParameterValue"
+//     The value for a parameter is invalid.
+//
+//   - ErrCodeInvalidParameterCombinationException "InvalidParameterCombination"
+//     Two or more incompatible parameters were specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elasticache-2015-02-02/TestFailover
 func (c *ElastiCache) TestFailover(input *TestFailoverInput) (*TestFailoverOutput, error) {
@@ -8468,52 +8449,52 @@ func (s *CacheEngineVersion) SetEngineVersion(v string) *CacheEngineVersion {
 // the current generation types provide more memory and computational power
 // at lower cost when compared to their equivalent previous generation counterparts.
 //
-//    * General purpose: Current generation: M6g node types: (available only
-//    for Redis engine version 5.0.6 onward and for Memcached engine version
-//    1.5.16 onward): cache.m6g.large, cache.m6g.xlarge, cache.m6g.2xlarge,
-//    cache.m6g.4xlarge, cache.m6g.8xlarge, cache.m6g.12xlarge, cache.m6g.16xlarge
-//    For region availability, see Supported Node Types (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/CacheNodes.SupportedTypes.html#CacheNodes.SupportedTypesByRegion)
-//    M5 node types: cache.m5.large, cache.m5.xlarge, cache.m5.2xlarge, cache.m5.4xlarge,
-//    cache.m5.12xlarge, cache.m5.24xlarge M4 node types: cache.m4.large, cache.m4.xlarge,
-//    cache.m4.2xlarge, cache.m4.4xlarge, cache.m4.10xlarge T4g node types (available
-//    only for Redis engine version 5.0.6 onward and for Memcached engine version
-//    1.5.16 onward): cache.t4g.micro, cache.t4g.small, cache.t4g.medium T3
-//    node types: cache.t3.micro, cache.t3.small, cache.t3.medium T2 node types:
-//    cache.t2.micro, cache.t2.small, cache.t2.medium Previous generation: (not
-//    recommended) T1 node types: cache.t1.micro M1 node types: cache.m1.small,
-//    cache.m1.medium, cache.m1.large, cache.m1.xlarge M3 node types: cache.m3.medium,
-//    cache.m3.large, cache.m3.xlarge, cache.m3.2xlarge
+//   - General purpose: Current generation: M6g node types: (available only
+//     for Redis engine version 5.0.6 onward and for Memcached engine version
+//     1.5.16 onward): cache.m6g.large, cache.m6g.xlarge, cache.m6g.2xlarge,
+//     cache.m6g.4xlarge, cache.m6g.8xlarge, cache.m6g.12xlarge, cache.m6g.16xlarge
+//     For region availability, see Supported Node Types (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/CacheNodes.SupportedTypes.html#CacheNodes.SupportedTypesByRegion)
+//     M5 node types: cache.m5.large, cache.m5.xlarge, cache.m5.2xlarge, cache.m5.4xlarge,
+//     cache.m5.12xlarge, cache.m5.24xlarge M4 node types: cache.m4.large, cache.m4.xlarge,
+//     cache.m4.2xlarge, cache.m4.4xlarge, cache.m4.10xlarge T4g node types (available
+//     only for Redis engine version 5.0.6 onward and for Memcached engine version
+//     1.5.16 onward): cache.t4g.micro, cache.t4g.small, cache.t4g.medium T3
+//     node types: cache.t3.micro, cache.t3.small, cache.t3.medium T2 node types:
+//     cache.t2.micro, cache.t2.small, cache.t2.medium Previous generation: (not
+//     recommended) T1 node types: cache.t1.micro M1 node types: cache.m1.small,
+//     cache.m1.medium, cache.m1.large, cache.m1.xlarge M3 node types: cache.m3.medium,
+//     cache.m3.large, cache.m3.xlarge, cache.m3.2xlarge
 //
-//    * Compute optimized: Previous generation: (not recommended) C1 node types:
-//    cache.c1.xlarge
+//   - Compute optimized: Previous generation: (not recommended) C1 node types:
+//     cache.c1.xlarge
 //
-//    * Memory optimized with data tiering: Current generation: R6gd node types
-//    (available only for Redis engine version 6.2 onward). cache.r6gd.xlarge,
-//    cache.r6gd.2xlarge, cache.r6gd.4xlarge, cache.r6gd.8xlarge, cache.r6gd.12xlarge,
-//    cache.r6gd.16xlarge
+//   - Memory optimized with data tiering: Current generation: R6gd node types
+//     (available only for Redis engine version 6.2 onward). cache.r6gd.xlarge,
+//     cache.r6gd.2xlarge, cache.r6gd.4xlarge, cache.r6gd.8xlarge, cache.r6gd.12xlarge,
+//     cache.r6gd.16xlarge
 //
-//    * Memory optimized: Current generation: R6g node types (available only
-//    for Redis engine version 5.0.6 onward and for Memcached engine version
-//    1.5.16 onward). cache.r6g.large, cache.r6g.xlarge, cache.r6g.2xlarge,
-//    cache.r6g.4xlarge, cache.r6g.8xlarge, cache.r6g.12xlarge, cache.r6g.16xlarge
-//    For region availability, see Supported Node Types (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/CacheNodes.SupportedTypes.html#CacheNodes.SupportedTypesByRegion)
-//    R5 node types: cache.r5.large, cache.r5.xlarge, cache.r5.2xlarge, cache.r5.4xlarge,
-//    cache.r5.12xlarge, cache.r5.24xlarge R4 node types: cache.r4.large, cache.r4.xlarge,
-//    cache.r4.2xlarge, cache.r4.4xlarge, cache.r4.8xlarge, cache.r4.16xlarge
-//    Previous generation: (not recommended) M2 node types: cache.m2.xlarge,
-//    cache.m2.2xlarge, cache.m2.4xlarge R3 node types: cache.r3.large, cache.r3.xlarge,
-//    cache.r3.2xlarge, cache.r3.4xlarge, cache.r3.8xlarge
+//   - Memory optimized: Current generation: R6g node types (available only
+//     for Redis engine version 5.0.6 onward and for Memcached engine version
+//     1.5.16 onward). cache.r6g.large, cache.r6g.xlarge, cache.r6g.2xlarge,
+//     cache.r6g.4xlarge, cache.r6g.8xlarge, cache.r6g.12xlarge, cache.r6g.16xlarge
+//     For region availability, see Supported Node Types (https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/CacheNodes.SupportedTypes.html#CacheNodes.SupportedTypesByRegion)
+//     R5 node types: cache.r5.large, cache.r5.xlarge, cache.r5.2xlarge, cache.r5.4xlarge,
+//     cache.r5.12xlarge, cache.r5.24xlarge R4 node types: cache.r4.large, cache.r4.xlarge,
+//     cache.r4.2xlarge, cache.r4.4xlarge, cache.r4.8xlarge, cache.r4.16xlarge
+//     Previous generation: (not recommended) M2 node types: cache.m2.xlarge,
+//     cache.m2.2xlarge, cache.m2.4xlarge R3 node types: cache.r3.large, cache.r3.xlarge,
+//     cache.r3.2xlarge, cache.r3.4xlarge, cache.r3.8xlarge
 //
 // Additional node type info
 //
-//    * All current generation instance types are created in Amazon VPC by default.
+//   - All current generation instance types are created in Amazon VPC by default.
 //
-//    * Redis append-only files (AOF) are not supported for T1 or T2 instances.
+//   - Redis append-only files (AOF) are not supported for T1 or T2 instances.
 //
-//    * Redis Multi-AZ with automatic failover is not supported on T1 instances.
+//   - Redis Multi-AZ with automatic failover is not supported on T1 instances.
 //
-//    * Redis configuration variables appendonly and appendfsync are not supported
-//    on Redis version 2.8.22 and later.
+//   - Redis configuration variables appendonly and appendfsync are not supported
+//     on Redis version 2.8.22 and later.
 type CacheNode struct {
 	_ struct{} `type:"structure"`
 
@@ -8934,9 +8915,9 @@ func (s *CacheParameterGroup) SetIsGlobal(v bool) *CacheParameterGroup {
 
 // Represents the output of one of the following operations:
 //
-//    * ModifyCacheParameterGroup
+//   - ModifyCacheParameterGroup
 //
-//    * ResetCacheParameterGroup
+//   - ResetCacheParameterGroup
 type CacheParameterGroupNameMessage struct {
 	_ struct{} `type:"structure"`
 
@@ -9021,11 +9002,11 @@ func (s *CacheParameterGroupStatus) SetParameterApplyStatus(v string) *CachePara
 
 // Represents the output of one of the following operations:
 //
-//    * AuthorizeCacheSecurityGroupIngress
+//   - AuthorizeCacheSecurityGroupIngress
 //
-//    * CreateCacheSecurityGroup
+//   - CreateCacheSecurityGroup
 //
-//    * RevokeCacheSecurityGroupIngress
+//   - RevokeCacheSecurityGroupIngress
 type CacheSecurityGroup struct {
 	_ struct{} `type:"structure"`
 
@@ -9139,9 +9120,9 @@ func (s *CacheSecurityGroupMembership) SetStatus(v string) *CacheSecurityGroupMe
 
 // Represents the output of one of the following operations:
 //
-//    * CreateCacheSubnetGroup
+//   - CreateCacheSubnetGroup
 //
-//    * ModifyCacheSubnetGroup
+//   - ModifyCacheSubnetGroup
 type CacheSubnetGroup struct {
 	_ struct{} `type:"structure"`
 
@@ -15680,8 +15661,8 @@ func (s *GlobalNodeGroup) SetSlots(v string) *GlobalNodeGroup {
 // accepts only reads. The primary cluster automatically replicates updates
 // to the secondary cluster.
 //
-//    * The GlobalReplicationGroupIdSuffix represents the name of the Global
-//    datastore, which is what you use to associate a secondary cluster.
+//   - The GlobalReplicationGroupIdSuffix represents the name of the Global
+//     datastore, which is what you use to associate a secondary cluster.
 type GlobalReplicationGroup struct {
 	_ struct{} `type:"structure"`
 

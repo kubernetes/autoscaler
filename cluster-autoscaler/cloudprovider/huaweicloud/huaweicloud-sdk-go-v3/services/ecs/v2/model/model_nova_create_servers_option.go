@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-//  弹性云服务器信息
+// 弹性云服务器信息
 type NovaCreateServersOption struct {
 	// 弹性云服务器自动释放时间。  时间格式例如：2020-01-19T03:30:52Z
 

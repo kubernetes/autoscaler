@@ -11,7 +11,7 @@ import (
 
 // GetPublicIpByIpAddressRequest wrapper for the GetPublicIpByIpAddress operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetPublicIpByIpAddress.go.html to see an example of how to use GetPublicIpByIpAddressRequest.
 type GetPublicIpByIpAddressRequest struct {

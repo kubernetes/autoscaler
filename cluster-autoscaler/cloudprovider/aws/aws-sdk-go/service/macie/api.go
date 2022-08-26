@@ -28,14 +28,13 @@ const opAssociateMemberAccount = "AssociateMemberAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateMemberAccountRequest method.
+//	req, resp := client.AssociateMemberAccountRequest(params)
 //
-//    // Example sending a request using the AssociateMemberAccountRequest method.
-//    req, resp := client.AssociateMemberAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/AssociateMemberAccount
 func (c *Macie) AssociateMemberAccountRequest(input *AssociateMemberAccountInput) (req *request.Request, output *AssociateMemberAccountOutput) {
@@ -68,17 +67,18 @@ func (c *Macie) AssociateMemberAccountRequest(input *AssociateMemberAccountInput
 // API operation AssociateMemberAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * LimitExceededException
-//   (Discontinued) The request was rejected because it attempted to create resources
-//   beyond the current Amazon Web Services account quotas. The error code describes
-//   the quota exceeded.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - LimitExceededException
+//     (Discontinued) The request was rejected because it attempted to create resources
+//     beyond the current Amazon Web Services account quotas. The error code describes
+//     the quota exceeded.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/AssociateMemberAccount
 func (c *Macie) AssociateMemberAccount(input *AssociateMemberAccountInput) (*AssociateMemberAccountOutput, error) {
@@ -118,14 +118,13 @@ const opAssociateS3Resources = "AssociateS3Resources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateS3ResourcesRequest method.
+//	req, resp := client.AssociateS3ResourcesRequest(params)
 //
-//    // Example sending a request using the AssociateS3ResourcesRequest method.
-//    req, resp := client.AssociateS3ResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/AssociateS3Resources
 func (c *Macie) AssociateS3ResourcesRequest(input *AssociateS3ResourcesInput) (req *request.Request, output *AssociateS3ResourcesOutput) {
@@ -161,21 +160,22 @@ func (c *Macie) AssociateS3ResourcesRequest(input *AssociateS3ResourcesInput) (r
 // API operation AssociateS3Resources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * AccessDeniedException
-//   (Discontinued) You do not have required permissions to access the requested
-//   resource.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
-//   * LimitExceededException
-//   (Discontinued) The request was rejected because it attempted to create resources
-//   beyond the current Amazon Web Services account quotas. The error code describes
-//   the quota exceeded.
+//   - AccessDeniedException
+//     (Discontinued) You do not have required permissions to access the requested
+//     resource.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - LimitExceededException
+//     (Discontinued) The request was rejected because it attempted to create resources
+//     beyond the current Amazon Web Services account quotas. The error code describes
+//     the quota exceeded.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/AssociateS3Resources
 func (c *Macie) AssociateS3Resources(input *AssociateS3ResourcesInput) (*AssociateS3ResourcesOutput, error) {
@@ -215,14 +215,13 @@ const opDisassociateMemberAccount = "DisassociateMemberAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateMemberAccountRequest method.
+//	req, resp := client.DisassociateMemberAccountRequest(params)
 //
-//    // Example sending a request using the DisassociateMemberAccountRequest method.
-//    req, resp := client.DisassociateMemberAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/DisassociateMemberAccount
 func (c *Macie) DisassociateMemberAccountRequest(input *DisassociateMemberAccountInput) (req *request.Request, output *DisassociateMemberAccountOutput) {
@@ -254,12 +253,13 @@ func (c *Macie) DisassociateMemberAccountRequest(input *DisassociateMemberAccoun
 // API operation DisassociateMemberAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/DisassociateMemberAccount
 func (c *Macie) DisassociateMemberAccount(input *DisassociateMemberAccountInput) (*DisassociateMemberAccountOutput, error) {
@@ -299,14 +299,13 @@ const opDisassociateS3Resources = "DisassociateS3Resources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateS3ResourcesRequest method.
+//	req, resp := client.DisassociateS3ResourcesRequest(params)
 //
-//    // Example sending a request using the DisassociateS3ResourcesRequest method.
-//    req, resp := client.DisassociateS3ResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/DisassociateS3Resources
 func (c *Macie) DisassociateS3ResourcesRequest(input *DisassociateS3ResourcesInput) (req *request.Request, output *DisassociateS3ResourcesOutput) {
@@ -341,16 +340,17 @@ func (c *Macie) DisassociateS3ResourcesRequest(input *DisassociateS3ResourcesInp
 // API operation DisassociateS3Resources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * AccessDeniedException
-//   (Discontinued) You do not have required permissions to access the requested
-//   resource.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - AccessDeniedException
+//     (Discontinued) You do not have required permissions to access the requested
+//     resource.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/DisassociateS3Resources
 func (c *Macie) DisassociateS3Resources(input *DisassociateS3ResourcesInput) (*DisassociateS3ResourcesOutput, error) {
@@ -390,14 +390,13 @@ const opListMemberAccounts = "ListMemberAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMemberAccountsRequest method.
+//	req, resp := client.ListMemberAccountsRequest(params)
 //
-//    // Example sending a request using the ListMemberAccountsRequest method.
-//    req, resp := client.ListMemberAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/ListMemberAccounts
 func (c *Macie) ListMemberAccountsRequest(input *ListMemberAccountsInput) (req *request.Request, output *ListMemberAccountsOutput) {
@@ -435,12 +434,13 @@ func (c *Macie) ListMemberAccountsRequest(input *ListMemberAccountsInput) (req *
 // API operation ListMemberAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   (Discontinued) Internal server error.
 //
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
+//   - InternalException
+//     (Discontinued) Internal server error.
+//
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/ListMemberAccounts
 func (c *Macie) ListMemberAccounts(input *ListMemberAccountsInput) (*ListMemberAccountsOutput, error) {
@@ -472,15 +472,14 @@ func (c *Macie) ListMemberAccountsWithContext(ctx aws.Context, input *ListMember
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMemberAccounts operation.
-//    pageNum := 0
-//    err := client.ListMemberAccountsPages(params,
-//        func(page *macie.ListMemberAccountsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMemberAccounts operation.
+//	pageNum := 0
+//	err := client.ListMemberAccountsPages(params,
+//	    func(page *macie.ListMemberAccountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Macie) ListMemberAccountsPages(input *ListMemberAccountsInput, fn func(*ListMemberAccountsOutput, bool) bool) error {
 	return c.ListMemberAccountsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -532,14 +531,13 @@ const opListS3Resources = "ListS3Resources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListS3ResourcesRequest method.
+//	req, resp := client.ListS3ResourcesRequest(params)
 //
-//    // Example sending a request using the ListS3ResourcesRequest method.
-//    req, resp := client.ListS3ResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/ListS3Resources
 func (c *Macie) ListS3ResourcesRequest(input *ListS3ResourcesInput) (req *request.Request, output *ListS3ResourcesOutput) {
@@ -580,16 +578,17 @@ func (c *Macie) ListS3ResourcesRequest(input *ListS3ResourcesInput) (req *reques
 // API operation ListS3Resources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * AccessDeniedException
-//   (Discontinued) You do not have required permissions to access the requested
-//   resource.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - AccessDeniedException
+//     (Discontinued) You do not have required permissions to access the requested
+//     resource.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/ListS3Resources
 func (c *Macie) ListS3Resources(input *ListS3ResourcesInput) (*ListS3ResourcesOutput, error) {
@@ -621,15 +620,14 @@ func (c *Macie) ListS3ResourcesWithContext(ctx aws.Context, input *ListS3Resourc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListS3Resources operation.
-//    pageNum := 0
-//    err := client.ListS3ResourcesPages(params,
-//        func(page *macie.ListS3ResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListS3Resources operation.
+//	pageNum := 0
+//	err := client.ListS3ResourcesPages(params,
+//	    func(page *macie.ListS3ResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Macie) ListS3ResourcesPages(input *ListS3ResourcesInput, fn func(*ListS3ResourcesOutput, bool) bool) error {
 	return c.ListS3ResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -681,14 +679,13 @@ const opUpdateS3Resources = "UpdateS3Resources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateS3ResourcesRequest method.
+//	req, resp := client.UpdateS3ResourcesRequest(params)
 //
-//    // Example sending a request using the UpdateS3ResourcesRequest method.
-//    req, resp := client.UpdateS3ResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/UpdateS3Resources
 func (c *Macie) UpdateS3ResourcesRequest(input *UpdateS3ResourcesInput) (req *request.Request, output *UpdateS3ResourcesOutput) {
@@ -724,16 +721,17 @@ func (c *Macie) UpdateS3ResourcesRequest(input *UpdateS3ResourcesInput) (req *re
 // API operation UpdateS3Resources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   (Discontinued) The request was rejected because an invalid or out-of-range
-//   value was supplied for an input parameter.
 //
-//   * AccessDeniedException
-//   (Discontinued) You do not have required permissions to access the requested
-//   resource.
+//   - InvalidInputException
+//     (Discontinued) The request was rejected because an invalid or out-of-range
+//     value was supplied for an input parameter.
 //
-//   * InternalException
-//   (Discontinued) Internal server error.
+//   - AccessDeniedException
+//     (Discontinued) You do not have required permissions to access the requested
+//     resource.
+//
+//   - InternalException
+//     (Discontinued) Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/macie-2017-12-19/UpdateS3Resources
 func (c *Macie) UpdateS3Resources(input *UpdateS3ResourcesInput) (*UpdateS3ResourcesOutput, error) {

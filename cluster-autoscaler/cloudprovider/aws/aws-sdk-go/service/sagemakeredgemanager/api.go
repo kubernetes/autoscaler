@@ -29,14 +29,13 @@ const opGetDeviceRegistration = "GetDeviceRegistration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeviceRegistrationRequest method.
+//	req, resp := client.GetDeviceRegistrationRequest(params)
 //
-//    // Example sending a request using the GetDeviceRegistrationRequest method.
-//    req, resp := client.GetDeviceRegistrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/GetDeviceRegistration
 func (c *SagemakerEdgeManager) GetDeviceRegistrationRequest(input *GetDeviceRegistrationInput) (req *request.Request, output *GetDeviceRegistrationOutput) {
@@ -67,9 +66,9 @@ func (c *SagemakerEdgeManager) GetDeviceRegistrationRequest(input *GetDeviceRegi
 // API operation GetDeviceRegistration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - InternalServiceException
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/GetDeviceRegistration
 func (c *SagemakerEdgeManager) GetDeviceRegistration(input *GetDeviceRegistrationInput) (*GetDeviceRegistrationOutput, error) {
@@ -109,14 +108,13 @@ const opSendHeartbeat = "SendHeartbeat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendHeartbeatRequest method.
+//	req, resp := client.SendHeartbeatRequest(params)
 //
-//    // Example sending a request using the SendHeartbeatRequest method.
-//    req, resp := client.SendHeartbeatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/SendHeartbeat
 func (c *SagemakerEdgeManager) SendHeartbeatRequest(input *SendHeartbeatInput) (req *request.Request, output *SendHeartbeatOutput) {
@@ -148,9 +146,9 @@ func (c *SagemakerEdgeManager) SendHeartbeatRequest(input *SendHeartbeatInput) (
 // API operation SendHeartbeat for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   An internal failure occurred. Try your request again. If the problem persists,
-//   contact AWS customer support.
+//   - InternalServiceException
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact AWS customer support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/SendHeartbeat
 func (c *SagemakerEdgeManager) SendHeartbeat(input *SendHeartbeatInput) (*SendHeartbeatOutput, error) {

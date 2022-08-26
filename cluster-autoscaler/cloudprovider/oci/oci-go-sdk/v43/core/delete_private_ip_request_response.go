@@ -11,7 +11,7 @@ import (
 
 // DeletePrivateIpRequest wrapper for the DeletePrivateIp operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeletePrivateIp.go.html to see an example of how to use DeletePrivateIpRequest.
 type DeletePrivateIpRequest struct {

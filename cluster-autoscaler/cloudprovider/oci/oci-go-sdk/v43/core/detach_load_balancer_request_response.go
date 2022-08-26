@@ -11,7 +11,7 @@ import (
 
 // DetachLoadBalancerRequest wrapper for the DetachLoadBalancer operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DetachLoadBalancer.go.html to see an example of how to use DetachLoadBalancerRequest.
 type DetachLoadBalancerRequest struct {

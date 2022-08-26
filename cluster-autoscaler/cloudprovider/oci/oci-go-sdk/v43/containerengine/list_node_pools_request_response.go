@@ -11,7 +11,7 @@ import (
 
 // ListNodePoolsRequest wrapper for the ListNodePools operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/ListNodePools.go.html to see an example of how to use ListNodePoolsRequest.
 type ListNodePoolsRequest struct {

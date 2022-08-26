@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeCommit client from just a session.
-//     svc := codecommit.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeCommit client with additional configuration
-//     svc := codecommit.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CodeCommit client from just a session.
+//	svc := codecommit.New(mySession)
+//
+//	// Create a CodeCommit client with additional configuration
+//	svc := codecommit.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CodeCommit {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

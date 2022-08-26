@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Drs client from just a session.
-//     svc := drs.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Drs client with additional configuration
-//     svc := drs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Drs client from just a session.
+//	svc := drs.New(mySession)
+//
+//	// Create a Drs client with additional configuration
+//	svc := drs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Drs {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -11,7 +11,7 @@ import (
 
 // UpdateDedicatedVmHostRequest wrapper for the UpdateDedicatedVmHost operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateDedicatedVmHost.go.html to see an example of how to use UpdateDedicatedVmHostRequest.
 type UpdateDedicatedVmHostRequest struct {

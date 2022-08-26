@@ -29,14 +29,13 @@ const opAssociateRepository = "AssociateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateRepositoryRequest method.
+//	req, resp := client.AssociateRepositoryRequest(params)
 //
-//    // Example sending a request using the AssociateRepositoryRequest method.
-//    req, resp := client.AssociateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/AssociateRepository
 func (c *CodeGuruReviewer) AssociateRepositoryRequest(input *AssociateRepositoryInput) (req *request.Request, output *AssociateRepositoryOutput) {
@@ -88,22 +87,23 @@ func (c *CodeGuruReviewer) AssociateRepositoryRequest(input *AssociateRepository
 // API operation AssociateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/AssociateRepository
 func (c *CodeGuruReviewer) AssociateRepository(input *AssociateRepositoryInput) (*AssociateRepositoryOutput, error) {
@@ -143,14 +143,13 @@ const opCreateCodeReview = "CreateCodeReview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCodeReviewRequest method.
+//	req, resp := client.CreateCodeReviewRequest(params)
 //
-//    // Example sending a request using the CreateCodeReviewRequest method.
-//    req, resp := client.CreateCodeReviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/CreateCodeReview
 func (c *CodeGuruReviewer) CreateCodeReviewRequest(input *CreateCodeReviewInput) (req *request.Request, output *CreateCodeReviewOutput) {
@@ -184,25 +183,26 @@ func (c *CodeGuruReviewer) CreateCodeReviewRequest(input *CreateCodeReviewInput)
 // API operation CreateCodeReview for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/CreateCodeReview
 func (c *CodeGuruReviewer) CreateCodeReview(input *CreateCodeReviewInput) (*CreateCodeReviewOutput, error) {
@@ -242,14 +242,13 @@ const opDescribeCodeReview = "DescribeCodeReview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCodeReviewRequest method.
+//	req, resp := client.DescribeCodeReviewRequest(params)
 //
-//    // Example sending a request using the DescribeCodeReviewRequest method.
-//    req, resp := client.DescribeCodeReviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeCodeReview
 func (c *CodeGuruReviewer) DescribeCodeReviewRequest(input *DescribeCodeReviewInput) (req *request.Request, output *DescribeCodeReviewOutput) {
@@ -280,20 +279,21 @@ func (c *CodeGuruReviewer) DescribeCodeReviewRequest(input *DescribeCodeReviewIn
 // API operation DescribeCodeReview for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeCodeReview
 func (c *CodeGuruReviewer) DescribeCodeReview(input *DescribeCodeReviewInput) (*DescribeCodeReviewOutput, error) {
@@ -333,14 +333,13 @@ const opDescribeRecommendationFeedback = "DescribeRecommendationFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRecommendationFeedbackRequest method.
+//	req, resp := client.DescribeRecommendationFeedbackRequest(params)
 //
-//    // Example sending a request using the DescribeRecommendationFeedbackRequest method.
-//    req, resp := client.DescribeRecommendationFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeRecommendationFeedback
 func (c *CodeGuruReviewer) DescribeRecommendationFeedbackRequest(input *DescribeRecommendationFeedbackInput) (req *request.Request, output *DescribeRecommendationFeedbackOutput) {
@@ -371,20 +370,21 @@ func (c *CodeGuruReviewer) DescribeRecommendationFeedbackRequest(input *Describe
 // API operation DescribeRecommendationFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeRecommendationFeedback
 func (c *CodeGuruReviewer) DescribeRecommendationFeedback(input *DescribeRecommendationFeedbackInput) (*DescribeRecommendationFeedbackOutput, error) {
@@ -424,14 +424,13 @@ const opDescribeRepositoryAssociation = "DescribeRepositoryAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRepositoryAssociationRequest method.
+//	req, resp := client.DescribeRepositoryAssociationRequest(params)
 //
-//    // Example sending a request using the DescribeRepositoryAssociationRequest method.
-//    req, resp := client.DescribeRepositoryAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeRepositoryAssociation
 func (c *CodeGuruReviewer) DescribeRepositoryAssociationRequest(input *DescribeRepositoryAssociationInput) (req *request.Request, output *DescribeRepositoryAssociationOutput) {
@@ -463,20 +462,21 @@ func (c *CodeGuruReviewer) DescribeRepositoryAssociationRequest(input *DescribeR
 // API operation DescribeRepositoryAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - NotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DescribeRepositoryAssociation
 func (c *CodeGuruReviewer) DescribeRepositoryAssociation(input *DescribeRepositoryAssociationInput) (*DescribeRepositoryAssociationOutput, error) {
@@ -516,14 +516,13 @@ const opDisassociateRepository = "DisassociateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateRepositoryRequest method.
+//	req, resp := client.DisassociateRepositoryRequest(params)
 //
-//    // Example sending a request using the DisassociateRepositoryRequest method.
-//    req, resp := client.DisassociateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DisassociateRepository
 func (c *CodeGuruReviewer) DisassociateRepositoryRequest(input *DisassociateRepositoryInput) (req *request.Request, output *DisassociateRepositoryOutput) {
@@ -554,25 +553,26 @@ func (c *CodeGuruReviewer) DisassociateRepositoryRequest(input *DisassociateRepo
 // API operation DisassociateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - NotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/DisassociateRepository
 func (c *CodeGuruReviewer) DisassociateRepository(input *DisassociateRepositoryInput) (*DisassociateRepositoryOutput, error) {
@@ -612,14 +612,13 @@ const opListCodeReviews = "ListCodeReviews"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCodeReviewsRequest method.
+//	req, resp := client.ListCodeReviewsRequest(params)
 //
-//    // Example sending a request using the ListCodeReviewsRequest method.
-//    req, resp := client.ListCodeReviewsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListCodeReviews
 func (c *CodeGuruReviewer) ListCodeReviewsRequest(input *ListCodeReviewsInput) (req *request.Request, output *ListCodeReviewsOutput) {
@@ -656,17 +655,18 @@ func (c *CodeGuruReviewer) ListCodeReviewsRequest(input *ListCodeReviewsInput) (
 // API operation ListCodeReviews for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListCodeReviews
 func (c *CodeGuruReviewer) ListCodeReviews(input *ListCodeReviewsInput) (*ListCodeReviewsOutput, error) {
@@ -698,15 +698,14 @@ func (c *CodeGuruReviewer) ListCodeReviewsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCodeReviews operation.
-//    pageNum := 0
-//    err := client.ListCodeReviewsPages(params,
-//        func(page *codegurureviewer.ListCodeReviewsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCodeReviews operation.
+//	pageNum := 0
+//	err := client.ListCodeReviewsPages(params,
+//	    func(page *codegurureviewer.ListCodeReviewsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruReviewer) ListCodeReviewsPages(input *ListCodeReviewsInput, fn func(*ListCodeReviewsOutput, bool) bool) error {
 	return c.ListCodeReviewsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -758,14 +757,13 @@ const opListRecommendationFeedback = "ListRecommendationFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecommendationFeedbackRequest method.
+//	req, resp := client.ListRecommendationFeedbackRequest(params)
 //
-//    // Example sending a request using the ListRecommendationFeedbackRequest method.
-//    req, resp := client.ListRecommendationFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRecommendationFeedback
 func (c *CodeGuruReviewer) ListRecommendationFeedbackRequest(input *ListRecommendationFeedbackInput) (req *request.Request, output *ListRecommendationFeedbackOutput) {
@@ -804,20 +802,21 @@ func (c *CodeGuruReviewer) ListRecommendationFeedbackRequest(input *ListRecommen
 // API operation ListRecommendationFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRecommendationFeedback
 func (c *CodeGuruReviewer) ListRecommendationFeedback(input *ListRecommendationFeedbackInput) (*ListRecommendationFeedbackOutput, error) {
@@ -849,15 +848,14 @@ func (c *CodeGuruReviewer) ListRecommendationFeedbackWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecommendationFeedback operation.
-//    pageNum := 0
-//    err := client.ListRecommendationFeedbackPages(params,
-//        func(page *codegurureviewer.ListRecommendationFeedbackOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecommendationFeedback operation.
+//	pageNum := 0
+//	err := client.ListRecommendationFeedbackPages(params,
+//	    func(page *codegurureviewer.ListRecommendationFeedbackOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruReviewer) ListRecommendationFeedbackPages(input *ListRecommendationFeedbackInput, fn func(*ListRecommendationFeedbackOutput, bool) bool) error {
 	return c.ListRecommendationFeedbackPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -909,14 +907,13 @@ const opListRecommendations = "ListRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecommendationsRequest method.
+//	req, resp := client.ListRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListRecommendationsRequest method.
-//    req, resp := client.ListRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRecommendations
 func (c *CodeGuruReviewer) ListRecommendationsRequest(input *ListRecommendationsInput) (req *request.Request, output *ListRecommendationsOutput) {
@@ -953,20 +950,21 @@ func (c *CodeGuruReviewer) ListRecommendationsRequest(input *ListRecommendations
 // API operation ListRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRecommendations
 func (c *CodeGuruReviewer) ListRecommendations(input *ListRecommendationsInput) (*ListRecommendationsOutput, error) {
@@ -998,15 +996,14 @@ func (c *CodeGuruReviewer) ListRecommendationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecommendations operation.
-//    pageNum := 0
-//    err := client.ListRecommendationsPages(params,
-//        func(page *codegurureviewer.ListRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecommendations operation.
+//	pageNum := 0
+//	err := client.ListRecommendationsPages(params,
+//	    func(page *codegurureviewer.ListRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruReviewer) ListRecommendationsPages(input *ListRecommendationsInput, fn func(*ListRecommendationsOutput, bool) bool) error {
 	return c.ListRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1058,14 +1055,13 @@ const opListRepositoryAssociations = "ListRepositoryAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoryAssociationsRequest method.
+//	req, resp := client.ListRepositoryAssociationsRequest(params)
 //
-//    // Example sending a request using the ListRepositoryAssociationsRequest method.
-//    req, resp := client.ListRepositoryAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRepositoryAssociations
 func (c *CodeGuruReviewer) ListRepositoryAssociationsRequest(input *ListRepositoryAssociationsInput) (req *request.Request, output *ListRepositoryAssociationsOutput) {
@@ -1107,14 +1103,15 @@ func (c *CodeGuruReviewer) ListRepositoryAssociationsRequest(input *ListReposito
 // API operation ListRepositoryAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListRepositoryAssociations
 func (c *CodeGuruReviewer) ListRepositoryAssociations(input *ListRepositoryAssociationsInput) (*ListRepositoryAssociationsOutput, error) {
@@ -1146,15 +1143,14 @@ func (c *CodeGuruReviewer) ListRepositoryAssociationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositoryAssociations operation.
-//    pageNum := 0
-//    err := client.ListRepositoryAssociationsPages(params,
-//        func(page *codegurureviewer.ListRepositoryAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositoryAssociations operation.
+//	pageNum := 0
+//	err := client.ListRepositoryAssociationsPages(params,
+//	    func(page *codegurureviewer.ListRepositoryAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeGuruReviewer) ListRepositoryAssociationsPages(input *ListRepositoryAssociationsInput, fn func(*ListRepositoryAssociationsOutput, bool) bool) error {
 	return c.ListRepositoryAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1206,14 +1202,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListTagsForResource
 func (c *CodeGuruReviewer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1244,14 +1239,15 @@ func (c *CodeGuruReviewer) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/ListTagsForResource
 func (c *CodeGuruReviewer) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1291,14 +1287,13 @@ const opPutRecommendationFeedback = "PutRecommendationFeedback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRecommendationFeedbackRequest method.
+//	req, resp := client.PutRecommendationFeedbackRequest(params)
 //
-//    // Example sending a request using the PutRecommendationFeedbackRequest method.
-//    req, resp := client.PutRecommendationFeedbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/PutRecommendationFeedback
 func (c *CodeGuruReviewer) PutRecommendationFeedbackRequest(input *PutRecommendationFeedbackInput) (req *request.Request, output *PutRecommendationFeedbackOutput) {
@@ -1331,20 +1326,21 @@ func (c *CodeGuruReviewer) PutRecommendationFeedbackRequest(input *PutRecommenda
 // API operation PutRecommendationFeedback for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
 //
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/PutRecommendationFeedback
 func (c *CodeGuruReviewer) PutRecommendationFeedback(input *PutRecommendationFeedbackInput) (*PutRecommendationFeedbackOutput, error) {
@@ -1384,14 +1380,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/TagResource
 func (c *CodeGuruReviewer) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1423,14 +1418,15 @@ func (c *CodeGuruReviewer) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/TagResource
 func (c *CodeGuruReviewer) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1470,14 +1466,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/UntagResource
 func (c *CodeGuruReviewer) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1509,14 +1504,15 @@ func (c *CodeGuruReviewer) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The server encountered an internal error and is unable to complete the request.
 //
-//   * ValidationException
-//   The input fails to satisfy the specified constraints.
+//   - InternalServerException
+//     The server encountered an internal error and is unable to complete the request.
 //
-//   * ResourceNotFoundException
-//   The resource specified in the request was not found.
+//   - ValidationException
+//     The input fails to satisfy the specified constraints.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codeguru-reviewer-2019-09-19/UntagResource
 func (c *CodeGuruReviewer) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1829,11 +1825,11 @@ func (s *BranchDiffSourceCodeType) SetSourceBranchName(v string) *BranchDiffSour
 // Code artifacts are source code artifacts and build artifacts used in a repository
 // analysis or a pull request review.
 //
-//    * Source code artifacts are source code files in a Git repository that
-//    are compressed into a .zip file.
+//   - Source code artifacts are source code files in a Git repository that
+//     are compressed into a .zip file.
 //
-//    * Build artifacts are .jar or .class files that are compressed in a .zip
-//    file.
+//   - Build artifacts are .jar or .class files that are compressed in a .zip
+//     file.
 type CodeArtifacts struct {
 	_ struct{} `type:"structure"`
 
@@ -2290,12 +2286,12 @@ func (s *CodeReviewSummary) SetType(v string) *CodeReviewSummary {
 
 // The type of a code review. There are two code review types:
 //
-//    * PullRequest - A code review that is automatically triggered by a pull
-//    request on an associated repository.
+//   - PullRequest - A code review that is automatically triggered by a pull
+//     request on an associated repository.
 //
-//    * RepositoryAnalysis - A code review that analyzes all code under a specified
-//    branch in an associated repository. The associated repository is specified
-//    using its ARN in CreateCodeReview (https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CreateCodeReview).
+//   - RepositoryAnalysis - A code review that analyzes all code under a specified
+//     branch in an associated repository. The associated repository is specified
+//     using its ARN in CreateCodeReview (https://docs.aws.amazon.com/codeguru/latest/reviewer-api/API_CreateCodeReview).
 type CodeReviewType struct {
 	_ struct{} `type:"structure"`
 
@@ -3155,12 +3151,12 @@ func (s *InternalServerException) RequestID() string {
 
 // An object that contains:
 //
-//    * The encryption option for a repository association. It is either owned
-//    by Amazon Web Services Key Management Service (KMS) (AWS_OWNED_CMK) or
-//    customer managed (CUSTOMER_MANAGED_CMK).
+//   - The encryption option for a repository association. It is either owned
+//     by Amazon Web Services Key Management Service (KMS) (AWS_OWNED_CMK) or
+//     customer managed (CUSTOMER_MANAGED_CMK).
 //
-//    * The ID of the Amazon Web Services KMS key that is associated with a
-//    respository association.
+//   - The ID of the Amazon Web Services KMS key that is associated with a
+//     respository association.
 type KMSKeyDetails struct {
 	_ struct{} `type:"structure"`
 

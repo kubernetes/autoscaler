@@ -25,7 +25,7 @@ type VirtualCircuitDrgAttachmentNetworkDetails struct {
 	Id *string `mandatory:"true" json:"id"`
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m VirtualCircuitDrgAttachmentNetworkDetails) GetId() *string {
 	return m.Id
 }

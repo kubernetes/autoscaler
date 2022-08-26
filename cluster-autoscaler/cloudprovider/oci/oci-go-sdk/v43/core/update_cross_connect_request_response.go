@@ -11,7 +11,7 @@ import (
 
 // UpdateCrossConnectRequest wrapper for the UpdateCrossConnect operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateCrossConnect.go.html to see an example of how to use UpdateCrossConnectRequest.
 type UpdateCrossConnectRequest struct {

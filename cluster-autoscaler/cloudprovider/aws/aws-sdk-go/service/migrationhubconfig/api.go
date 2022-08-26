@@ -28,14 +28,13 @@ const opCreateHomeRegionControl = "CreateHomeRegionControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHomeRegionControlRequest method.
+//	req, resp := client.CreateHomeRegionControlRequest(params)
 //
-//    // Example sending a request using the CreateHomeRegionControlRequest method.
-//    req, resp := client.CreateHomeRegionControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/CreateHomeRegionControl
 func (c *MigrationHubConfig) CreateHomeRegionControlRequest(input *CreateHomeRegionControlInput) (req *request.Request, output *CreateHomeRegionControlOutput) {
@@ -66,27 +65,28 @@ func (c *MigrationHubConfig) CreateHomeRegionControlRequest(input *CreateHomeReg
 // API operation CreateHomeRegionControl for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
 //
-//   * ServiceUnavailableException
-//   Exception raised when a request fails due to temporary unavailability of
-//   the service.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     Exception raised when a request fails due to temporary unavailability of
+//     the service.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * DryRunOperation
-//   Exception raised to indicate that authorization of an action was successful,
-//   when the DryRun flag is set to true.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - DryRunOperation
+//     Exception raised to indicate that authorization of an action was successful,
+//     when the DryRun flag is set to true.
+//
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/CreateHomeRegionControl
 func (c *MigrationHubConfig) CreateHomeRegionControl(input *CreateHomeRegionControlInput) (*CreateHomeRegionControlOutput, error) {
@@ -126,14 +126,13 @@ const opDescribeHomeRegionControls = "DescribeHomeRegionControls"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHomeRegionControlsRequest method.
+//	req, resp := client.DescribeHomeRegionControlsRequest(params)
 //
-//    // Example sending a request using the DescribeHomeRegionControlsRequest method.
-//    req, resp := client.DescribeHomeRegionControlsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/DescribeHomeRegionControls
 func (c *MigrationHubConfig) DescribeHomeRegionControlsRequest(input *DescribeHomeRegionControlsInput) (req *request.Request, output *DescribeHomeRegionControlsOutput) {
@@ -170,23 +169,24 @@ func (c *MigrationHubConfig) DescribeHomeRegionControlsRequest(input *DescribeHo
 // API operation DescribeHomeRegionControls for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
 //
-//   * ServiceUnavailableException
-//   Exception raised when a request fails due to temporary unavailability of
-//   the service.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     Exception raised when a request fails due to temporary unavailability of
+//     the service.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/DescribeHomeRegionControls
 func (c *MigrationHubConfig) DescribeHomeRegionControls(input *DescribeHomeRegionControlsInput) (*DescribeHomeRegionControlsOutput, error) {
@@ -218,15 +218,14 @@ func (c *MigrationHubConfig) DescribeHomeRegionControlsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeHomeRegionControls operation.
-//    pageNum := 0
-//    err := client.DescribeHomeRegionControlsPages(params,
-//        func(page *migrationhubconfig.DescribeHomeRegionControlsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeHomeRegionControls operation.
+//	pageNum := 0
+//	err := client.DescribeHomeRegionControlsPages(params,
+//	    func(page *migrationhubconfig.DescribeHomeRegionControlsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MigrationHubConfig) DescribeHomeRegionControlsPages(input *DescribeHomeRegionControlsInput, fn func(*DescribeHomeRegionControlsOutput, bool) bool) error {
 	return c.DescribeHomeRegionControlsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -278,14 +277,13 @@ const opGetHomeRegion = "GetHomeRegion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHomeRegionRequest method.
+//	req, resp := client.GetHomeRegionRequest(params)
 //
-//    // Example sending a request using the GetHomeRegionRequest method.
-//    req, resp := client.GetHomeRegionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/GetHomeRegion
 func (c *MigrationHubConfig) GetHomeRegionRequest(input *GetHomeRegionInput) (req *request.Request, output *GetHomeRegionOutput) {
@@ -320,23 +318,24 @@ func (c *MigrationHubConfig) GetHomeRegionRequest(input *GetHomeRegionInput) (re
 // API operation GetHomeRegion for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   Exception raised when an internal, configuration, or dependency error is
-//   encountered.
 //
-//   * ServiceUnavailableException
-//   Exception raised when a request fails due to temporary unavailability of
-//   the service.
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceUnavailableException
+//     Exception raised when a request fails due to temporary unavailability of
+//     the service.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InvalidInputException
-//   Exception raised when the provided input violates a policy constraint or
-//   is entered in the wrong format or data type.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/GetHomeRegion
 func (c *MigrationHubConfig) GetHomeRegion(input *GetHomeRegionInput) (*GetHomeRegionOutput, error) {

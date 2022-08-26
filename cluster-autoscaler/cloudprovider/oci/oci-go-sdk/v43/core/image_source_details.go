@@ -78,17 +78,17 @@ func (m *imagesourcedetails) UnmarshalPolymorphicJSON(data []byte) (interface{},
 	}
 }
 
-//GetOperatingSystem returns OperatingSystem
+// GetOperatingSystem returns OperatingSystem
 func (m imagesourcedetails) GetOperatingSystem() *string {
 	return m.OperatingSystem
 }
 
-//GetOperatingSystemVersion returns OperatingSystemVersion
+// GetOperatingSystemVersion returns OperatingSystemVersion
 func (m imagesourcedetails) GetOperatingSystemVersion() *string {
 	return m.OperatingSystemVersion
 }
 
-//GetSourceImageType returns SourceImageType
+// GetSourceImageType returns SourceImageType
 func (m imagesourcedetails) GetSourceImageType() ImageSourceDetailsSourceImageTypeEnum {
 	return m.SourceImageType
 }

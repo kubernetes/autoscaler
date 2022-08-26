@@ -11,7 +11,7 @@ import (
 
 // ChangeClusterNetworkCompartmentRequest wrapper for the ChangeClusterNetworkCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeClusterNetworkCompartment.go.html to see an example of how to use ChangeClusterNetworkCompartmentRequest.
 type ChangeClusterNetworkCompartmentRequest struct {

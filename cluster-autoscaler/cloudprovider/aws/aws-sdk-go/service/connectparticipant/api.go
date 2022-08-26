@@ -28,14 +28,13 @@ const opCompleteAttachmentUpload = "CompleteAttachmentUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CompleteAttachmentUploadRequest method.
+//	req, resp := client.CompleteAttachmentUploadRequest(params)
 //
-//    // Example sending a request using the CompleteAttachmentUploadRequest method.
-//    req, resp := client.CompleteAttachmentUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/CompleteAttachmentUpload
 func (c *ConnectParticipant) CompleteAttachmentUploadRequest(input *CompleteAttachmentUploadInput) (req *request.Request, output *CompleteAttachmentUploadOutput) {
@@ -71,24 +70,25 @@ func (c *ConnectParticipant) CompleteAttachmentUploadRequest(input *CompleteAtta
 // API operation CompleteAttachmentUpload for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceQuotaExceededException
-//   The number of attachments per contact exceeds the quota.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
-//   * ConflictException
-//   An attachment with that identifier is already being uploaded.
+//   - ServiceQuotaExceededException
+//     The number of attachments per contact exceeds the quota.
+//
+//   - ConflictException
+//     An attachment with that identifier is already being uploaded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/CompleteAttachmentUpload
 func (c *ConnectParticipant) CompleteAttachmentUpload(input *CompleteAttachmentUploadInput) (*CompleteAttachmentUploadOutput, error) {
@@ -128,14 +128,13 @@ const opCreateParticipantConnection = "CreateParticipantConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateParticipantConnectionRequest method.
+//	req, resp := client.CreateParticipantConnectionRequest(params)
 //
-//    // Example sending a request using the CreateParticipantConnectionRequest method.
-//    req, resp := client.CreateParticipantConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/CreateParticipantConnection
 func (c *ConnectParticipant) CreateParticipantConnectionRequest(input *CreateParticipantConnectionInput) (req *request.Request, output *CreateParticipantConnectionOutput) {
@@ -198,18 +197,19 @@ func (c *ConnectParticipant) CreateParticipantConnectionRequest(input *CreatePar
 // API operation CreateParticipantConnection for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/CreateParticipantConnection
 func (c *ConnectParticipant) CreateParticipantConnection(input *CreateParticipantConnectionInput) (*CreateParticipantConnectionOutput, error) {
@@ -249,14 +249,13 @@ const opDisconnectParticipant = "DisconnectParticipant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectParticipantRequest method.
+//	req, resp := client.DisconnectParticipantRequest(params)
 //
-//    // Example sending a request using the DisconnectParticipantRequest method.
-//    req, resp := client.DisconnectParticipantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/DisconnectParticipant
 func (c *ConnectParticipant) DisconnectParticipantRequest(input *DisconnectParticipantInput) (req *request.Request, output *DisconnectParticipantOutput) {
@@ -292,18 +291,19 @@ func (c *ConnectParticipant) DisconnectParticipantRequest(input *DisconnectParti
 // API operation DisconnectParticipant for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/DisconnectParticipant
 func (c *ConnectParticipant) DisconnectParticipant(input *DisconnectParticipantInput) (*DisconnectParticipantOutput, error) {
@@ -343,14 +343,13 @@ const opGetAttachment = "GetAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAttachmentRequest method.
+//	req, resp := client.GetAttachmentRequest(params)
 //
-//    // Example sending a request using the GetAttachmentRequest method.
-//    req, resp := client.GetAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/GetAttachment
 func (c *ConnectParticipant) GetAttachmentRequest(input *GetAttachmentInput) (req *request.Request, output *GetAttachmentOutput) {
@@ -385,18 +384,19 @@ func (c *ConnectParticipant) GetAttachmentRequest(input *GetAttachmentInput) (re
 // API operation GetAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/GetAttachment
 func (c *ConnectParticipant) GetAttachment(input *GetAttachmentInput) (*GetAttachmentOutput, error) {
@@ -436,14 +436,13 @@ const opGetTranscript = "GetTranscript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTranscriptRequest method.
+//	req, resp := client.GetTranscriptRequest(params)
 //
-//    // Example sending a request using the GetTranscriptRequest method.
-//    req, resp := client.GetTranscriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/GetTranscript
 func (c *ConnectParticipant) GetTranscriptRequest(input *GetTranscriptInput) (req *request.Request, output *GetTranscriptOutput) {
@@ -484,18 +483,19 @@ func (c *ConnectParticipant) GetTranscriptRequest(input *GetTranscriptInput) (re
 // API operation GetTranscript for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/GetTranscript
 func (c *ConnectParticipant) GetTranscript(input *GetTranscriptInput) (*GetTranscriptOutput, error) {
@@ -527,15 +527,14 @@ func (c *ConnectParticipant) GetTranscriptWithContext(ctx aws.Context, input *Ge
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTranscript operation.
-//    pageNum := 0
-//    err := client.GetTranscriptPages(params,
-//        func(page *connectparticipant.GetTranscriptOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTranscript operation.
+//	pageNum := 0
+//	err := client.GetTranscriptPages(params,
+//	    func(page *connectparticipant.GetTranscriptOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectParticipant) GetTranscriptPages(input *GetTranscriptInput, fn func(*GetTranscriptOutput, bool) bool) error {
 	return c.GetTranscriptPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -587,14 +586,13 @@ const opSendEvent = "SendEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendEventRequest method.
+//	req, resp := client.SendEventRequest(params)
 //
-//    // Example sending a request using the SendEventRequest method.
-//    req, resp := client.SendEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/SendEvent
 func (c *ConnectParticipant) SendEventRequest(input *SendEventInput) (req *request.Request, output *SendEventOutput) {
@@ -629,18 +627,19 @@ func (c *ConnectParticipant) SendEventRequest(input *SendEventInput) (req *reque
 // API operation SendEvent for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/SendEvent
 func (c *ConnectParticipant) SendEvent(input *SendEventInput) (*SendEventOutput, error) {
@@ -680,14 +679,13 @@ const opSendMessage = "SendMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendMessageRequest method.
+//	req, resp := client.SendMessageRequest(params)
 //
-//    // Example sending a request using the SendMessageRequest method.
-//    req, resp := client.SendMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/SendMessage
 func (c *ConnectParticipant) SendMessageRequest(input *SendMessageInput) (req *request.Request, output *SendMessageOutput) {
@@ -722,18 +720,19 @@ func (c *ConnectParticipant) SendMessageRequest(input *SendMessageInput) (req *r
 // API operation SendMessage for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/SendMessage
 func (c *ConnectParticipant) SendMessage(input *SendMessageInput) (*SendMessageOutput, error) {
@@ -773,14 +772,13 @@ const opStartAttachmentUpload = "StartAttachmentUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartAttachmentUploadRequest method.
+//	req, resp := client.StartAttachmentUploadRequest(params)
 //
-//    // Example sending a request using the StartAttachmentUploadRequest method.
-//    req, resp := client.StartAttachmentUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/StartAttachmentUpload
 func (c *ConnectParticipant) StartAttachmentUploadRequest(input *StartAttachmentUploadInput) (req *request.Request, output *StartAttachmentUploadOutput) {
@@ -815,21 +813,22 @@ func (c *ConnectParticipant) StartAttachmentUploadRequest(input *StartAttachment
 // API operation StartAttachmentUpload for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the Amazon Connect
-//   service.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by Amazon Connect.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ServiceQuotaExceededException
-//   The number of attachments per contact exceeds the quota.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
+//
+//   - ServiceQuotaExceededException
+//     The number of attachments per contact exceeds the quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/StartAttachmentUpload
 func (c *ConnectParticipant) StartAttachmentUpload(input *StartAttachmentUploadInput) (*StartAttachmentUploadOutput, error) {

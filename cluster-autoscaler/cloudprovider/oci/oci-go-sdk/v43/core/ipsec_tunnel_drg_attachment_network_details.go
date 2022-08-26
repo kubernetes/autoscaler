@@ -28,7 +28,7 @@ type IpsecTunnelDrgAttachmentNetworkDetails struct {
 	IpsecConnectionId *string `mandatory:"false" json:"ipsecConnectionId"`
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m IpsecTunnelDrgAttachmentNetworkDetails) GetId() *string {
 	return m.Id
 }

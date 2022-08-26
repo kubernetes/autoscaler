@@ -29,14 +29,13 @@ const opCreateApplication = "CreateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
 //
-//    // Example sending a request using the CreateApplicationRequest method.
-//    req, resp := client.CreateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateApplication
 func (c *AppConfig) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
@@ -71,12 +70,13 @@ func (c *AppConfig) CreateApplicationRequest(input *CreateApplicationInput) (req
 // API operation CreateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateApplication
 func (c *AppConfig) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
@@ -116,14 +116,13 @@ const opCreateConfigurationProfile = "CreateConfigurationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationProfileRequest method.
+//	req, resp := client.CreateConfigurationProfileRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationProfileRequest method.
-//    req, resp := client.CreateConfigurationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateConfigurationProfile
 func (c *AppConfig) CreateConfigurationProfileRequest(input *CreateConfigurationProfileInput) (req *request.Request, output *CreateConfigurationProfileOutput) {
@@ -152,13 +151,13 @@ func (c *AppConfig) CreateConfigurationProfileRequest(input *CreateConfiguration
 // supported by CodePipeline. A configuration profile includes the following
 // information:
 //
-//    * The URI location of the configuration data.
+//   - The URI location of the configuration data.
 //
-//    * The Identity and Access Management (IAM) role that provides access to
-//    the configuration data.
+//   - The Identity and Access Management (IAM) role that provides access to
+//     the configuration data.
 //
-//    * A validator for the configuration data. Available validators include
-//    either a JSON Schema or an Amazon Web Services Lambda function.
+//   - A validator for the configuration data. Available validators include
+//     either a JSON Schema or an Amazon Web Services Lambda function.
 //
 // For more information, see Create a Configuration and a Configuration Profile
 // (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-creating-configuration-and-profile.html)
@@ -172,15 +171,16 @@ func (c *AppConfig) CreateConfigurationProfileRequest(input *CreateConfiguration
 // API operation CreateConfigurationProfile for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateConfigurationProfile
 func (c *AppConfig) CreateConfigurationProfile(input *CreateConfigurationProfileInput) (*CreateConfigurationProfileOutput, error) {
@@ -220,14 +220,13 @@ const opCreateDeploymentStrategy = "CreateDeploymentStrategy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentStrategyRequest method.
+//	req, resp := client.CreateDeploymentStrategyRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentStrategyRequest method.
-//    req, resp := client.CreateDeploymentStrategyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateDeploymentStrategy
 func (c *AppConfig) CreateDeploymentStrategyRequest(input *CreateDeploymentStrategyInput) (req *request.Request, output *CreateDeploymentStrategyOutput) {
@@ -262,12 +261,13 @@ func (c *AppConfig) CreateDeploymentStrategyRequest(input *CreateDeploymentStrat
 // API operation CreateDeploymentStrategy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateDeploymentStrategy
 func (c *AppConfig) CreateDeploymentStrategy(input *CreateDeploymentStrategyInput) (*CreateDeploymentStrategyOutput, error) {
@@ -307,14 +307,13 @@ const opCreateEnvironment = "CreateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentRequest method.
+//	req, resp := client.CreateEnvironmentRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentRequest method.
-//    req, resp := client.CreateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateEnvironment
 func (c *AppConfig) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req *request.Request, output *CreateEnvironmentOutput) {
@@ -351,15 +350,16 @@ func (c *AppConfig) CreateEnvironmentRequest(input *CreateEnvironmentInput) (req
 // API operation CreateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateEnvironment
 func (c *AppConfig) CreateEnvironment(input *CreateEnvironmentInput) (*CreateEnvironmentOutput, error) {
@@ -399,14 +399,13 @@ const opCreateHostedConfigurationVersion = "CreateHostedConfigurationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHostedConfigurationVersionRequest method.
+//	req, resp := client.CreateHostedConfigurationVersionRequest(params)
 //
-//    // Example sending a request using the CreateHostedConfigurationVersionRequest method.
-//    req, resp := client.CreateHostedConfigurationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateHostedConfigurationVersion
 func (c *AppConfig) CreateHostedConfigurationVersionRequest(input *CreateHostedConfigurationVersionInput) (req *request.Request, output *CreateHostedConfigurationVersionOutput) {
@@ -437,26 +436,27 @@ func (c *AppConfig) CreateHostedConfigurationVersionRequest(input *CreateHostedC
 // API operation CreateHostedConfigurationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ServiceQuotaExceededException
-//   The number of hosted configuration versions exceeds the limit for the AppConfig
-//   hosted configuration store. Delete one or more versions and try again.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ServiceQuotaExceededException
+//     The number of hosted configuration versions exceeds the limit for the AppConfig
+//     hosted configuration store. Delete one or more versions and try again.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * PayloadTooLargeException
-//   The configuration size is too large.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - PayloadTooLargeException
+//     The configuration size is too large.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/CreateHostedConfigurationVersion
 func (c *AppConfig) CreateHostedConfigurationVersion(input *CreateHostedConfigurationVersionInput) (*CreateHostedConfigurationVersionOutput, error) {
@@ -496,14 +496,13 @@ const opDeleteApplication = "DeleteApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
 //
-//    // Example sending a request using the DeleteApplicationRequest method.
-//    req, resp := client.DeleteApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteApplication
 func (c *AppConfig) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
@@ -536,15 +535,16 @@ func (c *AppConfig) DeleteApplicationRequest(input *DeleteApplicationInput) (req
 // API operation DeleteApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteApplication
 func (c *AppConfig) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
@@ -584,14 +584,13 @@ const opDeleteConfigurationProfile = "DeleteConfigurationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationProfileRequest method.
+//	req, resp := client.DeleteConfigurationProfileRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationProfileRequest method.
-//    req, resp := client.DeleteConfigurationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteConfigurationProfile
 func (c *AppConfig) DeleteConfigurationProfileRequest(input *DeleteConfigurationProfileInput) (req *request.Request, output *DeleteConfigurationProfileOutput) {
@@ -624,19 +623,20 @@ func (c *AppConfig) DeleteConfigurationProfileRequest(input *DeleteConfiguration
 // API operation DeleteConfigurationProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteConfigurationProfile
 func (c *AppConfig) DeleteConfigurationProfile(input *DeleteConfigurationProfileInput) (*DeleteConfigurationProfileOutput, error) {
@@ -676,14 +676,13 @@ const opDeleteDeploymentStrategy = "DeleteDeploymentStrategy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeploymentStrategyRequest method.
+//	req, resp := client.DeleteDeploymentStrategyRequest(params)
 //
-//    // Example sending a request using the DeleteDeploymentStrategyRequest method.
-//    req, resp := client.DeleteDeploymentStrategyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteDeploymentStrategy
 func (c *AppConfig) DeleteDeploymentStrategyRequest(input *DeleteDeploymentStrategyInput) (req *request.Request, output *DeleteDeploymentStrategyOutput) {
@@ -716,15 +715,16 @@ func (c *AppConfig) DeleteDeploymentStrategyRequest(input *DeleteDeploymentStrat
 // API operation DeleteDeploymentStrategy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteDeploymentStrategy
 func (c *AppConfig) DeleteDeploymentStrategy(input *DeleteDeploymentStrategyInput) (*DeleteDeploymentStrategyOutput, error) {
@@ -764,14 +764,13 @@ const opDeleteEnvironment = "DeleteEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentRequest method.
+//	req, resp := client.DeleteEnvironmentRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentRequest method.
-//    req, resp := client.DeleteEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteEnvironment
 func (c *AppConfig) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *request.Request, output *DeleteEnvironmentOutput) {
@@ -804,19 +803,20 @@ func (c *AppConfig) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req
 // API operation DeleteEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteEnvironment
 func (c *AppConfig) DeleteEnvironment(input *DeleteEnvironmentInput) (*DeleteEnvironmentOutput, error) {
@@ -856,14 +856,13 @@ const opDeleteHostedConfigurationVersion = "DeleteHostedConfigurationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHostedConfigurationVersionRequest method.
+//	req, resp := client.DeleteHostedConfigurationVersionRequest(params)
 //
-//    // Example sending a request using the DeleteHostedConfigurationVersionRequest method.
-//    req, resp := client.DeleteHostedConfigurationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteHostedConfigurationVersion
 func (c *AppConfig) DeleteHostedConfigurationVersionRequest(input *DeleteHostedConfigurationVersionInput) (req *request.Request, output *DeleteHostedConfigurationVersionOutput) {
@@ -896,15 +895,16 @@ func (c *AppConfig) DeleteHostedConfigurationVersionRequest(input *DeleteHostedC
 // API operation DeleteHostedConfigurationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/DeleteHostedConfigurationVersion
 func (c *AppConfig) DeleteHostedConfigurationVersion(input *DeleteHostedConfigurationVersionInput) (*DeleteHostedConfigurationVersionOutput, error) {
@@ -944,14 +944,13 @@ const opGetApplication = "GetApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationRequest method.
+//	req, resp := client.GetApplicationRequest(params)
 //
-//    // Example sending a request using the GetApplicationRequest method.
-//    req, resp := client.GetApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetApplication
 func (c *AppConfig) GetApplicationRequest(input *GetApplicationInput) (req *request.Request, output *GetApplicationOutput) {
@@ -982,15 +981,16 @@ func (c *AppConfig) GetApplicationRequest(input *GetApplicationInput) (req *requ
 // API operation GetApplication for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetApplication
 func (c *AppConfig) GetApplication(input *GetApplicationInput) (*GetApplicationOutput, error) {
@@ -1030,14 +1030,13 @@ const opGetConfiguration = "GetConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationRequest method.
+//	req, resp := client.GetConfigurationRequest(params)
 //
-//    // Example sending a request using the GetConfigurationRequest method.
-//    req, resp := client.GetConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetConfiguration
 //
@@ -1067,27 +1066,27 @@ func (c *AppConfig) GetConfigurationRequest(input *GetConfigurationInput) (req *
 //
 // Note the following important information.
 //
-//    * This API action has been deprecated. Calls to receive configuration
-//    data should use the StartConfigurationSession (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/API_appconfigdata_StartConfigurationSession.html)
-//    and GetLatestConfiguration (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/API_appconfigdata_GetLatestConfiguration.html)
-//    APIs instead.
+//   - This API action has been deprecated. Calls to receive configuration
+//     data should use the StartConfigurationSession (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/API_appconfigdata_StartConfigurationSession.html)
+//     and GetLatestConfiguration (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/API_appconfigdata_GetLatestConfiguration.html)
+//     APIs instead.
 //
-//    * GetConfiguration is a priced call. For more information, see Pricing
-//    (https://aws.amazon.com/systems-manager/pricing/).
+//   - GetConfiguration is a priced call. For more information, see Pricing
+//     (https://aws.amazon.com/systems-manager/pricing/).
 //
-//    * AppConfig uses the value of the ClientConfigurationVersion parameter
-//    to identify the configuration version on your clients. If you don’t
-//    send ClientConfigurationVersion with each call to GetConfiguration, your
-//    clients receive the current configuration. You are charged each time your
-//    clients receive a configuration. To avoid excess charges, we recommend
-//    you use the StartConfigurationSession (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/StartConfigurationSession.html)
-//    and GetLatestConfiguration (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/GetLatestConfiguration.html)
-//    APIs, which track the client configuration version on your behalf. If
-//    you choose to continue using GetConfiguration, we recommend that you include
-//    the ClientConfigurationVersion value with every call to GetConfiguration.
-//    The value to use for ClientConfigurationVersion comes from the ConfigurationVersion
-//    attribute returned by GetConfiguration when there is new or updated data,
-//    and should be saved for subsequent calls to GetConfiguration.
+//   - AppConfig uses the value of the ClientConfigurationVersion parameter
+//     to identify the configuration version on your clients. If you don’t
+//     send ClientConfigurationVersion with each call to GetConfiguration, your
+//     clients receive the current configuration. You are charged each time your
+//     clients receive a configuration. To avoid excess charges, we recommend
+//     you use the StartConfigurationSession (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/StartConfigurationSession.html)
+//     and GetLatestConfiguration (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/GetLatestConfiguration.html)
+//     APIs, which track the client configuration version on your behalf. If
+//     you choose to continue using GetConfiguration, we recommend that you include
+//     the ClientConfigurationVersion value with every call to GetConfiguration.
+//     The value to use for ClientConfigurationVersion comes from the ConfigurationVersion
+//     attribute returned by GetConfiguration when there is new or updated data,
+//     and should be saved for subsequent calls to GetConfiguration.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1097,15 +1096,16 @@ func (c *AppConfig) GetConfigurationRequest(input *GetConfigurationInput) (req *
 // API operation GetConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetConfiguration
 //
@@ -1149,14 +1149,13 @@ const opGetConfigurationProfile = "GetConfigurationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigurationProfileRequest method.
+//	req, resp := client.GetConfigurationProfileRequest(params)
 //
-//    // Example sending a request using the GetConfigurationProfileRequest method.
-//    req, resp := client.GetConfigurationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetConfigurationProfile
 func (c *AppConfig) GetConfigurationProfileRequest(input *GetConfigurationProfileInput) (req *request.Request, output *GetConfigurationProfileOutput) {
@@ -1187,15 +1186,16 @@ func (c *AppConfig) GetConfigurationProfileRequest(input *GetConfigurationProfil
 // API operation GetConfigurationProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetConfigurationProfile
 func (c *AppConfig) GetConfigurationProfile(input *GetConfigurationProfileInput) (*GetConfigurationProfileOutput, error) {
@@ -1235,14 +1235,13 @@ const opGetDeployment = "GetDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentRequest method.
+//	req, resp := client.GetDeploymentRequest(params)
 //
-//    // Example sending a request using the GetDeploymentRequest method.
-//    req, resp := client.GetDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetDeployment
 func (c *AppConfig) GetDeploymentRequest(input *GetDeploymentInput) (req *request.Request, output *GetDeploymentOutput) {
@@ -1273,15 +1272,16 @@ func (c *AppConfig) GetDeploymentRequest(input *GetDeploymentInput) (req *reques
 // API operation GetDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetDeployment
 func (c *AppConfig) GetDeployment(input *GetDeploymentInput) (*GetDeploymentOutput, error) {
@@ -1321,14 +1321,13 @@ const opGetDeploymentStrategy = "GetDeploymentStrategy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentStrategyRequest method.
+//	req, resp := client.GetDeploymentStrategyRequest(params)
 //
-//    // Example sending a request using the GetDeploymentStrategyRequest method.
-//    req, resp := client.GetDeploymentStrategyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetDeploymentStrategy
 func (c *AppConfig) GetDeploymentStrategyRequest(input *GetDeploymentStrategyInput) (req *request.Request, output *GetDeploymentStrategyOutput) {
@@ -1363,15 +1362,16 @@ func (c *AppConfig) GetDeploymentStrategyRequest(input *GetDeploymentStrategyInp
 // API operation GetDeploymentStrategy for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetDeploymentStrategy
 func (c *AppConfig) GetDeploymentStrategy(input *GetDeploymentStrategyInput) (*GetDeploymentStrategyOutput, error) {
@@ -1411,14 +1411,13 @@ const opGetEnvironment = "GetEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnvironmentRequest method.
+//	req, resp := client.GetEnvironmentRequest(params)
 //
-//    // Example sending a request using the GetEnvironmentRequest method.
-//    req, resp := client.GetEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetEnvironment
 func (c *AppConfig) GetEnvironmentRequest(input *GetEnvironmentInput) (req *request.Request, output *GetEnvironmentOutput) {
@@ -1453,15 +1452,16 @@ func (c *AppConfig) GetEnvironmentRequest(input *GetEnvironmentInput) (req *requ
 // API operation GetEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetEnvironment
 func (c *AppConfig) GetEnvironment(input *GetEnvironmentInput) (*GetEnvironmentOutput, error) {
@@ -1501,14 +1501,13 @@ const opGetHostedConfigurationVersion = "GetHostedConfigurationVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostedConfigurationVersionRequest method.
+//	req, resp := client.GetHostedConfigurationVersionRequest(params)
 //
-//    // Example sending a request using the GetHostedConfigurationVersionRequest method.
-//    req, resp := client.GetHostedConfigurationVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetHostedConfigurationVersion
 func (c *AppConfig) GetHostedConfigurationVersionRequest(input *GetHostedConfigurationVersionInput) (req *request.Request, output *GetHostedConfigurationVersionOutput) {
@@ -1539,15 +1538,16 @@ func (c *AppConfig) GetHostedConfigurationVersionRequest(input *GetHostedConfigu
 // API operation GetHostedConfigurationVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/GetHostedConfigurationVersion
 func (c *AppConfig) GetHostedConfigurationVersion(input *GetHostedConfigurationVersionInput) (*GetHostedConfigurationVersionOutput, error) {
@@ -1587,14 +1587,13 @@ const opListApplications = "ListApplications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
 //
-//    // Example sending a request using the ListApplicationsRequest method.
-//    req, resp := client.ListApplicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListApplications
 func (c *AppConfig) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
@@ -1631,12 +1630,13 @@ func (c *AppConfig) ListApplicationsRequest(input *ListApplicationsInput) (req *
 // API operation ListApplications for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListApplications
 func (c *AppConfig) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
@@ -1668,15 +1668,14 @@ func (c *AppConfig) ListApplicationsWithContext(ctx aws.Context, input *ListAppl
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApplications operation.
-//    pageNum := 0
-//    err := client.ListApplicationsPages(params,
-//        func(page *appconfig.ListApplicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *appconfig.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
 	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1728,14 +1727,13 @@ const opListConfigurationProfiles = "ListConfigurationProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigurationProfilesRequest method.
+//	req, resp := client.ListConfigurationProfilesRequest(params)
 //
-//    // Example sending a request using the ListConfigurationProfilesRequest method.
-//    req, resp := client.ListConfigurationProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListConfigurationProfiles
 func (c *AppConfig) ListConfigurationProfilesRequest(input *ListConfigurationProfilesInput) (req *request.Request, output *ListConfigurationProfilesOutput) {
@@ -1772,15 +1770,16 @@ func (c *AppConfig) ListConfigurationProfilesRequest(input *ListConfigurationPro
 // API operation ListConfigurationProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListConfigurationProfiles
 func (c *AppConfig) ListConfigurationProfiles(input *ListConfigurationProfilesInput) (*ListConfigurationProfilesOutput, error) {
@@ -1812,15 +1811,14 @@ func (c *AppConfig) ListConfigurationProfilesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigurationProfiles operation.
-//    pageNum := 0
-//    err := client.ListConfigurationProfilesPages(params,
-//        func(page *appconfig.ListConfigurationProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigurationProfiles operation.
+//	pageNum := 0
+//	err := client.ListConfigurationProfilesPages(params,
+//	    func(page *appconfig.ListConfigurationProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListConfigurationProfilesPages(input *ListConfigurationProfilesInput, fn func(*ListConfigurationProfilesOutput, bool) bool) error {
 	return c.ListConfigurationProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1872,14 +1870,13 @@ const opListDeploymentStrategies = "ListDeploymentStrategies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeploymentStrategiesRequest method.
+//	req, resp := client.ListDeploymentStrategiesRequest(params)
 //
-//    // Example sending a request using the ListDeploymentStrategiesRequest method.
-//    req, resp := client.ListDeploymentStrategiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListDeploymentStrategies
 func (c *AppConfig) ListDeploymentStrategiesRequest(input *ListDeploymentStrategiesInput) (req *request.Request, output *ListDeploymentStrategiesOutput) {
@@ -1916,12 +1913,13 @@ func (c *AppConfig) ListDeploymentStrategiesRequest(input *ListDeploymentStrateg
 // API operation ListDeploymentStrategies for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListDeploymentStrategies
 func (c *AppConfig) ListDeploymentStrategies(input *ListDeploymentStrategiesInput) (*ListDeploymentStrategiesOutput, error) {
@@ -1953,15 +1951,14 @@ func (c *AppConfig) ListDeploymentStrategiesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeploymentStrategies operation.
-//    pageNum := 0
-//    err := client.ListDeploymentStrategiesPages(params,
-//        func(page *appconfig.ListDeploymentStrategiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeploymentStrategies operation.
+//	pageNum := 0
+//	err := client.ListDeploymentStrategiesPages(params,
+//	    func(page *appconfig.ListDeploymentStrategiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListDeploymentStrategiesPages(input *ListDeploymentStrategiesInput, fn func(*ListDeploymentStrategiesOutput, bool) bool) error {
 	return c.ListDeploymentStrategiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2013,14 +2010,13 @@ const opListDeployments = "ListDeployments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDeploymentsRequest method.
+//	req, resp := client.ListDeploymentsRequest(params)
 //
-//    // Example sending a request using the ListDeploymentsRequest method.
-//    req, resp := client.ListDeploymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListDeployments
 func (c *AppConfig) ListDeploymentsRequest(input *ListDeploymentsInput) (req *request.Request, output *ListDeploymentsOutput) {
@@ -2058,15 +2054,16 @@ func (c *AppConfig) ListDeploymentsRequest(input *ListDeploymentsInput) (req *re
 // API operation ListDeployments for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListDeployments
 func (c *AppConfig) ListDeployments(input *ListDeploymentsInput) (*ListDeploymentsOutput, error) {
@@ -2098,15 +2095,14 @@ func (c *AppConfig) ListDeploymentsWithContext(ctx aws.Context, input *ListDeplo
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDeployments operation.
-//    pageNum := 0
-//    err := client.ListDeploymentsPages(params,
-//        func(page *appconfig.ListDeploymentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDeployments operation.
+//	pageNum := 0
+//	err := client.ListDeploymentsPages(params,
+//	    func(page *appconfig.ListDeploymentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListDeploymentsPages(input *ListDeploymentsInput, fn func(*ListDeploymentsOutput, bool) bool) error {
 	return c.ListDeploymentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2158,14 +2154,13 @@ const opListEnvironments = "ListEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentsRequest method.
+//	req, resp := client.ListEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentsRequest method.
-//    req, resp := client.ListEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListEnvironments
 func (c *AppConfig) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *request.Request, output *ListEnvironmentsOutput) {
@@ -2202,15 +2197,16 @@ func (c *AppConfig) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *
 // API operation ListEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListEnvironments
 func (c *AppConfig) ListEnvironments(input *ListEnvironmentsInput) (*ListEnvironmentsOutput, error) {
@@ -2242,15 +2238,14 @@ func (c *AppConfig) ListEnvironmentsWithContext(ctx aws.Context, input *ListEnvi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironments operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentsPages(params,
-//        func(page *appconfig.ListEnvironmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironments operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentsPages(params,
+//	    func(page *appconfig.ListEnvironmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListEnvironmentsPages(input *ListEnvironmentsInput, fn func(*ListEnvironmentsOutput, bool) bool) error {
 	return c.ListEnvironmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2302,14 +2297,13 @@ const opListHostedConfigurationVersions = "ListHostedConfigurationVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHostedConfigurationVersionsRequest method.
+//	req, resp := client.ListHostedConfigurationVersionsRequest(params)
 //
-//    // Example sending a request using the ListHostedConfigurationVersionsRequest method.
-//    req, resp := client.ListHostedConfigurationVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListHostedConfigurationVersions
 func (c *AppConfig) ListHostedConfigurationVersionsRequest(input *ListHostedConfigurationVersionsInput) (req *request.Request, output *ListHostedConfigurationVersionsOutput) {
@@ -2347,15 +2341,16 @@ func (c *AppConfig) ListHostedConfigurationVersionsRequest(input *ListHostedConf
 // API operation ListHostedConfigurationVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListHostedConfigurationVersions
 func (c *AppConfig) ListHostedConfigurationVersions(input *ListHostedConfigurationVersionsInput) (*ListHostedConfigurationVersionsOutput, error) {
@@ -2387,15 +2382,14 @@ func (c *AppConfig) ListHostedConfigurationVersionsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHostedConfigurationVersions operation.
-//    pageNum := 0
-//    err := client.ListHostedConfigurationVersionsPages(params,
-//        func(page *appconfig.ListHostedConfigurationVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHostedConfigurationVersions operation.
+//	pageNum := 0
+//	err := client.ListHostedConfigurationVersionsPages(params,
+//	    func(page *appconfig.ListHostedConfigurationVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AppConfig) ListHostedConfigurationVersionsPages(input *ListHostedConfigurationVersionsInput, fn func(*ListHostedConfigurationVersionsOutput, bool) bool) error {
 	return c.ListHostedConfigurationVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2447,14 +2441,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListTagsForResource
 func (c *AppConfig) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2485,15 +2478,16 @@ func (c *AppConfig) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ListTagsForResource
 func (c *AppConfig) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2533,14 +2527,13 @@ const opStartDeployment = "StartDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDeploymentRequest method.
+//	req, resp := client.StartDeploymentRequest(params)
 //
-//    // Example sending a request using the StartDeploymentRequest method.
-//    req, resp := client.StartDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/StartDeployment
 func (c *AppConfig) StartDeploymentRequest(input *StartDeploymentInput) (req *request.Request, output *StartDeploymentOutput) {
@@ -2571,19 +2564,20 @@ func (c *AppConfig) StartDeploymentRequest(input *StartDeploymentInput) (req *re
 // API operation StartDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/StartDeployment
 func (c *AppConfig) StartDeployment(input *StartDeploymentInput) (*StartDeploymentOutput, error) {
@@ -2623,14 +2617,13 @@ const opStopDeployment = "StopDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopDeploymentRequest method.
+//	req, resp := client.StopDeploymentRequest(params)
 //
-//    // Example sending a request using the StopDeploymentRequest method.
-//    req, resp := client.StopDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/StopDeployment
 func (c *AppConfig) StopDeploymentRequest(input *StopDeploymentInput) (req *request.Request, output *StopDeploymentOutput) {
@@ -2662,15 +2655,16 @@ func (c *AppConfig) StopDeploymentRequest(input *StopDeploymentInput) (req *requ
 // API operation StopDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
+//
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/StopDeployment
 func (c *AppConfig) StopDeployment(input *StopDeploymentInput) (*StopDeploymentOutput, error) {
@@ -2710,14 +2704,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/TagResource
 func (c *AppConfig) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2751,15 +2744,16 @@ func (c *AppConfig) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/TagResource
 func (c *AppConfig) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2799,14 +2793,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UntagResource
 func (c *AppConfig) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2838,15 +2831,16 @@ func (c *AppConfig) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UntagResource
 func (c *AppConfig) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2886,14 +2880,13 @@ const opUpdateApplication = "UpdateApplication"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationRequest method.
-//    req, resp := client.UpdateApplicationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateApplication
 func (c *AppConfig) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
@@ -2924,15 +2917,16 @@ func (c *AppConfig) UpdateApplicationRequest(input *UpdateApplicationInput) (req
 // API operation UpdateApplication for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateApplication
 func (c *AppConfig) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
@@ -2972,14 +2966,13 @@ const opUpdateConfigurationProfile = "UpdateConfigurationProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigurationProfileRequest method.
+//	req, resp := client.UpdateConfigurationProfileRequest(params)
 //
-//    // Example sending a request using the UpdateConfigurationProfileRequest method.
-//    req, resp := client.UpdateConfigurationProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateConfigurationProfile
 func (c *AppConfig) UpdateConfigurationProfileRequest(input *UpdateConfigurationProfileInput) (req *request.Request, output *UpdateConfigurationProfileOutput) {
@@ -3010,15 +3003,16 @@ func (c *AppConfig) UpdateConfigurationProfileRequest(input *UpdateConfiguration
 // API operation UpdateConfigurationProfile for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateConfigurationProfile
 func (c *AppConfig) UpdateConfigurationProfile(input *UpdateConfigurationProfileInput) (*UpdateConfigurationProfileOutput, error) {
@@ -3058,14 +3052,13 @@ const opUpdateDeploymentStrategy = "UpdateDeploymentStrategy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeploymentStrategyRequest method.
+//	req, resp := client.UpdateDeploymentStrategyRequest(params)
 //
-//    // Example sending a request using the UpdateDeploymentStrategyRequest method.
-//    req, resp := client.UpdateDeploymentStrategyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateDeploymentStrategy
 func (c *AppConfig) UpdateDeploymentStrategyRequest(input *UpdateDeploymentStrategyInput) (req *request.Request, output *UpdateDeploymentStrategyOutput) {
@@ -3096,15 +3089,16 @@ func (c *AppConfig) UpdateDeploymentStrategyRequest(input *UpdateDeploymentStrat
 // API operation UpdateDeploymentStrategy for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateDeploymentStrategy
 func (c *AppConfig) UpdateDeploymentStrategy(input *UpdateDeploymentStrategyInput) (*UpdateDeploymentStrategyOutput, error) {
@@ -3144,14 +3138,13 @@ const opUpdateEnvironment = "UpdateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentRequest method.
+//	req, resp := client.UpdateEnvironmentRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentRequest method.
-//    req, resp := client.UpdateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateEnvironment
 func (c *AppConfig) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *request.Request, output *UpdateEnvironmentOutput) {
@@ -3182,15 +3175,16 @@ func (c *AppConfig) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req
 // API operation UpdateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/UpdateEnvironment
 func (c *AppConfig) UpdateEnvironment(input *UpdateEnvironmentInput) (*UpdateEnvironmentOutput, error) {
@@ -3230,14 +3224,13 @@ const opValidateConfiguration = "ValidateConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ValidateConfigurationRequest method.
+//	req, resp := client.ValidateConfigurationRequest(params)
 //
-//    // Example sending a request using the ValidateConfigurationRequest method.
-//    req, resp := client.ValidateConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ValidateConfiguration
 func (c *AppConfig) ValidateConfigurationRequest(input *ValidateConfigurationInput) (req *request.Request, output *ValidateConfigurationOutput) {
@@ -3269,15 +3262,16 @@ func (c *AppConfig) ValidateConfigurationRequest(input *ValidateConfigurationInp
 // API operation ValidateConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by an Amazon Web Services
-//   service.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
-//   * InternalServerException
-//   There was an internal failure in the AppConfig service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
+//
+//   - InternalServerException
+//     There was an internal failure in the AppConfig service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfig-2019-10-09/ValidateConfiguration
 func (c *AppConfig) ValidateConfiguration(input *ValidateConfigurationInput) (*ValidateConfigurationOutput, error) {

@@ -29,14 +29,13 @@ const opAddAttributesToFindings = "AddAttributesToFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddAttributesToFindingsRequest method.
+//	req, resp := client.AddAttributesToFindingsRequest(params)
 //
-//    // Example sending a request using the AddAttributesToFindingsRequest method.
-//    req, resp := client.AddAttributesToFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindings
 func (c *Inspector) AddAttributesToFindingsRequest(input *AddAttributesToFindingsInput) (req *request.Request, output *AddAttributesToFindingsOutput) {
@@ -68,22 +67,23 @@ func (c *Inspector) AddAttributesToFindingsRequest(input *AddAttributesToFinding
 // API operation AddAttributesToFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/AddAttributesToFindings
 func (c *Inspector) AddAttributesToFindings(input *AddAttributesToFindingsInput) (*AddAttributesToFindingsOutput, error) {
@@ -123,14 +123,13 @@ const opCreateAssessmentTarget = "CreateAssessmentTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssessmentTargetRequest method.
+//	req, resp := client.CreateAssessmentTargetRequest(params)
 //
-//    // Example sending a request using the CreateAssessmentTargetRequest method.
-//    req, resp := client.CreateAssessmentTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTarget
 func (c *Inspector) CreateAssessmentTargetRequest(input *CreateAssessmentTargetInput) (req *request.Request, output *CreateAssessmentTargetOutput) {
@@ -169,30 +168,31 @@ func (c *Inspector) CreateAssessmentTargetRequest(input *CreateAssessmentTargetI
 // API operation CreateAssessmentTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current AWS account limits. The error code describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current AWS account limits. The error code describes the limit exceeded.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * InvalidCrossAccountRoleException
-//   Amazon Inspector cannot assume the cross-account role that it needs to list
-//   your EC2 instances during the assessment run.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - InvalidCrossAccountRoleException
+//     Amazon Inspector cannot assume the cross-account role that it needs to list
+//     your EC2 instances during the assessment run.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTarget
 func (c *Inspector) CreateAssessmentTarget(input *CreateAssessmentTargetInput) (*CreateAssessmentTargetOutput, error) {
@@ -232,14 +232,13 @@ const opCreateAssessmentTemplate = "CreateAssessmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssessmentTemplateRequest method.
+//	req, resp := client.CreateAssessmentTemplateRequest(params)
 //
-//    // Example sending a request using the CreateAssessmentTemplateRequest method.
-//    req, resp := client.CreateAssessmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplate
 func (c *Inspector) CreateAssessmentTemplateRequest(input *CreateAssessmentTemplateInput) (req *request.Request, output *CreateAssessmentTemplateOutput) {
@@ -274,26 +273,27 @@ func (c *Inspector) CreateAssessmentTemplateRequest(input *CreateAssessmentTempl
 // API operation CreateAssessmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current AWS account limits. The error code describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current AWS account limits. The error code describes the limit exceeded.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateAssessmentTemplate
 func (c *Inspector) CreateAssessmentTemplate(input *CreateAssessmentTemplateInput) (*CreateAssessmentTemplateOutput, error) {
@@ -333,14 +333,13 @@ const opCreateExclusionsPreview = "CreateExclusionsPreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateExclusionsPreviewRequest method.
+//	req, resp := client.CreateExclusionsPreviewRequest(params)
 //
-//    // Example sending a request using the CreateExclusionsPreviewRequest method.
-//    req, resp := client.CreateExclusionsPreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateExclusionsPreview
 func (c *Inspector) CreateExclusionsPreviewRequest(input *CreateExclusionsPreviewInput) (req *request.Request, output *CreateExclusionsPreviewOutput) {
@@ -373,26 +372,27 @@ func (c *Inspector) CreateExclusionsPreviewRequest(input *CreateExclusionsPrevie
 // API operation CreateExclusionsPreview for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * PreviewGenerationInProgressException
-//   The request is rejected. The specified assessment template is currently generating
-//   an exclusions preview.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * InternalException
-//   Internal server error.
+//   - PreviewGenerationInProgressException
+//     The request is rejected. The specified assessment template is currently generating
+//     an exclusions preview.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InternalException
+//     Internal server error.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateExclusionsPreview
 func (c *Inspector) CreateExclusionsPreview(input *CreateExclusionsPreviewInput) (*CreateExclusionsPreviewOutput, error) {
@@ -432,14 +432,13 @@ const opCreateResourceGroup = "CreateResourceGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourceGroupRequest method.
+//	req, resp := client.CreateResourceGroupRequest(params)
 //
-//    // Example sending a request using the CreateResourceGroupRequest method.
-//    req, resp := client.CreateResourceGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroup
 func (c *Inspector) CreateResourceGroupRequest(input *CreateResourceGroupInput) (req *request.Request, output *CreateResourceGroupOutput) {
@@ -473,22 +472,23 @@ func (c *Inspector) CreateResourceGroupRequest(input *CreateResourceGroupInput) 
 // API operation CreateResourceGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current AWS account limits. The error code describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current AWS account limits. The error code describes the limit exceeded.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/CreateResourceGroup
 func (c *Inspector) CreateResourceGroup(input *CreateResourceGroupInput) (*CreateResourceGroupOutput, error) {
@@ -528,14 +528,13 @@ const opDeleteAssessmentRun = "DeleteAssessmentRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssessmentRunRequest method.
+//	req, resp := client.DeleteAssessmentRunRequest(params)
 //
-//    // Example sending a request using the DeleteAssessmentRunRequest method.
-//    req, resp := client.DeleteAssessmentRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRun
 func (c *Inspector) DeleteAssessmentRunRequest(input *DeleteAssessmentRunInput) (req *request.Request, output *DeleteAssessmentRunOutput) {
@@ -568,26 +567,27 @@ func (c *Inspector) DeleteAssessmentRunRequest(input *DeleteAssessmentRunInput) 
 // API operation DeleteAssessmentRun for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AssessmentRunInProgressException
-//   You cannot perform a specified action if an assessment run is currently in
-//   progress.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - AssessmentRunInProgressException
+//     You cannot perform a specified action if an assessment run is currently in
+//     progress.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentRun
 func (c *Inspector) DeleteAssessmentRun(input *DeleteAssessmentRunInput) (*DeleteAssessmentRunOutput, error) {
@@ -627,14 +627,13 @@ const opDeleteAssessmentTarget = "DeleteAssessmentTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssessmentTargetRequest method.
+//	req, resp := client.DeleteAssessmentTargetRequest(params)
 //
-//    // Example sending a request using the DeleteAssessmentTargetRequest method.
-//    req, resp := client.DeleteAssessmentTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTarget
 func (c *Inspector) DeleteAssessmentTargetRequest(input *DeleteAssessmentTargetInput) (req *request.Request, output *DeleteAssessmentTargetOutput) {
@@ -667,26 +666,27 @@ func (c *Inspector) DeleteAssessmentTargetRequest(input *DeleteAssessmentTargetI
 // API operation DeleteAssessmentTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AssessmentRunInProgressException
-//   You cannot perform a specified action if an assessment run is currently in
-//   progress.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - AssessmentRunInProgressException
+//     You cannot perform a specified action if an assessment run is currently in
+//     progress.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTarget
 func (c *Inspector) DeleteAssessmentTarget(input *DeleteAssessmentTargetInput) (*DeleteAssessmentTargetOutput, error) {
@@ -726,14 +726,13 @@ const opDeleteAssessmentTemplate = "DeleteAssessmentTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssessmentTemplateRequest method.
+//	req, resp := client.DeleteAssessmentTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteAssessmentTemplateRequest method.
-//    req, resp := client.DeleteAssessmentTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplate
 func (c *Inspector) DeleteAssessmentTemplateRequest(input *DeleteAssessmentTemplateInput) (req *request.Request, output *DeleteAssessmentTemplateOutput) {
@@ -766,26 +765,27 @@ func (c *Inspector) DeleteAssessmentTemplateRequest(input *DeleteAssessmentTempl
 // API operation DeleteAssessmentTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AssessmentRunInProgressException
-//   You cannot perform a specified action if an assessment run is currently in
-//   progress.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - AssessmentRunInProgressException
+//     You cannot perform a specified action if an assessment run is currently in
+//     progress.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DeleteAssessmentTemplate
 func (c *Inspector) DeleteAssessmentTemplate(input *DeleteAssessmentTemplateInput) (*DeleteAssessmentTemplateOutput, error) {
@@ -825,14 +825,13 @@ const opDescribeAssessmentRuns = "DescribeAssessmentRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssessmentRunsRequest method.
+//	req, resp := client.DescribeAssessmentRunsRequest(params)
 //
-//    // Example sending a request using the DescribeAssessmentRunsRequest method.
-//    req, resp := client.DescribeAssessmentRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRuns
 func (c *Inspector) DescribeAssessmentRunsRequest(input *DescribeAssessmentRunsInput) (req *request.Request, output *DescribeAssessmentRunsOutput) {
@@ -864,12 +863,13 @@ func (c *Inspector) DescribeAssessmentRunsRequest(input *DescribeAssessmentRunsI
 // API operation DescribeAssessmentRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentRuns
 func (c *Inspector) DescribeAssessmentRuns(input *DescribeAssessmentRunsInput) (*DescribeAssessmentRunsOutput, error) {
@@ -909,14 +909,13 @@ const opDescribeAssessmentTargets = "DescribeAssessmentTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssessmentTargetsRequest method.
+//	req, resp := client.DescribeAssessmentTargetsRequest(params)
 //
-//    // Example sending a request using the DescribeAssessmentTargetsRequest method.
-//    req, resp := client.DescribeAssessmentTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargets
 func (c *Inspector) DescribeAssessmentTargetsRequest(input *DescribeAssessmentTargetsInput) (req *request.Request, output *DescribeAssessmentTargetsOutput) {
@@ -948,12 +947,13 @@ func (c *Inspector) DescribeAssessmentTargetsRequest(input *DescribeAssessmentTa
 // API operation DescribeAssessmentTargets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTargets
 func (c *Inspector) DescribeAssessmentTargets(input *DescribeAssessmentTargetsInput) (*DescribeAssessmentTargetsOutput, error) {
@@ -993,14 +993,13 @@ const opDescribeAssessmentTemplates = "DescribeAssessmentTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssessmentTemplatesRequest method.
+//	req, resp := client.DescribeAssessmentTemplatesRequest(params)
 //
-//    // Example sending a request using the DescribeAssessmentTemplatesRequest method.
-//    req, resp := client.DescribeAssessmentTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplates
 func (c *Inspector) DescribeAssessmentTemplatesRequest(input *DescribeAssessmentTemplatesInput) (req *request.Request, output *DescribeAssessmentTemplatesOutput) {
@@ -1032,12 +1031,13 @@ func (c *Inspector) DescribeAssessmentTemplatesRequest(input *DescribeAssessment
 // API operation DescribeAssessmentTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeAssessmentTemplates
 func (c *Inspector) DescribeAssessmentTemplates(input *DescribeAssessmentTemplatesInput) (*DescribeAssessmentTemplatesOutput, error) {
@@ -1077,14 +1077,13 @@ const opDescribeCrossAccountAccessRole = "DescribeCrossAccountAccessRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCrossAccountAccessRoleRequest method.
+//	req, resp := client.DescribeCrossAccountAccessRoleRequest(params)
 //
-//    // Example sending a request using the DescribeCrossAccountAccessRoleRequest method.
-//    req, resp := client.DescribeCrossAccountAccessRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRole
 func (c *Inspector) DescribeCrossAccountAccessRoleRequest(input *DescribeCrossAccountAccessRoleInput) (req *request.Request, output *DescribeCrossAccountAccessRoleOutput) {
@@ -1115,8 +1114,8 @@ func (c *Inspector) DescribeCrossAccountAccessRoleRequest(input *DescribeCrossAc
 // API operation DescribeCrossAccountAccessRole for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
+//   - InternalException
+//     Internal server error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeCrossAccountAccessRole
 func (c *Inspector) DescribeCrossAccountAccessRole(input *DescribeCrossAccountAccessRoleInput) (*DescribeCrossAccountAccessRoleOutput, error) {
@@ -1156,14 +1155,13 @@ const opDescribeExclusions = "DescribeExclusions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExclusionsRequest method.
+//	req, resp := client.DescribeExclusionsRequest(params)
 //
-//    // Example sending a request using the DescribeExclusionsRequest method.
-//    req, resp := client.DescribeExclusionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeExclusions
 func (c *Inspector) DescribeExclusionsRequest(input *DescribeExclusionsInput) (req *request.Request, output *DescribeExclusionsOutput) {
@@ -1194,12 +1192,13 @@ func (c *Inspector) DescribeExclusionsRequest(input *DescribeExclusionsInput) (r
 // API operation DescribeExclusions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeExclusions
 func (c *Inspector) DescribeExclusions(input *DescribeExclusionsInput) (*DescribeExclusionsOutput, error) {
@@ -1239,14 +1238,13 @@ const opDescribeFindings = "DescribeFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFindingsRequest method.
+//	req, resp := client.DescribeFindingsRequest(params)
 //
-//    // Example sending a request using the DescribeFindingsRequest method.
-//    req, resp := client.DescribeFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindings
 func (c *Inspector) DescribeFindingsRequest(input *DescribeFindingsInput) (req *request.Request, output *DescribeFindingsOutput) {
@@ -1277,12 +1275,13 @@ func (c *Inspector) DescribeFindingsRequest(input *DescribeFindingsInput) (req *
 // API operation DescribeFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeFindings
 func (c *Inspector) DescribeFindings(input *DescribeFindingsInput) (*DescribeFindingsOutput, error) {
@@ -1322,14 +1321,13 @@ const opDescribeResourceGroups = "DescribeResourceGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResourceGroupsRequest method.
+//	req, resp := client.DescribeResourceGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeResourceGroupsRequest method.
-//    req, resp := client.DescribeResourceGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroups
 func (c *Inspector) DescribeResourceGroupsRequest(input *DescribeResourceGroupsInput) (req *request.Request, output *DescribeResourceGroupsOutput) {
@@ -1361,12 +1359,13 @@ func (c *Inspector) DescribeResourceGroupsRequest(input *DescribeResourceGroupsI
 // API operation DescribeResourceGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeResourceGroups
 func (c *Inspector) DescribeResourceGroups(input *DescribeResourceGroupsInput) (*DescribeResourceGroupsOutput, error) {
@@ -1406,14 +1405,13 @@ const opDescribeRulesPackages = "DescribeRulesPackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRulesPackagesRequest method.
+//	req, resp := client.DescribeRulesPackagesRequest(params)
 //
-//    // Example sending a request using the DescribeRulesPackagesRequest method.
-//    req, resp := client.DescribeRulesPackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackages
 func (c *Inspector) DescribeRulesPackagesRequest(input *DescribeRulesPackagesInput) (req *request.Request, output *DescribeRulesPackagesOutput) {
@@ -1445,12 +1443,13 @@ func (c *Inspector) DescribeRulesPackagesRequest(input *DescribeRulesPackagesInp
 // API operation DescribeRulesPackages for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
+//
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/DescribeRulesPackages
 func (c *Inspector) DescribeRulesPackages(input *DescribeRulesPackagesInput) (*DescribeRulesPackagesOutput, error) {
@@ -1490,14 +1489,13 @@ const opGetAssessmentReport = "GetAssessmentReport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssessmentReportRequest method.
+//	req, resp := client.GetAssessmentReportRequest(params)
 //
-//    // Example sending a request using the GetAssessmentReportRequest method.
-//    req, resp := client.GetAssessmentReportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetAssessmentReport
 func (c *Inspector) GetAssessmentReportRequest(input *GetAssessmentReportInput) (req *request.Request, output *GetAssessmentReportOutput) {
@@ -1529,33 +1527,34 @@ func (c *Inspector) GetAssessmentReportRequest(input *GetAssessmentReportInput) 
 // API operation GetAssessmentReport for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * AssessmentRunInProgressException
-//   You cannot perform a specified action if an assessment run is currently in
-//   progress.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
-//   * UnsupportedFeatureException
-//   Used by the GetAssessmentReport API. The request was rejected because you
-//   tried to generate a report for an assessment run that existed before reporting
-//   was supported in Amazon Inspector. You can only generate reports for assessment
-//   runs that took place or will take place after generating reports in Amazon
-//   Inspector became available.
+//   - AssessmentRunInProgressException
+//     You cannot perform a specified action if an assessment run is currently in
+//     progress.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - UnsupportedFeatureException
+//     Used by the GetAssessmentReport API. The request was rejected because you
+//     tried to generate a report for an assessment run that existed before reporting
+//     was supported in Amazon Inspector. You can only generate reports for assessment
+//     runs that took place or will take place after generating reports in Amazon
+//     Inspector became available.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetAssessmentReport
 func (c *Inspector) GetAssessmentReport(input *GetAssessmentReportInput) (*GetAssessmentReportOutput, error) {
@@ -1595,14 +1594,13 @@ const opGetExclusionsPreview = "GetExclusionsPreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExclusionsPreviewRequest method.
+//	req, resp := client.GetExclusionsPreviewRequest(params)
 //
-//    // Example sending a request using the GetExclusionsPreviewRequest method.
-//    req, resp := client.GetExclusionsPreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetExclusionsPreview
 func (c *Inspector) GetExclusionsPreviewRequest(input *GetExclusionsPreviewInput) (req *request.Request, output *GetExclusionsPreviewOutput) {
@@ -1641,19 +1639,20 @@ func (c *Inspector) GetExclusionsPreviewRequest(input *GetExclusionsPreviewInput
 // API operation GetExclusionsPreview for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
 //
-//   * InternalException
-//   Internal server error.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InternalException
+//     Internal server error.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetExclusionsPreview
 func (c *Inspector) GetExclusionsPreview(input *GetExclusionsPreviewInput) (*GetExclusionsPreviewOutput, error) {
@@ -1685,15 +1684,14 @@ func (c *Inspector) GetExclusionsPreviewWithContext(ctx aws.Context, input *GetE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetExclusionsPreview operation.
-//    pageNum := 0
-//    err := client.GetExclusionsPreviewPages(params,
-//        func(page *inspector.GetExclusionsPreviewOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetExclusionsPreview operation.
+//	pageNum := 0
+//	err := client.GetExclusionsPreviewPages(params,
+//	    func(page *inspector.GetExclusionsPreviewOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) GetExclusionsPreviewPages(input *GetExclusionsPreviewInput, fn func(*GetExclusionsPreviewOutput, bool) bool) error {
 	return c.GetExclusionsPreviewPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1745,14 +1743,13 @@ const opGetTelemetryMetadata = "GetTelemetryMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTelemetryMetadataRequest method.
+//	req, resp := client.GetTelemetryMetadataRequest(params)
 //
-//    // Example sending a request using the GetTelemetryMetadataRequest method.
-//    req, resp := client.GetTelemetryMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadata
 func (c *Inspector) GetTelemetryMetadataRequest(input *GetTelemetryMetadataInput) (req *request.Request, output *GetTelemetryMetadataOutput) {
@@ -1784,19 +1781,20 @@ func (c *Inspector) GetTelemetryMetadataRequest(input *GetTelemetryMetadataInput
 // API operation GetTelemetryMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/GetTelemetryMetadata
 func (c *Inspector) GetTelemetryMetadata(input *GetTelemetryMetadataInput) (*GetTelemetryMetadataOutput, error) {
@@ -1836,14 +1834,13 @@ const opListAssessmentRunAgents = "ListAssessmentRunAgents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssessmentRunAgentsRequest method.
+//	req, resp := client.ListAssessmentRunAgentsRequest(params)
 //
-//    // Example sending a request using the ListAssessmentRunAgentsRequest method.
-//    req, resp := client.ListAssessmentRunAgentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgents
 func (c *Inspector) ListAssessmentRunAgentsRequest(input *ListAssessmentRunAgentsInput) (req *request.Request, output *ListAssessmentRunAgentsOutput) {
@@ -1881,19 +1878,20 @@ func (c *Inspector) ListAssessmentRunAgentsRequest(input *ListAssessmentRunAgent
 // API operation ListAssessmentRunAgents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRunAgents
 func (c *Inspector) ListAssessmentRunAgents(input *ListAssessmentRunAgentsInput) (*ListAssessmentRunAgentsOutput, error) {
@@ -1925,15 +1923,14 @@ func (c *Inspector) ListAssessmentRunAgentsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssessmentRunAgents operation.
-//    pageNum := 0
-//    err := client.ListAssessmentRunAgentsPages(params,
-//        func(page *inspector.ListAssessmentRunAgentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssessmentRunAgents operation.
+//	pageNum := 0
+//	err := client.ListAssessmentRunAgentsPages(params,
+//	    func(page *inspector.ListAssessmentRunAgentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListAssessmentRunAgentsPages(input *ListAssessmentRunAgentsInput, fn func(*ListAssessmentRunAgentsOutput, bool) bool) error {
 	return c.ListAssessmentRunAgentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1985,14 +1982,13 @@ const opListAssessmentRuns = "ListAssessmentRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssessmentRunsRequest method.
+//	req, resp := client.ListAssessmentRunsRequest(params)
 //
-//    // Example sending a request using the ListAssessmentRunsRequest method.
-//    req, resp := client.ListAssessmentRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRuns
 func (c *Inspector) ListAssessmentRunsRequest(input *ListAssessmentRunsInput) (req *request.Request, output *ListAssessmentRunsOutput) {
@@ -2030,19 +2026,20 @@ func (c *Inspector) ListAssessmentRunsRequest(input *ListAssessmentRunsInput) (r
 // API operation ListAssessmentRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentRuns
 func (c *Inspector) ListAssessmentRuns(input *ListAssessmentRunsInput) (*ListAssessmentRunsOutput, error) {
@@ -2074,15 +2071,14 @@ func (c *Inspector) ListAssessmentRunsWithContext(ctx aws.Context, input *ListAs
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssessmentRuns operation.
-//    pageNum := 0
-//    err := client.ListAssessmentRunsPages(params,
-//        func(page *inspector.ListAssessmentRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssessmentRuns operation.
+//	pageNum := 0
+//	err := client.ListAssessmentRunsPages(params,
+//	    func(page *inspector.ListAssessmentRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListAssessmentRunsPages(input *ListAssessmentRunsInput, fn func(*ListAssessmentRunsOutput, bool) bool) error {
 	return c.ListAssessmentRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2134,14 +2130,13 @@ const opListAssessmentTargets = "ListAssessmentTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssessmentTargetsRequest method.
+//	req, resp := client.ListAssessmentTargetsRequest(params)
 //
-//    // Example sending a request using the ListAssessmentTargetsRequest method.
-//    req, resp := client.ListAssessmentTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargets
 func (c *Inspector) ListAssessmentTargetsRequest(input *ListAssessmentTargetsInput) (req *request.Request, output *ListAssessmentTargetsOutput) {
@@ -2180,15 +2175,16 @@ func (c *Inspector) ListAssessmentTargetsRequest(input *ListAssessmentTargetsInp
 // API operation ListAssessmentTargets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTargets
 func (c *Inspector) ListAssessmentTargets(input *ListAssessmentTargetsInput) (*ListAssessmentTargetsOutput, error) {
@@ -2220,15 +2216,14 @@ func (c *Inspector) ListAssessmentTargetsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssessmentTargets operation.
-//    pageNum := 0
-//    err := client.ListAssessmentTargetsPages(params,
-//        func(page *inspector.ListAssessmentTargetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssessmentTargets operation.
+//	pageNum := 0
+//	err := client.ListAssessmentTargetsPages(params,
+//	    func(page *inspector.ListAssessmentTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListAssessmentTargetsPages(input *ListAssessmentTargetsInput, fn func(*ListAssessmentTargetsOutput, bool) bool) error {
 	return c.ListAssessmentTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2280,14 +2275,13 @@ const opListAssessmentTemplates = "ListAssessmentTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssessmentTemplatesRequest method.
+//	req, resp := client.ListAssessmentTemplatesRequest(params)
 //
-//    // Example sending a request using the ListAssessmentTemplatesRequest method.
-//    req, resp := client.ListAssessmentTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplates
 func (c *Inspector) ListAssessmentTemplatesRequest(input *ListAssessmentTemplatesInput) (req *request.Request, output *ListAssessmentTemplatesOutput) {
@@ -2325,19 +2319,20 @@ func (c *Inspector) ListAssessmentTemplatesRequest(input *ListAssessmentTemplate
 // API operation ListAssessmentTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListAssessmentTemplates
 func (c *Inspector) ListAssessmentTemplates(input *ListAssessmentTemplatesInput) (*ListAssessmentTemplatesOutput, error) {
@@ -2369,15 +2364,14 @@ func (c *Inspector) ListAssessmentTemplatesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssessmentTemplates operation.
-//    pageNum := 0
-//    err := client.ListAssessmentTemplatesPages(params,
-//        func(page *inspector.ListAssessmentTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssessmentTemplates operation.
+//	pageNum := 0
+//	err := client.ListAssessmentTemplatesPages(params,
+//	    func(page *inspector.ListAssessmentTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListAssessmentTemplatesPages(input *ListAssessmentTemplatesInput, fn func(*ListAssessmentTemplatesOutput, bool) bool) error {
 	return c.ListAssessmentTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2429,14 +2423,13 @@ const opListEventSubscriptions = "ListEventSubscriptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventSubscriptionsRequest method.
+//	req, resp := client.ListEventSubscriptionsRequest(params)
 //
-//    // Example sending a request using the ListEventSubscriptionsRequest method.
-//    req, resp := client.ListEventSubscriptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptions
 func (c *Inspector) ListEventSubscriptionsRequest(input *ListEventSubscriptionsInput) (req *request.Request, output *ListEventSubscriptionsOutput) {
@@ -2475,19 +2468,20 @@ func (c *Inspector) ListEventSubscriptionsRequest(input *ListEventSubscriptionsI
 // API operation ListEventSubscriptions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListEventSubscriptions
 func (c *Inspector) ListEventSubscriptions(input *ListEventSubscriptionsInput) (*ListEventSubscriptionsOutput, error) {
@@ -2519,15 +2513,14 @@ func (c *Inspector) ListEventSubscriptionsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEventSubscriptions operation.
-//    pageNum := 0
-//    err := client.ListEventSubscriptionsPages(params,
-//        func(page *inspector.ListEventSubscriptionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEventSubscriptions operation.
+//	pageNum := 0
+//	err := client.ListEventSubscriptionsPages(params,
+//	    func(page *inspector.ListEventSubscriptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListEventSubscriptionsPages(input *ListEventSubscriptionsInput, fn func(*ListEventSubscriptionsOutput, bool) bool) error {
 	return c.ListEventSubscriptionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2579,14 +2572,13 @@ const opListExclusions = "ListExclusions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExclusionsRequest method.
+//	req, resp := client.ListExclusionsRequest(params)
 //
-//    // Example sending a request using the ListExclusionsRequest method.
-//    req, resp := client.ListExclusionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListExclusions
 func (c *Inspector) ListExclusionsRequest(input *ListExclusionsInput) (req *request.Request, output *ListExclusionsOutput) {
@@ -2623,19 +2615,20 @@ func (c *Inspector) ListExclusionsRequest(input *ListExclusionsInput) (req *requ
 // API operation ListExclusions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListExclusions
 func (c *Inspector) ListExclusions(input *ListExclusionsInput) (*ListExclusionsOutput, error) {
@@ -2667,15 +2660,14 @@ func (c *Inspector) ListExclusionsWithContext(ctx aws.Context, input *ListExclus
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExclusions operation.
-//    pageNum := 0
-//    err := client.ListExclusionsPages(params,
-//        func(page *inspector.ListExclusionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExclusions operation.
+//	pageNum := 0
+//	err := client.ListExclusionsPages(params,
+//	    func(page *inspector.ListExclusionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListExclusionsPages(input *ListExclusionsInput, fn func(*ListExclusionsOutput, bool) bool) error {
 	return c.ListExclusionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2727,14 +2719,13 @@ const opListFindings = "ListFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingsRequest method.
+//	req, resp := client.ListFindingsRequest(params)
 //
-//    // Example sending a request using the ListFindingsRequest method.
-//    req, resp := client.ListFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindings
 func (c *Inspector) ListFindingsRequest(input *ListFindingsInput) (req *request.Request, output *ListFindingsOutput) {
@@ -2772,19 +2763,20 @@ func (c *Inspector) ListFindingsRequest(input *ListFindingsInput) (req *request.
 // API operation ListFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListFindings
 func (c *Inspector) ListFindings(input *ListFindingsInput) (*ListFindingsOutput, error) {
@@ -2816,15 +2808,14 @@ func (c *Inspector) ListFindingsWithContext(ctx aws.Context, input *ListFindings
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindings operation.
-//    pageNum := 0
-//    err := client.ListFindingsPages(params,
-//        func(page *inspector.ListFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindings operation.
+//	pageNum := 0
+//	err := client.ListFindingsPages(params,
+//	    func(page *inspector.ListFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListFindingsPages(input *ListFindingsInput, fn func(*ListFindingsOutput, bool) bool) error {
 	return c.ListFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2876,14 +2867,13 @@ const opListRulesPackages = "ListRulesPackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesPackagesRequest method.
+//	req, resp := client.ListRulesPackagesRequest(params)
 //
-//    // Example sending a request using the ListRulesPackagesRequest method.
-//    req, resp := client.ListRulesPackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackages
 func (c *Inspector) ListRulesPackagesRequest(input *ListRulesPackagesInput) (req *request.Request, output *ListRulesPackagesOutput) {
@@ -2920,15 +2910,16 @@ func (c *Inspector) ListRulesPackagesRequest(input *ListRulesPackagesInput) (req
 // API operation ListRulesPackages for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListRulesPackages
 func (c *Inspector) ListRulesPackages(input *ListRulesPackagesInput) (*ListRulesPackagesOutput, error) {
@@ -2960,15 +2951,14 @@ func (c *Inspector) ListRulesPackagesWithContext(ctx aws.Context, input *ListRul
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRulesPackages operation.
-//    pageNum := 0
-//    err := client.ListRulesPackagesPages(params,
-//        func(page *inspector.ListRulesPackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRulesPackages operation.
+//	pageNum := 0
+//	err := client.ListRulesPackagesPages(params,
+//	    func(page *inspector.ListRulesPackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) ListRulesPackagesPages(input *ListRulesPackagesInput, fn func(*ListRulesPackagesOutput, bool) bool) error {
 	return c.ListRulesPackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3020,14 +3010,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResource
 func (c *Inspector) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3058,19 +3047,20 @@ func (c *Inspector) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
+//
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/ListTagsForResource
 func (c *Inspector) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3110,14 +3100,13 @@ const opPreviewAgents = "PreviewAgents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PreviewAgentsRequest method.
+//	req, resp := client.PreviewAgentsRequest(params)
 //
-//    // Example sending a request using the PreviewAgentsRequest method.
-//    req, resp := client.PreviewAgentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgents
 func (c *Inspector) PreviewAgentsRequest(input *PreviewAgentsInput) (req *request.Request, output *PreviewAgentsOutput) {
@@ -3155,23 +3144,24 @@ func (c *Inspector) PreviewAgentsRequest(input *PreviewAgentsInput) (req *reques
 // API operation PreviewAgents for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * InvalidCrossAccountRoleException
-//   Amazon Inspector cannot assume the cross-account role that it needs to list
-//   your EC2 instances during the assessment run.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - InvalidCrossAccountRoleException
+//     Amazon Inspector cannot assume the cross-account role that it needs to list
+//     your EC2 instances during the assessment run.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/PreviewAgents
 func (c *Inspector) PreviewAgents(input *PreviewAgentsInput) (*PreviewAgentsOutput, error) {
@@ -3203,15 +3193,14 @@ func (c *Inspector) PreviewAgentsWithContext(ctx aws.Context, input *PreviewAgen
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a PreviewAgents operation.
-//    pageNum := 0
-//    err := client.PreviewAgentsPages(params,
-//        func(page *inspector.PreviewAgentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a PreviewAgents operation.
+//	pageNum := 0
+//	err := client.PreviewAgentsPages(params,
+//	    func(page *inspector.PreviewAgentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Inspector) PreviewAgentsPages(input *PreviewAgentsInput, fn func(*PreviewAgentsOutput, bool) bool) error {
 	return c.PreviewAgentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3263,14 +3252,13 @@ const opRegisterCrossAccountAccessRole = "RegisterCrossAccountAccessRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterCrossAccountAccessRoleRequest method.
+//	req, resp := client.RegisterCrossAccountAccessRoleRequest(params)
 //
-//    // Example sending a request using the RegisterCrossAccountAccessRoleRequest method.
-//    req, resp := client.RegisterCrossAccountAccessRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRole
 func (c *Inspector) RegisterCrossAccountAccessRoleRequest(input *RegisterCrossAccountAccessRoleInput) (req *request.Request, output *RegisterCrossAccountAccessRoleOutput) {
@@ -3303,22 +3291,23 @@ func (c *Inspector) RegisterCrossAccountAccessRoleRequest(input *RegisterCrossAc
 // API operation RegisterCrossAccountAccessRole for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * InvalidCrossAccountRoleException
-//   Amazon Inspector cannot assume the cross-account role that it needs to list
-//   your EC2 instances during the assessment run.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - InvalidCrossAccountRoleException
+//     Amazon Inspector cannot assume the cross-account role that it needs to list
+//     your EC2 instances during the assessment run.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RegisterCrossAccountAccessRole
 func (c *Inspector) RegisterCrossAccountAccessRole(input *RegisterCrossAccountAccessRoleInput) (*RegisterCrossAccountAccessRoleOutput, error) {
@@ -3358,14 +3347,13 @@ const opRemoveAttributesFromFindings = "RemoveAttributesFromFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveAttributesFromFindingsRequest method.
+//	req, resp := client.RemoveAttributesFromFindingsRequest(params)
 //
-//    // Example sending a request using the RemoveAttributesFromFindingsRequest method.
-//    req, resp := client.RemoveAttributesFromFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindings
 func (c *Inspector) RemoveAttributesFromFindingsRequest(input *RemoveAttributesFromFindingsInput) (req *request.Request, output *RemoveAttributesFromFindingsOutput) {
@@ -3398,22 +3386,23 @@ func (c *Inspector) RemoveAttributesFromFindingsRequest(input *RemoveAttributesF
 // API operation RemoveAttributesFromFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/RemoveAttributesFromFindings
 func (c *Inspector) RemoveAttributesFromFindings(input *RemoveAttributesFromFindingsInput) (*RemoveAttributesFromFindingsOutput, error) {
@@ -3453,14 +3442,13 @@ const opSetTagsForResource = "SetTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetTagsForResourceRequest method.
+//	req, resp := client.SetTagsForResourceRequest(params)
 //
-//    // Example sending a request using the SetTagsForResourceRequest method.
-//    req, resp := client.SetTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResource
 func (c *Inspector) SetTagsForResourceRequest(input *SetTagsForResourceInput) (req *request.Request, output *SetTagsForResourceOutput) {
@@ -3493,22 +3481,23 @@ func (c *Inspector) SetTagsForResourceRequest(input *SetTagsForResourceInput) (r
 // API operation SetTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SetTagsForResource
 func (c *Inspector) SetTagsForResource(input *SetTagsForResourceInput) (*SetTagsForResourceOutput, error) {
@@ -3548,14 +3537,13 @@ const opStartAssessmentRun = "StartAssessmentRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartAssessmentRunRequest method.
+//	req, resp := client.StartAssessmentRunRequest(params)
 //
-//    // Example sending a request using the StartAssessmentRunRequest method.
-//    req, resp := client.StartAssessmentRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRun
 func (c *Inspector) StartAssessmentRunRequest(input *StartAssessmentRunInput) (req *request.Request, output *StartAssessmentRunOutput) {
@@ -3588,34 +3576,35 @@ func (c *Inspector) StartAssessmentRunRequest(input *StartAssessmentRunInput) (r
 // API operation StartAssessmentRun for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current AWS account limits. The error code describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current AWS account limits. The error code describes the limit exceeded.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * InvalidCrossAccountRoleException
-//   Amazon Inspector cannot assume the cross-account role that it needs to list
-//   your EC2 instances during the assessment run.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
 //
-//   * AgentsAlreadyRunningAssessmentException
-//   You started an assessment run, but one of the instances is already participating
-//   in another assessment run.
+//   - InvalidCrossAccountRoleException
+//     Amazon Inspector cannot assume the cross-account role that it needs to list
+//     your EC2 instances during the assessment run.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - AgentsAlreadyRunningAssessmentException
+//     You started an assessment run, but one of the instances is already participating
+//     in another assessment run.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StartAssessmentRun
 func (c *Inspector) StartAssessmentRun(input *StartAssessmentRunInput) (*StartAssessmentRunOutput, error) {
@@ -3655,14 +3644,13 @@ const opStopAssessmentRun = "StopAssessmentRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopAssessmentRunRequest method.
+//	req, resp := client.StopAssessmentRunRequest(params)
 //
-//    // Example sending a request using the StopAssessmentRunRequest method.
-//    req, resp := client.StopAssessmentRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRun
 func (c *Inspector) StopAssessmentRunRequest(input *StopAssessmentRunInput) (req *request.Request, output *StopAssessmentRunOutput) {
@@ -3694,22 +3682,23 @@ func (c *Inspector) StopAssessmentRunRequest(input *StopAssessmentRunInput) (req
 // API operation StopAssessmentRun for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/StopAssessmentRun
 func (c *Inspector) StopAssessmentRun(input *StopAssessmentRunInput) (*StopAssessmentRunOutput, error) {
@@ -3749,14 +3738,13 @@ const opSubscribeToEvent = "SubscribeToEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SubscribeToEventRequest method.
+//	req, resp := client.SubscribeToEventRequest(params)
 //
-//    // Example sending a request using the SubscribeToEventRequest method.
-//    req, resp := client.SubscribeToEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEvent
 func (c *Inspector) SubscribeToEventRequest(input *SubscribeToEventInput) (req *request.Request, output *SubscribeToEventOutput) {
@@ -3789,26 +3777,27 @@ func (c *Inspector) SubscribeToEventRequest(input *SubscribeToEventInput) (req *
 // API operation SubscribeToEvent for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current AWS account limits. The error code describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current AWS account limits. The error code describes the limit exceeded.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/SubscribeToEvent
 func (c *Inspector) SubscribeToEvent(input *SubscribeToEventInput) (*SubscribeToEventOutput, error) {
@@ -3848,14 +3837,13 @@ const opUnsubscribeFromEvent = "UnsubscribeFromEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnsubscribeFromEventRequest method.
+//	req, resp := client.UnsubscribeFromEventRequest(params)
 //
-//    // Example sending a request using the UnsubscribeFromEventRequest method.
-//    req, resp := client.UnsubscribeFromEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEvent
 func (c *Inspector) UnsubscribeFromEventRequest(input *UnsubscribeFromEventInput) (req *request.Request, output *UnsubscribeFromEventOutput) {
@@ -3888,22 +3876,23 @@ func (c *Inspector) UnsubscribeFromEventRequest(input *UnsubscribeFromEventInput
 // API operation UnsubscribeFromEvent for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UnsubscribeFromEvent
 func (c *Inspector) UnsubscribeFromEvent(input *UnsubscribeFromEventInput) (*UnsubscribeFromEventOutput, error) {
@@ -3943,14 +3932,13 @@ const opUpdateAssessmentTarget = "UpdateAssessmentTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAssessmentTargetRequest method.
+//	req, resp := client.UpdateAssessmentTargetRequest(params)
 //
-//    // Example sending a request using the UpdateAssessmentTargetRequest method.
-//    req, resp := client.UpdateAssessmentTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTarget
 func (c *Inspector) UpdateAssessmentTargetRequest(input *UpdateAssessmentTargetInput) (req *request.Request, output *UpdateAssessmentTargetOutput) {
@@ -3986,22 +3974,23 @@ func (c *Inspector) UpdateAssessmentTargetRequest(input *UpdateAssessmentTargetI
 // API operation UpdateAssessmentTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because an invalid or out-of-range value was supplied
-//   for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to access the requested resource.
+//   - InvalidInputException
+//     The request was rejected because an invalid or out-of-range value was supplied
+//     for an input parameter.
 //
-//   * NoSuchEntityException
-//   The request was rejected because it referenced an entity that does not exist.
-//   The error code describes the entity.
+//   - AccessDeniedException
+//     You do not have required permissions to access the requested resource.
 //
-//   * ServiceTemporarilyUnavailableException
-//   The serice is temporary unavailable.
+//   - NoSuchEntityException
+//     The request was rejected because it referenced an entity that does not exist.
+//     The error code describes the entity.
+//
+//   - ServiceTemporarilyUnavailableException
+//     The serice is temporary unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/inspector-2016-02-16/UpdateAssessmentTarget
 func (c *Inspector) UpdateAssessmentTarget(input *UpdateAssessmentTargetInput) (*UpdateAssessmentTargetOutput, error) {

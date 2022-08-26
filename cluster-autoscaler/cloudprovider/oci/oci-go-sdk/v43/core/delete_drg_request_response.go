@@ -11,7 +11,7 @@ import (
 
 // DeleteDrgRequest wrapper for the DeleteDrg operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteDrg.go.html to see an example of how to use DeleteDrgRequest.
 type DeleteDrgRequest struct {

@@ -29,14 +29,13 @@ const opPutEvents = "PutEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventsRequest method.
+//	req, resp := client.PutEventsRequest(params)
 //
-//    // Example sending a request using the PutEventsRequest method.
-//    req, resp := client.PutEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutEvents
 func (c *PersonalizeEvents) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
@@ -69,8 +68,8 @@ func (c *PersonalizeEvents) PutEventsRequest(input *PutEventsInput) (req *reques
 // API operation PutEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   Provide a valid value for the field or parameter.
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutEvents
 func (c *PersonalizeEvents) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
@@ -110,14 +109,13 @@ const opPutItems = "PutItems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutItemsRequest method.
+//	req, resp := client.PutItemsRequest(params)
 //
-//    // Example sending a request using the PutItemsRequest method.
-//    req, resp := client.PutItemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutItems
 func (c *PersonalizeEvents) PutItemsRequest(input *PutItemsInput) (req *request.Request, output *PutItemsOutput) {
@@ -150,14 +148,15 @@ func (c *PersonalizeEvents) PutItemsRequest(input *PutItemsInput) (req *request.
 // API operation PutItems for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   Provide a valid value for the field or parameter.
 //
-//   * ResourceNotFoundException
-//   Could not find the specified resource.
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ResourceNotFoundException
+//     Could not find the specified resource.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutItems
 func (c *PersonalizeEvents) PutItems(input *PutItemsInput) (*PutItemsOutput, error) {
@@ -197,14 +196,13 @@ const opPutUsers = "PutUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutUsersRequest method.
+//	req, resp := client.PutUsersRequest(params)
 //
-//    // Example sending a request using the PutUsersRequest method.
-//    req, resp := client.PutUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutUsers
 func (c *PersonalizeEvents) PutUsersRequest(input *PutUsersInput) (req *request.Request, output *PutUsersOutput) {
@@ -237,14 +235,15 @@ func (c *PersonalizeEvents) PutUsersRequest(input *PutUsersInput) (req *request.
 // API operation PutUsers for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   Provide a valid value for the field or parameter.
 //
-//   * ResourceNotFoundException
-//   Could not find the specified resource.
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
 //
-//   * ResourceInUseException
-//   The specified resource is in use.
+//   - ResourceNotFoundException
+//     Could not find the specified resource.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22/PutUsers
 func (c *PersonalizeEvents) PutUsers(input *PutUsersInput) (*PutUsersOutput, error) {

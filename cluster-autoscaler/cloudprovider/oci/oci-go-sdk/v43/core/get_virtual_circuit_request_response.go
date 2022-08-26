@@ -11,7 +11,7 @@ import (
 
 // GetVirtualCircuitRequest wrapper for the GetVirtualCircuit operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetVirtualCircuit.go.html to see an example of how to use GetVirtualCircuitRequest.
 type GetVirtualCircuitRequest struct {

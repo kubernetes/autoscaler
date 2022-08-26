@@ -11,7 +11,7 @@ import (
 
 // DeleteDrgRouteTableRequest wrapper for the DeleteDrgRouteTable operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DeleteDrgRouteTable.go.html to see an example of how to use DeleteDrgRouteTableRequest.
 type DeleteDrgRouteTableRequest struct {

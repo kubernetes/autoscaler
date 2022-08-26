@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeStarConnections client from just a session.
-//     svc := codestarconnections.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CodeStarConnections client with additional configuration
-//     svc := codestarconnections.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CodeStarConnections client from just a session.
+//	svc := codestarconnections.New(mySession)
+//
+//	// Create a CodeStarConnections client with additional configuration
+//	svc := codestarconnections.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CodeStarConnections {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

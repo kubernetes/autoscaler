@@ -28,14 +28,13 @@ const opDescribeDimensionKeys = "DescribeDimensionKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDimensionKeysRequest method.
+//	req, resp := client.DescribeDimensionKeysRequest(params)
 //
-//    // Example sending a request using the DescribeDimensionKeysRequest method.
-//    req, resp := client.DescribeDimensionKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/DescribeDimensionKeys
 func (c *PI) DescribeDimensionKeysRequest(input *DescribeDimensionKeysInput) (req *request.Request, output *DescribeDimensionKeysOutput) {
@@ -75,14 +74,15 @@ func (c *PI) DescribeDimensionKeysRequest(input *DescribeDimensionKeysInput) (re
 // API operation DescribeDimensionKeys for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/DescribeDimensionKeys
 func (c *PI) DescribeDimensionKeys(input *DescribeDimensionKeysInput) (*DescribeDimensionKeysOutput, error) {
@@ -114,15 +114,14 @@ func (c *PI) DescribeDimensionKeysWithContext(ctx aws.Context, input *DescribeDi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDimensionKeys operation.
-//    pageNum := 0
-//    err := client.DescribeDimensionKeysPages(params,
-//        func(page *pi.DescribeDimensionKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDimensionKeys operation.
+//	pageNum := 0
+//	err := client.DescribeDimensionKeysPages(params,
+//	    func(page *pi.DescribeDimensionKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PI) DescribeDimensionKeysPages(input *DescribeDimensionKeysInput, fn func(*DescribeDimensionKeysOutput, bool) bool) error {
 	return c.DescribeDimensionKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -174,14 +173,13 @@ const opGetDimensionKeyDetails = "GetDimensionKeyDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDimensionKeyDetailsRequest method.
+//	req, resp := client.GetDimensionKeyDetailsRequest(params)
 //
-//    // Example sending a request using the GetDimensionKeyDetailsRequest method.
-//    req, resp := client.GetDimensionKeyDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetDimensionKeyDetails
 func (c *PI) GetDimensionKeyDetailsRequest(input *GetDimensionKeyDetailsInput) (req *request.Request, output *GetDimensionKeyDetailsOutput) {
@@ -216,14 +214,15 @@ func (c *PI) GetDimensionKeyDetailsRequest(input *GetDimensionKeyDetailsInput) (
 // API operation GetDimensionKeyDetails for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetDimensionKeyDetails
 func (c *PI) GetDimensionKeyDetails(input *GetDimensionKeyDetailsInput) (*GetDimensionKeyDetailsOutput, error) {
@@ -263,14 +262,13 @@ const opGetResourceMetadata = "GetResourceMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceMetadataRequest method.
+//	req, resp := client.GetResourceMetadataRequest(params)
 //
-//    // Example sending a request using the GetResourceMetadataRequest method.
-//    req, resp := client.GetResourceMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetResourceMetadata
 func (c *PI) GetResourceMetadataRequest(input *GetResourceMetadataInput) (req *request.Request, output *GetResourceMetadataOutput) {
@@ -302,14 +300,15 @@ func (c *PI) GetResourceMetadataRequest(input *GetResourceMetadataInput) (req *r
 // API operation GetResourceMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetResourceMetadata
 func (c *PI) GetResourceMetadata(input *GetResourceMetadataInput) (*GetResourceMetadataOutput, error) {
@@ -349,14 +348,13 @@ const opGetResourceMetrics = "GetResourceMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceMetricsRequest method.
+//	req, resp := client.GetResourceMetricsRequest(params)
 //
-//    // Example sending a request using the GetResourceMetricsRequest method.
-//    req, resp := client.GetResourceMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetResourceMetrics
 func (c *PI) GetResourceMetricsRequest(input *GetResourceMetricsInput) (req *request.Request, output *GetResourceMetricsOutput) {
@@ -398,14 +396,15 @@ func (c *PI) GetResourceMetricsRequest(input *GetResourceMetricsInput) (req *req
 // API operation GetResourceMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetResourceMetrics
 func (c *PI) GetResourceMetrics(input *GetResourceMetricsInput) (*GetResourceMetricsOutput, error) {
@@ -437,15 +436,14 @@ func (c *PI) GetResourceMetricsWithContext(ctx aws.Context, input *GetResourceMe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResourceMetrics operation.
-//    pageNum := 0
-//    err := client.GetResourceMetricsPages(params,
-//        func(page *pi.GetResourceMetricsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResourceMetrics operation.
+//	pageNum := 0
+//	err := client.GetResourceMetricsPages(params,
+//	    func(page *pi.GetResourceMetricsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PI) GetResourceMetricsPages(input *GetResourceMetricsInput, fn func(*GetResourceMetricsOutput, bool) bool) error {
 	return c.GetResourceMetricsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -497,14 +495,13 @@ const opListAvailableResourceDimensions = "ListAvailableResourceDimensions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAvailableResourceDimensionsRequest method.
+//	req, resp := client.ListAvailableResourceDimensionsRequest(params)
 //
-//    // Example sending a request using the ListAvailableResourceDimensionsRequest method.
-//    req, resp := client.ListAvailableResourceDimensionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListAvailableResourceDimensions
 func (c *PI) ListAvailableResourceDimensionsRequest(input *ListAvailableResourceDimensionsInput) (req *request.Request, output *ListAvailableResourceDimensionsOutput) {
@@ -542,14 +539,15 @@ func (c *PI) ListAvailableResourceDimensionsRequest(input *ListAvailableResource
 // API operation ListAvailableResourceDimensions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListAvailableResourceDimensions
 func (c *PI) ListAvailableResourceDimensions(input *ListAvailableResourceDimensionsInput) (*ListAvailableResourceDimensionsOutput, error) {
@@ -581,15 +579,14 @@ func (c *PI) ListAvailableResourceDimensionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAvailableResourceDimensions operation.
-//    pageNum := 0
-//    err := client.ListAvailableResourceDimensionsPages(params,
-//        func(page *pi.ListAvailableResourceDimensionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAvailableResourceDimensions operation.
+//	pageNum := 0
+//	err := client.ListAvailableResourceDimensionsPages(params,
+//	    func(page *pi.ListAvailableResourceDimensionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PI) ListAvailableResourceDimensionsPages(input *ListAvailableResourceDimensionsInput, fn func(*ListAvailableResourceDimensionsOutput, bool) bool) error {
 	return c.ListAvailableResourceDimensionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -641,14 +638,13 @@ const opListAvailableResourceMetrics = "ListAvailableResourceMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAvailableResourceMetricsRequest method.
+//	req, resp := client.ListAvailableResourceMetricsRequest(params)
 //
-//    // Example sending a request using the ListAvailableResourceMetricsRequest method.
-//    req, resp := client.ListAvailableResourceMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListAvailableResourceMetrics
 func (c *PI) ListAvailableResourceMetricsRequest(input *ListAvailableResourceMetricsInput) (req *request.Request, output *ListAvailableResourceMetricsOutput) {
@@ -686,14 +682,15 @@ func (c *PI) ListAvailableResourceMetricsRequest(input *ListAvailableResourceMet
 // API operation ListAvailableResourceMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   One of the arguments provided is invalid for this request.
 //
-//   * InternalServiceError
-//   The request failed due to an unknown error.
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
 //
-//   * NotAuthorizedException
-//   The user is not authorized to perform this request.
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListAvailableResourceMetrics
 func (c *PI) ListAvailableResourceMetrics(input *ListAvailableResourceMetricsInput) (*ListAvailableResourceMetricsOutput, error) {
@@ -725,15 +722,14 @@ func (c *PI) ListAvailableResourceMetricsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAvailableResourceMetrics operation.
-//    pageNum := 0
-//    err := client.ListAvailableResourceMetricsPages(params,
-//        func(page *pi.ListAvailableResourceMetricsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAvailableResourceMetrics operation.
+//	pageNum := 0
+//	err := client.ListAvailableResourceMetricsPages(params,
+//	    func(page *pi.ListAvailableResourceMetricsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PI) ListAvailableResourceMetricsPages(input *ListAvailableResourceMetricsInput, fn func(*ListAvailableResourceMetricsOutput, bool) bool) error {
 	return c.ListAvailableResourceMetricsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1177,17 +1173,17 @@ func (s *DimensionDetail) SetIdentifier(v string) *DimensionDetail {
 // A logical grouping of Performance Insights metrics for a related subject
 // area. For example, the db.sql dimension group consists of the following dimensions:
 //
-//    * db.sql.id - The hash of a running SQL statement, generated by Performance
-//    Insights.
+//   - db.sql.id - The hash of a running SQL statement, generated by Performance
+//     Insights.
 //
-//    * db.sql.db_id - Either the SQL ID generated by the database engine, or
-//    a value generated by Performance Insights that begins with pi-.
+//   - db.sql.db_id - Either the SQL ID generated by the database engine, or
+//     a value generated by Performance Insights that begins with pi-.
 //
-//    * db.sql.statement - The full text of the SQL statement that is running,
-//    for example, SELECT * FROM employees.
+//   - db.sql.statement - The full text of the SQL statement that is running,
+//     for example, SELECT * FROM employees.
 //
-//    * db.sql_tokenized.id - The hash of the SQL digest generated by Performance
-//    Insights.
+//   - db.sql_tokenized.id - The hash of the SQL digest generated by Performance
+//     Insights.
 //
 // Each response element returns a maximum of 500 bytes. For larger elements,
 // such as SQL statements, only the first 500 bytes are returned.

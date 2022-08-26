@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ElasticTranscoder client from just a session.
-//     svc := elastictranscoder.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ElasticTranscoder client with additional configuration
-//     svc := elastictranscoder.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ElasticTranscoder client from just a session.
+//	svc := elastictranscoder.New(mySession)
+//
+//	// Create a ElasticTranscoder client with additional configuration
+//	svc := elastictranscoder.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ElasticTranscoder {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

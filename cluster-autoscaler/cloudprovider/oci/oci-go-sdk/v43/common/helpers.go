@@ -37,24 +37,24 @@ func Uint(value uint) *uint {
 	return &value
 }
 
-//Float32 returns a pointer to the provided float32
+// Float32 returns a pointer to the provided float32
 func Float32(value float32) *float32 {
 	return &value
 }
 
-//Float64 returns a pointer to the provided float64
+// Float64 returns a pointer to the provided float64
 func Float64(value float64) *float64 {
 	return &value
 }
 
-//Bool returns a pointer to the provided bool
+// Bool returns a pointer to the provided bool
 func Bool(value bool) *bool {
 	return &value
 }
 
-//PointerString prints the values of pointers in a struct
-//Producing a human friendly string for an struct with pointers.
-//useful when debugging the values of a struct
+// PointerString prints the values of pointers in a struct
+// Producing a human friendly string for an struct with pointers.
+// useful when debugging the values of a struct
 func PointerString(datastruct interface{}) (representation string) {
 	val := reflect.ValueOf(datastruct)
 	typ := reflect.TypeOf(datastruct)
@@ -123,7 +123,7 @@ var timeTypePtr = reflect.TypeOf(&SDKTime{})
 var sdkDateType = reflect.TypeOf(SDKDate{})
 var sdkDateTypePtr = reflect.TypeOf(&SDKDate{})
 
-//Formats for sdk supported time representations
+// Formats for sdk supported time representations
 const sdkTimeFormat = time.RFC3339Nano
 const rfc1123OptionalLeadingDigitsInDay = "Mon, _2 Jan 2006 15:04:05 MST"
 const sdkDateFormat = "2006-01-02"

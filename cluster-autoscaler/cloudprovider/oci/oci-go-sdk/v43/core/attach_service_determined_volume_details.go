@@ -43,32 +43,32 @@ type AttachServiceDeterminedVolumeDetails struct {
 	IsShareable *bool `mandatory:"false" json:"isShareable"`
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m AttachServiceDeterminedVolumeDetails) GetDevice() *string {
 	return m.Device
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m AttachServiceDeterminedVolumeDetails) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetInstanceId returns InstanceId
+// GetInstanceId returns InstanceId
 func (m AttachServiceDeterminedVolumeDetails) GetInstanceId() *string {
 	return m.InstanceId
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m AttachServiceDeterminedVolumeDetails) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m AttachServiceDeterminedVolumeDetails) GetIsShareable() *bool {
 	return m.IsShareable
 }
 
-//GetVolumeId returns VolumeId
+// GetVolumeId returns VolumeId
 func (m AttachServiceDeterminedVolumeDetails) GetVolumeId() *string {
 	return m.VolumeId
 }

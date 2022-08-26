@@ -44,13 +44,13 @@ func (r ApiTemplatesFindByIdRequest) Execute() (Template, *APIResponse, error) {
 }
 
 /*
- * TemplatesFindById Retrieve Cubes Templates
- * Retrieve the properties of the specified Cubes Template.
+  - TemplatesFindById Retrieve Cubes Templates
+  - Retrieve the properties of the specified Cubes Template.
 
 This operation is only supported for the Cubes.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @param templateId The unique Template ID.
- * @return ApiTemplatesFindByIdRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @param templateId The unique Template ID.
+  - @return ApiTemplatesFindByIdRequest
 */
 func (a *TemplatesApiService) TemplatesFindById(ctx _context.Context, templateId string) ApiTemplatesFindByIdRequest {
 	return ApiTemplatesFindByIdRequest{
@@ -219,12 +219,12 @@ func (r ApiTemplatesGetRequest) Execute() (Templates, *APIResponse, error) {
 }
 
 /*
- * TemplatesGet List Cubes Templates
- * List all of the available Cubes Templates.
+  - TemplatesGet List Cubes Templates
+  - List all of the available Cubes Templates.
 
 This operation is only supported for the Cubes.
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiTemplatesGetRequest
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiTemplatesGetRequest
 */
 func (a *TemplatesApiService) TemplatesGet(ctx _context.Context) ApiTemplatesGetRequest {
 	return ApiTemplatesGetRequest{

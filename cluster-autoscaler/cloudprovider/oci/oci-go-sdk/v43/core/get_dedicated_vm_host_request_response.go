@@ -11,7 +11,7 @@ import (
 
 // GetDedicatedVmHostRequest wrapper for the GetDedicatedVmHost operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetDedicatedVmHost.go.html to see an example of how to use GetDedicatedVmHostRequest.
 type GetDedicatedVmHostRequest struct {

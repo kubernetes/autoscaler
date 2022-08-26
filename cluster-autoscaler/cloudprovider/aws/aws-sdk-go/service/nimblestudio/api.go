@@ -29,14 +29,13 @@ const opAcceptEulas = "AcceptEulas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptEulasRequest method.
+//	req, resp := client.AcceptEulasRequest(params)
 //
-//    // Example sending a request using the AcceptEulasRequest method.
-//    req, resp := client.AcceptEulasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/AcceptEulas
 func (c *NimbleStudio) AcceptEulasRequest(input *AcceptEulasInput) (req *request.Request, output *AcceptEulasOutput) {
@@ -67,30 +66,31 @@ func (c *NimbleStudio) AcceptEulasRequest(input *AcceptEulasInput) (req *request
 // API operation AcceptEulas for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/AcceptEulas
 func (c *NimbleStudio) AcceptEulas(input *AcceptEulasInput) (*AcceptEulasOutput, error) {
@@ -130,14 +130,13 @@ const opCreateLaunchProfile = "CreateLaunchProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLaunchProfileRequest method.
+//	req, resp := client.CreateLaunchProfileRequest(params)
 //
-//    // Example sending a request using the CreateLaunchProfileRequest method.
-//    req, resp := client.CreateLaunchProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateLaunchProfile
 func (c *NimbleStudio) CreateLaunchProfileRequest(input *CreateLaunchProfileInput) (req *request.Request, output *CreateLaunchProfileOutput) {
@@ -168,30 +167,31 @@ func (c *NimbleStudio) CreateLaunchProfileRequest(input *CreateLaunchProfileInpu
 // API operation CreateLaunchProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateLaunchProfile
 func (c *NimbleStudio) CreateLaunchProfile(input *CreateLaunchProfileInput) (*CreateLaunchProfileOutput, error) {
@@ -231,14 +231,13 @@ const opCreateStreamingImage = "CreateStreamingImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingImageRequest method.
+//	req, resp := client.CreateStreamingImageRequest(params)
 //
-//    // Example sending a request using the CreateStreamingImageRequest method.
-//    req, resp := client.CreateStreamingImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingImage
 func (c *NimbleStudio) CreateStreamingImageRequest(input *CreateStreamingImageInput) (req *request.Request, output *CreateStreamingImageOutput) {
@@ -269,30 +268,31 @@ func (c *NimbleStudio) CreateStreamingImageRequest(input *CreateStreamingImageIn
 // API operation CreateStreamingImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingImage
 func (c *NimbleStudio) CreateStreamingImage(input *CreateStreamingImageInput) (*CreateStreamingImageOutput, error) {
@@ -332,14 +332,13 @@ const opCreateStreamingSession = "CreateStreamingSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingSessionRequest method.
+//	req, resp := client.CreateStreamingSessionRequest(params)
 //
-//    // Example sending a request using the CreateStreamingSessionRequest method.
-//    req, resp := client.CreateStreamingSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingSession
 func (c *NimbleStudio) CreateStreamingSessionRequest(input *CreateStreamingSessionInput) (req *request.Request, output *CreateStreamingSessionOutput) {
@@ -373,30 +372,31 @@ func (c *NimbleStudio) CreateStreamingSessionRequest(input *CreateStreamingSessi
 // API operation CreateStreamingSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingSession
 func (c *NimbleStudio) CreateStreamingSession(input *CreateStreamingSessionInput) (*CreateStreamingSessionOutput, error) {
@@ -436,14 +436,13 @@ const opCreateStreamingSessionStream = "CreateStreamingSessionStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingSessionStreamRequest method.
+//	req, resp := client.CreateStreamingSessionStreamRequest(params)
 //
-//    // Example sending a request using the CreateStreamingSessionStreamRequest method.
-//    req, resp := client.CreateStreamingSessionStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingSessionStream
 func (c *NimbleStudio) CreateStreamingSessionStreamRequest(input *CreateStreamingSessionStreamInput) (req *request.Request, output *CreateStreamingSessionStreamOutput) {
@@ -477,30 +476,31 @@ func (c *NimbleStudio) CreateStreamingSessionStreamRequest(input *CreateStreamin
 // API operation CreateStreamingSessionStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStreamingSessionStream
 func (c *NimbleStudio) CreateStreamingSessionStream(input *CreateStreamingSessionStreamInput) (*CreateStreamingSessionStreamOutput, error) {
@@ -540,14 +540,13 @@ const opCreateStudio = "CreateStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStudioRequest method.
+//	req, resp := client.CreateStudioRequest(params)
 //
-//    // Example sending a request using the CreateStudioRequest method.
-//    req, resp := client.CreateStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStudio
 func (c *NimbleStudio) CreateStudioRequest(input *CreateStudioInput) (req *request.Request, output *CreateStudioOutput) {
@@ -605,30 +604,31 @@ func (c *NimbleStudio) CreateStudioRequest(input *CreateStudioInput) (req *reque
 // API operation CreateStudio for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStudio
 func (c *NimbleStudio) CreateStudio(input *CreateStudioInput) (*CreateStudioOutput, error) {
@@ -668,14 +668,13 @@ const opCreateStudioComponent = "CreateStudioComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStudioComponentRequest method.
+//	req, resp := client.CreateStudioComponentRequest(params)
 //
-//    // Example sending a request using the CreateStudioComponentRequest method.
-//    req, resp := client.CreateStudioComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStudioComponent
 func (c *NimbleStudio) CreateStudioComponentRequest(input *CreateStudioComponentInput) (req *request.Request, output *CreateStudioComponentOutput) {
@@ -706,30 +705,31 @@ func (c *NimbleStudio) CreateStudioComponentRequest(input *CreateStudioComponent
 // API operation CreateStudioComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/CreateStudioComponent
 func (c *NimbleStudio) CreateStudioComponent(input *CreateStudioComponentInput) (*CreateStudioComponentOutput, error) {
@@ -769,14 +769,13 @@ const opDeleteLaunchProfile = "DeleteLaunchProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLaunchProfileRequest method.
+//	req, resp := client.DeleteLaunchProfileRequest(params)
 //
-//    // Example sending a request using the DeleteLaunchProfileRequest method.
-//    req, resp := client.DeleteLaunchProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteLaunchProfile
 func (c *NimbleStudio) DeleteLaunchProfileRequest(input *DeleteLaunchProfileInput) (req *request.Request, output *DeleteLaunchProfileOutput) {
@@ -807,30 +806,31 @@ func (c *NimbleStudio) DeleteLaunchProfileRequest(input *DeleteLaunchProfileInpu
 // API operation DeleteLaunchProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteLaunchProfile
 func (c *NimbleStudio) DeleteLaunchProfile(input *DeleteLaunchProfileInput) (*DeleteLaunchProfileOutput, error) {
@@ -870,14 +870,13 @@ const opDeleteLaunchProfileMember = "DeleteLaunchProfileMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLaunchProfileMemberRequest method.
+//	req, resp := client.DeleteLaunchProfileMemberRequest(params)
 //
-//    // Example sending a request using the DeleteLaunchProfileMemberRequest method.
-//    req, resp := client.DeleteLaunchProfileMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteLaunchProfileMember
 func (c *NimbleStudio) DeleteLaunchProfileMemberRequest(input *DeleteLaunchProfileMemberInput) (req *request.Request, output *DeleteLaunchProfileMemberOutput) {
@@ -909,30 +908,31 @@ func (c *NimbleStudio) DeleteLaunchProfileMemberRequest(input *DeleteLaunchProfi
 // API operation DeleteLaunchProfileMember for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteLaunchProfileMember
 func (c *NimbleStudio) DeleteLaunchProfileMember(input *DeleteLaunchProfileMemberInput) (*DeleteLaunchProfileMemberOutput, error) {
@@ -972,14 +972,13 @@ const opDeleteStreamingImage = "DeleteStreamingImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamingImageRequest method.
+//	req, resp := client.DeleteStreamingImageRequest(params)
 //
-//    // Example sending a request using the DeleteStreamingImageRequest method.
-//    req, resp := client.DeleteStreamingImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStreamingImage
 func (c *NimbleStudio) DeleteStreamingImageRequest(input *DeleteStreamingImageInput) (req *request.Request, output *DeleteStreamingImageOutput) {
@@ -1010,30 +1009,31 @@ func (c *NimbleStudio) DeleteStreamingImageRequest(input *DeleteStreamingImageIn
 // API operation DeleteStreamingImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStreamingImage
 func (c *NimbleStudio) DeleteStreamingImage(input *DeleteStreamingImageInput) (*DeleteStreamingImageOutput, error) {
@@ -1073,14 +1073,13 @@ const opDeleteStreamingSession = "DeleteStreamingSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamingSessionRequest method.
+//	req, resp := client.DeleteStreamingSessionRequest(params)
 //
-//    // Example sending a request using the DeleteStreamingSessionRequest method.
-//    req, resp := client.DeleteStreamingSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStreamingSession
 func (c *NimbleStudio) DeleteStreamingSessionRequest(input *DeleteStreamingSessionInput) (req *request.Request, output *DeleteStreamingSessionOutput) {
@@ -1117,30 +1116,31 @@ func (c *NimbleStudio) DeleteStreamingSessionRequest(input *DeleteStreamingSessi
 // API operation DeleteStreamingSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStreamingSession
 func (c *NimbleStudio) DeleteStreamingSession(input *DeleteStreamingSessionInput) (*DeleteStreamingSessionOutput, error) {
@@ -1180,14 +1180,13 @@ const opDeleteStudio = "DeleteStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStudioRequest method.
+//	req, resp := client.DeleteStudioRequest(params)
 //
-//    // Example sending a request using the DeleteStudioRequest method.
-//    req, resp := client.DeleteStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudio
 func (c *NimbleStudio) DeleteStudioRequest(input *DeleteStudioInput) (req *request.Request, output *DeleteStudioOutput) {
@@ -1218,30 +1217,31 @@ func (c *NimbleStudio) DeleteStudioRequest(input *DeleteStudioInput) (req *reque
 // API operation DeleteStudio for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudio
 func (c *NimbleStudio) DeleteStudio(input *DeleteStudioInput) (*DeleteStudioOutput, error) {
@@ -1281,14 +1281,13 @@ const opDeleteStudioComponent = "DeleteStudioComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStudioComponentRequest method.
+//	req, resp := client.DeleteStudioComponentRequest(params)
 //
-//    // Example sending a request using the DeleteStudioComponentRequest method.
-//    req, resp := client.DeleteStudioComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudioComponent
 func (c *NimbleStudio) DeleteStudioComponentRequest(input *DeleteStudioComponentInput) (req *request.Request, output *DeleteStudioComponentOutput) {
@@ -1319,30 +1318,31 @@ func (c *NimbleStudio) DeleteStudioComponentRequest(input *DeleteStudioComponent
 // API operation DeleteStudioComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudioComponent
 func (c *NimbleStudio) DeleteStudioComponent(input *DeleteStudioComponentInput) (*DeleteStudioComponentOutput, error) {
@@ -1382,14 +1382,13 @@ const opDeleteStudioMember = "DeleteStudioMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStudioMemberRequest method.
+//	req, resp := client.DeleteStudioMemberRequest(params)
 //
-//    // Example sending a request using the DeleteStudioMemberRequest method.
-//    req, resp := client.DeleteStudioMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudioMember
 func (c *NimbleStudio) DeleteStudioMemberRequest(input *DeleteStudioMemberInput) (req *request.Request, output *DeleteStudioMemberOutput) {
@@ -1421,30 +1420,31 @@ func (c *NimbleStudio) DeleteStudioMemberRequest(input *DeleteStudioMemberInput)
 // API operation DeleteStudioMember for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/DeleteStudioMember
 func (c *NimbleStudio) DeleteStudioMember(input *DeleteStudioMemberInput) (*DeleteStudioMemberOutput, error) {
@@ -1484,14 +1484,13 @@ const opGetEula = "GetEula"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEulaRequest method.
+//	req, resp := client.GetEulaRequest(params)
 //
-//    // Example sending a request using the GetEulaRequest method.
-//    req, resp := client.GetEulaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetEula
 func (c *NimbleStudio) GetEulaRequest(input *GetEulaInput) (req *request.Request, output *GetEulaOutput) {
@@ -1522,30 +1521,31 @@ func (c *NimbleStudio) GetEulaRequest(input *GetEulaInput) (req *request.Request
 // API operation GetEula for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetEula
 func (c *NimbleStudio) GetEula(input *GetEulaInput) (*GetEulaOutput, error) {
@@ -1585,14 +1585,13 @@ const opGetLaunchProfile = "GetLaunchProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchProfileRequest method.
+//	req, resp := client.GetLaunchProfileRequest(params)
 //
-//    // Example sending a request using the GetLaunchProfileRequest method.
-//    req, resp := client.GetLaunchProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfile
 func (c *NimbleStudio) GetLaunchProfileRequest(input *GetLaunchProfileInput) (req *request.Request, output *GetLaunchProfileOutput) {
@@ -1623,30 +1622,31 @@ func (c *NimbleStudio) GetLaunchProfileRequest(input *GetLaunchProfileInput) (re
 // API operation GetLaunchProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfile
 func (c *NimbleStudio) GetLaunchProfile(input *GetLaunchProfileInput) (*GetLaunchProfileOutput, error) {
@@ -1686,14 +1686,13 @@ const opGetLaunchProfileDetails = "GetLaunchProfileDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchProfileDetailsRequest method.
+//	req, resp := client.GetLaunchProfileDetailsRequest(params)
 //
-//    // Example sending a request using the GetLaunchProfileDetailsRequest method.
-//    req, resp := client.GetLaunchProfileDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileDetails
 func (c *NimbleStudio) GetLaunchProfileDetailsRequest(input *GetLaunchProfileDetailsInput) (req *request.Request, output *GetLaunchProfileDetailsOutput) {
@@ -1728,30 +1727,31 @@ func (c *NimbleStudio) GetLaunchProfileDetailsRequest(input *GetLaunchProfileDet
 // API operation GetLaunchProfileDetails for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileDetails
 func (c *NimbleStudio) GetLaunchProfileDetails(input *GetLaunchProfileDetailsInput) (*GetLaunchProfileDetailsOutput, error) {
@@ -1791,14 +1791,13 @@ const opGetLaunchProfileInitialization = "GetLaunchProfileInitialization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchProfileInitializationRequest method.
+//	req, resp := client.GetLaunchProfileInitializationRequest(params)
 //
-//    // Example sending a request using the GetLaunchProfileInitializationRequest method.
-//    req, resp := client.GetLaunchProfileInitializationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileInitialization
 func (c *NimbleStudio) GetLaunchProfileInitializationRequest(input *GetLaunchProfileInitializationInput) (req *request.Request, output *GetLaunchProfileInitializationOutput) {
@@ -1829,30 +1828,31 @@ func (c *NimbleStudio) GetLaunchProfileInitializationRequest(input *GetLaunchPro
 // API operation GetLaunchProfileInitialization for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileInitialization
 func (c *NimbleStudio) GetLaunchProfileInitialization(input *GetLaunchProfileInitializationInput) (*GetLaunchProfileInitializationOutput, error) {
@@ -1892,14 +1892,13 @@ const opGetLaunchProfileMember = "GetLaunchProfileMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLaunchProfileMemberRequest method.
+//	req, resp := client.GetLaunchProfileMemberRequest(params)
 //
-//    // Example sending a request using the GetLaunchProfileMemberRequest method.
-//    req, resp := client.GetLaunchProfileMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileMember
 func (c *NimbleStudio) GetLaunchProfileMemberRequest(input *GetLaunchProfileMemberInput) (req *request.Request, output *GetLaunchProfileMemberOutput) {
@@ -1930,30 +1929,31 @@ func (c *NimbleStudio) GetLaunchProfileMemberRequest(input *GetLaunchProfileMemb
 // API operation GetLaunchProfileMember for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetLaunchProfileMember
 func (c *NimbleStudio) GetLaunchProfileMember(input *GetLaunchProfileMemberInput) (*GetLaunchProfileMemberOutput, error) {
@@ -1993,14 +1993,13 @@ const opGetStreamingImage = "GetStreamingImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamingImageRequest method.
+//	req, resp := client.GetStreamingImageRequest(params)
 //
-//    // Example sending a request using the GetStreamingImageRequest method.
-//    req, resp := client.GetStreamingImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingImage
 func (c *NimbleStudio) GetStreamingImageRequest(input *GetStreamingImageInput) (req *request.Request, output *GetStreamingImageOutput) {
@@ -2031,30 +2030,31 @@ func (c *NimbleStudio) GetStreamingImageRequest(input *GetStreamingImageInput) (
 // API operation GetStreamingImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingImage
 func (c *NimbleStudio) GetStreamingImage(input *GetStreamingImageInput) (*GetStreamingImageOutput, error) {
@@ -2094,14 +2094,13 @@ const opGetStreamingSession = "GetStreamingSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamingSessionRequest method.
+//	req, resp := client.GetStreamingSessionRequest(params)
 //
-//    // Example sending a request using the GetStreamingSessionRequest method.
-//    req, resp := client.GetStreamingSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingSession
 func (c *NimbleStudio) GetStreamingSessionRequest(input *GetStreamingSessionInput) (req *request.Request, output *GetStreamingSessionOutput) {
@@ -2135,30 +2134,31 @@ func (c *NimbleStudio) GetStreamingSessionRequest(input *GetStreamingSessionInpu
 // API operation GetStreamingSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingSession
 func (c *NimbleStudio) GetStreamingSession(input *GetStreamingSessionInput) (*GetStreamingSessionOutput, error) {
@@ -2198,14 +2198,13 @@ const opGetStreamingSessionStream = "GetStreamingSessionStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamingSessionStreamRequest method.
+//	req, resp := client.GetStreamingSessionStreamRequest(params)
 //
-//    // Example sending a request using the GetStreamingSessionStreamRequest method.
-//    req, resp := client.GetStreamingSessionStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingSessionStream
 func (c *NimbleStudio) GetStreamingSessionStreamRequest(input *GetStreamingSessionStreamInput) (req *request.Request, output *GetStreamingSessionStreamOutput) {
@@ -2241,30 +2240,31 @@ func (c *NimbleStudio) GetStreamingSessionStreamRequest(input *GetStreamingSessi
 // API operation GetStreamingSessionStream for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStreamingSessionStream
 func (c *NimbleStudio) GetStreamingSessionStream(input *GetStreamingSessionStreamInput) (*GetStreamingSessionStreamOutput, error) {
@@ -2304,14 +2304,13 @@ const opGetStudio = "GetStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStudioRequest method.
+//	req, resp := client.GetStudioRequest(params)
 //
-//    // Example sending a request using the GetStudioRequest method.
-//    req, resp := client.GetStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudio
 func (c *NimbleStudio) GetStudioRequest(input *GetStudioInput) (req *request.Request, output *GetStudioOutput) {
@@ -2342,30 +2341,31 @@ func (c *NimbleStudio) GetStudioRequest(input *GetStudioInput) (req *request.Req
 // API operation GetStudio for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudio
 func (c *NimbleStudio) GetStudio(input *GetStudioInput) (*GetStudioOutput, error) {
@@ -2405,14 +2405,13 @@ const opGetStudioComponent = "GetStudioComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStudioComponentRequest method.
+//	req, resp := client.GetStudioComponentRequest(params)
 //
-//    // Example sending a request using the GetStudioComponentRequest method.
-//    req, resp := client.GetStudioComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudioComponent
 func (c *NimbleStudio) GetStudioComponentRequest(input *GetStudioComponentInput) (req *request.Request, output *GetStudioComponentOutput) {
@@ -2443,30 +2442,31 @@ func (c *NimbleStudio) GetStudioComponentRequest(input *GetStudioComponentInput)
 // API operation GetStudioComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudioComponent
 func (c *NimbleStudio) GetStudioComponent(input *GetStudioComponentInput) (*GetStudioComponentOutput, error) {
@@ -2506,14 +2506,13 @@ const opGetStudioMember = "GetStudioMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStudioMemberRequest method.
+//	req, resp := client.GetStudioMemberRequest(params)
 //
-//    // Example sending a request using the GetStudioMemberRequest method.
-//    req, resp := client.GetStudioMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudioMember
 func (c *NimbleStudio) GetStudioMemberRequest(input *GetStudioMemberInput) (req *request.Request, output *GetStudioMemberOutput) {
@@ -2544,30 +2543,31 @@ func (c *NimbleStudio) GetStudioMemberRequest(input *GetStudioMemberInput) (req 
 // API operation GetStudioMember for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/GetStudioMember
 func (c *NimbleStudio) GetStudioMember(input *GetStudioMemberInput) (*GetStudioMemberOutput, error) {
@@ -2607,14 +2607,13 @@ const opListEulaAcceptances = "ListEulaAcceptances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEulaAcceptancesRequest method.
+//	req, resp := client.ListEulaAcceptancesRequest(params)
 //
-//    // Example sending a request using the ListEulaAcceptancesRequest method.
-//    req, resp := client.ListEulaAcceptancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListEulaAcceptances
 func (c *NimbleStudio) ListEulaAcceptancesRequest(input *ListEulaAcceptancesInput) (req *request.Request, output *ListEulaAcceptancesOutput) {
@@ -2651,30 +2650,31 @@ func (c *NimbleStudio) ListEulaAcceptancesRequest(input *ListEulaAcceptancesInpu
 // API operation ListEulaAcceptances for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListEulaAcceptances
 func (c *NimbleStudio) ListEulaAcceptances(input *ListEulaAcceptancesInput) (*ListEulaAcceptancesOutput, error) {
@@ -2706,15 +2706,14 @@ func (c *NimbleStudio) ListEulaAcceptancesWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEulaAcceptances operation.
-//    pageNum := 0
-//    err := client.ListEulaAcceptancesPages(params,
-//        func(page *nimblestudio.ListEulaAcceptancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEulaAcceptances operation.
+//	pageNum := 0
+//	err := client.ListEulaAcceptancesPages(params,
+//	    func(page *nimblestudio.ListEulaAcceptancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListEulaAcceptancesPages(input *ListEulaAcceptancesInput, fn func(*ListEulaAcceptancesOutput, bool) bool) error {
 	return c.ListEulaAcceptancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2766,14 +2765,13 @@ const opListEulas = "ListEulas"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEulasRequest method.
+//	req, resp := client.ListEulasRequest(params)
 //
-//    // Example sending a request using the ListEulasRequest method.
-//    req, resp := client.ListEulasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListEulas
 func (c *NimbleStudio) ListEulasRequest(input *ListEulasInput) (req *request.Request, output *ListEulasOutput) {
@@ -2810,30 +2808,31 @@ func (c *NimbleStudio) ListEulasRequest(input *ListEulasInput) (req *request.Req
 // API operation ListEulas for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListEulas
 func (c *NimbleStudio) ListEulas(input *ListEulasInput) (*ListEulasOutput, error) {
@@ -2865,15 +2864,14 @@ func (c *NimbleStudio) ListEulasWithContext(ctx aws.Context, input *ListEulasInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEulas operation.
-//    pageNum := 0
-//    err := client.ListEulasPages(params,
-//        func(page *nimblestudio.ListEulasOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEulas operation.
+//	pageNum := 0
+//	err := client.ListEulasPages(params,
+//	    func(page *nimblestudio.ListEulasOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListEulasPages(input *ListEulasInput, fn func(*ListEulasOutput, bool) bool) error {
 	return c.ListEulasPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2925,14 +2923,13 @@ const opListLaunchProfileMembers = "ListLaunchProfileMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLaunchProfileMembersRequest method.
+//	req, resp := client.ListLaunchProfileMembersRequest(params)
 //
-//    // Example sending a request using the ListLaunchProfileMembersRequest method.
-//    req, resp := client.ListLaunchProfileMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListLaunchProfileMembers
 func (c *NimbleStudio) ListLaunchProfileMembersRequest(input *ListLaunchProfileMembersInput) (req *request.Request, output *ListLaunchProfileMembersOutput) {
@@ -2969,30 +2966,31 @@ func (c *NimbleStudio) ListLaunchProfileMembersRequest(input *ListLaunchProfileM
 // API operation ListLaunchProfileMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListLaunchProfileMembers
 func (c *NimbleStudio) ListLaunchProfileMembers(input *ListLaunchProfileMembersInput) (*ListLaunchProfileMembersOutput, error) {
@@ -3024,15 +3022,14 @@ func (c *NimbleStudio) ListLaunchProfileMembersWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLaunchProfileMembers operation.
-//    pageNum := 0
-//    err := client.ListLaunchProfileMembersPages(params,
-//        func(page *nimblestudio.ListLaunchProfileMembersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLaunchProfileMembers operation.
+//	pageNum := 0
+//	err := client.ListLaunchProfileMembersPages(params,
+//	    func(page *nimblestudio.ListLaunchProfileMembersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListLaunchProfileMembersPages(input *ListLaunchProfileMembersInput, fn func(*ListLaunchProfileMembersOutput, bool) bool) error {
 	return c.ListLaunchProfileMembersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3084,14 +3081,13 @@ const opListLaunchProfiles = "ListLaunchProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLaunchProfilesRequest method.
+//	req, resp := client.ListLaunchProfilesRequest(params)
 //
-//    // Example sending a request using the ListLaunchProfilesRequest method.
-//    req, resp := client.ListLaunchProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListLaunchProfiles
 func (c *NimbleStudio) ListLaunchProfilesRequest(input *ListLaunchProfilesInput) (req *request.Request, output *ListLaunchProfilesOutput) {
@@ -3128,30 +3124,31 @@ func (c *NimbleStudio) ListLaunchProfilesRequest(input *ListLaunchProfilesInput)
 // API operation ListLaunchProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListLaunchProfiles
 func (c *NimbleStudio) ListLaunchProfiles(input *ListLaunchProfilesInput) (*ListLaunchProfilesOutput, error) {
@@ -3183,15 +3180,14 @@ func (c *NimbleStudio) ListLaunchProfilesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLaunchProfiles operation.
-//    pageNum := 0
-//    err := client.ListLaunchProfilesPages(params,
-//        func(page *nimblestudio.ListLaunchProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLaunchProfiles operation.
+//	pageNum := 0
+//	err := client.ListLaunchProfilesPages(params,
+//	    func(page *nimblestudio.ListLaunchProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListLaunchProfilesPages(input *ListLaunchProfilesInput, fn func(*ListLaunchProfilesOutput, bool) bool) error {
 	return c.ListLaunchProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3243,14 +3239,13 @@ const opListStreamingImages = "ListStreamingImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamingImagesRequest method.
+//	req, resp := client.ListStreamingImagesRequest(params)
 //
-//    // Example sending a request using the ListStreamingImagesRequest method.
-//    req, resp := client.ListStreamingImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStreamingImages
 func (c *NimbleStudio) ListStreamingImagesRequest(input *ListStreamingImagesInput) (req *request.Request, output *ListStreamingImagesOutput) {
@@ -3290,30 +3285,31 @@ func (c *NimbleStudio) ListStreamingImagesRequest(input *ListStreamingImagesInpu
 // API operation ListStreamingImages for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStreamingImages
 func (c *NimbleStudio) ListStreamingImages(input *ListStreamingImagesInput) (*ListStreamingImagesOutput, error) {
@@ -3345,15 +3341,14 @@ func (c *NimbleStudio) ListStreamingImagesWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamingImages operation.
-//    pageNum := 0
-//    err := client.ListStreamingImagesPages(params,
-//        func(page *nimblestudio.ListStreamingImagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamingImages operation.
+//	pageNum := 0
+//	err := client.ListStreamingImagesPages(params,
+//	    func(page *nimblestudio.ListStreamingImagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListStreamingImagesPages(input *ListStreamingImagesInput, fn func(*ListStreamingImagesOutput, bool) bool) error {
 	return c.ListStreamingImagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3405,14 +3400,13 @@ const opListStreamingSessions = "ListStreamingSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamingSessionsRequest method.
+//	req, resp := client.ListStreamingSessionsRequest(params)
 //
-//    // Example sending a request using the ListStreamingSessionsRequest method.
-//    req, resp := client.ListStreamingSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStreamingSessions
 func (c *NimbleStudio) ListStreamingSessionsRequest(input *ListStreamingSessionsInput) (req *request.Request, output *ListStreamingSessionsOutput) {
@@ -3449,30 +3443,31 @@ func (c *NimbleStudio) ListStreamingSessionsRequest(input *ListStreamingSessions
 // API operation ListStreamingSessions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStreamingSessions
 func (c *NimbleStudio) ListStreamingSessions(input *ListStreamingSessionsInput) (*ListStreamingSessionsOutput, error) {
@@ -3504,15 +3499,14 @@ func (c *NimbleStudio) ListStreamingSessionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamingSessions operation.
-//    pageNum := 0
-//    err := client.ListStreamingSessionsPages(params,
-//        func(page *nimblestudio.ListStreamingSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamingSessions operation.
+//	pageNum := 0
+//	err := client.ListStreamingSessionsPages(params,
+//	    func(page *nimblestudio.ListStreamingSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListStreamingSessionsPages(input *ListStreamingSessionsInput, fn func(*ListStreamingSessionsOutput, bool) bool) error {
 	return c.ListStreamingSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3564,14 +3558,13 @@ const opListStudioComponents = "ListStudioComponents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStudioComponentsRequest method.
+//	req, resp := client.ListStudioComponentsRequest(params)
 //
-//    // Example sending a request using the ListStudioComponentsRequest method.
-//    req, resp := client.ListStudioComponentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudioComponents
 func (c *NimbleStudio) ListStudioComponentsRequest(input *ListStudioComponentsInput) (req *request.Request, output *ListStudioComponentsOutput) {
@@ -3608,30 +3601,31 @@ func (c *NimbleStudio) ListStudioComponentsRequest(input *ListStudioComponentsIn
 // API operation ListStudioComponents for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudioComponents
 func (c *NimbleStudio) ListStudioComponents(input *ListStudioComponentsInput) (*ListStudioComponentsOutput, error) {
@@ -3663,15 +3657,14 @@ func (c *NimbleStudio) ListStudioComponentsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStudioComponents operation.
-//    pageNum := 0
-//    err := client.ListStudioComponentsPages(params,
-//        func(page *nimblestudio.ListStudioComponentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStudioComponents operation.
+//	pageNum := 0
+//	err := client.ListStudioComponentsPages(params,
+//	    func(page *nimblestudio.ListStudioComponentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListStudioComponentsPages(input *ListStudioComponentsInput, fn func(*ListStudioComponentsOutput, bool) bool) error {
 	return c.ListStudioComponentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3723,14 +3716,13 @@ const opListStudioMembers = "ListStudioMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStudioMembersRequest method.
+//	req, resp := client.ListStudioMembersRequest(params)
 //
-//    // Example sending a request using the ListStudioMembersRequest method.
-//    req, resp := client.ListStudioMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudioMembers
 func (c *NimbleStudio) ListStudioMembersRequest(input *ListStudioMembersInput) (req *request.Request, output *ListStudioMembersOutput) {
@@ -3769,30 +3761,31 @@ func (c *NimbleStudio) ListStudioMembersRequest(input *ListStudioMembersInput) (
 // API operation ListStudioMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudioMembers
 func (c *NimbleStudio) ListStudioMembers(input *ListStudioMembersInput) (*ListStudioMembersOutput, error) {
@@ -3824,15 +3817,14 @@ func (c *NimbleStudio) ListStudioMembersWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStudioMembers operation.
-//    pageNum := 0
-//    err := client.ListStudioMembersPages(params,
-//        func(page *nimblestudio.ListStudioMembersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStudioMembers operation.
+//	pageNum := 0
+//	err := client.ListStudioMembersPages(params,
+//	    func(page *nimblestudio.ListStudioMembersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListStudioMembersPages(input *ListStudioMembersInput, fn func(*ListStudioMembersOutput, bool) bool) error {
 	return c.ListStudioMembersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3884,14 +3876,13 @@ const opListStudios = "ListStudios"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStudiosRequest method.
+//	req, resp := client.ListStudiosRequest(params)
 //
-//    // Example sending a request using the ListStudiosRequest method.
-//    req, resp := client.ListStudiosRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudios
 func (c *NimbleStudio) ListStudiosRequest(input *ListStudiosInput) (req *request.Request, output *ListStudiosOutput) {
@@ -3929,30 +3920,31 @@ func (c *NimbleStudio) ListStudiosRequest(input *ListStudiosInput) (req *request
 // API operation ListStudios for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListStudios
 func (c *NimbleStudio) ListStudios(input *ListStudiosInput) (*ListStudiosOutput, error) {
@@ -3984,15 +3976,14 @@ func (c *NimbleStudio) ListStudiosWithContext(ctx aws.Context, input *ListStudio
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStudios operation.
-//    pageNum := 0
-//    err := client.ListStudiosPages(params,
-//        func(page *nimblestudio.ListStudiosOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStudios operation.
+//	pageNum := 0
+//	err := client.ListStudiosPages(params,
+//	    func(page *nimblestudio.ListStudiosOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *NimbleStudio) ListStudiosPages(input *ListStudiosInput, fn func(*ListStudiosOutput, bool) bool) error {
 	return c.ListStudiosPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4044,14 +4035,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListTagsForResource
 func (c *NimbleStudio) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4087,30 +4077,31 @@ func (c *NimbleStudio) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/ListTagsForResource
 func (c *NimbleStudio) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4150,14 +4141,13 @@ const opPutLaunchProfileMembers = "PutLaunchProfileMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutLaunchProfileMembersRequest method.
+//	req, resp := client.PutLaunchProfileMembersRequest(params)
 //
-//    // Example sending a request using the PutLaunchProfileMembersRequest method.
-//    req, resp := client.PutLaunchProfileMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/PutLaunchProfileMembers
 func (c *NimbleStudio) PutLaunchProfileMembersRequest(input *PutLaunchProfileMembersInput) (req *request.Request, output *PutLaunchProfileMembersOutput) {
@@ -4189,30 +4179,31 @@ func (c *NimbleStudio) PutLaunchProfileMembersRequest(input *PutLaunchProfileMem
 // API operation PutLaunchProfileMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/PutLaunchProfileMembers
 func (c *NimbleStudio) PutLaunchProfileMembers(input *PutLaunchProfileMembersInput) (*PutLaunchProfileMembersOutput, error) {
@@ -4252,14 +4243,13 @@ const opPutStudioMembers = "PutStudioMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutStudioMembersRequest method.
+//	req, resp := client.PutStudioMembersRequest(params)
 //
-//    // Example sending a request using the PutStudioMembersRequest method.
-//    req, resp := client.PutStudioMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/PutStudioMembers
 func (c *NimbleStudio) PutStudioMembersRequest(input *PutStudioMembersInput) (req *request.Request, output *PutStudioMembersOutput) {
@@ -4291,30 +4281,31 @@ func (c *NimbleStudio) PutStudioMembersRequest(input *PutStudioMembersInput) (re
 // API operation PutStudioMembers for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/PutStudioMembers
 func (c *NimbleStudio) PutStudioMembers(input *PutStudioMembersInput) (*PutStudioMembersOutput, error) {
@@ -4354,14 +4345,13 @@ const opStartStreamingSession = "StartStreamingSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStreamingSessionRequest method.
+//	req, resp := client.StartStreamingSessionRequest(params)
 //
-//    // Example sending a request using the StartStreamingSessionRequest method.
-//    req, resp := client.StartStreamingSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StartStreamingSession
 func (c *NimbleStudio) StartStreamingSessionRequest(input *StartStreamingSessionInput) (req *request.Request, output *StartStreamingSessionOutput) {
@@ -4393,30 +4383,31 @@ func (c *NimbleStudio) StartStreamingSessionRequest(input *StartStreamingSession
 // API operation StartStreamingSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StartStreamingSession
 func (c *NimbleStudio) StartStreamingSession(input *StartStreamingSessionInput) (*StartStreamingSessionOutput, error) {
@@ -4456,14 +4447,13 @@ const opStartStudioSSOConfigurationRepair = "StartStudioSSOConfigurationRepair"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStudioSSOConfigurationRepairRequest method.
+//	req, resp := client.StartStudioSSOConfigurationRepairRequest(params)
 //
-//    // Example sending a request using the StartStudioSSOConfigurationRepairRequest method.
-//    req, resp := client.StartStudioSSOConfigurationRepairRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StartStudioSSOConfigurationRepair
 func (c *NimbleStudio) StartStudioSSOConfigurationRepairRequest(input *StartStudioSSOConfigurationRepairInput) (req *request.Request, output *StartStudioSSOConfigurationRepairOutput) {
@@ -4504,30 +4494,31 @@ func (c *NimbleStudio) StartStudioSSOConfigurationRepairRequest(input *StartStud
 // API operation StartStudioSSOConfigurationRepair for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StartStudioSSOConfigurationRepair
 func (c *NimbleStudio) StartStudioSSOConfigurationRepair(input *StartStudioSSOConfigurationRepairInput) (*StartStudioSSOConfigurationRepairOutput, error) {
@@ -4567,14 +4558,13 @@ const opStopStreamingSession = "StopStreamingSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopStreamingSessionRequest method.
+//	req, resp := client.StopStreamingSessionRequest(params)
 //
-//    // Example sending a request using the StopStreamingSessionRequest method.
-//    req, resp := client.StopStreamingSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StopStreamingSession
 func (c *NimbleStudio) StopStreamingSessionRequest(input *StopStreamingSessionInput) (req *request.Request, output *StopStreamingSessionOutput) {
@@ -4606,30 +4596,31 @@ func (c *NimbleStudio) StopStreamingSessionRequest(input *StopStreamingSessionIn
 // API operation StopStreamingSession for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/StopStreamingSession
 func (c *NimbleStudio) StopStreamingSession(input *StopStreamingSessionInput) (*StopStreamingSessionOutput, error) {
@@ -4669,14 +4660,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/TagResource
 func (c *NimbleStudio) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4708,30 +4698,31 @@ func (c *NimbleStudio) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/TagResource
 func (c *NimbleStudio) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4771,14 +4762,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UntagResource
 func (c *NimbleStudio) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4810,30 +4800,31 @@ func (c *NimbleStudio) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UntagResource
 func (c *NimbleStudio) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4873,14 +4864,13 @@ const opUpdateLaunchProfile = "UpdateLaunchProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLaunchProfileRequest method.
+//	req, resp := client.UpdateLaunchProfileRequest(params)
 //
-//    // Example sending a request using the UpdateLaunchProfileRequest method.
-//    req, resp := client.UpdateLaunchProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateLaunchProfile
 func (c *NimbleStudio) UpdateLaunchProfileRequest(input *UpdateLaunchProfileInput) (req *request.Request, output *UpdateLaunchProfileOutput) {
@@ -4911,30 +4901,31 @@ func (c *NimbleStudio) UpdateLaunchProfileRequest(input *UpdateLaunchProfileInpu
 // API operation UpdateLaunchProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateLaunchProfile
 func (c *NimbleStudio) UpdateLaunchProfile(input *UpdateLaunchProfileInput) (*UpdateLaunchProfileOutput, error) {
@@ -4974,14 +4965,13 @@ const opUpdateLaunchProfileMember = "UpdateLaunchProfileMember"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLaunchProfileMemberRequest method.
+//	req, resp := client.UpdateLaunchProfileMemberRequest(params)
 //
-//    // Example sending a request using the UpdateLaunchProfileMemberRequest method.
-//    req, resp := client.UpdateLaunchProfileMemberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateLaunchProfileMember
 func (c *NimbleStudio) UpdateLaunchProfileMemberRequest(input *UpdateLaunchProfileMemberInput) (req *request.Request, output *UpdateLaunchProfileMemberOutput) {
@@ -5012,30 +5002,31 @@ func (c *NimbleStudio) UpdateLaunchProfileMemberRequest(input *UpdateLaunchProfi
 // API operation UpdateLaunchProfileMember for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateLaunchProfileMember
 func (c *NimbleStudio) UpdateLaunchProfileMember(input *UpdateLaunchProfileMemberInput) (*UpdateLaunchProfileMemberOutput, error) {
@@ -5075,14 +5066,13 @@ const opUpdateStreamingImage = "UpdateStreamingImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStreamingImageRequest method.
+//	req, resp := client.UpdateStreamingImageRequest(params)
 //
-//    // Example sending a request using the UpdateStreamingImageRequest method.
-//    req, resp := client.UpdateStreamingImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStreamingImage
 func (c *NimbleStudio) UpdateStreamingImageRequest(input *UpdateStreamingImageInput) (req *request.Request, output *UpdateStreamingImageOutput) {
@@ -5113,30 +5103,31 @@ func (c *NimbleStudio) UpdateStreamingImageRequest(input *UpdateStreamingImageIn
 // API operation UpdateStreamingImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStreamingImage
 func (c *NimbleStudio) UpdateStreamingImage(input *UpdateStreamingImageInput) (*UpdateStreamingImageOutput, error) {
@@ -5176,14 +5167,13 @@ const opUpdateStudio = "UpdateStudio"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStudioRequest method.
+//	req, resp := client.UpdateStudioRequest(params)
 //
-//    // Example sending a request using the UpdateStudioRequest method.
-//    req, resp := client.UpdateStudioRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStudio
 func (c *NimbleStudio) UpdateStudioRequest(input *UpdateStudioInput) (req *request.Request, output *UpdateStudioOutput) {
@@ -5217,30 +5207,31 @@ func (c *NimbleStudio) UpdateStudioRequest(input *UpdateStudioInput) (req *reque
 // API operation UpdateStudio for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStudio
 func (c *NimbleStudio) UpdateStudio(input *UpdateStudioInput) (*UpdateStudioOutput, error) {
@@ -5280,14 +5271,13 @@ const opUpdateStudioComponent = "UpdateStudioComponent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStudioComponentRequest method.
+//	req, resp := client.UpdateStudioComponentRequest(params)
 //
-//    // Example sending a request using the UpdateStudioComponentRequest method.
-//    req, resp := client.UpdateStudioComponentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStudioComponent
 func (c *NimbleStudio) UpdateStudioComponentRequest(input *UpdateStudioComponentInput) (req *request.Request, output *UpdateStudioComponentOutput) {
@@ -5318,30 +5308,31 @@ func (c *NimbleStudio) UpdateStudioComponentRequest(input *UpdateStudioComponent
 // API operation UpdateStudioComponent for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   Another operation is in progress.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request throughput limit was exceeded.
+//   - ConflictException
+//     Another operation is in progress.
 //
-//   * ValidationException
-//   One of the parameters in the request is invalid.
+//   - ThrottlingException
+//     The request throughput limit was exceeded.
 //
-//   * AccessDeniedException
-//   You are not authorized to perform this operation. Check your IAM policies,
-//   and ensure that you are using the correct access keys.
+//   - ValidationException
+//     One of the parameters in the request is invalid.
 //
-//   * InternalServerErrorException
-//   An internal error has occurred. Please retry your request.
+//   - AccessDeniedException
+//     You are not authorized to perform this operation. Check your IAM policies,
+//     and ensure that you are using the correct access keys.
 //
-//   * ServiceQuotaExceededException
-//   Your current quota does not allow you to perform the request action. You
-//   can request increases for some quotas, and other quotas cannot be increased.
+//   - InternalServerErrorException
+//     An internal error has occurred. Please retry your request.
 //
-//   Please use AWS Service Quotas to request an increase.
+//   - ServiceQuotaExceededException
+//     Your current quota does not allow you to perform the request action. You
+//     can request increases for some quotas, and other quotas cannot be increased.
+//
+//     Please use AWS Service Quotas to request an increase.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/nimble-2020-08-01/UpdateStudioComponent
 func (c *NimbleStudio) UpdateStudioComponent(input *UpdateStudioComponentInput) (*UpdateStudioComponentOutput, error) {
@@ -8906,10 +8897,10 @@ func (s *InternalServerErrorException) RequestID() string {
 // server configurations, as well as instance types and Amazon Machine Images
 // (AMIs).
 //
-//    <p>Studio administrators create launch profiles in the Nimble Studio console.
-//    Artists can use their launch profiles to launch an instance from the Nimble
-//    Studio portal. Each user’s launch profile defines how they can launch
-//    a streaming session. By default, studio admins can use all launch profiles.</p>
+//	<p>Studio administrators create launch profiles in the Nimble Studio console.
+//	Artists can use their launch profiles to launch an instance from the Nimble
+//	Studio portal. Each user’s launch profile defines how they can launch
+//	a streaming session. By default, studio admins can use all launch profiles.</p>
 type LaunchProfile struct {
 	_ struct{} `type:"structure"`
 
@@ -9372,17 +9363,17 @@ func (s *LaunchProfileInitializationScript) SetStudioComponentName(v string) *La
 // A launch profile member (type USER) provides the following permissions to
 // that launch profile:
 //
-//    * GetLaunchProfile
+//   - GetLaunchProfile
 //
-//    * GetLaunchProfileInitialization
+//   - GetLaunchProfileInitialization
 //
-//    * GetLaunchProfileMembers
+//   - GetLaunchProfileMembers
 //
-//    * GetLaunchProfileMember
+//   - GetLaunchProfileMember
 //
-//    * CreateStreamingSession
+//   - CreateStreamingSession
 //
-//    * GetLaunchProfileDetails
+//   - GetLaunchProfileDetails
 type LaunchProfileMembership struct {
 	_ struct{} `type:"structure"`
 

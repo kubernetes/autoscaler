@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceCommerceAnalytics client from just a session.
-//     svc := marketplacecommerceanalytics.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceCommerceAnalytics client with additional configuration
-//     svc := marketplacecommerceanalytics.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MarketplaceCommerceAnalytics client from just a session.
+//	svc := marketplacecommerceanalytics.New(mySession)
+//
+//	// Create a MarketplaceCommerceAnalytics client with additional configuration
+//	svc := marketplacecommerceanalytics.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MarketplaceCommerceAnalytics {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

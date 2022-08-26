@@ -18,19 +18,19 @@ type ProjectionBuilder struct {
 //
 // Example:
 //
-//     // projection represents the list of names {"foo", "bar"}
-//     projection := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
+//	// projection represents the list of names {"foo", "bar"}
+//	projection := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
 //
-//     // Used in another Projection Expression
-//     anotherProjection := expression.AddNames(projection, expression.Name("baz"))
+//	// Used in another Projection Expression
+//	anotherProjection := expression.AddNames(projection, expression.Name("baz"))
 //
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithProjection(anotherProjection)
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithProjection(anotherProjection)
 //
 // Expression Equivalent:
 //
-//     expression.NamesList(expression.Name("foo"), expression.Name("bar"))
-//     "foo, bar"
+//	expression.NamesList(expression.Name("foo"), expression.Name("bar"))
+//	"foo, bar"
 func NamesList(nameBuilder NameBuilder, namesList ...NameBuilder) ProjectionBuilder {
 	namesList = append([]NameBuilder{nameBuilder}, namesList...)
 	return ProjectionBuilder{
@@ -45,18 +45,18 @@ func NamesList(nameBuilder NameBuilder, namesList ...NameBuilder) ProjectionBuil
 //
 // Example:
 //
-//     // projection represents the list of names {"foo", "bar"}
-//     projection := expression.Name("foo").NamesList(expression.Name("bar"))
+//	// projection represents the list of names {"foo", "bar"}
+//	projection := expression.Name("foo").NamesList(expression.Name("bar"))
 //
-//     // Used in another Projection Expression
-//     anotherProjection := expression.AddNames(projection, expression.Name("baz"))
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithProjection(newProjection)
+//	// Used in another Projection Expression
+//	anotherProjection := expression.AddNames(projection, expression.Name("baz"))
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithProjection(newProjection)
 //
 // Expression Equivalent:
 //
-//     expression.Name("foo").NamesList(expression.Name("bar"))
-//     "foo, bar"
+//	expression.Name("foo").NamesList(expression.Name("bar"))
+//	"foo, bar"
 func (nb NameBuilder) NamesList(namesList ...NameBuilder) ProjectionBuilder {
 	return NamesList(nb, namesList...)
 }
@@ -69,19 +69,19 @@ func (nb NameBuilder) NamesList(namesList ...NameBuilder) ProjectionBuilder {
 //
 // Example:
 //
-//     // projection represents the list of names {"foo", "bar", "baz", "qux"}
-//     oldProj := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
-//     projection := expression.AddNames(oldProj, expression.Name("baz"), expression.Name("qux"))
+//	// projection represents the list of names {"foo", "bar", "baz", "qux"}
+//	oldProj := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
+//	projection := expression.AddNames(oldProj, expression.Name("baz"), expression.Name("qux"))
 //
-//     // Used in another Projection Expression
-//     anotherProjection := expression.AddNames(projection, expression.Name("quux"))
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithProjection(newProjection)
+//	// Used in another Projection Expression
+//	anotherProjection := expression.AddNames(projection, expression.Name("quux"))
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithProjection(newProjection)
 //
 // Expression Equivalent:
 //
-//     expression.AddNames(expression.NamesList(expression.Name("foo"), expression.Name("bar")), expression.Name("baz"), expression.Name("qux"))
-//     "foo, bar, baz, qux"
+//	expression.AddNames(expression.NamesList(expression.Name("foo"), expression.Name("bar")), expression.Name("baz"), expression.Name("qux"))
+//	"foo, bar, baz, qux"
 func AddNames(projectionBuilder ProjectionBuilder, namesList ...NameBuilder) ProjectionBuilder {
 	projectionBuilder.names = append(projectionBuilder.names, namesList...)
 	return projectionBuilder
@@ -95,19 +95,19 @@ func AddNames(projectionBuilder ProjectionBuilder, namesList ...NameBuilder) Pro
 //
 // Example:
 //
-//     // projection represents the list of names {"foo", "bar", "baz", "qux"}
-//     oldProj := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
-//     projection := oldProj.AddNames(expression.Name("baz"), expression.Name("qux"))
+//	// projection represents the list of names {"foo", "bar", "baz", "qux"}
+//	oldProj := expression.NamesList(expression.Name("foo"), expression.Name("bar"))
+//	projection := oldProj.AddNames(expression.Name("baz"), expression.Name("qux"))
 //
-//     // Used in another Projection Expression
-//     anotherProjection := expression.AddNames(projection, expression.Name("quux"))
-//     // Used to make an Builder
-//     builder := expression.NewBuilder().WithProjection(newProjection)
+//	// Used in another Projection Expression
+//	anotherProjection := expression.AddNames(projection, expression.Name("quux"))
+//	// Used to make an Builder
+//	builder := expression.NewBuilder().WithProjection(newProjection)
 //
 // Expression Equivalent:
 //
-//     expression.NamesList(expression.Name("foo"), expression.Name("bar")).AddNames(expression.Name("baz"), expression.Name("qux"))
-//     "foo, bar, baz, qux"
+//	expression.NamesList(expression.Name("foo"), expression.Name("bar")).AddNames(expression.Name("baz"), expression.Name("qux"))
+//	"foo, bar, baz, qux"
 func (pb ProjectionBuilder) AddNames(namesList ...NameBuilder) ProjectionBuilder {
 	return AddNames(pb, namesList...)
 }

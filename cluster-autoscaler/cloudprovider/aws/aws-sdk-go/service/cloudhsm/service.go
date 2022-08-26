@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudHSM client from just a session.
-//     svc := cloudhsm.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a CloudHSM client with additional configuration
-//     svc := cloudhsm.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a CloudHSM client from just a session.
+//	svc := cloudhsm.New(mySession)
+//
+//	// Create a CloudHSM client with additional configuration
+//	svc := cloudhsm.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *CloudHSM {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

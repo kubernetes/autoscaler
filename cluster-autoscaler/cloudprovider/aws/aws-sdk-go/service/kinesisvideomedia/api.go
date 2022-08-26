@@ -29,14 +29,13 @@ const opGetMedia = "GetMedia"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMediaRequest method.
+//	req, resp := client.GetMediaRequest(params)
 //
-//    // Example sending a request using the GetMediaRequest method.
-//    req, resp := client.GetMediaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-media-2017-09-30/GetMedia
 func (c *KinesisVideoMedia) GetMediaRequest(input *GetMediaInput) (req *request.Request, output *GetMediaOutput) {
@@ -74,21 +73,21 @@ func (c *KinesisVideoMedia) GetMediaRequest(input *GetMediaInput) (req *request.
 //
 // The following limits apply when using the GetMedia API:
 //
-//    * A client can call GetMedia up to five times per second per stream.
+//   - A client can call GetMedia up to five times per second per stream.
 //
-//    * Kinesis Video Streams sends media data at a rate of up to 25 megabytes
-//    per second (or 200 megabits per second) during a GetMedia session.
+//   - Kinesis Video Streams sends media data at a rate of up to 25 megabytes
+//     per second (or 200 megabits per second) during a GetMedia session.
 //
 // If an error is thrown after invoking a Kinesis Video Streams media API, in
 // addition to the HTTP status code and the response body, it includes the following
 // pieces of information:
 //
-//    * x-amz-ErrorType HTTP header – contains a more specific error type
-//    in addition to what the HTTP status code provides.
+//   - x-amz-ErrorType HTTP header – contains a more specific error type
+//     in addition to what the HTTP status code provides.
 //
-//    * x-amz-RequestId HTTP header – if you want to report an issue to AWS,
-//    the support team can better diagnose the problem if given the Request
-//    Id.
+//   - x-amz-RequestId HTTP header – if you want to report an issue to AWS,
+//     the support team can better diagnose the problem if given the Request
+//     Id.
 //
 // Both the HTTP status code and the ErrorType header can be utilized to make
 // programmatic decisions about whether errors are retry-able and under what
@@ -106,29 +105,30 @@ func (c *KinesisVideoMedia) GetMediaRequest(input *GetMediaInput) (req *request.
 // API operation GetMedia for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   Status Code: 404, The stream with the given name does not exist.
 //
-//   * NotAuthorizedException
-//   Status Code: 403, The caller is not authorized to perform an operation on
-//   the given stream, or the token has expired.
+//   - ResourceNotFoundException
+//     Status Code: 404, The stream with the given name does not exist.
 //
-//   * InvalidEndpointException
-//   Status Code: 400, Caller used wrong endpoint to write data to a stream. On
-//   receiving such an exception, the user must call GetDataEndpoint with AccessMode
-//   set to "READ" and use the endpoint Kinesis Video returns in the next GetMedia
-//   call.
+//   - NotAuthorizedException
+//     Status Code: 403, The caller is not authorized to perform an operation on
+//     the given stream, or the token has expired.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidEndpointException
+//     Status Code: 400, Caller used wrong endpoint to write data to a stream. On
+//     receiving such an exception, the user must call GetDataEndpoint with AccessMode
+//     set to "READ" and use the endpoint Kinesis Video returns in the next GetMedia
+//     call.
 //
-//   * ConnectionLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client connections.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ConnectionLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client connections.
+//
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesis-video-media-2017-09-30/GetMedia
 func (c *KinesisVideoMedia) GetMedia(input *GetMediaInput) (*GetMediaOutput, error) {
@@ -709,15 +709,15 @@ func (s *ResourceNotFoundException) RequestID() string {
 // API to start returning media data. You have the following options to identify
 // the starting chunk:
 //
-//    * Choose the latest (or oldest) chunk.
+//   - Choose the latest (or oldest) chunk.
 //
-//    * Identify a specific chunk. You can identify a specific chunk either
-//    by providing a fragment number or timestamp (server or producer).
+//   - Identify a specific chunk. You can identify a specific chunk either
+//     by providing a fragment number or timestamp (server or producer).
 //
-//    * Each chunk's metadata includes a continuation token as a Matroska (MKV)
-//    tag (AWS_KINESISVIDEO_CONTINUATION_TOKEN). If your previous GetMedia request
-//    terminated, you can use this tag value in your next GetMedia request.
-//    The API then starts returning chunks starting where the last API ended.
+//   - Each chunk's metadata includes a continuation token as a Matroska (MKV)
+//     tag (AWS_KINESISVIDEO_CONTINUATION_TOKEN). If your previous GetMedia request
+//     terminated, you can use this tag value in your next GetMedia request.
+//     The API then starts returning chunks starting where the last API ended.
 type StartSelector struct {
 	_ struct{} `type:"structure"`
 

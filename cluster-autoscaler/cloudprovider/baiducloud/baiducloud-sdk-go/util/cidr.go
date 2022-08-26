@@ -117,9 +117,9 @@ func AddressCount(network *net.IPNet) uint64 {
 	return 1 << (uint64(bits) - uint64(prefixLen))
 }
 
-//VerifyNoOverlap takes a list subnets and supernet (CIDRBlock) and verifies
-//none of the subnets overlap and all subnets are in the supernet
-//it returns an error if any of those conditions are not satisfied
+// VerifyNoOverlap takes a list subnets and supernet (CIDRBlock) and verifies
+// none of the subnets overlap and all subnets are in the supernet
+// it returns an error if any of those conditions are not satisfied
 func VerifyNoOverlap(subnets []*net.IPNet, CIDRBlock *net.IPNet) error {
 	firstLastIP := make([][]net.IP, len(subnets))
 	for i, s := range subnets {
@@ -177,7 +177,7 @@ func NextSubnet(network *net.IPNet, prefixLen int) (*net.IPNet, bool) {
 	return next, false
 }
 
-//Inc increases the IP by one this returns a new []byte for the IP
+// Inc increases the IP by one this returns a new []byte for the IP
 func Inc(IP net.IP) net.IP {
 	IP = checkIPv4(IP)
 	incIP := make([]byte, len(IP))
@@ -191,7 +191,7 @@ func Inc(IP net.IP) net.IP {
 	return incIP
 }
 
-//Dec decreases the IP by one this returns a new []byte for the IP
+// Dec decreases the IP by one this returns a new []byte for the IP
 func Dec(IP net.IP) net.IP {
 	IP = checkIPv4(IP)
 	decIP := make([]byte, len(IP))

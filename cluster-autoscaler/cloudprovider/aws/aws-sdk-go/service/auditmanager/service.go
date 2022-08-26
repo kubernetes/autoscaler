@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AuditManager client from just a session.
-//     svc := auditmanager.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AuditManager client with additional configuration
-//     svc := auditmanager.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AuditManager client from just a session.
+//	svc := auditmanager.New(mySession)
+//
+//	// Create a AuditManager client with additional configuration
+//	svc := auditmanager.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AuditManager {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

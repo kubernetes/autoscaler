@@ -29,14 +29,13 @@ const opAcknowledgeJob = "AcknowledgeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcknowledgeJobRequest method.
+//	req, resp := client.AcknowledgeJobRequest(params)
 //
-//    // Example sending a request using the AcknowledgeJobRequest method.
-//    req, resp := client.AcknowledgeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/AcknowledgeJob
 func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *request.Request, output *AcknowledgeJobOutput) {
@@ -68,14 +67,15 @@ func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *r
 // API operation AcknowledgeJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidNonceException
-//   The nonce was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - InvalidNonceException
+//     The nonce was specified in an invalid format.
+//
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/AcknowledgeJob
 func (c *CodePipeline) AcknowledgeJob(input *AcknowledgeJobInput) (*AcknowledgeJobOutput, error) {
@@ -115,14 +115,13 @@ const opAcknowledgeThirdPartyJob = "AcknowledgeThirdPartyJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcknowledgeThirdPartyJobRequest method.
+//	req, resp := client.AcknowledgeThirdPartyJobRequest(params)
 //
-//    // Example sending a request using the AcknowledgeThirdPartyJobRequest method.
-//    req, resp := client.AcknowledgeThirdPartyJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/AcknowledgeThirdPartyJob
 func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPartyJobInput) (req *request.Request, output *AcknowledgeThirdPartyJobOutput) {
@@ -154,17 +153,18 @@ func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPa
 // API operation AcknowledgeThirdPartyJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidNonceException
-//   The nonce was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - InvalidNonceException
+//     The nonce was specified in an invalid format.
 //
-//   * InvalidClientTokenException
-//   The client token was specified in an invalid format
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
+//
+//   - InvalidClientTokenException
+//     The client token was specified in an invalid format
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/AcknowledgeThirdPartyJob
 func (c *CodePipeline) AcknowledgeThirdPartyJob(input *AcknowledgeThirdPartyJobInput) (*AcknowledgeThirdPartyJobOutput, error) {
@@ -204,14 +204,13 @@ const opCreateCustomActionType = "CreateCustomActionType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCustomActionTypeRequest method.
+//	req, resp := client.CreateCustomActionTypeRequest(params)
 //
-//    // Example sending a request using the CreateCustomActionTypeRequest method.
-//    req, resp := client.CreateCustomActionTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/CreateCustomActionType
 func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTypeInput) (req *request.Request, output *CreateCustomActionTypeOutput) {
@@ -243,21 +242,22 @@ func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTy
 // API operation CreateCustomActionType for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * LimitExceededException
-//   The number of pipelines associated with the AWS account has exceeded the
-//   limit allowed for the account.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * TooManyTagsException
-//   The tags limit for a resource has been exceeded.
+//   - LimitExceededException
+//     The number of pipelines associated with the AWS account has exceeded the
+//     limit allowed for the account.
 //
-//   * InvalidTagsException
-//   The specified resource tags are invalid.
+//   - TooManyTagsException
+//     The tags limit for a resource has been exceeded.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - InvalidTagsException
+//     The specified resource tags are invalid.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/CreateCustomActionType
 func (c *CodePipeline) CreateCustomActionType(input *CreateCustomActionTypeInput) (*CreateCustomActionTypeOutput, error) {
@@ -297,14 +297,13 @@ const opCreatePipeline = "CreatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePipelineRequest method.
+//	req, resp := client.CreatePipelineRequest(params)
 //
-//    // Example sending a request using the CreatePipelineRequest method.
-//    req, resp := client.CreatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/CreatePipeline
 func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *request.Request, output *CreatePipelineOutput) {
@@ -339,36 +338,37 @@ func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 // API operation CreatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNameInUseException
-//   The specified pipeline name is already in use.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidStageDeclarationException
-//   The stage declaration was specified in an invalid format.
+//   - PipelineNameInUseException
+//     The specified pipeline name is already in use.
 //
-//   * InvalidActionDeclarationException
-//   The action declaration was specified in an invalid format.
+//   - InvalidStageDeclarationException
+//     The stage declaration was specified in an invalid format.
 //
-//   * InvalidBlockerDeclarationException
-//   Reserved for future use.
+//   - InvalidActionDeclarationException
+//     The action declaration was specified in an invalid format.
 //
-//   * InvalidStructureException
-//   The structure was specified in an invalid format.
+//   - InvalidBlockerDeclarationException
+//     Reserved for future use.
 //
-//   * LimitExceededException
-//   The number of pipelines associated with the AWS account has exceeded the
-//   limit allowed for the account.
+//   - InvalidStructureException
+//     The structure was specified in an invalid format.
 //
-//   * TooManyTagsException
-//   The tags limit for a resource has been exceeded.
+//   - LimitExceededException
+//     The number of pipelines associated with the AWS account has exceeded the
+//     limit allowed for the account.
 //
-//   * InvalidTagsException
-//   The specified resource tags are invalid.
+//   - TooManyTagsException
+//     The tags limit for a resource has been exceeded.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - InvalidTagsException
+//     The specified resource tags are invalid.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/CreatePipeline
 func (c *CodePipeline) CreatePipeline(input *CreatePipelineInput) (*CreatePipelineOutput, error) {
@@ -408,14 +408,13 @@ const opDeleteCustomActionType = "DeleteCustomActionType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCustomActionTypeRequest method.
+//	req, resp := client.DeleteCustomActionTypeRequest(params)
 //
-//    // Example sending a request using the DeleteCustomActionTypeRequest method.
-//    req, resp := client.DeleteCustomActionTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeleteCustomActionType
 func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTypeInput) (req *request.Request, output *DeleteCustomActionTypeOutput) {
@@ -454,11 +453,12 @@ func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTy
 // API operation DeleteCustomActionType for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeleteCustomActionType
 func (c *CodePipeline) DeleteCustomActionType(input *DeleteCustomActionTypeInput) (*DeleteCustomActionTypeOutput, error) {
@@ -498,14 +498,13 @@ const opDeletePipeline = "DeletePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePipelineRequest method.
+//	req, resp := client.DeletePipelineRequest(params)
 //
-//    // Example sending a request using the DeletePipelineRequest method.
-//    req, resp := client.DeletePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeletePipeline
 func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *request.Request, output *DeletePipelineOutput) {
@@ -537,11 +536,12 @@ func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 // API operation DeletePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeletePipeline
 func (c *CodePipeline) DeletePipeline(input *DeletePipelineInput) (*DeletePipelineOutput, error) {
@@ -581,14 +581,13 @@ const opDeleteWebhook = "DeleteWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWebhookRequest method.
+//	req, resp := client.DeleteWebhookRequest(params)
 //
-//    // Example sending a request using the DeleteWebhookRequest method.
-//    req, resp := client.DeleteWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeleteWebhook
 func (c *CodePipeline) DeleteWebhookRequest(input *DeleteWebhookInput) (req *request.Request, output *DeleteWebhookOutput) {
@@ -624,11 +623,12 @@ func (c *CodePipeline) DeleteWebhookRequest(input *DeleteWebhookInput) (req *req
 // API operation DeleteWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeleteWebhook
 func (c *CodePipeline) DeleteWebhook(input *DeleteWebhookInput) (*DeleteWebhookOutput, error) {
@@ -668,14 +668,13 @@ const opDeregisterWebhookWithThirdParty = "DeregisterWebhookWithThirdParty"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterWebhookWithThirdPartyRequest method.
+//	req, resp := client.DeregisterWebhookWithThirdPartyRequest(params)
 //
-//    // Example sending a request using the DeregisterWebhookWithThirdPartyRequest method.
-//    req, resp := client.DeregisterWebhookWithThirdPartyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeregisterWebhookWithThirdParty
 func (c *CodePipeline) DeregisterWebhookWithThirdPartyRequest(input *DeregisterWebhookWithThirdPartyInput) (req *request.Request, output *DeregisterWebhookWithThirdPartyOutput) {
@@ -709,11 +708,12 @@ func (c *CodePipeline) DeregisterWebhookWithThirdPartyRequest(input *DeregisterW
 // API operation DeregisterWebhookWithThirdParty for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * WebhookNotFoundException
-//   The specified webhook was entered in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - WebhookNotFoundException
+//     The specified webhook was entered in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DeregisterWebhookWithThirdParty
 func (c *CodePipeline) DeregisterWebhookWithThirdParty(input *DeregisterWebhookWithThirdPartyInput) (*DeregisterWebhookWithThirdPartyOutput, error) {
@@ -753,14 +753,13 @@ const opDisableStageTransition = "DisableStageTransition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableStageTransitionRequest method.
+//	req, resp := client.DisableStageTransitionRequest(params)
 //
-//    // Example sending a request using the DisableStageTransitionRequest method.
-//    req, resp := client.DisableStageTransitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DisableStageTransition
 func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransitionInput) (req *request.Request, output *DisableStageTransitionOutput) {
@@ -793,14 +792,15 @@ func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransiti
 // API operation DisableStageTransition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * StageNotFoundException
-//   The stage was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
+//
+//   - StageNotFoundException
+//     The stage was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/DisableStageTransition
 func (c *CodePipeline) DisableStageTransition(input *DisableStageTransitionInput) (*DisableStageTransitionOutput, error) {
@@ -840,14 +840,13 @@ const opEnableStageTransition = "EnableStageTransition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableStageTransitionRequest method.
+//	req, resp := client.EnableStageTransitionRequest(params)
 //
-//    // Example sending a request using the EnableStageTransitionRequest method.
-//    req, resp := client.EnableStageTransitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/EnableStageTransition
 func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransitionInput) (req *request.Request, output *EnableStageTransitionOutput) {
@@ -879,14 +878,15 @@ func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransition
 // API operation EnableStageTransition for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * StageNotFoundException
-//   The stage was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
+//
+//   - StageNotFoundException
+//     The stage was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/EnableStageTransition
 func (c *CodePipeline) EnableStageTransition(input *EnableStageTransitionInput) (*EnableStageTransitionOutput, error) {
@@ -926,14 +926,13 @@ const opGetActionType = "GetActionType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetActionTypeRequest method.
+//	req, resp := client.GetActionTypeRequest(params)
 //
-//    // Example sending a request using the GetActionTypeRequest method.
-//    req, resp := client.GetActionTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetActionType
 func (c *CodePipeline) GetActionTypeRequest(input *GetActionTypeInput) (req *request.Request, output *GetActionTypeOutput) {
@@ -966,11 +965,12 @@ func (c *CodePipeline) GetActionTypeRequest(input *GetActionTypeInput) (req *req
 // API operation GetActionType for usage and error information.
 //
 // Returned Error Types:
-//   * ActionTypeNotFoundException
-//   The specified action type cannot be found.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - ActionTypeNotFoundException
+//     The specified action type cannot be found.
+//
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetActionType
 func (c *CodePipeline) GetActionType(input *GetActionTypeInput) (*GetActionTypeOutput, error) {
@@ -1010,14 +1010,13 @@ const opGetJobDetails = "GetJobDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobDetailsRequest method.
+//	req, resp := client.GetJobDetailsRequest(params)
 //
-//    // Example sending a request using the GetJobDetailsRequest method.
-//    req, resp := client.GetJobDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetJobDetails
 func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *request.Request, output *GetJobDetailsOutput) {
@@ -1053,11 +1052,12 @@ func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *req
 // API operation GetJobDetails for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetJobDetails
 func (c *CodePipeline) GetJobDetails(input *GetJobDetailsInput) (*GetJobDetailsOutput, error) {
@@ -1097,14 +1097,13 @@ const opGetPipeline = "GetPipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPipelineRequest method.
+//	req, resp := client.GetPipelineRequest(params)
 //
-//    // Example sending a request using the GetPipelineRequest method.
-//    req, resp := client.GetPipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipeline
 func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request.Request, output *GetPipelineOutput) {
@@ -1137,14 +1136,15 @@ func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request
 // API operation GetPipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * PipelineVersionNotFoundException
-//   The pipeline version was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
+//
+//   - PipelineVersionNotFoundException
+//     The pipeline version was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipeline
 func (c *CodePipeline) GetPipeline(input *GetPipelineInput) (*GetPipelineOutput, error) {
@@ -1184,14 +1184,13 @@ const opGetPipelineExecution = "GetPipelineExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPipelineExecutionRequest method.
+//	req, resp := client.GetPipelineExecutionRequest(params)
 //
-//    // Example sending a request using the GetPipelineExecutionRequest method.
-//    req, resp := client.GetPipelineExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipelineExecution
 func (c *CodePipeline) GetPipelineExecutionRequest(input *GetPipelineExecutionInput) (req *request.Request, output *GetPipelineExecutionOutput) {
@@ -1224,15 +1223,16 @@ func (c *CodePipeline) GetPipelineExecutionRequest(input *GetPipelineExecutionIn
 // API operation GetPipelineExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * PipelineExecutionNotFoundException
-//   The pipeline execution was specified in an invalid format or cannot be found,
-//   or an execution ID does not belong to the specified pipeline.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
+//
+//   - PipelineExecutionNotFoundException
+//     The pipeline execution was specified in an invalid format or cannot be found,
+//     or an execution ID does not belong to the specified pipeline.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipelineExecution
 func (c *CodePipeline) GetPipelineExecution(input *GetPipelineExecutionInput) (*GetPipelineExecutionOutput, error) {
@@ -1272,14 +1272,13 @@ const opGetPipelineState = "GetPipelineState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPipelineStateRequest method.
+//	req, resp := client.GetPipelineStateRequest(params)
 //
-//    // Example sending a request using the GetPipelineStateRequest method.
-//    req, resp := client.GetPipelineStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipelineState
 func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (req *request.Request, output *GetPipelineStateOutput) {
@@ -1314,11 +1313,12 @@ func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (re
 // API operation GetPipelineState for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetPipelineState
 func (c *CodePipeline) GetPipelineState(input *GetPipelineStateInput) (*GetPipelineStateOutput, error) {
@@ -1358,14 +1358,13 @@ const opGetThirdPartyJobDetails = "GetThirdPartyJobDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetThirdPartyJobDetailsRequest method.
+//	req, resp := client.GetThirdPartyJobDetailsRequest(params)
 //
-//    // Example sending a request using the GetThirdPartyJobDetailsRequest method.
-//    req, resp := client.GetThirdPartyJobDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetThirdPartyJobDetails
 func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDetailsInput) (req *request.Request, output *GetThirdPartyJobDetailsOutput) {
@@ -1402,17 +1401,18 @@ func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDet
 // API operation GetThirdPartyJobDetails for usage and error information.
 //
 // Returned Error Types:
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
-//   * InvalidClientTokenException
-//   The client token was specified in an invalid format
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidJobException
-//   The job was specified in an invalid format or cannot be found.
+//   - InvalidClientTokenException
+//     The client token was specified in an invalid format
+//
+//   - InvalidJobException
+//     The job was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/GetThirdPartyJobDetails
 func (c *CodePipeline) GetThirdPartyJobDetails(input *GetThirdPartyJobDetailsInput) (*GetThirdPartyJobDetailsOutput, error) {
@@ -1452,14 +1452,13 @@ const opListActionExecutions = "ListActionExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListActionExecutionsRequest method.
+//	req, resp := client.ListActionExecutionsRequest(params)
 //
-//    // Example sending a request using the ListActionExecutionsRequest method.
-//    req, resp := client.ListActionExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListActionExecutions
 func (c *CodePipeline) ListActionExecutionsRequest(input *ListActionExecutionsInput) (req *request.Request, output *ListActionExecutionsOutput) {
@@ -1496,19 +1495,20 @@ func (c *CodePipeline) ListActionExecutionsRequest(input *ListActionExecutionsIn
 // API operation ListActionExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * PipelineExecutionNotFoundException
-//   The pipeline execution was specified in an invalid format or cannot be found,
-//   or an execution ID does not belong to the specified pipeline.
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
+//
+//   - PipelineExecutionNotFoundException
+//     The pipeline execution was specified in an invalid format or cannot be found,
+//     or an execution ID does not belong to the specified pipeline.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListActionExecutions
 func (c *CodePipeline) ListActionExecutions(input *ListActionExecutionsInput) (*ListActionExecutionsOutput, error) {
@@ -1540,15 +1540,14 @@ func (c *CodePipeline) ListActionExecutionsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListActionExecutions operation.
-//    pageNum := 0
-//    err := client.ListActionExecutionsPages(params,
-//        func(page *codepipeline.ListActionExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListActionExecutions operation.
+//	pageNum := 0
+//	err := client.ListActionExecutionsPages(params,
+//	    func(page *codepipeline.ListActionExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListActionExecutionsPages(input *ListActionExecutionsInput, fn func(*ListActionExecutionsOutput, bool) bool) error {
 	return c.ListActionExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1600,14 +1599,13 @@ const opListActionTypes = "ListActionTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListActionTypesRequest method.
+//	req, resp := client.ListActionTypesRequest(params)
 //
-//    // Example sending a request using the ListActionTypesRequest method.
-//    req, resp := client.ListActionTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListActionTypes
 func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req *request.Request, output *ListActionTypesOutput) {
@@ -1645,12 +1643,13 @@ func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req 
 // API operation ListActionTypes for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListActionTypes
 func (c *CodePipeline) ListActionTypes(input *ListActionTypesInput) (*ListActionTypesOutput, error) {
@@ -1682,15 +1681,14 @@ func (c *CodePipeline) ListActionTypesWithContext(ctx aws.Context, input *ListAc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListActionTypes operation.
-//    pageNum := 0
-//    err := client.ListActionTypesPages(params,
-//        func(page *codepipeline.ListActionTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListActionTypes operation.
+//	pageNum := 0
+//	err := client.ListActionTypesPages(params,
+//	    func(page *codepipeline.ListActionTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListActionTypesPages(input *ListActionTypesInput, fn func(*ListActionTypesOutput, bool) bool) error {
 	return c.ListActionTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1742,14 +1740,13 @@ const opListPipelineExecutions = "ListPipelineExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPipelineExecutionsRequest method.
+//	req, resp := client.ListPipelineExecutionsRequest(params)
 //
-//    // Example sending a request using the ListPipelineExecutionsRequest method.
-//    req, resp := client.ListPipelineExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListPipelineExecutions
 func (c *CodePipeline) ListPipelineExecutionsRequest(input *ListPipelineExecutionsInput) (req *request.Request, output *ListPipelineExecutionsOutput) {
@@ -1786,15 +1783,16 @@ func (c *CodePipeline) ListPipelineExecutionsRequest(input *ListPipelineExecutio
 // API operation ListPipelineExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
+//
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListPipelineExecutions
 func (c *CodePipeline) ListPipelineExecutions(input *ListPipelineExecutionsInput) (*ListPipelineExecutionsOutput, error) {
@@ -1826,15 +1824,14 @@ func (c *CodePipeline) ListPipelineExecutionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPipelineExecutions operation.
-//    pageNum := 0
-//    err := client.ListPipelineExecutionsPages(params,
-//        func(page *codepipeline.ListPipelineExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPipelineExecutions operation.
+//	pageNum := 0
+//	err := client.ListPipelineExecutionsPages(params,
+//	    func(page *codepipeline.ListPipelineExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListPipelineExecutionsPages(input *ListPipelineExecutionsInput, fn func(*ListPipelineExecutionsOutput, bool) bool) error {
 	return c.ListPipelineExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1886,14 +1883,13 @@ const opListPipelines = "ListPipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPipelinesRequest method.
+//	req, resp := client.ListPipelinesRequest(params)
 //
-//    // Example sending a request using the ListPipelinesRequest method.
-//    req, resp := client.ListPipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListPipelines
 func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *request.Request, output *ListPipelinesOutput) {
@@ -1930,12 +1926,13 @@ func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 // API operation ListPipelines for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListPipelines
 func (c *CodePipeline) ListPipelines(input *ListPipelinesInput) (*ListPipelinesOutput, error) {
@@ -1967,15 +1964,14 @@ func (c *CodePipeline) ListPipelinesWithContext(ctx aws.Context, input *ListPipe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPipelines operation.
-//    pageNum := 0
-//    err := client.ListPipelinesPages(params,
-//        func(page *codepipeline.ListPipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPipelines operation.
+//	pageNum := 0
+//	err := client.ListPipelinesPages(params,
+//	    func(page *codepipeline.ListPipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListPipelinesPages(input *ListPipelinesInput, fn func(*ListPipelinesOutput, bool) bool) error {
 	return c.ListPipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2027,14 +2023,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListTagsForResource
 func (c *CodePipeline) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2071,18 +2066,19 @@ func (c *CodePipeline) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ResourceNotFoundException
-//   The resource was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - ResourceNotFoundException
+//     The resource was specified in an invalid format.
 //
-//   * InvalidArnException
-//   The specified resource ARN is invalid.
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
+//
+//   - InvalidArnException
+//     The specified resource ARN is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListTagsForResource
 func (c *CodePipeline) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2114,15 +2110,14 @@ func (c *CodePipeline) ListTagsForResourceWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *codepipeline.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *codepipeline.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2174,14 +2169,13 @@ const opListWebhooks = "ListWebhooks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWebhooksRequest method.
+//	req, resp := client.ListWebhooksRequest(params)
 //
-//    // Example sending a request using the ListWebhooksRequest method.
-//    req, resp := client.ListWebhooksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListWebhooks
 func (c *CodePipeline) ListWebhooksRequest(input *ListWebhooksInput) (req *request.Request, output *ListWebhooksOutput) {
@@ -2220,12 +2214,13 @@ func (c *CodePipeline) ListWebhooksRequest(input *ListWebhooksInput) (req *reque
 // API operation ListWebhooks for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidNextTokenException
-//   The next token was specified in an invalid format. Make sure that the next
-//   token you provide is the token returned by a previous call.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - InvalidNextTokenException
+//     The next token was specified in an invalid format. Make sure that the next
+//     token you provide is the token returned by a previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/ListWebhooks
 func (c *CodePipeline) ListWebhooks(input *ListWebhooksInput) (*ListWebhooksOutput, error) {
@@ -2257,15 +2252,14 @@ func (c *CodePipeline) ListWebhooksWithContext(ctx aws.Context, input *ListWebho
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWebhooks operation.
-//    pageNum := 0
-//    err := client.ListWebhooksPages(params,
-//        func(page *codepipeline.ListWebhooksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWebhooks operation.
+//	pageNum := 0
+//	err := client.ListWebhooksPages(params,
+//	    func(page *codepipeline.ListWebhooksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodePipeline) ListWebhooksPages(input *ListWebhooksInput, fn func(*ListWebhooksOutput, bool) bool) error {
 	return c.ListWebhooksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2317,14 +2311,13 @@ const opPollForJobs = "PollForJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PollForJobsRequest method.
+//	req, resp := client.PollForJobsRequest(params)
 //
-//    // Example sending a request using the PollForJobsRequest method.
-//    req, resp := client.PollForJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PollForJobs
 func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request.Request, output *PollForJobsOutput) {
@@ -2363,11 +2356,12 @@ func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request
 // API operation PollForJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ActionTypeNotFoundException
-//   The specified action type cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - ActionTypeNotFoundException
+//     The specified action type cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PollForJobs
 func (c *CodePipeline) PollForJobs(input *PollForJobsInput) (*PollForJobsOutput, error) {
@@ -2407,14 +2401,13 @@ const opPollForThirdPartyJobs = "PollForThirdPartyJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PollForThirdPartyJobsRequest method.
+//	req, resp := client.PollForThirdPartyJobsRequest(params)
 //
-//    // Example sending a request using the PollForThirdPartyJobsRequest method.
-//    req, resp := client.PollForThirdPartyJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PollForThirdPartyJobs
 func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobsInput) (req *request.Request, output *PollForThirdPartyJobsOutput) {
@@ -2450,11 +2443,12 @@ func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobs
 // API operation PollForThirdPartyJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ActionTypeNotFoundException
-//   The specified action type cannot be found.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - ActionTypeNotFoundException
+//     The specified action type cannot be found.
+//
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PollForThirdPartyJobs
 func (c *CodePipeline) PollForThirdPartyJobs(input *PollForThirdPartyJobsInput) (*PollForThirdPartyJobsOutput, error) {
@@ -2494,14 +2488,13 @@ const opPutActionRevision = "PutActionRevision"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutActionRevisionRequest method.
+//	req, resp := client.PutActionRevisionRequest(params)
 //
-//    // Example sending a request using the PutActionRevisionRequest method.
-//    req, resp := client.PutActionRevisionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutActionRevision
 func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (req *request.Request, output *PutActionRevisionOutput) {
@@ -2532,17 +2525,18 @@ func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (
 // API operation PutActionRevision for usage and error information.
 //
 // Returned Error Types:
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
 //
-//   * StageNotFoundException
-//   The stage was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * ActionNotFoundException
-//   The specified action cannot be found.
+//   - StageNotFoundException
+//     The stage was specified in an invalid format or cannot be found.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - ActionNotFoundException
+//     The specified action cannot be found.
+//
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutActionRevision
 func (c *CodePipeline) PutActionRevision(input *PutActionRevisionInput) (*PutActionRevisionOutput, error) {
@@ -2582,14 +2576,13 @@ const opPutApprovalResult = "PutApprovalResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutApprovalResultRequest method.
+//	req, resp := client.PutApprovalResultRequest(params)
 //
-//    // Example sending a request using the PutApprovalResultRequest method.
-//    req, resp := client.PutApprovalResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutApprovalResult
 func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (req *request.Request, output *PutApprovalResultOutput) {
@@ -2621,23 +2614,24 @@ func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (
 // API operation PutApprovalResult for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidApprovalTokenException
-//   The approval request already received a response or has expired.
 //
-//   * ApprovalAlreadyCompletedException
-//   The approval action has already been approved or rejected.
+//   - InvalidApprovalTokenException
+//     The approval request already received a response or has expired.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ApprovalAlreadyCompletedException
+//     The approval action has already been approved or rejected.
 //
-//   * StageNotFoundException
-//   The stage was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * ActionNotFoundException
-//   The specified action cannot be found.
+//   - StageNotFoundException
+//     The stage was specified in an invalid format or cannot be found.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - ActionNotFoundException
+//     The specified action cannot be found.
+//
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutApprovalResult
 func (c *CodePipeline) PutApprovalResult(input *PutApprovalResultInput) (*PutApprovalResultOutput, error) {
@@ -2677,14 +2671,13 @@ const opPutJobFailureResult = "PutJobFailureResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutJobFailureResultRequest method.
+//	req, resp := client.PutJobFailureResultRequest(params)
 //
-//    // Example sending a request using the PutJobFailureResultRequest method.
-//    req, resp := client.PutJobFailureResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutJobFailureResult
 func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInput) (req *request.Request, output *PutJobFailureResultOutput) {
@@ -2717,14 +2710,15 @@ func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInpu
 // API operation PutJobFailureResult for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidJobStateException
-//   The job state was specified in an invalid format.
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
+//
+//   - InvalidJobStateException
+//     The job state was specified in an invalid format.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutJobFailureResult
 func (c *CodePipeline) PutJobFailureResult(input *PutJobFailureResultInput) (*PutJobFailureResultOutput, error) {
@@ -2764,14 +2758,13 @@ const opPutJobSuccessResult = "PutJobSuccessResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutJobSuccessResultRequest method.
+//	req, resp := client.PutJobSuccessResultRequest(params)
 //
-//    // Example sending a request using the PutJobSuccessResultRequest method.
-//    req, resp := client.PutJobSuccessResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutJobSuccessResult
 func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInput) (req *request.Request, output *PutJobSuccessResultOutput) {
@@ -2804,17 +2797,18 @@ func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInpu
 // API operation PutJobSuccessResult for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidJobStateException
-//   The job state was specified in an invalid format.
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
-//   * OutputVariablesSizeExceededException
-//   Exceeded the total size limit for all variables in the pipeline.
+//   - InvalidJobStateException
+//     The job state was specified in an invalid format.
+//
+//   - OutputVariablesSizeExceededException
+//     Exceeded the total size limit for all variables in the pipeline.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutJobSuccessResult
 func (c *CodePipeline) PutJobSuccessResult(input *PutJobSuccessResultInput) (*PutJobSuccessResultOutput, error) {
@@ -2854,14 +2848,13 @@ const opPutThirdPartyJobFailureResult = "PutThirdPartyJobFailureResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutThirdPartyJobFailureResultRequest method.
+//	req, resp := client.PutThirdPartyJobFailureResultRequest(params)
 //
-//    // Example sending a request using the PutThirdPartyJobFailureResultRequest method.
-//    req, resp := client.PutThirdPartyJobFailureResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutThirdPartyJobFailureResult
 func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdPartyJobFailureResultInput) (req *request.Request, output *PutThirdPartyJobFailureResultOutput) {
@@ -2894,17 +2887,18 @@ func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdParty
 // API operation PutThirdPartyJobFailureResult for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidJobStateException
-//   The job state was specified in an invalid format.
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
-//   * InvalidClientTokenException
-//   The client token was specified in an invalid format
+//   - InvalidJobStateException
+//     The job state was specified in an invalid format.
+//
+//   - InvalidClientTokenException
+//     The client token was specified in an invalid format
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutThirdPartyJobFailureResult
 func (c *CodePipeline) PutThirdPartyJobFailureResult(input *PutThirdPartyJobFailureResultInput) (*PutThirdPartyJobFailureResultOutput, error) {
@@ -2944,14 +2938,13 @@ const opPutThirdPartyJobSuccessResult = "PutThirdPartyJobSuccessResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutThirdPartyJobSuccessResultRequest method.
+//	req, resp := client.PutThirdPartyJobSuccessResultRequest(params)
 //
-//    // Example sending a request using the PutThirdPartyJobSuccessResultRequest method.
-//    req, resp := client.PutThirdPartyJobSuccessResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutThirdPartyJobSuccessResult
 func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdPartyJobSuccessResultInput) (req *request.Request, output *PutThirdPartyJobSuccessResultOutput) {
@@ -2984,17 +2977,18 @@ func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdParty
 // API operation PutThirdPartyJobSuccessResult for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * JobNotFoundException
-//   The job was specified in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidJobStateException
-//   The job state was specified in an invalid format.
+//   - JobNotFoundException
+//     The job was specified in an invalid format or cannot be found.
 //
-//   * InvalidClientTokenException
-//   The client token was specified in an invalid format
+//   - InvalidJobStateException
+//     The job state was specified in an invalid format.
+//
+//   - InvalidClientTokenException
+//     The client token was specified in an invalid format
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutThirdPartyJobSuccessResult
 func (c *CodePipeline) PutThirdPartyJobSuccessResult(input *PutThirdPartyJobSuccessResultInput) (*PutThirdPartyJobSuccessResultOutput, error) {
@@ -3034,14 +3028,13 @@ const opPutWebhook = "PutWebhook"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutWebhookRequest method.
+//	req, resp := client.PutWebhookRequest(params)
 //
-//    // Example sending a request using the PutWebhookRequest method.
-//    req, resp := client.PutWebhookRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutWebhook
 func (c *CodePipeline) PutWebhookRequest(input *PutWebhookInput) (req *request.Request, output *PutWebhookOutput) {
@@ -3079,30 +3072,31 @@ func (c *CodePipeline) PutWebhookRequest(input *PutWebhookInput) (req *request.R
 // API operation PutWebhook for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * LimitExceededException
-//   The number of pipelines associated with the AWS account has exceeded the
-//   limit allowed for the account.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidWebhookFilterPatternException
-//   The specified event filter rule is in an invalid format.
+//   - LimitExceededException
+//     The number of pipelines associated with the AWS account has exceeded the
+//     limit allowed for the account.
 //
-//   * InvalidWebhookAuthenticationParametersException
-//   The specified authentication type is in an invalid format.
+//   - InvalidWebhookFilterPatternException
+//     The specified event filter rule is in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - InvalidWebhookAuthenticationParametersException
+//     The specified authentication type is in an invalid format.
 //
-//   * TooManyTagsException
-//   The tags limit for a resource has been exceeded.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * InvalidTagsException
-//   The specified resource tags are invalid.
+//   - TooManyTagsException
+//     The tags limit for a resource has been exceeded.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - InvalidTagsException
+//     The specified resource tags are invalid.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/PutWebhook
 func (c *CodePipeline) PutWebhook(input *PutWebhookInput) (*PutWebhookOutput, error) {
@@ -3142,14 +3136,13 @@ const opRegisterWebhookWithThirdParty = "RegisterWebhookWithThirdParty"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterWebhookWithThirdPartyRequest method.
+//	req, resp := client.RegisterWebhookWithThirdPartyRequest(params)
 //
-//    // Example sending a request using the RegisterWebhookWithThirdPartyRequest method.
-//    req, resp := client.RegisterWebhookWithThirdPartyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/RegisterWebhookWithThirdParty
 func (c *CodePipeline) RegisterWebhookWithThirdPartyRequest(input *RegisterWebhookWithThirdPartyInput) (req *request.Request, output *RegisterWebhookWithThirdPartyOutput) {
@@ -3182,11 +3175,12 @@ func (c *CodePipeline) RegisterWebhookWithThirdPartyRequest(input *RegisterWebho
 // API operation RegisterWebhookWithThirdParty for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * WebhookNotFoundException
-//   The specified webhook was entered in an invalid format or cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - WebhookNotFoundException
+//     The specified webhook was entered in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/RegisterWebhookWithThirdParty
 func (c *CodePipeline) RegisterWebhookWithThirdParty(input *RegisterWebhookWithThirdPartyInput) (*RegisterWebhookWithThirdPartyOutput, error) {
@@ -3226,14 +3220,13 @@ const opRetryStageExecution = "RetryStageExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RetryStageExecutionRequest method.
+//	req, resp := client.RetryStageExecutionRequest(params)
 //
-//    // Example sending a request using the RetryStageExecutionRequest method.
-//    req, resp := client.RetryStageExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/RetryStageExecution
 func (c *CodePipeline) RetryStageExecutionRequest(input *RetryStageExecutionInput) (req *request.Request, output *RetryStageExecutionOutput) {
@@ -3267,26 +3260,27 @@ func (c *CodePipeline) RetryStageExecutionRequest(input *RetryStageExecutionInpu
 // API operation RetryStageExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConflictException
-//   Your request cannot be handled because the pipeline is busy handling ongoing
-//   activities. Try again later.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ConflictException
+//     Your request cannot be handled because the pipeline is busy handling ongoing
+//     activities. Try again later.
 //
-//   * StageNotFoundException
-//   The stage was specified in an invalid format or cannot be found.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * StageNotRetryableException
-//   Unable to retry. The pipeline structure or stage state might have changed
-//   while actions awaited retry, or the stage contains no failed actions.
+//   - StageNotFoundException
+//     The stage was specified in an invalid format or cannot be found.
 //
-//   * NotLatestPipelineExecutionException
-//   The stage has failed in a later run of the pipeline and the pipelineExecutionId
-//   associated with the request is out of date.
+//   - StageNotRetryableException
+//     Unable to retry. The pipeline structure or stage state might have changed
+//     while actions awaited retry, or the stage contains no failed actions.
+//
+//   - NotLatestPipelineExecutionException
+//     The stage has failed in a later run of the pipeline and the pipelineExecutionId
+//     associated with the request is out of date.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/RetryStageExecution
 func (c *CodePipeline) RetryStageExecution(input *RetryStageExecutionInput) (*RetryStageExecutionOutput, error) {
@@ -3326,14 +3320,13 @@ const opStartPipelineExecution = "StartPipelineExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartPipelineExecutionRequest method.
+//	req, resp := client.StartPipelineExecutionRequest(params)
 //
-//    // Example sending a request using the StartPipelineExecutionRequest method.
-//    req, resp := client.StartPipelineExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/StartPipelineExecution
 func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecutionInput) (req *request.Request, output *StartPipelineExecutionOutput) {
@@ -3365,15 +3358,16 @@ func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecuti
 // API operation StartPipelineExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConflictException
-//   Your request cannot be handled because the pipeline is busy handling ongoing
-//   activities. Try again later.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ConflictException
+//     Your request cannot be handled because the pipeline is busy handling ongoing
+//     activities. Try again later.
+//
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/StartPipelineExecution
 func (c *CodePipeline) StartPipelineExecution(input *StartPipelineExecutionInput) (*StartPipelineExecutionOutput, error) {
@@ -3413,14 +3407,13 @@ const opStopPipelineExecution = "StopPipelineExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopPipelineExecutionRequest method.
+//	req, resp := client.StopPipelineExecutionRequest(params)
 //
-//    // Example sending a request using the StopPipelineExecutionRequest method.
-//    req, resp := client.StopPipelineExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/StopPipelineExecution
 func (c *CodePipeline) StopPipelineExecutionRequest(input *StopPipelineExecutionInput) (req *request.Request, output *StopPipelineExecutionOutput) {
@@ -3456,26 +3449,27 @@ func (c *CodePipeline) StopPipelineExecutionRequest(input *StopPipelineExecution
 // API operation StopPipelineExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ConflictException
-//   Your request cannot be handled because the pipeline is busy handling ongoing
-//   activities. Try again later.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * PipelineNotFoundException
-//   The pipeline was specified in an invalid format or cannot be found.
+//   - ConflictException
+//     Your request cannot be handled because the pipeline is busy handling ongoing
+//     activities. Try again later.
 //
-//   * PipelineExecutionNotStoppableException
-//   Unable to stop the pipeline execution. The execution might already be in
-//   a Stopped state, or it might no longer be in progress.
+//   - PipelineNotFoundException
+//     The pipeline was specified in an invalid format or cannot be found.
 //
-//   * DuplicatedStopRequestException
-//   The pipeline execution is already in a Stopping state. If you already chose
-//   to stop and wait, you cannot make that request again. You can choose to stop
-//   and abandon now, but be aware that this option can lead to failed tasks or
-//   out of sequence tasks. If you already chose to stop and abandon, you cannot
-//   make that request again.
+//   - PipelineExecutionNotStoppableException
+//     Unable to stop the pipeline execution. The execution might already be in
+//     a Stopped state, or it might no longer be in progress.
+//
+//   - DuplicatedStopRequestException
+//     The pipeline execution is already in a Stopping state. If you already chose
+//     to stop and wait, you cannot make that request again. You can choose to stop
+//     and abandon now, but be aware that this option can lead to failed tasks or
+//     out of sequence tasks. If you already chose to stop and abandon, you cannot
+//     make that request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/StopPipelineExecution
 func (c *CodePipeline) StopPipelineExecution(input *StopPipelineExecutionInput) (*StopPipelineExecutionOutput, error) {
@@ -3515,14 +3509,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/TagResource
 func (c *CodePipeline) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3555,23 +3548,24 @@ func (c *CodePipeline) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ResourceNotFoundException
-//   The resource was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidArnException
-//   The specified resource ARN is invalid.
+//   - ResourceNotFoundException
+//     The resource was specified in an invalid format.
 //
-//   * TooManyTagsException
-//   The tags limit for a resource has been exceeded.
+//   - InvalidArnException
+//     The specified resource ARN is invalid.
 //
-//   * InvalidTagsException
-//   The specified resource tags are invalid.
+//   - TooManyTagsException
+//     The tags limit for a resource has been exceeded.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - InvalidTagsException
+//     The specified resource tags are invalid.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/TagResource
 func (c *CodePipeline) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3611,14 +3605,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UntagResource
 func (c *CodePipeline) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3650,20 +3643,21 @@ func (c *CodePipeline) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * ResourceNotFoundException
-//   The resource was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidArnException
-//   The specified resource ARN is invalid.
+//   - ResourceNotFoundException
+//     The resource was specified in an invalid format.
 //
-//   * InvalidTagsException
-//   The specified resource tags are invalid.
+//   - InvalidArnException
+//     The specified resource ARN is invalid.
 //
-//   * ConcurrentModificationException
-//   Unable to modify the tag due to a simultaneous update request.
+//   - InvalidTagsException
+//     The specified resource tags are invalid.
+//
+//   - ConcurrentModificationException
+//     Unable to modify the tag due to a simultaneous update request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UntagResource
 func (c *CodePipeline) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3703,14 +3697,13 @@ const opUpdateActionType = "UpdateActionType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateActionTypeRequest method.
+//	req, resp := client.UpdateActionTypeRequest(params)
 //
-//    // Example sending a request using the UpdateActionTypeRequest method.
-//    req, resp := client.UpdateActionTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UpdateActionType
 func (c *CodePipeline) UpdateActionTypeRequest(input *UpdateActionTypeInput) (req *request.Request, output *UpdateActionTypeOutput) {
@@ -3745,14 +3738,15 @@ func (c *CodePipeline) UpdateActionTypeRequest(input *UpdateActionTypeInput) (re
 // API operation UpdateActionType for usage and error information.
 //
 // Returned Error Types:
-//   * RequestFailedException
-//   The request failed because of an unknown error, exception, or failure.
 //
-//   * ValidationException
-//   The validation was specified in an invalid format.
+//   - RequestFailedException
+//     The request failed because of an unknown error, exception, or failure.
 //
-//   * ActionTypeNotFoundException
-//   The specified action type cannot be found.
+//   - ValidationException
+//     The validation was specified in an invalid format.
+//
+//   - ActionTypeNotFoundException
+//     The specified action type cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UpdateActionType
 func (c *CodePipeline) UpdateActionType(input *UpdateActionTypeInput) (*UpdateActionTypeOutput, error) {
@@ -3792,14 +3786,13 @@ const opUpdatePipeline = "UpdatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePipelineRequest method.
+//	req, resp := client.UpdatePipelineRequest(params)
 //
-//    // Example sending a request using the UpdatePipelineRequest method.
-//    req, resp := client.UpdatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UpdatePipeline
 func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *request.Request, output *UpdatePipelineOutput) {
@@ -3833,24 +3826,25 @@ func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *r
 // API operation UpdatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The validation was specified in an invalid format.
 //
-//   * InvalidStageDeclarationException
-//   The stage declaration was specified in an invalid format.
+//   - ValidationException
+//     The validation was specified in an invalid format.
 //
-//   * InvalidActionDeclarationException
-//   The action declaration was specified in an invalid format.
+//   - InvalidStageDeclarationException
+//     The stage declaration was specified in an invalid format.
 //
-//   * InvalidBlockerDeclarationException
-//   Reserved for future use.
+//   - InvalidActionDeclarationException
+//     The action declaration was specified in an invalid format.
 //
-//   * InvalidStructureException
-//   The structure was specified in an invalid format.
+//   - InvalidBlockerDeclarationException
+//     Reserved for future use.
 //
-//   * LimitExceededException
-//   The number of pipelines associated with the AWS account has exceeded the
-//   limit allowed for the account.
+//   - InvalidStructureException
+//     The structure was specified in an invalid format.
+//
+//   - LimitExceededException
+//     The number of pipelines associated with the AWS account has exceeded the
+//     limit allowed for the account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codepipeline-2015-07-09/UpdatePipeline
 func (c *CodePipeline) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipelineOutput, error) {

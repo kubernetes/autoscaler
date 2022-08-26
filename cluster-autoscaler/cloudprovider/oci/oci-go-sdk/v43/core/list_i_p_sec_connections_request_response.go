@@ -11,7 +11,7 @@ import (
 
 // ListIPSecConnectionsRequest wrapper for the ListIPSecConnections operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListIPSecConnections.go.html to see an example of how to use ListIPSecConnectionsRequest.
 type ListIPSecConnectionsRequest struct {

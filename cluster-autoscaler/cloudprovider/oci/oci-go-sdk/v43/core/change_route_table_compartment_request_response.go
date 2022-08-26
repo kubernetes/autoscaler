@@ -11,7 +11,7 @@ import (
 
 // ChangeRouteTableCompartmentRequest wrapper for the ChangeRouteTableCompartment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ChangeRouteTableCompartment.go.html to see an example of how to use ChangeRouteTableCompartmentRequest.
 type ChangeRouteTableCompartmentRequest struct {

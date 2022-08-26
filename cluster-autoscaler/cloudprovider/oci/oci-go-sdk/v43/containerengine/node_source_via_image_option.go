@@ -26,7 +26,7 @@ type NodeSourceViaImageOption struct {
 	ImageId *string `mandatory:"false" json:"imageId"`
 }
 
-//GetSourceName returns SourceName
+// GetSourceName returns SourceName
 func (m NodeSourceViaImageOption) GetSourceName() *string {
 	return m.SourceName
 }

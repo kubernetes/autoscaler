@@ -29,14 +29,13 @@ const opDeleteScalingPolicy = "DeleteScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScalingPolicyRequest method.
+//	req, resp := client.DeleteScalingPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteScalingPolicyRequest method.
-//    req, resp := client.DeleteScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeleteScalingPolicy
 func (c *ApplicationAutoScaling) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (req *request.Request, output *DeleteScalingPolicyOutput) {
@@ -77,23 +76,24 @@ func (c *ApplicationAutoScaling) DeleteScalingPolicyRequest(input *DeleteScaling
 // API operation DeleteScalingPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found. For any operation that depends on
-//   the existence of a scalable target, this exception is thrown if the scalable
-//   target with the specified service namespace, resource ID, and scalable dimension
-//   does not exist. For any operation that deletes or deregisters a resource,
-//   this exception is thrown if the resource cannot be found.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found. For any operation that depends on
+//     the existence of a scalable target, this exception is thrown if the scalable
+//     target with the specified service namespace, resource ID, and scalable dimension
+//     does not exist. For any operation that deletes or deregisters a resource,
+//     this exception is thrown if the resource cannot be found.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeleteScalingPolicy
 func (c *ApplicationAutoScaling) DeleteScalingPolicy(input *DeleteScalingPolicyInput) (*DeleteScalingPolicyOutput, error) {
@@ -133,14 +133,13 @@ const opDeleteScheduledAction = "DeleteScheduledAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScheduledActionRequest method.
+//	req, resp := client.DeleteScheduledActionRequest(params)
 //
-//    // Example sending a request using the DeleteScheduledActionRequest method.
-//    req, resp := client.DeleteScheduledActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeleteScheduledAction
 func (c *ApplicationAutoScaling) DeleteScheduledActionRequest(input *DeleteScheduledActionInput) (req *request.Request, output *DeleteScheduledActionOutput) {
@@ -176,23 +175,24 @@ func (c *ApplicationAutoScaling) DeleteScheduledActionRequest(input *DeleteSched
 // API operation DeleteScheduledAction for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found. For any operation that depends on
-//   the existence of a scalable target, this exception is thrown if the scalable
-//   target with the specified service namespace, resource ID, and scalable dimension
-//   does not exist. For any operation that deletes or deregisters a resource,
-//   this exception is thrown if the resource cannot be found.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found. For any operation that depends on
+//     the existence of a scalable target, this exception is thrown if the scalable
+//     target with the specified service namespace, resource ID, and scalable dimension
+//     does not exist. For any operation that deletes or deregisters a resource,
+//     this exception is thrown if the resource cannot be found.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeleteScheduledAction
 func (c *ApplicationAutoScaling) DeleteScheduledAction(input *DeleteScheduledActionInput) (*DeleteScheduledActionOutput, error) {
@@ -232,14 +232,13 @@ const opDeregisterScalableTarget = "DeregisterScalableTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterScalableTargetRequest method.
+//	req, resp := client.DeregisterScalableTargetRequest(params)
 //
-//    // Example sending a request using the DeregisterScalableTargetRequest method.
-//    req, resp := client.DeregisterScalableTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeregisterScalableTarget
 func (c *ApplicationAutoScaling) DeregisterScalableTargetRequest(input *DeregisterScalableTargetInput) (req *request.Request, output *DeregisterScalableTargetOutput) {
@@ -276,23 +275,24 @@ func (c *ApplicationAutoScaling) DeregisterScalableTargetRequest(input *Deregist
 // API operation DeregisterScalableTarget for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found. For any operation that depends on
-//   the existence of a scalable target, this exception is thrown if the scalable
-//   target with the specified service namespace, resource ID, and scalable dimension
-//   does not exist. For any operation that deletes or deregisters a resource,
-//   this exception is thrown if the resource cannot be found.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found. For any operation that depends on
+//     the existence of a scalable target, this exception is thrown if the scalable
+//     target with the specified service namespace, resource ID, and scalable dimension
+//     does not exist. For any operation that deletes or deregisters a resource,
+//     this exception is thrown if the resource cannot be found.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DeregisterScalableTarget
 func (c *ApplicationAutoScaling) DeregisterScalableTarget(input *DeregisterScalableTargetInput) (*DeregisterScalableTargetOutput, error) {
@@ -332,14 +332,13 @@ const opDescribeScalableTargets = "DescribeScalableTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalableTargetsRequest method.
+//	req, resp := client.DescribeScalableTargetsRequest(params)
 //
-//    // Example sending a request using the DescribeScalableTargetsRequest method.
-//    req, resp := client.DescribeScalableTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalableTargets
 func (c *ApplicationAutoScaling) DescribeScalableTargetsRequest(input *DescribeScalableTargetsInput) (req *request.Request, output *DescribeScalableTargetsOutput) {
@@ -378,19 +377,20 @@ func (c *ApplicationAutoScaling) DescribeScalableTargetsRequest(input *DescribeS
 // API operation DescribeScalableTargets for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * InvalidNextTokenException
-//   The next token supplied was invalid.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - InvalidNextTokenException
+//     The next token supplied was invalid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalableTargets
 func (c *ApplicationAutoScaling) DescribeScalableTargets(input *DescribeScalableTargetsInput) (*DescribeScalableTargetsOutput, error) {
@@ -422,15 +422,14 @@ func (c *ApplicationAutoScaling) DescribeScalableTargetsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScalableTargets operation.
-//    pageNum := 0
-//    err := client.DescribeScalableTargetsPages(params,
-//        func(page *applicationautoscaling.DescribeScalableTargetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScalableTargets operation.
+//	pageNum := 0
+//	err := client.DescribeScalableTargetsPages(params,
+//	    func(page *applicationautoscaling.DescribeScalableTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationAutoScaling) DescribeScalableTargetsPages(input *DescribeScalableTargetsInput, fn func(*DescribeScalableTargetsOutput, bool) bool) error {
 	return c.DescribeScalableTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -482,14 +481,13 @@ const opDescribeScalingActivities = "DescribeScalingActivities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingActivitiesRequest method.
+//	req, resp := client.DescribeScalingActivitiesRequest(params)
 //
-//    // Example sending a request using the DescribeScalingActivitiesRequest method.
-//    req, resp := client.DescribeScalingActivitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalingActivities
 func (c *ApplicationAutoScaling) DescribeScalingActivitiesRequest(input *DescribeScalingActivitiesInput) (req *request.Request, output *DescribeScalingActivitiesOutput) {
@@ -529,19 +527,20 @@ func (c *ApplicationAutoScaling) DescribeScalingActivitiesRequest(input *Describ
 // API operation DescribeScalingActivities for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * InvalidNextTokenException
-//   The next token supplied was invalid.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - InvalidNextTokenException
+//     The next token supplied was invalid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalingActivities
 func (c *ApplicationAutoScaling) DescribeScalingActivities(input *DescribeScalingActivitiesInput) (*DescribeScalingActivitiesOutput, error) {
@@ -573,15 +572,14 @@ func (c *ApplicationAutoScaling) DescribeScalingActivitiesWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScalingActivities operation.
-//    pageNum := 0
-//    err := client.DescribeScalingActivitiesPages(params,
-//        func(page *applicationautoscaling.DescribeScalingActivitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScalingActivities operation.
+//	pageNum := 0
+//	err := client.DescribeScalingActivitiesPages(params,
+//	    func(page *applicationautoscaling.DescribeScalingActivitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationAutoScaling) DescribeScalingActivitiesPages(input *DescribeScalingActivitiesInput, fn func(*DescribeScalingActivitiesOutput, bool) bool) error {
 	return c.DescribeScalingActivitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -633,14 +631,13 @@ const opDescribeScalingPolicies = "DescribeScalingPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingPoliciesRequest method.
+//	req, resp := client.DescribeScalingPoliciesRequest(params)
 //
-//    // Example sending a request using the DescribeScalingPoliciesRequest method.
-//    req, resp := client.DescribeScalingPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalingPolicies
 func (c *ApplicationAutoScaling) DescribeScalingPoliciesRequest(input *DescribeScalingPoliciesInput) (req *request.Request, output *DescribeScalingPoliciesOutput) {
@@ -684,27 +681,28 @@ func (c *ApplicationAutoScaling) DescribeScalingPoliciesRequest(input *DescribeS
 // API operation DescribeScalingPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * FailedResourceAccessException
-//   Failed access to resources caused an exception. This exception is thrown
-//   when Application Auto Scaling is unable to retrieve the alarms associated
-//   with a scaling policy due to a client error, for example, if the role ARN
-//   specified for a scalable target does not have permission to call the CloudWatch
-//   DescribeAlarms (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarms.html)
-//   on your behalf.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * InvalidNextTokenException
-//   The next token supplied was invalid.
+//   - FailedResourceAccessException
+//     Failed access to resources caused an exception. This exception is thrown
+//     when Application Auto Scaling is unable to retrieve the alarms associated
+//     with a scaling policy due to a client error, for example, if the role ARN
+//     specified for a scalable target does not have permission to call the CloudWatch
+//     DescribeAlarms (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarms.html)
+//     on your behalf.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - InvalidNextTokenException
+//     The next token supplied was invalid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScalingPolicies
 func (c *ApplicationAutoScaling) DescribeScalingPolicies(input *DescribeScalingPoliciesInput) (*DescribeScalingPoliciesOutput, error) {
@@ -736,15 +734,14 @@ func (c *ApplicationAutoScaling) DescribeScalingPoliciesWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScalingPolicies operation.
-//    pageNum := 0
-//    err := client.DescribeScalingPoliciesPages(params,
-//        func(page *applicationautoscaling.DescribeScalingPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScalingPolicies operation.
+//	pageNum := 0
+//	err := client.DescribeScalingPoliciesPages(params,
+//	    func(page *applicationautoscaling.DescribeScalingPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationAutoScaling) DescribeScalingPoliciesPages(input *DescribeScalingPoliciesInput, fn func(*DescribeScalingPoliciesOutput, bool) bool) error {
 	return c.DescribeScalingPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -796,14 +793,13 @@ const opDescribeScheduledActions = "DescribeScheduledActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduledActionsRequest method.
+//	req, resp := client.DescribeScheduledActionsRequest(params)
 //
-//    // Example sending a request using the DescribeScheduledActionsRequest method.
-//    req, resp := client.DescribeScheduledActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScheduledActions
 func (c *ApplicationAutoScaling) DescribeScheduledActionsRequest(input *DescribeScheduledActionsInput) (req *request.Request, output *DescribeScheduledActionsOutput) {
@@ -848,19 +844,20 @@ func (c *ApplicationAutoScaling) DescribeScheduledActionsRequest(input *Describe
 // API operation DescribeScheduledActions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * InvalidNextTokenException
-//   The next token supplied was invalid.
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - InvalidNextTokenException
+//     The next token supplied was invalid.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/DescribeScheduledActions
 func (c *ApplicationAutoScaling) DescribeScheduledActions(input *DescribeScheduledActionsInput) (*DescribeScheduledActionsOutput, error) {
@@ -892,15 +889,14 @@ func (c *ApplicationAutoScaling) DescribeScheduledActionsWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScheduledActions operation.
-//    pageNum := 0
-//    err := client.DescribeScheduledActionsPages(params,
-//        func(page *applicationautoscaling.DescribeScheduledActionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScheduledActions operation.
+//	pageNum := 0
+//	err := client.DescribeScheduledActionsPages(params,
+//	    func(page *applicationautoscaling.DescribeScheduledActionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ApplicationAutoScaling) DescribeScheduledActionsPages(input *DescribeScheduledActionsInput, fn func(*DescribeScheduledActionsOutput, bool) bool) error {
 	return c.DescribeScheduledActionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -952,14 +948,13 @@ const opPutScalingPolicy = "PutScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutScalingPolicyRequest method.
+//	req, resp := client.PutScalingPolicyRequest(params)
 //
-//    // Example sending a request using the PutScalingPolicyRequest method.
-//    req, resp := client.PutScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/PutScalingPolicy
 func (c *ApplicationAutoScaling) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *request.Request, output *PutScalingPolicyOutput) {
@@ -1023,35 +1018,36 @@ func (c *ApplicationAutoScaling) PutScalingPolicyRequest(input *PutScalingPolicy
 // API operation PutScalingPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * LimitExceededException
-//   A per-account resource limit is exceeded. For more information, see Application
-//   Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found. For any operation that depends on
-//   the existence of a scalable target, this exception is thrown if the scalable
-//   target with the specified service namespace, resource ID, and scalable dimension
-//   does not exist. For any operation that deletes or deregisters a resource,
-//   this exception is thrown if the resource cannot be found.
+//   - LimitExceededException
+//     A per-account resource limit is exceeded. For more information, see Application
+//     Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found. For any operation that depends on
+//     the existence of a scalable target, this exception is thrown if the scalable
+//     target with the specified service namespace, resource ID, and scalable dimension
+//     does not exist. For any operation that deletes or deregisters a resource,
+//     this exception is thrown if the resource cannot be found.
 //
-//   * FailedResourceAccessException
-//   Failed access to resources caused an exception. This exception is thrown
-//   when Application Auto Scaling is unable to retrieve the alarms associated
-//   with a scaling policy due to a client error, for example, if the role ARN
-//   specified for a scalable target does not have permission to call the CloudWatch
-//   DescribeAlarms (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarms.html)
-//   on your behalf.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - FailedResourceAccessException
+//     Failed access to resources caused an exception. This exception is thrown
+//     when Application Auto Scaling is unable to retrieve the alarms associated
+//     with a scaling policy due to a client error, for example, if the role ARN
+//     specified for a scalable target does not have permission to call the CloudWatch
+//     DescribeAlarms (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarms.html)
+//     on your behalf.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/PutScalingPolicy
 func (c *ApplicationAutoScaling) PutScalingPolicy(input *PutScalingPolicyInput) (*PutScalingPolicyOutput, error) {
@@ -1091,14 +1087,13 @@ const opPutScheduledAction = "PutScheduledAction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutScheduledActionRequest method.
+//	req, resp := client.PutScheduledActionRequest(params)
 //
-//    // Example sending a request using the PutScheduledActionRequest method.
-//    req, resp := client.PutScheduledActionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/PutScheduledAction
 func (c *ApplicationAutoScaling) PutScheduledActionRequest(input *PutScheduledActionInput) (req *request.Request, output *PutScheduledActionOutput) {
@@ -1150,27 +1145,28 @@ func (c *ApplicationAutoScaling) PutScheduledActionRequest(input *PutScheduledAc
 // API operation PutScheduledAction for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * LimitExceededException
-//   A per-account resource limit is exceeded. For more information, see Application
-//   Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ObjectNotFoundException
-//   The specified object could not be found. For any operation that depends on
-//   the existence of a scalable target, this exception is thrown if the scalable
-//   target with the specified service namespace, resource ID, and scalable dimension
-//   does not exist. For any operation that deletes or deregisters a resource,
-//   this exception is thrown if the resource cannot be found.
+//   - LimitExceededException
+//     A per-account resource limit is exceeded. For more information, see Application
+//     Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - ObjectNotFoundException
+//     The specified object could not be found. For any operation that depends on
+//     the existence of a scalable target, this exception is thrown if the scalable
+//     target with the specified service namespace, resource ID, and scalable dimension
+//     does not exist. For any operation that deletes or deregisters a resource,
+//     this exception is thrown if the resource cannot be found.
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/PutScheduledAction
 func (c *ApplicationAutoScaling) PutScheduledAction(input *PutScheduledActionInput) (*PutScheduledActionOutput, error) {
@@ -1210,14 +1206,13 @@ const opRegisterScalableTarget = "RegisterScalableTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterScalableTargetRequest method.
+//	req, resp := client.RegisterScalableTargetRequest(params)
 //
-//    // Example sending a request using the RegisterScalableTargetRequest method.
-//    req, resp := client.RegisterScalableTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/RegisterScalableTarget
 func (c *ApplicationAutoScaling) RegisterScalableTargetRequest(input *RegisterScalableTargetInput) (req *request.Request, output *RegisterScalableTargetOutput) {
@@ -1278,20 +1273,21 @@ func (c *ApplicationAutoScaling) RegisterScalableTargetRequest(input *RegisterSc
 // API operation RegisterScalableTarget for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   An exception was thrown for a validation issue. Review the available parameters
-//   for the API request.
 //
-//   * LimitExceededException
-//   A per-account resource limit is exceeded. For more information, see Application
-//   Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
+//   - ValidationException
+//     An exception was thrown for a validation issue. Review the available parameters
+//     for the API request.
 //
-//   * ConcurrentUpdateException
-//   Concurrent updates caused an exception, for example, if you request an update
-//   to an Application Auto Scaling resource that already has a pending update.
+//   - LimitExceededException
+//     A per-account resource limit is exceeded. For more information, see Application
+//     Auto Scaling service quotas (https://docs.aws.amazon.com/autoscaling/application/userguide/application-auto-scaling-limits.html).
 //
-//   * InternalServiceException
-//   The service encountered an internal error.
+//   - ConcurrentUpdateException
+//     Concurrent updates caused an exception, for example, if you request an update
+//     to an Application Auto Scaling resource that already has a pending update.
+//
+//   - InternalServiceException
+//     The service encountered an internal error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/application-autoscaling-2016-02-06/RegisterScalableTarget
 func (c *ApplicationAutoScaling) RegisterScalableTarget(input *RegisterScalableTargetInput) (*RegisterScalableTargetOutput, error) {
@@ -1434,16 +1430,16 @@ func (s *ConcurrentUpdateException) RequestID() string {
 //
 // To create your customized metric specification:
 //
-//    * Add values for each required parameter from CloudWatch. You can use
-//    an existing metric, or a new metric that you create. To use your own metric,
-//    you must first publish the metric to CloudWatch. For more information,
-//    see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
-//    in the Amazon CloudWatch User Guide.
+//   - Add values for each required parameter from CloudWatch. You can use
+//     an existing metric, or a new metric that you create. To use your own metric,
+//     you must first publish the metric to CloudWatch. For more information,
+//     see Publish Custom Metrics (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html)
+//     in the Amazon CloudWatch User Guide.
 //
-//    * Choose a metric that changes proportionally with capacity. The value
-//    of the metric should increase or decrease in inverse proportion to the
-//    number of capacity units. That is, the value of the metric should decrease
-//    when capacity increases, and increase when capacity decreases.
+//   - Choose a metric that changes proportionally with capacity. The value
+//     of the metric should increase or decrease in inverse proportion to the
+//     number of capacity units. That is, the value of the metric should decrease
+//     when capacity increases, and increase when capacity decreases.
 //
 // For more information about CloudWatch, see Amazon CloudWatch Concepts (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
 type CustomizedMetricSpecification struct {
@@ -5720,27 +5716,27 @@ func (s *ScheduledAction) SetTimezone(v string) *ScheduledAction {
 // For the following examples, suppose that you have an alarm with a breach
 // threshold of 50:
 //
-//    * To trigger the adjustment when the metric is greater than or equal to
-//    50 and less than 60, specify a lower bound of 0 and an upper bound of
-//    10.
+//   - To trigger the adjustment when the metric is greater than or equal to
+//     50 and less than 60, specify a lower bound of 0 and an upper bound of
+//     10.
 //
-//    * To trigger the adjustment when the metric is greater than 40 and less
-//    than or equal to 50, specify a lower bound of -10 and an upper bound of
-//    0.
+//   - To trigger the adjustment when the metric is greater than 40 and less
+//     than or equal to 50, specify a lower bound of -10 and an upper bound of
+//     0.
 //
 // There are a few rules for the step adjustments for your step policy:
 //
-//    * The ranges of your step adjustments can't overlap or have a gap.
+//   - The ranges of your step adjustments can't overlap or have a gap.
 //
-//    * At most one step adjustment can have a null lower bound. If one step
-//    adjustment has a negative lower bound, then there must be a step adjustment
-//    with a null lower bound.
+//   - At most one step adjustment can have a null lower bound. If one step
+//     adjustment has a negative lower bound, then there must be a step adjustment
+//     with a null lower bound.
 //
-//    * At most one step adjustment can have a null upper bound. If one step
-//    adjustment has a positive upper bound, then there must be a step adjustment
-//    with a null upper bound.
+//   - At most one step adjustment can have a null upper bound. If one step
+//     adjustment has a positive upper bound, then there must be a step adjustment
+//     with a null upper bound.
 //
-//    * The upper and lower bound can't be null in the same step adjustment.
+//   - The upper and lower bound can't be null in the same step adjustment.
 type StepAdjustment struct {
 	_ struct{} `type:"structure"`
 

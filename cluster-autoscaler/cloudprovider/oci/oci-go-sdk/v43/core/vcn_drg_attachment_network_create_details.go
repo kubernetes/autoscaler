@@ -33,7 +33,7 @@ type VcnDrgAttachmentNetworkCreateDetails struct {
 	RouteTableId *string `mandatory:"false" json:"routeTableId"`
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m VcnDrgAttachmentNetworkCreateDetails) GetId() *string {
 	return m.Id
 }

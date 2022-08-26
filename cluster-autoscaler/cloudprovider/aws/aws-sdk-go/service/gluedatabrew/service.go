@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a GlueDataBrew client from just a session.
-//     svc := gluedatabrew.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a GlueDataBrew client with additional configuration
-//     svc := gluedatabrew.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a GlueDataBrew client from just a session.
+//	svc := gluedatabrew.New(mySession)
+//
+//	// Create a GlueDataBrew client with additional configuration
+//	svc := gluedatabrew.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *GlueDataBrew {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

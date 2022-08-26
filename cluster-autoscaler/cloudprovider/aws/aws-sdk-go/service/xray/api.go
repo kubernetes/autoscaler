@@ -29,14 +29,13 @@ const opBatchGetTraces = "BatchGetTraces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetTracesRequest method.
+//	req, resp := client.BatchGetTracesRequest(params)
 //
-//    // Example sending a request using the BatchGetTracesRequest method.
-//    req, resp := client.BatchGetTracesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/BatchGetTraces
 func (c *XRay) BatchGetTracesRequest(input *BatchGetTracesInput) (req *request.Request, output *BatchGetTracesOutput) {
@@ -75,11 +74,12 @@ func (c *XRay) BatchGetTracesRequest(input *BatchGetTracesInput) (req *request.R
 // API operation BatchGetTraces for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/BatchGetTraces
 func (c *XRay) BatchGetTraces(input *BatchGetTracesInput) (*BatchGetTracesOutput, error) {
@@ -111,15 +111,14 @@ func (c *XRay) BatchGetTracesWithContext(ctx aws.Context, input *BatchGetTracesI
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a BatchGetTraces operation.
-//    pageNum := 0
-//    err := client.BatchGetTracesPages(params,
-//        func(page *xray.BatchGetTracesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a BatchGetTraces operation.
+//	pageNum := 0
+//	err := client.BatchGetTracesPages(params,
+//	    func(page *xray.BatchGetTracesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) BatchGetTracesPages(input *BatchGetTracesInput, fn func(*BatchGetTracesOutput, bool) bool) error {
 	return c.BatchGetTracesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -171,14 +170,13 @@ const opCreateGroup = "CreateGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGroupRequest method.
+//	req, resp := client.CreateGroupRequest(params)
 //
-//    // Example sending a request using the CreateGroupRequest method.
-//    req, resp := client.CreateGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/CreateGroup
 func (c *XRay) CreateGroupRequest(input *CreateGroupInput) (req *request.Request, output *CreateGroupOutput) {
@@ -209,11 +207,12 @@ func (c *XRay) CreateGroupRequest(input *CreateGroupInput) (req *request.Request
 // API operation CreateGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/CreateGroup
 func (c *XRay) CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error) {
@@ -253,14 +252,13 @@ const opCreateSamplingRule = "CreateSamplingRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSamplingRuleRequest method.
+//	req, resp := client.CreateSamplingRuleRequest(params)
 //
-//    // Example sending a request using the CreateSamplingRuleRequest method.
-//    req, resp := client.CreateSamplingRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/CreateSamplingRule
 func (c *XRay) CreateSamplingRuleRequest(input *CreateSamplingRuleInput) (req *request.Request, output *CreateSamplingRuleOutput) {
@@ -298,14 +296,15 @@ func (c *XRay) CreateSamplingRuleRequest(input *CreateSamplingRuleInput) (req *r
 // API operation CreateSamplingRule for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
 //
-//   * RuleLimitExceededException
-//   You have reached the maximum number of sampling rules.
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+//   - RuleLimitExceededException
+//     You have reached the maximum number of sampling rules.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/CreateSamplingRule
 func (c *XRay) CreateSamplingRule(input *CreateSamplingRuleInput) (*CreateSamplingRuleOutput, error) {
@@ -345,14 +344,13 @@ const opDeleteGroup = "DeleteGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGroupRequest method.
+//	req, resp := client.DeleteGroupRequest(params)
 //
-//    // Example sending a request using the DeleteGroupRequest method.
-//    req, resp := client.DeleteGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteGroup
 func (c *XRay) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request, output *DeleteGroupOutput) {
@@ -384,11 +382,12 @@ func (c *XRay) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request
 // API operation DeleteGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteGroup
 func (c *XRay) DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error) {
@@ -428,14 +427,13 @@ const opDeleteSamplingRule = "DeleteSamplingRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSamplingRuleRequest method.
+//	req, resp := client.DeleteSamplingRuleRequest(params)
 //
-//    // Example sending a request using the DeleteSamplingRuleRequest method.
-//    req, resp := client.DeleteSamplingRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteSamplingRule
 func (c *XRay) DeleteSamplingRuleRequest(input *DeleteSamplingRuleInput) (req *request.Request, output *DeleteSamplingRuleOutput) {
@@ -466,11 +464,12 @@ func (c *XRay) DeleteSamplingRuleRequest(input *DeleteSamplingRuleInput) (req *r
 // API operation DeleteSamplingRule for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteSamplingRule
 func (c *XRay) DeleteSamplingRule(input *DeleteSamplingRuleInput) (*DeleteSamplingRuleOutput, error) {
@@ -510,14 +509,13 @@ const opGetEncryptionConfig = "GetEncryptionConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEncryptionConfigRequest method.
+//	req, resp := client.GetEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the GetEncryptionConfigRequest method.
-//    req, resp := client.GetEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetEncryptionConfig
 func (c *XRay) GetEncryptionConfigRequest(input *GetEncryptionConfigInput) (req *request.Request, output *GetEncryptionConfigOutput) {
@@ -548,11 +546,12 @@ func (c *XRay) GetEncryptionConfigRequest(input *GetEncryptionConfigInput) (req 
 // API operation GetEncryptionConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetEncryptionConfig
 func (c *XRay) GetEncryptionConfig(input *GetEncryptionConfigInput) (*GetEncryptionConfigOutput, error) {
@@ -592,14 +591,13 @@ const opGetGroup = "GetGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGroupRequest method.
+//	req, resp := client.GetGroupRequest(params)
 //
-//    // Example sending a request using the GetGroupRequest method.
-//    req, resp := client.GetGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetGroup
 func (c *XRay) GetGroupRequest(input *GetGroupInput) (req *request.Request, output *GetGroupOutput) {
@@ -630,11 +628,12 @@ func (c *XRay) GetGroupRequest(input *GetGroupInput) (req *request.Request, outp
 // API operation GetGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetGroup
 func (c *XRay) GetGroup(input *GetGroupInput) (*GetGroupOutput, error) {
@@ -674,14 +673,13 @@ const opGetGroups = "GetGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGroupsRequest method.
+//	req, resp := client.GetGroupsRequest(params)
 //
-//    // Example sending a request using the GetGroupsRequest method.
-//    req, resp := client.GetGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetGroups
 func (c *XRay) GetGroupsRequest(input *GetGroupsInput) (req *request.Request, output *GetGroupsOutput) {
@@ -718,11 +716,12 @@ func (c *XRay) GetGroupsRequest(input *GetGroupsInput) (req *request.Request, ou
 // API operation GetGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetGroups
 func (c *XRay) GetGroups(input *GetGroupsInput) (*GetGroupsOutput, error) {
@@ -754,15 +753,14 @@ func (c *XRay) GetGroupsWithContext(ctx aws.Context, input *GetGroupsInput, opts
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetGroups operation.
-//    pageNum := 0
-//    err := client.GetGroupsPages(params,
-//        func(page *xray.GetGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetGroups operation.
+//	pageNum := 0
+//	err := client.GetGroupsPages(params,
+//	    func(page *xray.GetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetGroupsPages(input *GetGroupsInput, fn func(*GetGroupsOutput, bool) bool) error {
 	return c.GetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -814,14 +812,13 @@ const opGetInsight = "GetInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightRequest method.
+//	req, resp := client.GetInsightRequest(params)
 //
-//    // Example sending a request using the GetInsightRequest method.
-//    req, resp := client.GetInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsight
 func (c *XRay) GetInsightRequest(input *GetInsightInput) (req *request.Request, output *GetInsightOutput) {
@@ -854,11 +851,12 @@ func (c *XRay) GetInsightRequest(input *GetInsightInput) (req *request.Request, 
 // API operation GetInsight for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsight
 func (c *XRay) GetInsight(input *GetInsightInput) (*GetInsightOutput, error) {
@@ -898,14 +896,13 @@ const opGetInsightEvents = "GetInsightEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightEventsRequest method.
+//	req, resp := client.GetInsightEventsRequest(params)
 //
-//    // Example sending a request using the GetInsightEventsRequest method.
-//    req, resp := client.GetInsightEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightEvents
 func (c *XRay) GetInsightEventsRequest(input *GetInsightEventsInput) (req *request.Request, output *GetInsightEventsOutput) {
@@ -944,11 +941,12 @@ func (c *XRay) GetInsightEventsRequest(input *GetInsightEventsInput) (req *reque
 // API operation GetInsightEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightEvents
 func (c *XRay) GetInsightEvents(input *GetInsightEventsInput) (*GetInsightEventsOutput, error) {
@@ -980,15 +978,14 @@ func (c *XRay) GetInsightEventsWithContext(ctx aws.Context, input *GetInsightEve
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetInsightEvents operation.
-//    pageNum := 0
-//    err := client.GetInsightEventsPages(params,
-//        func(page *xray.GetInsightEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetInsightEvents operation.
+//	pageNum := 0
+//	err := client.GetInsightEventsPages(params,
+//	    func(page *xray.GetInsightEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetInsightEventsPages(input *GetInsightEventsInput, fn func(*GetInsightEventsOutput, bool) bool) error {
 	return c.GetInsightEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1040,14 +1037,13 @@ const opGetInsightImpactGraph = "GetInsightImpactGraph"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightImpactGraphRequest method.
+//	req, resp := client.GetInsightImpactGraphRequest(params)
 //
-//    // Example sending a request using the GetInsightImpactGraphRequest method.
-//    req, resp := client.GetInsightImpactGraphRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightImpactGraph
 func (c *XRay) GetInsightImpactGraphRequest(input *GetInsightImpactGraphInput) (req *request.Request, output *GetInsightImpactGraphOutput) {
@@ -1080,11 +1076,12 @@ func (c *XRay) GetInsightImpactGraphRequest(input *GetInsightImpactGraphInput) (
 // API operation GetInsightImpactGraph for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightImpactGraph
 func (c *XRay) GetInsightImpactGraph(input *GetInsightImpactGraphInput) (*GetInsightImpactGraphOutput, error) {
@@ -1124,14 +1121,13 @@ const opGetInsightSummaries = "GetInsightSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightSummariesRequest method.
+//	req, resp := client.GetInsightSummariesRequest(params)
 //
-//    // Example sending a request using the GetInsightSummariesRequest method.
-//    req, resp := client.GetInsightSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightSummaries
 func (c *XRay) GetInsightSummariesRequest(input *GetInsightSummariesInput) (req *request.Request, output *GetInsightSummariesOutput) {
@@ -1169,11 +1165,12 @@ func (c *XRay) GetInsightSummariesRequest(input *GetInsightSummariesInput) (req 
 // API operation GetInsightSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetInsightSummaries
 func (c *XRay) GetInsightSummaries(input *GetInsightSummariesInput) (*GetInsightSummariesOutput, error) {
@@ -1205,15 +1202,14 @@ func (c *XRay) GetInsightSummariesWithContext(ctx aws.Context, input *GetInsight
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetInsightSummaries operation.
-//    pageNum := 0
-//    err := client.GetInsightSummariesPages(params,
-//        func(page *xray.GetInsightSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetInsightSummaries operation.
+//	pageNum := 0
+//	err := client.GetInsightSummariesPages(params,
+//	    func(page *xray.GetInsightSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetInsightSummariesPages(input *GetInsightSummariesInput, fn func(*GetInsightSummariesOutput, bool) bool) error {
 	return c.GetInsightSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1265,14 +1261,13 @@ const opGetSamplingRules = "GetSamplingRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSamplingRulesRequest method.
+//	req, resp := client.GetSamplingRulesRequest(params)
 //
-//    // Example sending a request using the GetSamplingRulesRequest method.
-//    req, resp := client.GetSamplingRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingRules
 func (c *XRay) GetSamplingRulesRequest(input *GetSamplingRulesInput) (req *request.Request, output *GetSamplingRulesOutput) {
@@ -1309,11 +1304,12 @@ func (c *XRay) GetSamplingRulesRequest(input *GetSamplingRulesInput) (req *reque
 // API operation GetSamplingRules for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingRules
 func (c *XRay) GetSamplingRules(input *GetSamplingRulesInput) (*GetSamplingRulesOutput, error) {
@@ -1345,15 +1341,14 @@ func (c *XRay) GetSamplingRulesWithContext(ctx aws.Context, input *GetSamplingRu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSamplingRules operation.
-//    pageNum := 0
-//    err := client.GetSamplingRulesPages(params,
-//        func(page *xray.GetSamplingRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSamplingRules operation.
+//	pageNum := 0
+//	err := client.GetSamplingRulesPages(params,
+//	    func(page *xray.GetSamplingRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetSamplingRulesPages(input *GetSamplingRulesInput, fn func(*GetSamplingRulesOutput, bool) bool) error {
 	return c.GetSamplingRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1405,14 +1400,13 @@ const opGetSamplingStatisticSummaries = "GetSamplingStatisticSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSamplingStatisticSummariesRequest method.
+//	req, resp := client.GetSamplingStatisticSummariesRequest(params)
 //
-//    // Example sending a request using the GetSamplingStatisticSummariesRequest method.
-//    req, resp := client.GetSamplingStatisticSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingStatisticSummaries
 func (c *XRay) GetSamplingStatisticSummariesRequest(input *GetSamplingStatisticSummariesInput) (req *request.Request, output *GetSamplingStatisticSummariesOutput) {
@@ -1449,11 +1443,12 @@ func (c *XRay) GetSamplingStatisticSummariesRequest(input *GetSamplingStatisticS
 // API operation GetSamplingStatisticSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingStatisticSummaries
 func (c *XRay) GetSamplingStatisticSummaries(input *GetSamplingStatisticSummariesInput) (*GetSamplingStatisticSummariesOutput, error) {
@@ -1485,15 +1480,14 @@ func (c *XRay) GetSamplingStatisticSummariesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetSamplingStatisticSummaries operation.
-//    pageNum := 0
-//    err := client.GetSamplingStatisticSummariesPages(params,
-//        func(page *xray.GetSamplingStatisticSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetSamplingStatisticSummaries operation.
+//	pageNum := 0
+//	err := client.GetSamplingStatisticSummariesPages(params,
+//	    func(page *xray.GetSamplingStatisticSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetSamplingStatisticSummariesPages(input *GetSamplingStatisticSummariesInput, fn func(*GetSamplingStatisticSummariesOutput, bool) bool) error {
 	return c.GetSamplingStatisticSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1545,14 +1539,13 @@ const opGetSamplingTargets = "GetSamplingTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSamplingTargetsRequest method.
+//	req, resp := client.GetSamplingTargetsRequest(params)
 //
-//    // Example sending a request using the GetSamplingTargetsRequest method.
-//    req, resp := client.GetSamplingTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingTargets
 func (c *XRay) GetSamplingTargetsRequest(input *GetSamplingTargetsInput) (req *request.Request, output *GetSamplingTargetsOutput) {
@@ -1583,11 +1576,12 @@ func (c *XRay) GetSamplingTargetsRequest(input *GetSamplingTargetsInput) (req *r
 // API operation GetSamplingTargets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetSamplingTargets
 func (c *XRay) GetSamplingTargets(input *GetSamplingTargetsInput) (*GetSamplingTargetsOutput, error) {
@@ -1627,14 +1621,13 @@ const opGetServiceGraph = "GetServiceGraph"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetServiceGraphRequest method.
+//	req, resp := client.GetServiceGraphRequest(params)
 //
-//    // Example sending a request using the GetServiceGraphRequest method.
-//    req, resp := client.GetServiceGraphRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetServiceGraph
 func (c *XRay) GetServiceGraphRequest(input *GetServiceGraphInput) (req *request.Request, output *GetServiceGraphOutput) {
@@ -1676,11 +1669,12 @@ func (c *XRay) GetServiceGraphRequest(input *GetServiceGraphInput) (req *request
 // API operation GetServiceGraph for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetServiceGraph
 func (c *XRay) GetServiceGraph(input *GetServiceGraphInput) (*GetServiceGraphOutput, error) {
@@ -1712,15 +1706,14 @@ func (c *XRay) GetServiceGraphWithContext(ctx aws.Context, input *GetServiceGrap
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetServiceGraph operation.
-//    pageNum := 0
-//    err := client.GetServiceGraphPages(params,
-//        func(page *xray.GetServiceGraphOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetServiceGraph operation.
+//	pageNum := 0
+//	err := client.GetServiceGraphPages(params,
+//	    func(page *xray.GetServiceGraphOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetServiceGraphPages(input *GetServiceGraphInput, fn func(*GetServiceGraphOutput, bool) bool) error {
 	return c.GetServiceGraphPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1772,14 +1765,13 @@ const opGetTimeSeriesServiceStatistics = "GetTimeSeriesServiceStatistics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTimeSeriesServiceStatisticsRequest method.
+//	req, resp := client.GetTimeSeriesServiceStatisticsRequest(params)
 //
-//    // Example sending a request using the GetTimeSeriesServiceStatisticsRequest method.
-//    req, resp := client.GetTimeSeriesServiceStatisticsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTimeSeriesServiceStatistics
 func (c *XRay) GetTimeSeriesServiceStatisticsRequest(input *GetTimeSeriesServiceStatisticsInput) (req *request.Request, output *GetTimeSeriesServiceStatisticsOutput) {
@@ -1816,11 +1808,12 @@ func (c *XRay) GetTimeSeriesServiceStatisticsRequest(input *GetTimeSeriesService
 // API operation GetTimeSeriesServiceStatistics for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTimeSeriesServiceStatistics
 func (c *XRay) GetTimeSeriesServiceStatistics(input *GetTimeSeriesServiceStatisticsInput) (*GetTimeSeriesServiceStatisticsOutput, error) {
@@ -1852,15 +1845,14 @@ func (c *XRay) GetTimeSeriesServiceStatisticsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTimeSeriesServiceStatistics operation.
-//    pageNum := 0
-//    err := client.GetTimeSeriesServiceStatisticsPages(params,
-//        func(page *xray.GetTimeSeriesServiceStatisticsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTimeSeriesServiceStatistics operation.
+//	pageNum := 0
+//	err := client.GetTimeSeriesServiceStatisticsPages(params,
+//	    func(page *xray.GetTimeSeriesServiceStatisticsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetTimeSeriesServiceStatisticsPages(input *GetTimeSeriesServiceStatisticsInput, fn func(*GetTimeSeriesServiceStatisticsOutput, bool) bool) error {
 	return c.GetTimeSeriesServiceStatisticsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1912,14 +1904,13 @@ const opGetTraceGraph = "GetTraceGraph"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTraceGraphRequest method.
+//	req, resp := client.GetTraceGraphRequest(params)
 //
-//    // Example sending a request using the GetTraceGraphRequest method.
-//    req, resp := client.GetTraceGraphRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTraceGraph
 func (c *XRay) GetTraceGraphRequest(input *GetTraceGraphInput) (req *request.Request, output *GetTraceGraphOutput) {
@@ -1956,11 +1947,12 @@ func (c *XRay) GetTraceGraphRequest(input *GetTraceGraphInput) (req *request.Req
 // API operation GetTraceGraph for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTraceGraph
 func (c *XRay) GetTraceGraph(input *GetTraceGraphInput) (*GetTraceGraphOutput, error) {
@@ -1992,15 +1984,14 @@ func (c *XRay) GetTraceGraphWithContext(ctx aws.Context, input *GetTraceGraphInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTraceGraph operation.
-//    pageNum := 0
-//    err := client.GetTraceGraphPages(params,
-//        func(page *xray.GetTraceGraphOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTraceGraph operation.
+//	pageNum := 0
+//	err := client.GetTraceGraphPages(params,
+//	    func(page *xray.GetTraceGraphOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetTraceGraphPages(input *GetTraceGraphInput, fn func(*GetTraceGraphOutput, bool) bool) error {
 	return c.GetTraceGraphPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2052,14 +2043,13 @@ const opGetTraceSummaries = "GetTraceSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTraceSummariesRequest method.
+//	req, resp := client.GetTraceSummariesRequest(params)
 //
-//    // Example sending a request using the GetTraceSummariesRequest method.
-//    req, resp := client.GetTraceSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTraceSummaries
 func (c *XRay) GetTraceSummariesRequest(input *GetTraceSummariesInput) (req *request.Request, output *GetTraceSummariesOutput) {
@@ -2112,11 +2102,12 @@ func (c *XRay) GetTraceSummariesRequest(input *GetTraceSummariesInput) (req *req
 // API operation GetTraceSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/GetTraceSummaries
 func (c *XRay) GetTraceSummaries(input *GetTraceSummariesInput) (*GetTraceSummariesOutput, error) {
@@ -2148,15 +2139,14 @@ func (c *XRay) GetTraceSummariesWithContext(ctx aws.Context, input *GetTraceSumm
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTraceSummaries operation.
-//    pageNum := 0
-//    err := client.GetTraceSummariesPages(params,
-//        func(page *xray.GetTraceSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTraceSummaries operation.
+//	pageNum := 0
+//	err := client.GetTraceSummariesPages(params,
+//	    func(page *xray.GetTraceSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *XRay) GetTraceSummariesPages(input *GetTraceSummariesInput, fn func(*GetTraceSummariesOutput, bool) bool) error {
 	return c.GetTraceSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2208,14 +2198,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/ListTagsForResource
 func (c *XRay) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2247,15 +2236,16 @@ func (c *XRay) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
 //
-//   * ResourceNotFoundException
-//   The resource was not found. Verify that the name or Amazon Resource Name
-//   (ARN) of the resource is correct.
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+//   - ResourceNotFoundException
+//     The resource was not found. Verify that the name or Amazon Resource Name
+//     (ARN) of the resource is correct.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/ListTagsForResource
 func (c *XRay) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2295,14 +2285,13 @@ const opPutEncryptionConfig = "PutEncryptionConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEncryptionConfigRequest method.
+//	req, resp := client.PutEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the PutEncryptionConfigRequest method.
-//    req, resp := client.PutEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutEncryptionConfig
 func (c *XRay) PutEncryptionConfigRequest(input *PutEncryptionConfigInput) (req *request.Request, output *PutEncryptionConfigOutput) {
@@ -2333,11 +2322,12 @@ func (c *XRay) PutEncryptionConfigRequest(input *PutEncryptionConfigInput) (req 
 // API operation PutEncryptionConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutEncryptionConfig
 func (c *XRay) PutEncryptionConfig(input *PutEncryptionConfigInput) (*PutEncryptionConfigOutput, error) {
@@ -2377,14 +2367,13 @@ const opPutTelemetryRecords = "PutTelemetryRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutTelemetryRecordsRequest method.
+//	req, resp := client.PutTelemetryRecordsRequest(params)
 //
-//    // Example sending a request using the PutTelemetryRecordsRequest method.
-//    req, resp := client.PutTelemetryRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutTelemetryRecords
 func (c *XRay) PutTelemetryRecordsRequest(input *PutTelemetryRecordsInput) (req *request.Request, output *PutTelemetryRecordsOutput) {
@@ -2416,11 +2405,12 @@ func (c *XRay) PutTelemetryRecordsRequest(input *PutTelemetryRecordsInput) (req 
 // API operation PutTelemetryRecords for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutTelemetryRecords
 func (c *XRay) PutTelemetryRecords(input *PutTelemetryRecordsInput) (*PutTelemetryRecordsOutput, error) {
@@ -2460,14 +2450,13 @@ const opPutTraceSegments = "PutTraceSegments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutTraceSegmentsRequest method.
+//	req, resp := client.PutTraceSegmentsRequest(params)
 //
-//    // Example sending a request using the PutTraceSegmentsRequest method.
-//    req, resp := client.PutTraceSegmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutTraceSegments
 func (c *XRay) PutTraceSegmentsRequest(input *PutTraceSegmentsInput) (req *request.Request, output *PutTraceSegmentsOutput) {
@@ -2499,40 +2488,40 @@ func (c *XRay) PutTraceSegmentsRequest(input *PutTraceSegmentsInput) (req *reque
 //
 // Required segment document fields
 //
-//    * name - The name of the service that handled the request.
+//   - name - The name of the service that handled the request.
 //
-//    * id - A 64-bit identifier for the segment, unique among segments in the
-//    same trace, in 16 hexadecimal digits.
+//   - id - A 64-bit identifier for the segment, unique among segments in the
+//     same trace, in 16 hexadecimal digits.
 //
-//    * trace_id - A unique identifier that connects all segments and subsegments
-//    originating from a single client request.
+//   - trace_id - A unique identifier that connects all segments and subsegments
+//     originating from a single client request.
 //
-//    * start_time - Time the segment or subsegment was created, in floating
-//    point seconds in epoch time, accurate to milliseconds. For example, 1480615200.010
-//    or 1.480615200010E9.
+//   - start_time - Time the segment or subsegment was created, in floating
+//     point seconds in epoch time, accurate to milliseconds. For example, 1480615200.010
+//     or 1.480615200010E9.
 //
-//    * end_time - Time the segment or subsegment was closed. For example, 1480615200.090
-//    or 1.480615200090E9. Specify either an end_time or in_progress.
+//   - end_time - Time the segment or subsegment was closed. For example, 1480615200.090
+//     or 1.480615200090E9. Specify either an end_time or in_progress.
 //
-//    * in_progress - Set to true instead of specifying an end_time to record
-//    that a segment has been started, but is not complete. Send an in-progress
-//    segment when your application receives a request that will take a long
-//    time to serve, to trace that the request was received. When the response
-//    is sent, send the complete segment to overwrite the in-progress segment.
+//   - in_progress - Set to true instead of specifying an end_time to record
+//     that a segment has been started, but is not complete. Send an in-progress
+//     segment when your application receives a request that will take a long
+//     time to serve, to trace that the request was received. When the response
+//     is sent, send the complete segment to overwrite the in-progress segment.
 //
 // A trace_id consists of three numbers separated by hyphens. For example, 1-58406520-a006649127e371903a2de979.
 // This includes:
 //
 // Trace ID Format
 //
-//    * The version number, for instance, 1.
+//   - The version number, for instance, 1.
 //
-//    * The time of the original request, in Unix epoch time, in 8 hexadecimal
-//    digits. For example, 10:00AM December 2nd, 2016 PST in epoch time is 1480615200
-//    seconds, or 58406520 in hexadecimal.
+//   - The time of the original request, in Unix epoch time, in 8 hexadecimal
+//     digits. For example, 10:00AM December 2nd, 2016 PST in epoch time is 1480615200
+//     seconds, or 58406520 in hexadecimal.
 //
-//    * A 96-bit identifier for the trace, globally unique, in 24 hexadecimal
-//    digits.
+//   - A 96-bit identifier for the trace, globally unique, in 24 hexadecimal
+//     digits.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2542,11 +2531,12 @@ func (c *XRay) PutTraceSegmentsRequest(input *PutTraceSegmentsInput) (req *reque
 // API operation PutTraceSegments for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutTraceSegments
 func (c *XRay) PutTraceSegments(input *PutTraceSegmentsInput) (*PutTraceSegmentsOutput, error) {
@@ -2586,14 +2576,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/TagResource
 func (c *XRay) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2625,18 +2614,19 @@ func (c *XRay) TagResourceRequest(input *TagResourceInput) (req *request.Request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
 //
-//   * ResourceNotFoundException
-//   The resource was not found. Verify that the name or Amazon Resource Name
-//   (ARN) of the resource is correct.
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
-//   * TooManyTagsException
-//   You have exceeded the maximum number of tags you can apply to this resource.
+//   - ResourceNotFoundException
+//     The resource was not found. Verify that the name or Amazon Resource Name
+//     (ARN) of the resource is correct.
+//
+//   - TooManyTagsException
+//     You have exceeded the maximum number of tags you can apply to this resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/TagResource
 func (c *XRay) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2676,14 +2666,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UntagResource
 func (c *XRay) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2716,15 +2705,16 @@ func (c *XRay) UntagResourceRequest(input *UntagResourceInput) (req *request.Req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
 //
-//   * ResourceNotFoundException
-//   The resource was not found. Verify that the name or Amazon Resource Name
-//   (ARN) of the resource is correct.
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+//   - ResourceNotFoundException
+//     The resource was not found. Verify that the name or Amazon Resource Name
+//     (ARN) of the resource is correct.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UntagResource
 func (c *XRay) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2764,14 +2754,13 @@ const opUpdateGroup = "UpdateGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGroupRequest method.
+//	req, resp := client.UpdateGroupRequest(params)
 //
-//    // Example sending a request using the UpdateGroupRequest method.
-//    req, resp := client.UpdateGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UpdateGroup
 func (c *XRay) UpdateGroupRequest(input *UpdateGroupInput) (req *request.Request, output *UpdateGroupOutput) {
@@ -2802,11 +2791,12 @@ func (c *XRay) UpdateGroupRequest(input *UpdateGroupInput) (req *request.Request
 // API operation UpdateGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UpdateGroup
 func (c *XRay) UpdateGroup(input *UpdateGroupInput) (*UpdateGroupOutput, error) {
@@ -2846,14 +2836,13 @@ const opUpdateSamplingRule = "UpdateSamplingRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSamplingRuleRequest method.
+//	req, resp := client.UpdateSamplingRuleRequest(params)
 //
-//    // Example sending a request using the UpdateSamplingRuleRequest method.
-//    req, resp := client.UpdateSamplingRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UpdateSamplingRule
 func (c *XRay) UpdateSamplingRuleRequest(input *UpdateSamplingRuleInput) (req *request.Request, output *UpdateSamplingRuleOutput) {
@@ -2884,11 +2873,12 @@ func (c *XRay) UpdateSamplingRuleRequest(input *UpdateSamplingRuleInput) (req *r
 // API operation UpdateSamplingRule for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is missing required parameters or has invalid parameters.
 //
-//   * ThrottledException
-//   The request exceeds the maximum number of requests per second.
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/UpdateSamplingRule
 func (c *XRay) UpdateSamplingRule(input *UpdateSamplingRuleInput) (*UpdateSamplingRuleOutput, error) {
@@ -8672,12 +8662,12 @@ func (s *ServiceStatistics) SetTotalResponseTime(v float64) *ServiceStatistics {
 //
 // The following restrictions apply to tags:
 //
-//    * Maximum number of user-applied tags per resource: 50
+//   - Maximum number of user-applied tags per resource: 50
 //
-//    * Tag keys and values are case sensitive.
+//   - Tag keys and values are case sensitive.
 //
-//    * Don't use aws: as a prefix for keys; it's reserved for Amazon Web Services
-//    use. You cannot edit or delete system tags.
+//   - Don't use aws: as a prefix for keys; it's reserved for Amazon Web Services
+//     use. You cannot edit or delete system tags.
 type Tag struct {
 	_ struct{} `type:"structure"`
 

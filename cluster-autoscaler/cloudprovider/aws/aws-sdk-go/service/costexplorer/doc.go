@@ -9,11 +9,11 @@
 // the number of daily write operations for Amazon DynamoDB database tables
 // in your production environment.
 //
-// Service Endpoint
+// # Service Endpoint
 //
 // The Cost Explorer API provides the following endpoint:
 //
-//    * https://ce.us-east-1.amazonaws.com
+//   - https://ce.us-east-1.amazonaws.com
 //
 // For information about the costs that are associated with the Cost Explorer
 // API, see Amazon Web Services Cost Management Pricing (http://aws.amazon.com/aws-cost-management/pricing/).
@@ -23,7 +23,7 @@
 // See costexplorer package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/costexplorer/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Cost Explorer Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

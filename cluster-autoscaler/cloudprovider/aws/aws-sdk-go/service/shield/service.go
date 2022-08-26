@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Shield client from just a session.
-//     svc := shield.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Shield client with additional configuration
-//     svc := shield.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Shield client from just a session.
+//	svc := shield.New(mySession)
+//
+//	// Create a Shield client with additional configuration
+//	svc := shield.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Shield {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

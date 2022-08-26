@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type PostPaidServerExtendParam struct {
 	// 计费模式：  - 0：按需计费。
 

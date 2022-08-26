@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Mgn client from just a session.
-//     svc := mgn.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Mgn client with additional configuration
-//     svc := mgn.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Mgn client from just a session.
+//	svc := mgn.New(mySession)
+//
+//	// Create a Mgn client with additional configuration
+//	svc := mgn.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Mgn {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

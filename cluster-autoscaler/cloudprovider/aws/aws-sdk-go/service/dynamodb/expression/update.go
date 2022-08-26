@@ -97,21 +97,21 @@ func (ob operationBuilder) buildOperation() (exprNode, error) {
 //
 // Example:
 //
-//     // update represents the delete operation to delete the string value
-//     // "subsetToDelete" from the item attribute "pathToList"
-//     update := expression.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
+//	// update represents the delete operation to delete the string value
+//	// "subsetToDelete" from the item attribute "pathToList"
+//	update := expression.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     expression.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
-//     // let :del be an ExpressionAttributeValue representing the value
-//     // "subsetToDelete"
-//     "DELETE pathToList :del"
+//	expression.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
+//	// let :del be an ExpressionAttributeValue representing the value
+//	// "subsetToDelete"
+//	"DELETE pathToList :del"
 func Delete(name NameBuilder, value ValueBuilder) UpdateBuilder {
 	emptyUpdateBuilder := UpdateBuilder{}
 	return emptyUpdateBuilder.Delete(name, value)
@@ -124,22 +124,22 @@ func Delete(name NameBuilder, value ValueBuilder) UpdateBuilder {
 //
 // Example:
 //
-//     // Let update represent an already existing update expression. Delete()
-//     // adds the operation to delete the value "subsetToDelete" from the item
-//     // attribute "pathToList"
-//     update := update.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
+//	// Let update represent an already existing update expression. Delete()
+//	// adds the operation to delete the value "subsetToDelete" from the item
+//	// attribute "pathToList"
+//	update := update.Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
-//     // let :del be an ExpressionAttributeValue representing the value
-//     // "subsetToDelete"
-//     "DELETE pathToList :del"
+//	Delete(expression.Name("pathToList"), expression.Value("subsetToDelete"))
+//	// let :del be an ExpressionAttributeValue representing the value
+//	// "subsetToDelete"
+//	"DELETE pathToList :del"
 func (ub UpdateBuilder) Delete(name NameBuilder, value ValueBuilder) UpdateBuilder {
 	if ub.operationList == nil {
 		ub.operationList = map[operationMode][]operationBuilder{}
@@ -160,20 +160,20 @@ func (ub UpdateBuilder) Delete(name NameBuilder, value ValueBuilder) UpdateBuild
 //
 // Example:
 //
-//     // update represents the add operation to add the value 5 to the item
-//     // attribute "aPath"
-//     update := expression.Add(expression.Name("aPath"), expression.Value(5))
+//	// update represents the add operation to add the value 5 to the item
+//	// attribute "aPath"
+//	update := expression.Add(expression.Name("aPath"), expression.Value(5))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     expression.Add(expression.Name("aPath"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "ADD aPath :5"
+//	expression.Add(expression.Name("aPath"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"ADD aPath :5"
 func Add(name NameBuilder, value ValueBuilder) UpdateBuilder {
 	emptyUpdateBuilder := UpdateBuilder{}
 	return emptyUpdateBuilder.Add(name, value)
@@ -186,20 +186,20 @@ func Add(name NameBuilder, value ValueBuilder) UpdateBuilder {
 //
 // Example:
 //
-//     // Let update represent an already existing update expression. Add() adds
-//     // the operation to add the value 5 to the item attribute "aPath"
-//     update := update.Add(expression.Name("aPath"), expression.Value(5))
+//	// Let update represent an already existing update expression. Add() adds
+//	// the operation to add the value 5 to the item attribute "aPath"
+//	update := update.Add(expression.Name("aPath"), expression.Value(5))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     Add(expression.Name("aPath"), expression.Value(5))
-//     // Let :five be an ExpressionAttributeValue representing the value 5
-//     "ADD aPath :5"
+//	Add(expression.Name("aPath"), expression.Value(5))
+//	// Let :five be an ExpressionAttributeValue representing the value 5
+//	"ADD aPath :5"
 func (ub UpdateBuilder) Add(name NameBuilder, value ValueBuilder) UpdateBuilder {
 	if ub.operationList == nil {
 		ub.operationList = map[operationMode][]operationBuilder{}
@@ -219,19 +219,19 @@ func (ub UpdateBuilder) Add(name NameBuilder, value ValueBuilder) UpdateBuilder 
 //
 // Example:
 //
-//     // update represents the remove operation to remove the item attribute
-//     // "itemToRemove"
-//     update := expression.Remove(expression.Name("itemToRemove"))
+//	// update represents the remove operation to remove the item attribute
+//	// "itemToRemove"
+//	update := expression.Remove(expression.Name("itemToRemove"))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     expression.Remove(expression.Name("itemToRemove"))
-//     "REMOVE itemToRemove"
+//	expression.Remove(expression.Name("itemToRemove"))
+//	"REMOVE itemToRemove"
 func Remove(name NameBuilder) UpdateBuilder {
 	emptyUpdateBuilder := UpdateBuilder{}
 	return emptyUpdateBuilder.Remove(name)
@@ -244,19 +244,19 @@ func Remove(name NameBuilder) UpdateBuilder {
 //
 // Example:
 //
-//     // Let update represent an already existing update expression. Remove()
-//     // adds the operation to remove the item attribute "itemToRemove"
-//     update := update.Remove(expression.Name("itemToRemove"))
+//	// Let update represent an already existing update expression. Remove()
+//	// adds the operation to remove the item attribute "itemToRemove"
+//	update := update.Remove(expression.Name("itemToRemove"))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     Remove(expression.Name("itemToRemove"))
-//     "REMOVE itemToRemove"
+//	Remove(expression.Name("itemToRemove"))
+//	"REMOVE itemToRemove"
 func (ub UpdateBuilder) Remove(name NameBuilder) UpdateBuilder {
 	if ub.operationList == nil {
 		ub.operationList = map[operationMode][]operationBuilder{}
@@ -276,22 +276,22 @@ func (ub UpdateBuilder) Remove(name NameBuilder) UpdateBuilder {
 //
 // Example:
 //
-//     // update represents the set operation to set the item attribute
-//     // "itemToSet" to the value "setValue" if the item attribute does not
-//     // exist yet. (conditional write)
-//     update := expression.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
+//	// update represents the set operation to set the item attribute
+//	// "itemToSet" to the value "setValue" if the item attribute does not
+//	// exist yet. (conditional write)
+//	update := expression.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     expression.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
-//     // Let :val be an ExpressionAttributeValue representing the value
-//     // "setValue"
-//     "SET itemToSet = :val"
+//	expression.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
+//	// Let :val be an ExpressionAttributeValue representing the value
+//	// "setValue"
+//	"SET itemToSet = :val"
 func Set(name NameBuilder, operandBuilder OperandBuilder) UpdateBuilder {
 	emptyUpdateBuilder := UpdateBuilder{}
 	return emptyUpdateBuilder.Set(name, operandBuilder)
@@ -305,23 +305,23 @@ func Set(name NameBuilder, operandBuilder OperandBuilder) UpdateBuilder {
 //
 // Example:
 //
-//     // Let update represent an already existing update expression. Set() adds
-//     // the operation to to set the item attribute "itemToSet" to the value
-//     // "setValue" if the item attribute does not exist yet. (conditional
-//     // write)
-//     update := update.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
+//	// Let update represent an already existing update expression. Set() adds
+//	// the operation to to set the item attribute "itemToSet" to the value
+//	// "setValue" if the item attribute does not exist yet. (conditional
+//	// write)
+//	update := update.Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
 //
-//     // Adding more update methods
-//     anotherUpdate := update.Remove(expression.Name("someName"))
-//     // Creating a Builder
-//     builder := Update(update)
+//	// Adding more update methods
+//	anotherUpdate := update.Remove(expression.Name("someName"))
+//	// Creating a Builder
+//	builder := Update(update)
 //
 // Expression Equivalent:
 //
-//     Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
-//     // Let :val be an ExpressionAttributeValue representing the value
-//     // "setValue"
-//     "SET itemToSet = :val"
+//	Set(expression.Name("itemToSet"), expression.IfNotExists(expression.Name("itemToSet"), expression.Value("setValue")))
+//	// Let :val be an ExpressionAttributeValue representing the value
+//	// "setValue"
+//	"SET itemToSet = :val"
 func (ub UpdateBuilder) Set(name NameBuilder, operandBuilder OperandBuilder) UpdateBuilder {
 	if ub.operationList == nil {
 		ub.operationList = map[operationMode][]operationBuilder{}

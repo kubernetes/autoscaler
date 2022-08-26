@@ -29,14 +29,13 @@ const opBatchPutMessage = "BatchPutMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchPutMessageRequest method.
+//	req, resp := client.BatchPutMessageRequest(params)
 //
-//    // Example sending a request using the BatchPutMessageRequest method.
-//    req, resp := client.BatchPutMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/BatchPutMessage
 func (c *IoTAnalytics) BatchPutMessageRequest(input *BatchPutMessageInput) (req *request.Request, output *BatchPutMessageOutput) {
@@ -67,20 +66,21 @@ func (c *IoTAnalytics) BatchPutMessageRequest(input *BatchPutMessageInput) (req 
 // API operation BatchPutMessage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
 //
-//   * InvalidRequestException
-//   The request was not valid.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/BatchPutMessage
 func (c *IoTAnalytics) BatchPutMessage(input *BatchPutMessageInput) (*BatchPutMessageOutput, error) {
@@ -120,14 +120,13 @@ const opCancelPipelineReprocessing = "CancelPipelineReprocessing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelPipelineReprocessingRequest method.
+//	req, resp := client.CancelPipelineReprocessingRequest(params)
 //
-//    // Example sending a request using the CancelPipelineReprocessingRequest method.
-//    req, resp := client.CancelPipelineReprocessingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CancelPipelineReprocessing
 func (c *IoTAnalytics) CancelPipelineReprocessingRequest(input *CancelPipelineReprocessingInput) (req *request.Request, output *CancelPipelineReprocessingOutput) {
@@ -159,20 +158,21 @@ func (c *IoTAnalytics) CancelPipelineReprocessingRequest(input *CancelPipelineRe
 // API operation CancelPipelineReprocessing for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
 //
-//   * InvalidRequestException
-//   The request was not valid.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CancelPipelineReprocessing
 func (c *IoTAnalytics) CancelPipelineReprocessing(input *CancelPipelineReprocessingInput) (*CancelPipelineReprocessingOutput, error) {
@@ -212,14 +212,13 @@ const opCreateChannel = "CreateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelRequest method.
+//	req, resp := client.CreateChannelRequest(params)
 //
-//    // Example sending a request using the CreateChannelRequest method.
-//    req, resp := client.CreateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateChannel
 func (c *IoTAnalytics) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
@@ -251,23 +250,24 @@ func (c *IoTAnalytics) CreateChannelRequest(input *CreateChannelInput) (req *req
 // API operation CreateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceAlreadyExistsException
-//   A resource with the same name already exists.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name already exists.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateChannel
 func (c *IoTAnalytics) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, error) {
@@ -307,14 +307,13 @@ const opCreateDataset = "CreateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetRequest method.
+//	req, resp := client.CreateDatasetRequest(params)
 //
-//    // Example sending a request using the CreateDatasetRequest method.
-//    req, resp := client.CreateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDataset
 func (c *IoTAnalytics) CreateDatasetRequest(input *CreateDatasetInput) (req *request.Request, output *CreateDatasetOutput) {
@@ -349,23 +348,24 @@ func (c *IoTAnalytics) CreateDatasetRequest(input *CreateDatasetInput) (req *req
 // API operation CreateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceAlreadyExistsException
-//   A resource with the same name already exists.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name already exists.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDataset
 func (c *IoTAnalytics) CreateDataset(input *CreateDatasetInput) (*CreateDatasetOutput, error) {
@@ -405,14 +405,13 @@ const opCreateDatasetContent = "CreateDatasetContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatasetContentRequest method.
+//	req, resp := client.CreateDatasetContentRequest(params)
 //
-//    // Example sending a request using the CreateDatasetContentRequest method.
-//    req, resp := client.CreateDatasetContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDatasetContent
 func (c *IoTAnalytics) CreateDatasetContentRequest(input *CreateDatasetContentInput) (req *request.Request, output *CreateDatasetContentOutput) {
@@ -444,20 +443,21 @@ func (c *IoTAnalytics) CreateDatasetContentRequest(input *CreateDatasetContentIn
 // API operation CreateDatasetContent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDatasetContent
 func (c *IoTAnalytics) CreateDatasetContent(input *CreateDatasetContentInput) (*CreateDatasetContentOutput, error) {
@@ -497,14 +497,13 @@ const opCreateDatastore = "CreateDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDatastoreRequest method.
+//	req, resp := client.CreateDatastoreRequest(params)
 //
-//    // Example sending a request using the CreateDatastoreRequest method.
-//    req, resp := client.CreateDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDatastore
 func (c *IoTAnalytics) CreateDatastoreRequest(input *CreateDatastoreInput) (req *request.Request, output *CreateDatastoreOutput) {
@@ -535,23 +534,24 @@ func (c *IoTAnalytics) CreateDatastoreRequest(input *CreateDatastoreInput) (req 
 // API operation CreateDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceAlreadyExistsException
-//   A resource with the same name already exists.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name already exists.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreateDatastore
 func (c *IoTAnalytics) CreateDatastore(input *CreateDatastoreInput) (*CreateDatastoreOutput, error) {
@@ -591,14 +591,13 @@ const opCreatePipeline = "CreatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePipelineRequest method.
+//	req, resp := client.CreatePipelineRequest(params)
 //
-//    // Example sending a request using the CreatePipelineRequest method.
-//    req, resp := client.CreatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreatePipeline
 func (c *IoTAnalytics) CreatePipelineRequest(input *CreatePipelineInput) (req *request.Request, output *CreatePipelineOutput) {
@@ -632,23 +631,24 @@ func (c *IoTAnalytics) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 // API operation CreatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceAlreadyExistsException
-//   A resource with the same name already exists.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name already exists.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/CreatePipeline
 func (c *IoTAnalytics) CreatePipeline(input *CreatePipelineInput) (*CreatePipelineOutput, error) {
@@ -688,14 +688,13 @@ const opDeleteChannel = "DeleteChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelRequest method.
+//	req, resp := client.DeleteChannelRequest(params)
 //
-//    // Example sending a request using the DeleteChannelRequest method.
-//    req, resp := client.DeleteChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteChannel
 func (c *IoTAnalytics) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
@@ -727,20 +726,21 @@ func (c *IoTAnalytics) DeleteChannelRequest(input *DeleteChannelInput) (req *req
 // API operation DeleteChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteChannel
 func (c *IoTAnalytics) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, error) {
@@ -780,14 +780,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDataset
 func (c *IoTAnalytics) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -822,20 +821,21 @@ func (c *IoTAnalytics) DeleteDatasetRequest(input *DeleteDatasetInput) (req *req
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDataset
 func (c *IoTAnalytics) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -875,14 +875,13 @@ const opDeleteDatasetContent = "DeleteDatasetContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetContentRequest method.
+//	req, resp := client.DeleteDatasetContentRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetContentRequest method.
-//    req, resp := client.DeleteDatasetContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDatasetContent
 func (c *IoTAnalytics) DeleteDatasetContentRequest(input *DeleteDatasetContentInput) (req *request.Request, output *DeleteDatasetContentOutput) {
@@ -914,20 +913,21 @@ func (c *IoTAnalytics) DeleteDatasetContentRequest(input *DeleteDatasetContentIn
 // API operation DeleteDatasetContent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDatasetContent
 func (c *IoTAnalytics) DeleteDatasetContent(input *DeleteDatasetContentInput) (*DeleteDatasetContentOutput, error) {
@@ -967,14 +967,13 @@ const opDeleteDatastore = "DeleteDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatastoreRequest method.
+//	req, resp := client.DeleteDatastoreRequest(params)
 //
-//    // Example sending a request using the DeleteDatastoreRequest method.
-//    req, resp := client.DeleteDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDatastore
 func (c *IoTAnalytics) DeleteDatastoreRequest(input *DeleteDatastoreInput) (req *request.Request, output *DeleteDatastoreOutput) {
@@ -1006,20 +1005,21 @@ func (c *IoTAnalytics) DeleteDatastoreRequest(input *DeleteDatastoreInput) (req 
 // API operation DeleteDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeleteDatastore
 func (c *IoTAnalytics) DeleteDatastore(input *DeleteDatastoreInput) (*DeleteDatastoreOutput, error) {
@@ -1059,14 +1059,13 @@ const opDeletePipeline = "DeletePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePipelineRequest method.
+//	req, resp := client.DeletePipelineRequest(params)
 //
-//    // Example sending a request using the DeletePipelineRequest method.
-//    req, resp := client.DeletePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeletePipeline
 func (c *IoTAnalytics) DeletePipelineRequest(input *DeletePipelineInput) (req *request.Request, output *DeletePipelineOutput) {
@@ -1098,20 +1097,21 @@ func (c *IoTAnalytics) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 // API operation DeletePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DeletePipeline
 func (c *IoTAnalytics) DeletePipeline(input *DeletePipelineInput) (*DeletePipelineOutput, error) {
@@ -1151,14 +1151,13 @@ const opDescribeChannel = "DescribeChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelRequest method.
+//	req, resp := client.DescribeChannelRequest(params)
 //
-//    // Example sending a request using the DescribeChannelRequest method.
-//    req, resp := client.DescribeChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeChannel
 func (c *IoTAnalytics) DescribeChannelRequest(input *DescribeChannelInput) (req *request.Request, output *DescribeChannelOutput) {
@@ -1189,20 +1188,21 @@ func (c *IoTAnalytics) DescribeChannelRequest(input *DescribeChannelInput) (req 
 // API operation DescribeChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeChannel
 func (c *IoTAnalytics) DescribeChannel(input *DescribeChannelInput) (*DescribeChannelOutput, error) {
@@ -1242,14 +1242,13 @@ const opDescribeDataset = "DescribeDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatasetRequest method.
+//	req, resp := client.DescribeDatasetRequest(params)
 //
-//    // Example sending a request using the DescribeDatasetRequest method.
-//    req, resp := client.DescribeDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeDataset
 func (c *IoTAnalytics) DescribeDatasetRequest(input *DescribeDatasetInput) (req *request.Request, output *DescribeDatasetOutput) {
@@ -1280,20 +1279,21 @@ func (c *IoTAnalytics) DescribeDatasetRequest(input *DescribeDatasetInput) (req 
 // API operation DescribeDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeDataset
 func (c *IoTAnalytics) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
@@ -1333,14 +1333,13 @@ const opDescribeDatastore = "DescribeDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatastoreRequest method.
+//	req, resp := client.DescribeDatastoreRequest(params)
 //
-//    // Example sending a request using the DescribeDatastoreRequest method.
-//    req, resp := client.DescribeDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeDatastore
 func (c *IoTAnalytics) DescribeDatastoreRequest(input *DescribeDatastoreInput) (req *request.Request, output *DescribeDatastoreOutput) {
@@ -1371,20 +1370,21 @@ func (c *IoTAnalytics) DescribeDatastoreRequest(input *DescribeDatastoreInput) (
 // API operation DescribeDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeDatastore
 func (c *IoTAnalytics) DescribeDatastore(input *DescribeDatastoreInput) (*DescribeDatastoreOutput, error) {
@@ -1424,14 +1424,13 @@ const opDescribeLoggingOptions = "DescribeLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoggingOptionsRequest method.
+//	req, resp := client.DescribeLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeLoggingOptionsRequest method.
-//    req, resp := client.DescribeLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeLoggingOptions
 func (c *IoTAnalytics) DescribeLoggingOptionsRequest(input *DescribeLoggingOptionsInput) (req *request.Request, output *DescribeLoggingOptionsOutput) {
@@ -1462,20 +1461,21 @@ func (c *IoTAnalytics) DescribeLoggingOptionsRequest(input *DescribeLoggingOptio
 // API operation DescribeLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribeLoggingOptions
 func (c *IoTAnalytics) DescribeLoggingOptions(input *DescribeLoggingOptionsInput) (*DescribeLoggingOptionsOutput, error) {
@@ -1515,14 +1515,13 @@ const opDescribePipeline = "DescribePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePipelineRequest method.
+//	req, resp := client.DescribePipelineRequest(params)
 //
-//    // Example sending a request using the DescribePipelineRequest method.
-//    req, resp := client.DescribePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribePipeline
 func (c *IoTAnalytics) DescribePipelineRequest(input *DescribePipelineInput) (req *request.Request, output *DescribePipelineOutput) {
@@ -1553,20 +1552,21 @@ func (c *IoTAnalytics) DescribePipelineRequest(input *DescribePipelineInput) (re
 // API operation DescribePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/DescribePipeline
 func (c *IoTAnalytics) DescribePipeline(input *DescribePipelineInput) (*DescribePipelineOutput, error) {
@@ -1606,14 +1606,13 @@ const opGetDatasetContent = "GetDatasetContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDatasetContentRequest method.
+//	req, resp := client.GetDatasetContentRequest(params)
 //
-//    // Example sending a request using the GetDatasetContentRequest method.
-//    req, resp := client.GetDatasetContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/GetDatasetContent
 func (c *IoTAnalytics) GetDatasetContentRequest(input *GetDatasetContentInput) (req *request.Request, output *GetDatasetContentOutput) {
@@ -1644,20 +1643,21 @@ func (c *IoTAnalytics) GetDatasetContentRequest(input *GetDatasetContentInput) (
 // API operation GetDatasetContent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/GetDatasetContent
 func (c *IoTAnalytics) GetDatasetContent(input *GetDatasetContentInput) (*GetDatasetContentOutput, error) {
@@ -1697,14 +1697,13 @@ const opListChannels = "ListChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsRequest method.
+//	req, resp := client.ListChannelsRequest(params)
 //
-//    // Example sending a request using the ListChannelsRequest method.
-//    req, resp := client.ListChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListChannels
 func (c *IoTAnalytics) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
@@ -1741,17 +1740,18 @@ func (c *IoTAnalytics) ListChannelsRequest(input *ListChannelsInput) (req *reque
 // API operation ListChannels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListChannels
 func (c *IoTAnalytics) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, error) {
@@ -1783,15 +1783,14 @@ func (c *IoTAnalytics) ListChannelsWithContext(ctx aws.Context, input *ListChann
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannels operation.
-//    pageNum := 0
-//    err := client.ListChannelsPages(params,
-//        func(page *iotanalytics.ListChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannels operation.
+//	pageNum := 0
+//	err := client.ListChannelsPages(params,
+//	    func(page *iotanalytics.ListChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTAnalytics) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1843,14 +1842,13 @@ const opListDatasetContents = "ListDatasetContents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetContentsRequest method.
+//	req, resp := client.ListDatasetContentsRequest(params)
 //
-//    // Example sending a request using the ListDatasetContentsRequest method.
-//    req, resp := client.ListDatasetContentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatasetContents
 func (c *IoTAnalytics) ListDatasetContentsRequest(input *ListDatasetContentsInput) (req *request.Request, output *ListDatasetContentsOutput) {
@@ -1887,20 +1885,21 @@ func (c *IoTAnalytics) ListDatasetContentsRequest(input *ListDatasetContentsInpu
 // API operation ListDatasetContents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatasetContents
 func (c *IoTAnalytics) ListDatasetContents(input *ListDatasetContentsInput) (*ListDatasetContentsOutput, error) {
@@ -1932,15 +1931,14 @@ func (c *IoTAnalytics) ListDatasetContentsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasetContents operation.
-//    pageNum := 0
-//    err := client.ListDatasetContentsPages(params,
-//        func(page *iotanalytics.ListDatasetContentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasetContents operation.
+//	pageNum := 0
+//	err := client.ListDatasetContentsPages(params,
+//	    func(page *iotanalytics.ListDatasetContentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTAnalytics) ListDatasetContentsPages(input *ListDatasetContentsInput, fn func(*ListDatasetContentsOutput, bool) bool) error {
 	return c.ListDatasetContentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1992,14 +1990,13 @@ const opListDatasets = "ListDatasets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetsRequest method.
+//	req, resp := client.ListDatasetsRequest(params)
 //
-//    // Example sending a request using the ListDatasetsRequest method.
-//    req, resp := client.ListDatasetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatasets
 func (c *IoTAnalytics) ListDatasetsRequest(input *ListDatasetsInput) (req *request.Request, output *ListDatasetsOutput) {
@@ -2036,17 +2033,18 @@ func (c *IoTAnalytics) ListDatasetsRequest(input *ListDatasetsInput) (req *reque
 // API operation ListDatasets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatasets
 func (c *IoTAnalytics) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
@@ -2078,15 +2076,14 @@ func (c *IoTAnalytics) ListDatasetsWithContext(ctx aws.Context, input *ListDatas
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatasets operation.
-//    pageNum := 0
-//    err := client.ListDatasetsPages(params,
-//        func(page *iotanalytics.ListDatasetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatasets operation.
+//	pageNum := 0
+//	err := client.ListDatasetsPages(params,
+//	    func(page *iotanalytics.ListDatasetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTAnalytics) ListDatasetsPages(input *ListDatasetsInput, fn func(*ListDatasetsOutput, bool) bool) error {
 	return c.ListDatasetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2138,14 +2135,13 @@ const opListDatastores = "ListDatastores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatastoresRequest method.
+//	req, resp := client.ListDatastoresRequest(params)
 //
-//    // Example sending a request using the ListDatastoresRequest method.
-//    req, resp := client.ListDatastoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatastores
 func (c *IoTAnalytics) ListDatastoresRequest(input *ListDatastoresInput) (req *request.Request, output *ListDatastoresOutput) {
@@ -2182,17 +2178,18 @@ func (c *IoTAnalytics) ListDatastoresRequest(input *ListDatastoresInput) (req *r
 // API operation ListDatastores for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListDatastores
 func (c *IoTAnalytics) ListDatastores(input *ListDatastoresInput) (*ListDatastoresOutput, error) {
@@ -2224,15 +2221,14 @@ func (c *IoTAnalytics) ListDatastoresWithContext(ctx aws.Context, input *ListDat
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDatastores operation.
-//    pageNum := 0
-//    err := client.ListDatastoresPages(params,
-//        func(page *iotanalytics.ListDatastoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDatastores operation.
+//	pageNum := 0
+//	err := client.ListDatastoresPages(params,
+//	    func(page *iotanalytics.ListDatastoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTAnalytics) ListDatastoresPages(input *ListDatastoresInput, fn func(*ListDatastoresOutput, bool) bool) error {
 	return c.ListDatastoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2284,14 +2280,13 @@ const opListPipelines = "ListPipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPipelinesRequest method.
+//	req, resp := client.ListPipelinesRequest(params)
 //
-//    // Example sending a request using the ListPipelinesRequest method.
-//    req, resp := client.ListPipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListPipelines
 func (c *IoTAnalytics) ListPipelinesRequest(input *ListPipelinesInput) (req *request.Request, output *ListPipelinesOutput) {
@@ -2328,17 +2323,18 @@ func (c *IoTAnalytics) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 // API operation ListPipelines for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListPipelines
 func (c *IoTAnalytics) ListPipelines(input *ListPipelinesInput) (*ListPipelinesOutput, error) {
@@ -2370,15 +2366,14 @@ func (c *IoTAnalytics) ListPipelinesWithContext(ctx aws.Context, input *ListPipe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPipelines operation.
-//    pageNum := 0
-//    err := client.ListPipelinesPages(params,
-//        func(page *iotanalytics.ListPipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPipelines operation.
+//	pageNum := 0
+//	err := client.ListPipelinesPages(params,
+//	    func(page *iotanalytics.ListPipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTAnalytics) ListPipelinesPages(input *ListPipelinesInput, fn func(*ListPipelinesOutput, bool) bool) error {
 	return c.ListPipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2430,14 +2425,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListTagsForResource
 func (c *IoTAnalytics) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2468,23 +2462,24 @@ func (c *IoTAnalytics) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
+//
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListTagsForResource
 func (c *IoTAnalytics) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2524,14 +2519,13 @@ const opPutLoggingOptions = "PutLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutLoggingOptionsRequest method.
+//	req, resp := client.PutLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the PutLoggingOptionsRequest method.
-//    req, resp := client.PutLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/PutLoggingOptions
 func (c *IoTAnalytics) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (req *request.Request, output *PutLoggingOptionsOutput) {
@@ -2568,17 +2562,18 @@ func (c *IoTAnalytics) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (
 // API operation PutLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/PutLoggingOptions
 func (c *IoTAnalytics) PutLoggingOptions(input *PutLoggingOptionsInput) (*PutLoggingOptionsOutput, error) {
@@ -2618,14 +2613,13 @@ const opRunPipelineActivity = "RunPipelineActivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RunPipelineActivityRequest method.
+//	req, resp := client.RunPipelineActivityRequest(params)
 //
-//    // Example sending a request using the RunPipelineActivityRequest method.
-//    req, resp := client.RunPipelineActivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/RunPipelineActivity
 func (c *IoTAnalytics) RunPipelineActivityRequest(input *RunPipelineActivityInput) (req *request.Request, output *RunPipelineActivityOutput) {
@@ -2656,17 +2650,18 @@ func (c *IoTAnalytics) RunPipelineActivityRequest(input *RunPipelineActivityInpu
 // API operation RunPipelineActivity for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/RunPipelineActivity
 func (c *IoTAnalytics) RunPipelineActivity(input *RunPipelineActivityInput) (*RunPipelineActivityOutput, error) {
@@ -2706,14 +2701,13 @@ const opSampleChannelData = "SampleChannelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SampleChannelDataRequest method.
+//	req, resp := client.SampleChannelDataRequest(params)
 //
-//    // Example sending a request using the SampleChannelDataRequest method.
-//    req, resp := client.SampleChannelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/SampleChannelData
 func (c *IoTAnalytics) SampleChannelDataRequest(input *SampleChannelDataInput) (req *request.Request, output *SampleChannelDataOutput) {
@@ -2745,20 +2739,21 @@ func (c *IoTAnalytics) SampleChannelDataRequest(input *SampleChannelDataInput) (
 // API operation SampleChannelData for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/SampleChannelData
 func (c *IoTAnalytics) SampleChannelData(input *SampleChannelDataInput) (*SampleChannelDataOutput, error) {
@@ -2798,14 +2793,13 @@ const opStartPipelineReprocessing = "StartPipelineReprocessing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartPipelineReprocessingRequest method.
+//	req, resp := client.StartPipelineReprocessingRequest(params)
 //
-//    // Example sending a request using the StartPipelineReprocessingRequest method.
-//    req, resp := client.StartPipelineReprocessingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/StartPipelineReprocessing
 func (c *IoTAnalytics) StartPipelineReprocessingRequest(input *StartPipelineReprocessingInput) (req *request.Request, output *StartPipelineReprocessingOutput) {
@@ -2836,23 +2830,24 @@ func (c *IoTAnalytics) StartPipelineReprocessingRequest(input *StartPipelineRepr
 // API operation StartPipelineReprocessing for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
 //
-//   * ResourceAlreadyExistsException
-//   A resource with the same name already exists.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * InvalidRequestException
-//   The request was not valid.
+//   - ResourceAlreadyExistsException
+//     A resource with the same name already exists.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/StartPipelineReprocessing
 func (c *IoTAnalytics) StartPipelineReprocessing(input *StartPipelineReprocessingInput) (*StartPipelineReprocessingOutput, error) {
@@ -2892,14 +2887,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/TagResource
 func (c *IoTAnalytics) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2932,23 +2926,24 @@ func (c *IoTAnalytics) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
+//
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/TagResource
 func (c *IoTAnalytics) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2988,14 +2983,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UntagResource
 func (c *IoTAnalytics) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3027,23 +3021,24 @@ func (c *IoTAnalytics) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
+//
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UntagResource
 func (c *IoTAnalytics) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3083,14 +3078,13 @@ const opUpdateChannel = "UpdateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelRequest method.
+//	req, resp := client.UpdateChannelRequest(params)
 //
-//    // Example sending a request using the UpdateChannelRequest method.
-//    req, resp := client.UpdateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateChannel
 func (c *IoTAnalytics) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
@@ -3122,20 +3116,21 @@ func (c *IoTAnalytics) UpdateChannelRequest(input *UpdateChannelInput) (req *req
 // API operation UpdateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateChannel
 func (c *IoTAnalytics) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, error) {
@@ -3175,14 +3170,13 @@ const opUpdateDataset = "UpdateDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatasetRequest method.
+//	req, resp := client.UpdateDatasetRequest(params)
 //
-//    // Example sending a request using the UpdateDatasetRequest method.
-//    req, resp := client.UpdateDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateDataset
 func (c *IoTAnalytics) UpdateDatasetRequest(input *UpdateDatasetInput) (req *request.Request, output *UpdateDatasetOutput) {
@@ -3214,20 +3208,21 @@ func (c *IoTAnalytics) UpdateDatasetRequest(input *UpdateDatasetInput) (req *req
 // API operation UpdateDataset for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateDataset
 func (c *IoTAnalytics) UpdateDataset(input *UpdateDatasetInput) (*UpdateDatasetOutput, error) {
@@ -3267,14 +3262,13 @@ const opUpdateDatastore = "UpdateDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDatastoreRequest method.
+//	req, resp := client.UpdateDatastoreRequest(params)
 //
-//    // Example sending a request using the UpdateDatastoreRequest method.
-//    req, resp := client.UpdateDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateDatastore
 func (c *IoTAnalytics) UpdateDatastoreRequest(input *UpdateDatastoreInput) (req *request.Request, output *UpdateDatastoreOutput) {
@@ -3306,20 +3300,21 @@ func (c *IoTAnalytics) UpdateDatastoreRequest(input *UpdateDatastoreInput) (req 
 // API operation UpdateDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdateDatastore
 func (c *IoTAnalytics) UpdateDatastore(input *UpdateDatastoreInput) (*UpdateDatastoreOutput, error) {
@@ -3359,14 +3354,13 @@ const opUpdatePipeline = "UpdatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePipelineRequest method.
+//	req, resp := client.UpdatePipelineRequest(params)
 //
-//    // Example sending a request using the UpdatePipelineRequest method.
-//    req, resp := client.UpdatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdatePipeline
 func (c *IoTAnalytics) UpdatePipelineRequest(input *UpdatePipelineInput) (req *request.Request, output *UpdatePipelineOutput) {
@@ -3400,23 +3394,24 @@ func (c *IoTAnalytics) UpdatePipelineRequest(input *UpdatePipelineInput) (req *r
 // API operation UpdatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was not valid.
 //
-//   * ResourceNotFoundException
-//   A resource with the specified name could not be found.
+//   - InvalidRequestException
+//     The request was not valid.
 //
-//   * InternalFailureException
-//   There was an internal failure.
+//   - ResourceNotFoundException
+//     A resource with the specified name could not be found.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - InternalFailureException
+//     There was an internal failure.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * LimitExceededException
-//   The command caused an internal limit to be exceeded.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - LimitExceededException
+//     The command caused an internal limit to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UpdatePipeline
 func (c *IoTAnalytics) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipelineOutput, error) {
@@ -7348,12 +7343,12 @@ func (s *DeltaTime) SetTimeExpression(v string) *DeltaTime {
 // A structure that contains the configuration information of a delta time session
 // window.
 //
-//  DeltaTime (https://docs.aws.amazon.com/iotanalytics/latest/APIReference/API_DeltaTime.html)
-//  specifies a time interval. You can use DeltaTime to create dataset contents
-//  with data that has arrived in the data store since the last execution. For
-//  an example of DeltaTime, see Creating a SQL dataset with a delta window
-//  (CLI) (https://docs.aws.amazon.com/iotanalytics/latest/userguide/automate-create-dataset.html#automate-example6)
-//  in the IoT Analytics User Guide.
+//	DeltaTime (https://docs.aws.amazon.com/iotanalytics/latest/APIReference/API_DeltaTime.html)
+//	specifies a time interval. You can use DeltaTime to create dataset contents
+//	with data that has arrived in the data store since the last execution. For
+//	an example of DeltaTime, see Creating a SQL dataset with a delta window
+//	(CLI) (https://docs.aws.amazon.com/iotanalytics/latest/userguide/automate-create-dataset.html#automate-example6)
+//	in the IoT Analytics User Guide.
 type DeltaTimeSessionWindowConfiguration struct {
 	_ struct{} `type:"structure"`
 

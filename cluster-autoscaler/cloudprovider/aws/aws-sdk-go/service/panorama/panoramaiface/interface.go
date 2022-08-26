@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Panorama.
-//    func myFunc(svc panoramaiface.PanoramaAPI) bool {
-//        // Make svc.CreateApplicationInstance request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Panorama.
+//	func myFunc(svc panoramaiface.PanoramaAPI) bool {
+//	    // Make svc.CreateApplicationInstance request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := panorama.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := panorama.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockPanoramaClient struct {
-//        panoramaiface.PanoramaAPI
-//    }
-//    func (m *mockPanoramaClient) CreateApplicationInstance(input *panorama.CreateApplicationInstanceInput) (*panorama.CreateApplicationInstanceOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockPanoramaClient struct {
+//	    panoramaiface.PanoramaAPI
+//	}
+//	func (m *mockPanoramaClient) CreateApplicationInstance(input *panorama.CreateApplicationInstanceInput) (*panorama.CreateApplicationInstanceOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockPanoramaClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockPanoramaClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTSecureTunneling client from just a session.
-//     svc := iotsecuretunneling.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTSecureTunneling client with additional configuration
-//     svc := iotsecuretunneling.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoTSecureTunneling client from just a session.
+//	svc := iotsecuretunneling.New(mySession)
+//
+//	// Create a IoTSecureTunneling client with additional configuration
+//	svc := iotsecuretunneling.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoTSecureTunneling {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

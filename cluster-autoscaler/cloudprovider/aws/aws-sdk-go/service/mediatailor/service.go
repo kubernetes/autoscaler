@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaTailor client from just a session.
-//     svc := mediatailor.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MediaTailor client with additional configuration
-//     svc := mediatailor.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MediaTailor client from just a session.
+//	svc := mediatailor.New(mySession)
+//
+//	// Create a MediaTailor client with additional configuration
+//	svc := mediatailor.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MediaTailor {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

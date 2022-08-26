@@ -11,7 +11,7 @@ import (
 
 // CreateRemotePeeringConnectionRequest wrapper for the CreateRemotePeeringConnection operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateRemotePeeringConnection.go.html to see an example of how to use CreateRemotePeeringConnectionRequest.
 type CreateRemotePeeringConnectionRequest struct {

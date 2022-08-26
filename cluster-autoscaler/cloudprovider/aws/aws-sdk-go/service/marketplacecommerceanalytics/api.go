@@ -28,14 +28,13 @@ const opGenerateDataSet = "GenerateDataSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GenerateDataSetRequest method.
+//	req, resp := client.GenerateDataSetRequest(params)
 //
-//    // Example sending a request using the GenerateDataSetRequest method.
-//    req, resp := client.GenerateDataSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSet
 func (c *MarketplaceCommerceAnalytics) GenerateDataSetRequest(input *GenerateDataSetInput) (req *request.Request, output *GenerateDataSetOutput) {
@@ -75,8 +74,8 @@ func (c *MarketplaceCommerceAnalytics) GenerateDataSetRequest(input *GenerateDat
 // API operation GenerateDataSet for usage and error information.
 //
 // Returned Error Types:
-//   * Exception
-//   This exception is thrown when an internal service error occurs.
+//   - Exception
+//     This exception is thrown when an internal service error occurs.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/GenerateDataSet
 func (c *MarketplaceCommerceAnalytics) GenerateDataSet(input *GenerateDataSetInput) (*GenerateDataSetOutput, error) {
@@ -116,14 +115,13 @@ const opStartSupportDataExport = "StartSupportDataExport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSupportDataExportRequest method.
+//	req, resp := client.StartSupportDataExportRequest(params)
 //
-//    // Example sending a request using the StartSupportDataExportRequest method.
-//    req, resp := client.StartSupportDataExportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExport
 func (c *MarketplaceCommerceAnalytics) StartSupportDataExportRequest(input *StartSupportDataExportInput) (req *request.Request, output *StartSupportDataExportOutput) {
@@ -164,8 +162,8 @@ func (c *MarketplaceCommerceAnalytics) StartSupportDataExportRequest(input *Star
 // API operation StartSupportDataExport for usage and error information.
 //
 // Returned Error Types:
-//   * Exception
-//   This exception is thrown when an internal service error occurs.
+//   - Exception
+//     This exception is thrown when an internal service error occurs.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/marketplacecommerceanalytics-2015-07-01/StartSupportDataExport
 func (c *MarketplaceCommerceAnalytics) StartSupportDataExport(input *StartSupportDataExportInput) (*StartSupportDataExportOutput, error) {

@@ -11,7 +11,7 @@ import (
 
 // DetachInstancePoolInstanceRequest wrapper for the DetachInstancePoolInstance operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/DetachInstancePoolInstance.go.html to see an example of how to use DetachInstancePoolInstanceRequest.
 type DetachInstancePoolInstanceRequest struct {

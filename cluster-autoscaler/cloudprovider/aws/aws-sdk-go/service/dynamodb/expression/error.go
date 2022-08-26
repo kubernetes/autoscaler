@@ -12,8 +12,8 @@ import (
 //
 // Example:
 //
-//     // err is of type InvalidParameterError
-//     _, err := expression.Name("foo..bar").BuildOperand()
+//	// err is of type InvalidParameterError
+//	_, err := expression.Name("foo..bar").BuildOperand()
 type InvalidParameterError struct {
 	parameterType string
 	functionName  string
@@ -37,11 +37,11 @@ func newInvalidParameterError(funcName, paramType string) InvalidParameterError 
 //
 // Example:
 //
-//     // err is of type UnsetParameterError
-//     _, err := expression.Builder{}.Build()
-//     _, err := expression.NewBuilder().
-//                 WithCondition(expression.ConditionBuilder{}).
-//                 Build()
+//	// err is of type UnsetParameterError
+//	_, err := expression.Builder{}.Build()
+//	_, err := expression.NewBuilder().
+//	            WithCondition(expression.ConditionBuilder{}).
+//	            Build()
 type UnsetParameterError struct {
 	parameterType string
 	functionName  string

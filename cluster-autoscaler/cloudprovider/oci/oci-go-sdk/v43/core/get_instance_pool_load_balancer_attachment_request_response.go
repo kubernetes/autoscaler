@@ -11,7 +11,7 @@ import (
 
 // GetInstancePoolLoadBalancerAttachmentRequest wrapper for the GetInstancePoolLoadBalancerAttachment operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetInstancePoolLoadBalancerAttachment.go.html to see an example of how to use GetInstancePoolLoadBalancerAttachmentRequest.
 type GetInstancePoolLoadBalancerAttachmentRequest struct {

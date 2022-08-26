@@ -161,7 +161,7 @@ func (r *urlBasedX509CertificateRetriever) PrivateKey() *rsa.PrivateKey {
 	return &c
 }
 
-//staticCertificateRetriever serves certificates from static data
+// staticCertificateRetriever serves certificates from static data
 type staticCertificateRetriever struct {
 	Passphrase     []byte
 	CertificatePem []byte
@@ -171,7 +171,7 @@ type staticCertificateRetriever struct {
 	mux            sync.Mutex
 }
 
-//Refresh proccess the inputs into appropiate keys and certificates
+// Refresh proccess the inputs into appropiate keys and certificates
 func (r *staticCertificateRetriever) Refresh() error {
 	r.mux.Lock()
 	defer r.mux.Unlock()

@@ -28,14 +28,13 @@ const opDescribeReportCreation = "DescribeReportCreation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReportCreationRequest method.
+//	req, resp := client.DescribeReportCreationRequest(params)
 //
-//    // Example sending a request using the DescribeReportCreationRequest method.
-//    req, resp := client.DescribeReportCreationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/DescribeReportCreation
 func (c *ResourceGroupsTaggingAPI) DescribeReportCreationRequest(input *DescribeReportCreationInput) (req *request.Request, output *DescribeReportCreationOutput) {
@@ -69,45 +68,46 @@ func (c *ResourceGroupsTaggingAPI) DescribeReportCreationRequest(input *Describe
 // API operation DescribeReportCreation for usage and error information.
 //
 // Returned Error Types:
-//   * ConstraintViolationException
-//   The request was denied because performing this operation violates a constraint.
 //
-//   Some of the reasons in the following list might not apply to this specific
-//   operation.
+//   - ConstraintViolationException
+//     The request was denied because performing this operation violates a constraint.
 //
-//      * You must meet the prerequisites for using tag policies. For information,
-//      see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
-//      in the Organizations User Guide.
+//     Some of the reasons in the following list might not apply to this specific
+//     operation.
 //
-//      * You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
-//      to integrate with Organizations For information, see EnableAWSServiceAccess
-//      (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
+//   - You must meet the prerequisites for using tag policies. For information,
+//     see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
+//     in the Organizations User Guide.
 //
-//      * You must have a tag policy attached to the organization root, an OU,
-//      or an account.
+//   - You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
+//     to integrate with Organizations For information, see EnableAWSServiceAccess
+//     (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - You must have a tag policy attached to the organization root, an OU,
+//     or an account.
 //
-//   * InvalidParameterException
-//   This error indicates one of the following:
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
+//
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/DescribeReportCreation
 func (c *ResourceGroupsTaggingAPI) DescribeReportCreation(input *DescribeReportCreationInput) (*DescribeReportCreationOutput, error) {
@@ -147,14 +147,13 @@ const opGetComplianceSummary = "GetComplianceSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetComplianceSummaryRequest method.
+//	req, resp := client.GetComplianceSummaryRequest(params)
 //
-//    // Example sending a request using the GetComplianceSummaryRequest method.
-//    req, resp := client.GetComplianceSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetComplianceSummary
 func (c *ResourceGroupsTaggingAPI) GetComplianceSummaryRequest(input *GetComplianceSummaryInput) (req *request.Request, output *GetComplianceSummaryOutput) {
@@ -205,45 +204,46 @@ func (c *ResourceGroupsTaggingAPI) GetComplianceSummaryRequest(input *GetComplia
 // API operation GetComplianceSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ConstraintViolationException
-//   The request was denied because performing this operation violates a constraint.
 //
-//   Some of the reasons in the following list might not apply to this specific
-//   operation.
+//   - ConstraintViolationException
+//     The request was denied because performing this operation violates a constraint.
 //
-//      * You must meet the prerequisites for using tag policies. For information,
-//      see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
-//      in the Organizations User Guide.
+//     Some of the reasons in the following list might not apply to this specific
+//     operation.
 //
-//      * You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
-//      to integrate with Organizations For information, see EnableAWSServiceAccess
-//      (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
+//   - You must meet the prerequisites for using tag policies. For information,
+//     see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
+//     in the Organizations User Guide.
 //
-//      * You must have a tag policy attached to the organization root, an OU,
-//      or an account.
+//   - You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
+//     to integrate with Organizations For information, see EnableAWSServiceAccess
+//     (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - You must have a tag policy attached to the organization root, an OU,
+//     or an account.
 //
-//   * InvalidParameterException
-//   This error indicates one of the following:
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
+//
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetComplianceSummary
 func (c *ResourceGroupsTaggingAPI) GetComplianceSummary(input *GetComplianceSummaryInput) (*GetComplianceSummaryOutput, error) {
@@ -275,15 +275,14 @@ func (c *ResourceGroupsTaggingAPI) GetComplianceSummaryWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetComplianceSummary operation.
-//    pageNum := 0
-//    err := client.GetComplianceSummaryPages(params,
-//        func(page *resourcegroupstaggingapi.GetComplianceSummaryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetComplianceSummary operation.
+//	pageNum := 0
+//	err := client.GetComplianceSummaryPages(params,
+//	    func(page *resourcegroupstaggingapi.GetComplianceSummaryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResourceGroupsTaggingAPI) GetComplianceSummaryPages(input *GetComplianceSummaryInput, fn func(*GetComplianceSummaryOutput, bool) bool) error {
 	return c.GetComplianceSummaryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -335,14 +334,13 @@ const opGetResources = "GetResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourcesRequest method.
+//	req, resp := client.GetResourcesRequest(params)
 //
-//    // Example sending a request using the GetResourcesRequest method.
-//    req, resp := client.GetResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetResources
 func (c *ResourceGroupsTaggingAPI) GetResourcesRequest(input *GetResourcesInput) (req *request.Request, output *GetResourcesOutput) {
@@ -375,13 +373,13 @@ func (c *ResourceGroupsTaggingAPI) GetResourcesRequest(input *GetResourcesInput)
 // Depending on what information you want returned, you can also specify the
 // following:
 //
-//    * Filters that specify what tags and resource types you want returned.
-//    The response includes all tags that are associated with the requested
-//    resources.
+//   - Filters that specify what tags and resource types you want returned.
+//     The response includes all tags that are associated with the requested
+//     resources.
 //
-//    * Information about compliance with the account's effective tag policy.
-//    For more information on tag policies, see Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html)
-//    in the Organizations User Guide.
+//   - Information about compliance with the account's effective tag policy.
+//     For more information on tag policies, see Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html)
+//     in the Organizations User Guide.
 //
 // This operation supports pagination, where the response can be sent in multiple
 // pages. You should check the PaginationToken response parameter to determine
@@ -398,32 +396,33 @@ func (c *ResourceGroupsTaggingAPI) GetResourcesRequest(input *GetResourcesInput)
 // API operation GetResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   This error indicates one of the following:
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
-//   * PaginationTokenExpiredException
-//   A PaginationToken is valid for a maximum of 15 minutes. Your request was
-//   denied because the specified PaginationToken has expired.
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
+//
+//   - PaginationTokenExpiredException
+//     A PaginationToken is valid for a maximum of 15 minutes. Your request was
+//     denied because the specified PaginationToken has expired.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetResources
 func (c *ResourceGroupsTaggingAPI) GetResources(input *GetResourcesInput) (*GetResourcesOutput, error) {
@@ -455,15 +454,14 @@ func (c *ResourceGroupsTaggingAPI) GetResourcesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetResources operation.
-//    pageNum := 0
-//    err := client.GetResourcesPages(params,
-//        func(page *resourcegroupstaggingapi.GetResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetResources operation.
+//	pageNum := 0
+//	err := client.GetResourcesPages(params,
+//	    func(page *resourcegroupstaggingapi.GetResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResourceGroupsTaggingAPI) GetResourcesPages(input *GetResourcesInput, fn func(*GetResourcesOutput, bool) bool) error {
 	return c.GetResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -515,14 +513,13 @@ const opGetTagKeys = "GetTagKeys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagKeysRequest method.
+//	req, resp := client.GetTagKeysRequest(params)
 //
-//    // Example sending a request using the GetTagKeysRequest method.
-//    req, resp := client.GetTagKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetTagKeys
 func (c *ResourceGroupsTaggingAPI) GetTagKeysRequest(input *GetTagKeysInput) (req *request.Request, output *GetTagKeysOutput) {
@@ -567,32 +564,33 @@ func (c *ResourceGroupsTaggingAPI) GetTagKeysRequest(input *GetTagKeysInput) (re
 // API operation GetTagKeys for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   This error indicates one of the following:
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
-//   * PaginationTokenExpiredException
-//   A PaginationToken is valid for a maximum of 15 minutes. Your request was
-//   denied because the specified PaginationToken has expired.
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
+//
+//   - PaginationTokenExpiredException
+//     A PaginationToken is valid for a maximum of 15 minutes. Your request was
+//     denied because the specified PaginationToken has expired.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetTagKeys
 func (c *ResourceGroupsTaggingAPI) GetTagKeys(input *GetTagKeysInput) (*GetTagKeysOutput, error) {
@@ -624,15 +622,14 @@ func (c *ResourceGroupsTaggingAPI) GetTagKeysWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTagKeys operation.
-//    pageNum := 0
-//    err := client.GetTagKeysPages(params,
-//        func(page *resourcegroupstaggingapi.GetTagKeysOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTagKeys operation.
+//	pageNum := 0
+//	err := client.GetTagKeysPages(params,
+//	    func(page *resourcegroupstaggingapi.GetTagKeysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResourceGroupsTaggingAPI) GetTagKeysPages(input *GetTagKeysInput, fn func(*GetTagKeysOutput, bool) bool) error {
 	return c.GetTagKeysPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -684,14 +681,13 @@ const opGetTagValues = "GetTagValues"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagValuesRequest method.
+//	req, resp := client.GetTagValuesRequest(params)
 //
-//    // Example sending a request using the GetTagValuesRequest method.
-//    req, resp := client.GetTagValuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetTagValues
 func (c *ResourceGroupsTaggingAPI) GetTagValuesRequest(input *GetTagValuesInput) (req *request.Request, output *GetTagValuesOutput) {
@@ -736,32 +732,33 @@ func (c *ResourceGroupsTaggingAPI) GetTagValuesRequest(input *GetTagValuesInput)
 // API operation GetTagValues for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   This error indicates one of the following:
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
-//   * PaginationTokenExpiredException
-//   A PaginationToken is valid for a maximum of 15 minutes. Your request was
-//   denied because the specified PaginationToken has expired.
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
+//
+//   - PaginationTokenExpiredException
+//     A PaginationToken is valid for a maximum of 15 minutes. Your request was
+//     denied because the specified PaginationToken has expired.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/GetTagValues
 func (c *ResourceGroupsTaggingAPI) GetTagValues(input *GetTagValuesInput) (*GetTagValuesOutput, error) {
@@ -793,15 +790,14 @@ func (c *ResourceGroupsTaggingAPI) GetTagValuesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetTagValues operation.
-//    pageNum := 0
-//    err := client.GetTagValuesPages(params,
-//        func(page *resourcegroupstaggingapi.GetTagValuesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetTagValues operation.
+//	pageNum := 0
+//	err := client.GetTagValuesPages(params,
+//	    func(page *resourcegroupstaggingapi.GetTagValuesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResourceGroupsTaggingAPI) GetTagValuesPages(input *GetTagValuesInput, fn func(*GetTagValuesOutput, bool) bool) error {
 	return c.GetTagValuesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -853,14 +849,13 @@ const opStartReportCreation = "StartReportCreation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartReportCreationRequest method.
+//	req, resp := client.StartReportCreationRequest(params)
 //
-//    // Example sending a request using the StartReportCreationRequest method.
-//    req, resp := client.StartReportCreationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/StartReportCreation
 func (c *ResourceGroupsTaggingAPI) StartReportCreationRequest(input *StartReportCreationInput) (req *request.Request, output *StartReportCreationOutput) {
@@ -901,49 +896,50 @@ func (c *ResourceGroupsTaggingAPI) StartReportCreationRequest(input *StartReport
 // API operation StartReportCreation for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   The target of the operation is currently being modified by a different request.
-//   Try again later.
 //
-//   * ConstraintViolationException
-//   The request was denied because performing this operation violates a constraint.
+//   - ConcurrentModificationException
+//     The target of the operation is currently being modified by a different request.
+//     Try again later.
 //
-//   Some of the reasons in the following list might not apply to this specific
-//   operation.
+//   - ConstraintViolationException
+//     The request was denied because performing this operation violates a constraint.
 //
-//      * You must meet the prerequisites for using tag policies. For information,
-//      see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
-//      in the Organizations User Guide.
+//     Some of the reasons in the following list might not apply to this specific
+//     operation.
 //
-//      * You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
-//      to integrate with Organizations For information, see EnableAWSServiceAccess
-//      (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
+//   - You must meet the prerequisites for using tag policies. For information,
+//     see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
+//     in the Organizations User Guide.
 //
-//      * You must have a tag policy attached to the organization root, an OU,
-//      or an account.
+//   - You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
+//     to integrate with Organizations For information, see EnableAWSServiceAccess
+//     (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - You must have a tag policy attached to the organization root, an OU,
+//     or an account.
 //
-//   * InvalidParameterException
-//   This error indicates one of the following:
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
+//
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/StartReportCreation
 func (c *ResourceGroupsTaggingAPI) StartReportCreation(input *StartReportCreationInput) (*StartReportCreationOutput, error) {
@@ -983,14 +979,13 @@ const opTagResources = "TagResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourcesRequest method.
+//	req, resp := client.TagResourcesRequest(params)
 //
-//    // Example sending a request using the TagResourcesRequest method.
-//    req, resp := client.TagResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/TagResources
 func (c *ResourceGroupsTaggingAPI) TagResourcesRequest(input *TagResourcesInput) (req *request.Request, output *TagResourcesOutput) {
@@ -1013,39 +1008,39 @@ func (c *ResourceGroupsTaggingAPI) TagResourcesRequest(input *TagResourcesInput)
 //
 // Applies one or more tags to the specified resources. Note the following:
 //
-//    * Not all resources can have tags. For a list of services with resources
-//    that support tagging using this operation, see Services that support the
-//    Resource Groups Tagging API (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/supported-services.html).
-//    If the resource doesn't yet support this operation, the resource's service
-//    might support tagging using its own API operations. For more information,
-//    refer to the documentation for that service.
+//   - Not all resources can have tags. For a list of services with resources
+//     that support tagging using this operation, see Services that support the
+//     Resource Groups Tagging API (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/supported-services.html).
+//     If the resource doesn't yet support this operation, the resource's service
+//     might support tagging using its own API operations. For more information,
+//     refer to the documentation for that service.
 //
-//    * Each resource can have up to 50 tags. For other limits, see Tag Naming
-//    and Usage Conventions (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions)
-//    in the Amazon Web Services General Reference.
+//   - Each resource can have up to 50 tags. For other limits, see Tag Naming
+//     and Usage Conventions (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions)
+//     in the Amazon Web Services General Reference.
 //
-//    * You can only tag resources that are located in the specified Amazon
-//    Web Services Region for the Amazon Web Services account.
+//   - You can only tag resources that are located in the specified Amazon
+//     Web Services Region for the Amazon Web Services account.
 //
-//    * To add tags to a resource, you need the necessary permissions for the
-//    service that the resource belongs to as well as permissions for adding
-//    tags. For more information, see the documentation for each service.
+//   - To add tags to a resource, you need the necessary permissions for the
+//     service that the resource belongs to as well as permissions for adding
+//     tags. For more information, see the documentation for each service.
 //
 // Do not store personally identifiable information (PII) or other confidential
 // or sensitive information in tags. We use tags to provide you with billing
 // and administration services. Tags are not intended to be used for private
 // or sensitive data.
 //
-// Minimum permissions
+// # Minimum permissions
 //
 // In addition to the tag:TagResources permission required by this operation,
 // you must also have the tagging permission defined by the service that created
 // the resource. For example, to tag an Amazon EC2 instance using the TagResources
 // operation, you must have both of the following permissions:
 //
-//    * tag:TagResource
+//   - tag:TagResource
 //
-//    * ec2:CreateTags
+//   - ec2:CreateTags
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1055,28 +1050,29 @@ func (c *ResourceGroupsTaggingAPI) TagResourcesRequest(input *TagResourcesInput)
 // API operation TagResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   This error indicates one of the following:
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
+//
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/TagResources
 func (c *ResourceGroupsTaggingAPI) TagResources(input *TagResourcesInput) (*TagResourcesOutput, error) {
@@ -1116,14 +1112,13 @@ const opUntagResources = "UntagResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourcesRequest method.
+//	req, resp := client.UntagResourcesRequest(params)
 //
-//    // Example sending a request using the UntagResourcesRequest method.
-//    req, resp := client.UntagResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/UntagResources
 func (c *ResourceGroupsTaggingAPI) UntagResourcesRequest(input *UntagResourcesInput) (req *request.Request, output *UntagResourcesOutput) {
@@ -1149,15 +1144,15 @@ func (c *ResourceGroupsTaggingAPI) UntagResourcesRequest(input *UntagResourcesIn
 // operation succeeds even if you attempt to remove tags from a resource that
 // were already removed. Note the following:
 //
-//    * To remove tags from a resource, you need the necessary permissions for
-//    the service that the resource belongs to as well as permissions for removing
-//    tags. For more information, see the documentation for the service whose
-//    resource you want to untag.
+//   - To remove tags from a resource, you need the necessary permissions for
+//     the service that the resource belongs to as well as permissions for removing
+//     tags. For more information, see the documentation for the service whose
+//     resource you want to untag.
 //
-//    * You can only tag resources that are located in the specified Amazon
-//    Web Services Region for the calling Amazon Web Services account.
+//   - You can only tag resources that are located in the specified Amazon
+//     Web Services Region for the calling Amazon Web Services account.
 //
-// Minimum permissions
+// # Minimum permissions
 //
 // In addition to the tag:UntagResources permission required by this operation,
 // you must also have the remove tags permission defined by the service that
@@ -1165,9 +1160,9 @@ func (c *ResourceGroupsTaggingAPI) UntagResourcesRequest(input *UntagResourcesIn
 // instance using the UntagResources operation, you must have both of the following
 // permissions:
 //
-//    * tag:UntagResource
+//   - tag:UntagResource
 //
-//    * ec2:DeleteTags
+//   - ec2:DeleteTags
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1177,28 +1172,29 @@ func (c *ResourceGroupsTaggingAPI) UntagResourcesRequest(input *UntagResourcesIn
 // API operation UntagResources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   This error indicates one of the following:
 //
-//      * A parameter is missing.
+//   - InvalidParameterException
+//     This error indicates one of the following:
 //
-//      * A malformed string was supplied for the request parameter.
+//   - A parameter is missing.
 //
-//      * An out-of-range value was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//      * The target ID is invalid, unsupported, or doesn't exist.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//      * You can't access the Amazon S3 bucket for report storage. For more information,
-//      see Additional Requirements for Organization-wide Tag Compliance Reports
-//      (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//      in the Organizations User Guide.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//   * ThrottledException
-//   The request was denied to limit the frequency of submitted requests.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 //
-//   * InternalServiceException
-//   The request processing failed because of an unknown error, exception, or
-//   failure. You can retry the request.
+//   - ThrottledException
+//     The request was denied to limit the frequency of submitted requests.
+//
+//   - InternalServiceException
+//     The request processing failed because of an unknown error, exception, or
+//     failure. You can retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resourcegroupstaggingapi-2017-01-26/UntagResources
 func (c *ResourceGroupsTaggingAPI) UntagResources(input *UntagResourcesInput) (*UntagResourcesOutput, error) {
@@ -1344,16 +1340,16 @@ func (s *ConcurrentModificationException) RequestID() string {
 // Some of the reasons in the following list might not apply to this specific
 // operation.
 //
-//    * You must meet the prerequisites for using tag policies. For information,
-//    see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
-//    in the Organizations User Guide.
+//   - You must meet the prerequisites for using tag policies. For information,
+//     see Prerequisites and Permissions for Using Tag Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html)
+//     in the Organizations User Guide.
 //
-//    * You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
-//    to integrate with Organizations For information, see EnableAWSServiceAccess
-//    (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
+//   - You must enable the tag policies service principal (tagpolicies.tag.amazonaws.com)
+//     to integrate with Organizations For information, see EnableAWSServiceAccess
+//     (https://docs.aws.amazon.com/organizations/latest/APIReference/API_EnableAWSServiceAccess.html).
 //
-//    * You must have a tag policy attached to the organization root, an OU,
-//    or an account.
+//   - You must have a tag policy attached to the organization root, an OU,
+//     or an account.
 type ConstraintViolationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1507,20 +1503,20 @@ func (s *DescribeReportCreationOutput) SetStatus(v string) *DescribeReportCreati
 // The following are common error codes that you might receive from other Amazon
 // Web Services services:
 //
-//    * InternalServiceException – This can mean that the Resource Groups
-//    Tagging API didn't receive a response from another Amazon Web Services
-//    service. It can also mean that the resource type in the request is not
-//    supported by the Resource Groups Tagging API. In these cases, it's safe
-//    to retry the request and then call GetResources (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html)
-//    to verify the changes.
+//   - InternalServiceException – This can mean that the Resource Groups
+//     Tagging API didn't receive a response from another Amazon Web Services
+//     service. It can also mean that the resource type in the request is not
+//     supported by the Resource Groups Tagging API. In these cases, it's safe
+//     to retry the request and then call GetResources (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_GetResources.html)
+//     to verify the changes.
 //
-//    * AccessDeniedException – This can mean that you need permission to
-//    call the tagging operations in the Amazon Web Services service that contains
-//    the resource. For example, to use the Resource Groups Tagging API to tag
-//    a Amazon CloudWatch alarm resource, you need permission to call both TagResources
-//    (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_TagResources.html)
-//    and TagResource (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_TagResource.html)
-//    in the CloudWatch API.
+//   - AccessDeniedException – This can mean that you need permission to
+//     call the tagging operations in the Amazon Web Services service that contains
+//     the resource. For example, to use the Resource Groups Tagging API to tag
+//     a Amazon CloudWatch alarm resource, you need permission to call both TagResources
+//     (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/API_TagResources.html)
+//     and TagResource (https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_TagResource.html)
+//     in the CloudWatch API.
 //
 // For more information on errors that are generated from other Amazon Web Services
 // services, see the documentation for that service.
@@ -2249,18 +2245,18 @@ func (s *InternalServiceException) RequestID() string {
 
 // This error indicates one of the following:
 //
-//    * A parameter is missing.
+//   - A parameter is missing.
 //
-//    * A malformed string was supplied for the request parameter.
+//   - A malformed string was supplied for the request parameter.
 //
-//    * An out-of-range value was supplied for the request parameter.
+//   - An out-of-range value was supplied for the request parameter.
 //
-//    * The target ID is invalid, unsupported, or doesn't exist.
+//   - The target ID is invalid, unsupported, or doesn't exist.
 //
-//    * You can't access the Amazon S3 bucket for report storage. For more information,
-//    see Additional Requirements for Organization-wide Tag Compliance Reports
-//    (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
-//    in the Organizations User Guide.
+//   - You can't access the Amazon S3 bucket for report storage. For more information,
+//     see Additional Requirements for Organization-wide Tag Compliance Reports
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies-prereqs.html#bucket-policies-org-report)
+//     in the Organizations User Guide.
 type InvalidParameterException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`

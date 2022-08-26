@@ -27,14 +27,13 @@ const opDescribeJobExecution = "DescribeJobExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobExecutionRequest method.
+//	req, resp := client.DescribeJobExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeJobExecutionRequest method.
-//    req, resp := client.DescribeJobExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/DescribeJobExecution
 func (c *IoTJobsDataPlane) DescribeJobExecutionRequest(input *DescribeJobExecutionInput) (req *request.Request, output *DescribeJobExecutionOutput) {
@@ -65,25 +64,26 @@ func (c *IoTJobsDataPlane) DescribeJobExecutionRequest(input *DescribeJobExecuti
 // API operation DescribeJobExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The contents of the request were invalid. For example, this code is returned
-//   when an UpdateJobExecution request contains invalid status details. The message
-//   contains details about the error.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The contents of the request were invalid. For example, this code is returned
+//     when an UpdateJobExecution request contains invalid status details. The message
+//     contains details about the error.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * CertificateValidationException
-//   The certificate is invalid.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * TerminalStateException
-//   The job is in a terminal state.
+//   - CertificateValidationException
+//     The certificate is invalid.
+//
+//   - TerminalStateException
+//     The job is in a terminal state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/DescribeJobExecution
 func (c *IoTJobsDataPlane) DescribeJobExecution(input *DescribeJobExecutionInput) (*DescribeJobExecutionOutput, error) {
@@ -123,14 +123,13 @@ const opGetPendingJobExecutions = "GetPendingJobExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPendingJobExecutionsRequest method.
+//	req, resp := client.GetPendingJobExecutionsRequest(params)
 //
-//    // Example sending a request using the GetPendingJobExecutionsRequest method.
-//    req, resp := client.GetPendingJobExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/GetPendingJobExecutions
 func (c *IoTJobsDataPlane) GetPendingJobExecutionsRequest(input *GetPendingJobExecutionsInput) (req *request.Request, output *GetPendingJobExecutionsOutput) {
@@ -161,22 +160,23 @@ func (c *IoTJobsDataPlane) GetPendingJobExecutionsRequest(input *GetPendingJobEx
 // API operation GetPendingJobExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The contents of the request were invalid. For example, this code is returned
-//   when an UpdateJobExecution request contains invalid status details. The message
-//   contains details about the error.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The contents of the request were invalid. For example, this code is returned
+//     when an UpdateJobExecution request contains invalid status details. The message
+//     contains details about the error.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * CertificateValidationException
-//   The certificate is invalid.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - CertificateValidationException
+//     The certificate is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/GetPendingJobExecutions
 func (c *IoTJobsDataPlane) GetPendingJobExecutions(input *GetPendingJobExecutionsInput) (*GetPendingJobExecutionsOutput, error) {
@@ -216,14 +216,13 @@ const opStartNextPendingJobExecution = "StartNextPendingJobExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartNextPendingJobExecutionRequest method.
+//	req, resp := client.StartNextPendingJobExecutionRequest(params)
 //
-//    // Example sending a request using the StartNextPendingJobExecutionRequest method.
-//    req, resp := client.StartNextPendingJobExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/StartNextPendingJobExecution
 func (c *IoTJobsDataPlane) StartNextPendingJobExecutionRequest(input *StartNextPendingJobExecutionInput) (req *request.Request, output *StartNextPendingJobExecutionOutput) {
@@ -255,22 +254,23 @@ func (c *IoTJobsDataPlane) StartNextPendingJobExecutionRequest(input *StartNextP
 // API operation StartNextPendingJobExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The contents of the request were invalid. For example, this code is returned
-//   when an UpdateJobExecution request contains invalid status details. The message
-//   contains details about the error.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The contents of the request were invalid. For example, this code is returned
+//     when an UpdateJobExecution request contains invalid status details. The message
+//     contains details about the error.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * CertificateValidationException
-//   The certificate is invalid.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
+//
+//   - CertificateValidationException
+//     The certificate is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/StartNextPendingJobExecution
 func (c *IoTJobsDataPlane) StartNextPendingJobExecution(input *StartNextPendingJobExecutionInput) (*StartNextPendingJobExecutionOutput, error) {
@@ -310,14 +310,13 @@ const opUpdateJobExecution = "UpdateJobExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJobExecutionRequest method.
+//	req, resp := client.UpdateJobExecutionRequest(params)
 //
-//    // Example sending a request using the UpdateJobExecutionRequest method.
-//    req, resp := client.UpdateJobExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/UpdateJobExecution
 func (c *IoTJobsDataPlane) UpdateJobExecutionRequest(input *UpdateJobExecutionInput) (req *request.Request, output *UpdateJobExecutionOutput) {
@@ -348,28 +347,29 @@ func (c *IoTJobsDataPlane) UpdateJobExecutionRequest(input *UpdateJobExecutionIn
 // API operation UpdateJobExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The contents of the request were invalid. For example, this code is returned
-//   when an UpdateJobExecution request contains invalid status details. The message
-//   contains details about the error.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The contents of the request were invalid. For example, this code is returned
+//     when an UpdateJobExecution request contains invalid status details. The message
+//     contains details about the error.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * CertificateValidationException
-//   The certificate is invalid.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * InvalidStateTransitionException
-//   An update attempted to change the job execution to a state that is invalid
-//   because of the job execution's current state (for example, an attempt to
-//   change a request in state SUCCESS to state IN_PROGRESS). In this case, the
-//   body of the error message also contains the executionState field.
+//   - CertificateValidationException
+//     The certificate is invalid.
+//
+//   - InvalidStateTransitionException
+//     An update attempted to change the job execution to a state that is invalid
+//     because of the job execution's current state (for example, an attempt to
+//     change a request in state SUCCESS to state IN_PROGRESS). In this case, the
+//     body of the error message also contains the executionState field.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot-jobs-data-2017-09-29/UpdateJobExecution
 func (c *IoTJobsDataPlane) UpdateJobExecution(input *UpdateJobExecutionInput) (*UpdateJobExecutionOutput, error) {

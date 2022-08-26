@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ECRPublic client from just a session.
-//     svc := ecrpublic.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ECRPublic client with additional configuration
-//     svc := ecrpublic.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ECRPublic client from just a session.
+//	svc := ecrpublic.New(mySession)
+//
+//	// Create a ECRPublic client with additional configuration
+//	svc := ecrpublic.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ECRPublic {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

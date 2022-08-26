@@ -28,14 +28,13 @@ const opCreateRule = "CreateRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRuleRequest method.
+//	req, resp := client.CreateRuleRequest(params)
 //
-//    // Example sending a request using the CreateRuleRequest method.
-//    req, resp := client.CreateRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/CreateRule
 func (c *RecycleBin) CreateRuleRequest(input *CreateRuleInput) (req *request.Request, output *CreateRuleOutput) {
@@ -68,15 +67,16 @@ func (c *RecycleBin) CreateRuleRequest(input *CreateRuleInput) (req *request.Req
 // API operation CreateRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota for the number of tags per resource
-//   to be exceeded.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota for the number of tags per resource
+//     to be exceeded.
+//
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/CreateRule
 func (c *RecycleBin) CreateRule(input *CreateRuleInput) (*CreateRuleOutput, error) {
@@ -116,14 +116,13 @@ const opDeleteRule = "DeleteRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRuleRequest method.
+//	req, resp := client.DeleteRuleRequest(params)
 //
-//    // Example sending a request using the DeleteRuleRequest method.
-//    req, resp := client.DeleteRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/DeleteRule
 func (c *RecycleBin) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Request, output *DeleteRuleOutput) {
@@ -157,14 +156,15 @@ func (c *RecycleBin) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Req
 // API operation DeleteRule for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/DeleteRule
 func (c *RecycleBin) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
@@ -204,14 +204,13 @@ const opGetRule = "GetRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRuleRequest method.
+//	req, resp := client.GetRuleRequest(params)
 //
-//    // Example sending a request using the GetRuleRequest method.
-//    req, resp := client.GetRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/GetRule
 func (c *RecycleBin) GetRuleRequest(input *GetRuleInput) (req *request.Request, output *GetRuleOutput) {
@@ -242,14 +241,15 @@ func (c *RecycleBin) GetRuleRequest(input *GetRuleInput) (req *request.Request, 
 // API operation GetRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/GetRule
 func (c *RecycleBin) GetRule(input *GetRuleInput) (*GetRuleOutput, error) {
@@ -289,14 +289,13 @@ const opListRules = "ListRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesRequest method.
+//	req, resp := client.ListRulesRequest(params)
 //
-//    // Example sending a request using the ListRulesRequest method.
-//    req, resp := client.ListRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/ListRules
 func (c *RecycleBin) ListRulesRequest(input *ListRulesInput) (req *request.Request, output *ListRulesOutput) {
@@ -333,11 +332,12 @@ func (c *RecycleBin) ListRulesRequest(input *ListRulesInput) (req *request.Reque
 // API operation ListRules for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
+//
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/ListRules
 func (c *RecycleBin) ListRules(input *ListRulesInput) (*ListRulesOutput, error) {
@@ -369,15 +369,14 @@ func (c *RecycleBin) ListRulesWithContext(ctx aws.Context, input *ListRulesInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRules operation.
-//    pageNum := 0
-//    err := client.ListRulesPages(params,
-//        func(page *recyclebin.ListRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRules operation.
+//	pageNum := 0
+//	err := client.ListRulesPages(params,
+//	    func(page *recyclebin.ListRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *RecycleBin) ListRulesPages(input *ListRulesInput, fn func(*ListRulesOutput, bool) bool) error {
 	return c.ListRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -429,14 +428,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/ListTagsForResource
 func (c *RecycleBin) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -467,14 +465,15 @@ func (c *RecycleBin) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/ListTagsForResource
 func (c *RecycleBin) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -514,14 +513,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/TagResource
 func (c *RecycleBin) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -553,18 +551,19 @@ func (c *RecycleBin) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
 //
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota for the number of tags per resource
-//   to be exceeded.
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota for the number of tags per resource
+//     to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/TagResource
 func (c *RecycleBin) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -604,14 +603,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UntagResource
 func (c *RecycleBin) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -643,14 +641,15 @@ func (c *RecycleBin) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UntagResource
 func (c *RecycleBin) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -690,14 +689,13 @@ const opUpdateRule = "UpdateRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRuleRequest method.
+//	req, resp := client.UpdateRuleRequest(params)
 //
-//    // Example sending a request using the UpdateRuleRequest method.
-//    req, resp := client.UpdateRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UpdateRule
 func (c *RecycleBin) UpdateRuleRequest(input *UpdateRuleInput) (req *request.Request, output *UpdateRuleOutput) {
@@ -730,14 +728,15 @@ func (c *RecycleBin) UpdateRuleRequest(input *UpdateRuleInput) (req *request.Req
 // API operation UpdateRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more of the parameters in the request is not valid.
 //
-//   * InternalServerException
-//   The service could not respond to the request due to an internal problem.
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource was not found.
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UpdateRule
 func (c *RecycleBin) UpdateRule(input *UpdateRuleInput) (*UpdateRuleOutput, error) {

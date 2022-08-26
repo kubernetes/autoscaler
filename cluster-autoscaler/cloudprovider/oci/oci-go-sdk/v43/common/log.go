@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-//sdkLogger an interface for logging in the SDK
+// sdkLogger an interface for logging in the SDK
 type sdkLogger interface {
 	//LogLevel returns the log level of sdkLogger
 	LogLevel() int
@@ -23,19 +23,19 @@ type sdkLogger interface {
 	Log(logLevel int, format string, v ...interface{}) error
 }
 
-//noLogging no logging messages
+// noLogging no logging messages
 const noLogging = 0
 
-//infoLogging minimal logging messages
+// infoLogging minimal logging messages
 const infoLogging = 1
 
-//debugLogging some logging messages
+// debugLogging some logging messages
 const debugLogging = 2
 
-//verboseLogging all logging messages
+// verboseLogging all logging messages
 const verboseLogging = 3
 
-//defaultSDKLogger the default implementation of the sdkLogger
+// defaultSDKLogger the default implementation of the sdkLogger
 type defaultSDKLogger struct {
 	currentLoggingLevel int
 	verboseLogger       *log.Logger
@@ -44,18 +44,18 @@ type defaultSDKLogger struct {
 	nullLogger          *log.Logger
 }
 
-//defaultLogger is the defaultLogger in the SDK
+// defaultLogger is the defaultLogger in the SDK
 var defaultLogger sdkLogger
 var loggerLock sync.Mutex
 var file *os.File
 
-//initializes the SDK defaultLogger as a defaultLogger
+// initializes the SDK defaultLogger as a defaultLogger
 func init() {
 	l, _ := newSDKLogger()
 	setSDKLogger(l)
 }
 
-//setSDKLogger sets the logger used by the sdk
+// setSDKLogger sets the logger used by the sdk
 func setSDKLogger(logger sdkLogger) {
 	loggerLock.Lock()
 	defaultLogger = logger
@@ -171,12 +171,12 @@ func openLogOutputFile(logger defaultSDKLogger, fileName string) *os.File {
 	return file
 }
 
-//CloseLogFile close the logging file and return error
+// CloseLogFile close the logging file and return error
 func CloseLogFile() error {
 	return file.Close()
 }
 
-//LogLevel returns the current debug level
+// LogLevel returns the current debug level
 func (l defaultSDKLogger) LogLevel() int {
 	return l.currentLoggingLevel
 }
@@ -187,8 +187,8 @@ func (l defaultSDKLogger) Log(logLevel int, format string, v ...interface{}) err
 	return nil
 }
 
-//Logln logs v appending a new line at the end
-//Deprecated
+// Logln logs v appending a new line at the end
+// Deprecated
 func Logln(v ...interface{}) {
 	defaultLogger.Log(infoLogging, "%v\n", v...)
 }

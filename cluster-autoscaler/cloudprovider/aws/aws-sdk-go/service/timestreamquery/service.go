@@ -42,13 +42,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a TimestreamQuery client from just a session.
-//     svc := timestreamquery.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a TimestreamQuery client with additional configuration
-//     svc := timestreamquery.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a TimestreamQuery client from just a session.
+//	svc := timestreamquery.New(mySession)
+//
+//	// Create a TimestreamQuery client with additional configuration
+//	svc := timestreamquery.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *TimestreamQuery {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

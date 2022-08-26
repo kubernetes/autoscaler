@@ -18,8 +18,8 @@ import (
 )
 
 // IpSecConnectionDeviceConfig Deprecated. For tunnel information, instead see:
-//   * IPSecConnectionTunnel
-//   * IPSecConnectionTunnelSharedSecret
+//   - IPSecConnectionTunnel
+//   - IPSecConnectionTunnelSharedSecret
 type IpSecConnectionDeviceConfig struct {
 
 	// The OCID of the compartment containing the IPSec connection.

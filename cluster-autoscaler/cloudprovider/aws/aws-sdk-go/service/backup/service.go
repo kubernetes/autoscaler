@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Backup client from just a session.
-//     svc := backup.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Backup client with additional configuration
-//     svc := backup.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Backup client from just a session.
+//	svc := backup.New(mySession)
+//
+//	// Create a Backup client with additional configuration
+//	svc := backup.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Backup {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

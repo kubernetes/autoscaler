@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ComputeOptimizer client from just a session.
-//     svc := computeoptimizer.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ComputeOptimizer client with additional configuration
-//     svc := computeoptimizer.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ComputeOptimizer client from just a session.
+//	svc := computeoptimizer.New(mySession)
+//
+//	// Create a ComputeOptimizer client with additional configuration
+//	svc := computeoptimizer.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ComputeOptimizer {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

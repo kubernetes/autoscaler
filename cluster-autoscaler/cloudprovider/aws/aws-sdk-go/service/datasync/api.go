@@ -29,14 +29,13 @@ const opCancelTaskExecution = "CancelTaskExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelTaskExecutionRequest method.
+//	req, resp := client.CancelTaskExecutionRequest(params)
 //
-//    // Example sending a request using the CancelTaskExecutionRequest method.
-//    req, resp := client.CancelTaskExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CancelTaskExecution
 func (c *DataSync) CancelTaskExecutionRequest(input *CancelTaskExecutionInput) (req *request.Request, output *CancelTaskExecutionOutput) {
@@ -77,11 +76,12 @@ func (c *DataSync) CancelTaskExecutionRequest(input *CancelTaskExecutionInput) (
 // API operation CancelTaskExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CancelTaskExecution
 func (c *DataSync) CancelTaskExecution(input *CancelTaskExecutionInput) (*CancelTaskExecutionOutput, error) {
@@ -121,14 +121,13 @@ const opCreateAgent = "CreateAgent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAgentRequest method.
+//	req, resp := client.CreateAgentRequest(params)
 //
-//    // Example sending a request using the CreateAgentRequest method.
-//    req, resp := client.CreateAgentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateAgent
 func (c *DataSync) CreateAgentRequest(input *CreateAgentInput) (req *request.Request, output *CreateAgentOutput) {
@@ -176,11 +175,12 @@ func (c *DataSync) CreateAgentRequest(input *CreateAgentInput) (req *request.Req
 // API operation CreateAgent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateAgent
 func (c *DataSync) CreateAgent(input *CreateAgentInput) (*CreateAgentOutput, error) {
@@ -220,14 +220,13 @@ const opCreateLocationEfs = "CreateLocationEfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationEfsRequest method.
+//	req, resp := client.CreateLocationEfsRequest(params)
 //
-//    // Example sending a request using the CreateLocationEfsRequest method.
-//    req, resp := client.CreateLocationEfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationEfs
 func (c *DataSync) CreateLocationEfsRequest(input *CreateLocationEfsInput) (req *request.Request, output *CreateLocationEfsOutput) {
@@ -260,11 +259,12 @@ func (c *DataSync) CreateLocationEfsRequest(input *CreateLocationEfsInput) (req 
 // API operation CreateLocationEfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationEfs
 func (c *DataSync) CreateLocationEfs(input *CreateLocationEfsInput) (*CreateLocationEfsOutput, error) {
@@ -304,14 +304,13 @@ const opCreateLocationFsxLustre = "CreateLocationFsxLustre"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationFsxLustreRequest method.
+//	req, resp := client.CreateLocationFsxLustreRequest(params)
 //
-//    // Example sending a request using the CreateLocationFsxLustreRequest method.
-//    req, resp := client.CreateLocationFsxLustreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxLustre
 func (c *DataSync) CreateLocationFsxLustreRequest(input *CreateLocationFsxLustreInput) (req *request.Request, output *CreateLocationFsxLustreOutput) {
@@ -342,11 +341,12 @@ func (c *DataSync) CreateLocationFsxLustreRequest(input *CreateLocationFsxLustre
 // API operation CreateLocationFsxLustre for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxLustre
 func (c *DataSync) CreateLocationFsxLustre(input *CreateLocationFsxLustreInput) (*CreateLocationFsxLustreOutput, error) {
@@ -386,14 +386,13 @@ const opCreateLocationFsxOpenZfs = "CreateLocationFsxOpenZfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationFsxOpenZfsRequest method.
+//	req, resp := client.CreateLocationFsxOpenZfsRequest(params)
 //
-//    // Example sending a request using the CreateLocationFsxOpenZfsRequest method.
-//    req, resp := client.CreateLocationFsxOpenZfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxOpenZfs
 func (c *DataSync) CreateLocationFsxOpenZfsRequest(input *CreateLocationFsxOpenZfsInput) (req *request.Request, output *CreateLocationFsxOpenZfsOutput) {
@@ -424,11 +423,12 @@ func (c *DataSync) CreateLocationFsxOpenZfsRequest(input *CreateLocationFsxOpenZ
 // API operation CreateLocationFsxOpenZfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxOpenZfs
 func (c *DataSync) CreateLocationFsxOpenZfs(input *CreateLocationFsxOpenZfsInput) (*CreateLocationFsxOpenZfsOutput, error) {
@@ -468,14 +468,13 @@ const opCreateLocationFsxWindows = "CreateLocationFsxWindows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationFsxWindowsRequest method.
+//	req, resp := client.CreateLocationFsxWindowsRequest(params)
 //
-//    // Example sending a request using the CreateLocationFsxWindowsRequest method.
-//    req, resp := client.CreateLocationFsxWindowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxWindows
 func (c *DataSync) CreateLocationFsxWindowsRequest(input *CreateLocationFsxWindowsInput) (req *request.Request, output *CreateLocationFsxWindowsOutput) {
@@ -506,11 +505,12 @@ func (c *DataSync) CreateLocationFsxWindowsRequest(input *CreateLocationFsxWindo
 // API operation CreateLocationFsxWindows for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationFsxWindows
 func (c *DataSync) CreateLocationFsxWindows(input *CreateLocationFsxWindowsInput) (*CreateLocationFsxWindowsOutput, error) {
@@ -550,14 +550,13 @@ const opCreateLocationHdfs = "CreateLocationHdfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationHdfsRequest method.
+//	req, resp := client.CreateLocationHdfsRequest(params)
 //
-//    // Example sending a request using the CreateLocationHdfsRequest method.
-//    req, resp := client.CreateLocationHdfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationHdfs
 func (c *DataSync) CreateLocationHdfsRequest(input *CreateLocationHdfsInput) (req *request.Request, output *CreateLocationHdfsOutput) {
@@ -588,11 +587,12 @@ func (c *DataSync) CreateLocationHdfsRequest(input *CreateLocationHdfsInput) (re
 // API operation CreateLocationHdfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationHdfs
 func (c *DataSync) CreateLocationHdfs(input *CreateLocationHdfsInput) (*CreateLocationHdfsOutput, error) {
@@ -632,14 +632,13 @@ const opCreateLocationNfs = "CreateLocationNfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationNfsRequest method.
+//	req, resp := client.CreateLocationNfsRequest(params)
 //
-//    // Example sending a request using the CreateLocationNfsRequest method.
-//    req, resp := client.CreateLocationNfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationNfs
 func (c *DataSync) CreateLocationNfsRequest(input *CreateLocationNfsInput) (req *request.Request, output *CreateLocationNfsOutput) {
@@ -671,11 +670,12 @@ func (c *DataSync) CreateLocationNfsRequest(input *CreateLocationNfsInput) (req 
 // API operation CreateLocationNfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationNfs
 func (c *DataSync) CreateLocationNfs(input *CreateLocationNfsInput) (*CreateLocationNfsOutput, error) {
@@ -715,14 +715,13 @@ const opCreateLocationObjectStorage = "CreateLocationObjectStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationObjectStorageRequest method.
+//	req, resp := client.CreateLocationObjectStorageRequest(params)
 //
-//    // Example sending a request using the CreateLocationObjectStorageRequest method.
-//    req, resp := client.CreateLocationObjectStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationObjectStorage
 func (c *DataSync) CreateLocationObjectStorageRequest(input *CreateLocationObjectStorageInput) (req *request.Request, output *CreateLocationObjectStorageOutput) {
@@ -755,11 +754,12 @@ func (c *DataSync) CreateLocationObjectStorageRequest(input *CreateLocationObjec
 // API operation CreateLocationObjectStorage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationObjectStorage
 func (c *DataSync) CreateLocationObjectStorage(input *CreateLocationObjectStorageInput) (*CreateLocationObjectStorageOutput, error) {
@@ -799,14 +799,13 @@ const opCreateLocationS3 = "CreateLocationS3"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationS3Request method.
+//	req, resp := client.CreateLocationS3Request(params)
 //
-//    // Example sending a request using the CreateLocationS3Request method.
-//    req, resp := client.CreateLocationS3Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationS3
 func (c *DataSync) CreateLocationS3Request(input *CreateLocationS3Input) (req *request.Request, output *CreateLocationS3Output) {
@@ -840,11 +839,12 @@ func (c *DataSync) CreateLocationS3Request(input *CreateLocationS3Input) (req *r
 // API operation CreateLocationS3 for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationS3
 func (c *DataSync) CreateLocationS3(input *CreateLocationS3Input) (*CreateLocationS3Output, error) {
@@ -884,14 +884,13 @@ const opCreateLocationSmb = "CreateLocationSmb"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateLocationSmbRequest method.
+//	req, resp := client.CreateLocationSmbRequest(params)
 //
-//    // Example sending a request using the CreateLocationSmbRequest method.
-//    req, resp := client.CreateLocationSmbRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationSmb
 func (c *DataSync) CreateLocationSmbRequest(input *CreateLocationSmbInput) (req *request.Request, output *CreateLocationSmbOutput) {
@@ -923,11 +922,12 @@ func (c *DataSync) CreateLocationSmbRequest(input *CreateLocationSmbInput) (req 
 // API operation CreateLocationSmb for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateLocationSmb
 func (c *DataSync) CreateLocationSmb(input *CreateLocationSmbInput) (*CreateLocationSmbOutput, error) {
@@ -967,14 +967,13 @@ const opCreateTask = "CreateTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTaskRequest method.
+//	req, resp := client.CreateTaskRequest(params)
 //
-//    // Example sending a request using the CreateTaskRequest method.
-//    req, resp := client.CreateTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateTask
 func (c *DataSync) CreateTaskRequest(input *CreateTaskInput) (req *request.Request, output *CreateTaskOutput) {
@@ -1024,11 +1023,12 @@ func (c *DataSync) CreateTaskRequest(input *CreateTaskInput) (req *request.Reque
 // API operation CreateTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/CreateTask
 func (c *DataSync) CreateTask(input *CreateTaskInput) (*CreateTaskOutput, error) {
@@ -1068,14 +1068,13 @@ const opDeleteAgent = "DeleteAgent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAgentRequest method.
+//	req, resp := client.DeleteAgentRequest(params)
 //
-//    // Example sending a request using the DeleteAgentRequest method.
-//    req, resp := client.DeleteAgentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteAgent
 func (c *DataSync) DeleteAgentRequest(input *DeleteAgentInput) (req *request.Request, output *DeleteAgentOutput) {
@@ -1110,11 +1109,12 @@ func (c *DataSync) DeleteAgentRequest(input *DeleteAgentInput) (req *request.Req
 // API operation DeleteAgent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteAgent
 func (c *DataSync) DeleteAgent(input *DeleteAgentInput) (*DeleteAgentOutput, error) {
@@ -1154,14 +1154,13 @@ const opDeleteLocation = "DeleteLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLocationRequest method.
+//	req, resp := client.DeleteLocationRequest(params)
 //
-//    // Example sending a request using the DeleteLocationRequest method.
-//    req, resp := client.DeleteLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteLocation
 func (c *DataSync) DeleteLocationRequest(input *DeleteLocationInput) (req *request.Request, output *DeleteLocationOutput) {
@@ -1193,11 +1192,12 @@ func (c *DataSync) DeleteLocationRequest(input *DeleteLocationInput) (req *reque
 // API operation DeleteLocation for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteLocation
 func (c *DataSync) DeleteLocation(input *DeleteLocationInput) (*DeleteLocationOutput, error) {
@@ -1237,14 +1237,13 @@ const opDeleteTask = "DeleteTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTaskRequest method.
+//	req, resp := client.DeleteTaskRequest(params)
 //
-//    // Example sending a request using the DeleteTaskRequest method.
-//    req, resp := client.DeleteTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteTask
 func (c *DataSync) DeleteTaskRequest(input *DeleteTaskInput) (req *request.Request, output *DeleteTaskOutput) {
@@ -1276,11 +1275,12 @@ func (c *DataSync) DeleteTaskRequest(input *DeleteTaskInput) (req *request.Reque
 // API operation DeleteTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DeleteTask
 func (c *DataSync) DeleteTask(input *DeleteTaskInput) (*DeleteTaskOutput, error) {
@@ -1320,14 +1320,13 @@ const opDescribeAgent = "DescribeAgent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAgentRequest method.
+//	req, resp := client.DescribeAgentRequest(params)
 //
-//    // Example sending a request using the DescribeAgentRequest method.
-//    req, resp := client.DescribeAgentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeAgent
 func (c *DataSync) DescribeAgentRequest(input *DescribeAgentInput) (req *request.Request, output *DescribeAgentOutput) {
@@ -1361,11 +1360,12 @@ func (c *DataSync) DescribeAgentRequest(input *DescribeAgentInput) (req *request
 // API operation DescribeAgent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeAgent
 func (c *DataSync) DescribeAgent(input *DescribeAgentInput) (*DescribeAgentOutput, error) {
@@ -1405,14 +1405,13 @@ const opDescribeLocationEfs = "DescribeLocationEfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationEfsRequest method.
+//	req, resp := client.DescribeLocationEfsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationEfsRequest method.
-//    req, resp := client.DescribeLocationEfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationEfs
 func (c *DataSync) DescribeLocationEfsRequest(input *DescribeLocationEfsInput) (req *request.Request, output *DescribeLocationEfsOutput) {
@@ -1443,11 +1442,12 @@ func (c *DataSync) DescribeLocationEfsRequest(input *DescribeLocationEfsInput) (
 // API operation DescribeLocationEfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationEfs
 func (c *DataSync) DescribeLocationEfs(input *DescribeLocationEfsInput) (*DescribeLocationEfsOutput, error) {
@@ -1487,14 +1487,13 @@ const opDescribeLocationFsxLustre = "DescribeLocationFsxLustre"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationFsxLustreRequest method.
+//	req, resp := client.DescribeLocationFsxLustreRequest(params)
 //
-//    // Example sending a request using the DescribeLocationFsxLustreRequest method.
-//    req, resp := client.DescribeLocationFsxLustreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxLustre
 func (c *DataSync) DescribeLocationFsxLustreRequest(input *DescribeLocationFsxLustreInput) (req *request.Request, output *DescribeLocationFsxLustreOutput) {
@@ -1526,11 +1525,12 @@ func (c *DataSync) DescribeLocationFsxLustreRequest(input *DescribeLocationFsxLu
 // API operation DescribeLocationFsxLustre for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxLustre
 func (c *DataSync) DescribeLocationFsxLustre(input *DescribeLocationFsxLustreInput) (*DescribeLocationFsxLustreOutput, error) {
@@ -1570,14 +1570,13 @@ const opDescribeLocationFsxOpenZfs = "DescribeLocationFsxOpenZfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationFsxOpenZfsRequest method.
+//	req, resp := client.DescribeLocationFsxOpenZfsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationFsxOpenZfsRequest method.
-//    req, resp := client.DescribeLocationFsxOpenZfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxOpenZfs
 func (c *DataSync) DescribeLocationFsxOpenZfsRequest(input *DescribeLocationFsxOpenZfsInput) (req *request.Request, output *DescribeLocationFsxOpenZfsOutput) {
@@ -1609,11 +1608,12 @@ func (c *DataSync) DescribeLocationFsxOpenZfsRequest(input *DescribeLocationFsxO
 // API operation DescribeLocationFsxOpenZfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxOpenZfs
 func (c *DataSync) DescribeLocationFsxOpenZfs(input *DescribeLocationFsxOpenZfsInput) (*DescribeLocationFsxOpenZfsOutput, error) {
@@ -1653,14 +1653,13 @@ const opDescribeLocationFsxWindows = "DescribeLocationFsxWindows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationFsxWindowsRequest method.
+//	req, resp := client.DescribeLocationFsxWindowsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationFsxWindowsRequest method.
-//    req, resp := client.DescribeLocationFsxWindowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxWindows
 func (c *DataSync) DescribeLocationFsxWindowsRequest(input *DescribeLocationFsxWindowsInput) (req *request.Request, output *DescribeLocationFsxWindowsOutput) {
@@ -1692,11 +1691,12 @@ func (c *DataSync) DescribeLocationFsxWindowsRequest(input *DescribeLocationFsxW
 // API operation DescribeLocationFsxWindows for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationFsxWindows
 func (c *DataSync) DescribeLocationFsxWindows(input *DescribeLocationFsxWindowsInput) (*DescribeLocationFsxWindowsOutput, error) {
@@ -1736,14 +1736,13 @@ const opDescribeLocationHdfs = "DescribeLocationHdfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationHdfsRequest method.
+//	req, resp := client.DescribeLocationHdfsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationHdfsRequest method.
-//    req, resp := client.DescribeLocationHdfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationHdfs
 func (c *DataSync) DescribeLocationHdfsRequest(input *DescribeLocationHdfsInput) (req *request.Request, output *DescribeLocationHdfsOutput) {
@@ -1775,11 +1774,12 @@ func (c *DataSync) DescribeLocationHdfsRequest(input *DescribeLocationHdfsInput)
 // API operation DescribeLocationHdfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationHdfs
 func (c *DataSync) DescribeLocationHdfs(input *DescribeLocationHdfsInput) (*DescribeLocationHdfsOutput, error) {
@@ -1819,14 +1819,13 @@ const opDescribeLocationNfs = "DescribeLocationNfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationNfsRequest method.
+//	req, resp := client.DescribeLocationNfsRequest(params)
 //
-//    // Example sending a request using the DescribeLocationNfsRequest method.
-//    req, resp := client.DescribeLocationNfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationNfs
 func (c *DataSync) DescribeLocationNfsRequest(input *DescribeLocationNfsInput) (req *request.Request, output *DescribeLocationNfsOutput) {
@@ -1857,11 +1856,12 @@ func (c *DataSync) DescribeLocationNfsRequest(input *DescribeLocationNfsInput) (
 // API operation DescribeLocationNfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationNfs
 func (c *DataSync) DescribeLocationNfs(input *DescribeLocationNfsInput) (*DescribeLocationNfsOutput, error) {
@@ -1901,14 +1901,13 @@ const opDescribeLocationObjectStorage = "DescribeLocationObjectStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationObjectStorageRequest method.
+//	req, resp := client.DescribeLocationObjectStorageRequest(params)
 //
-//    // Example sending a request using the DescribeLocationObjectStorageRequest method.
-//    req, resp := client.DescribeLocationObjectStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationObjectStorage
 func (c *DataSync) DescribeLocationObjectStorageRequest(input *DescribeLocationObjectStorageInput) (req *request.Request, output *DescribeLocationObjectStorageOutput) {
@@ -1941,11 +1940,12 @@ func (c *DataSync) DescribeLocationObjectStorageRequest(input *DescribeLocationO
 // API operation DescribeLocationObjectStorage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationObjectStorage
 func (c *DataSync) DescribeLocationObjectStorage(input *DescribeLocationObjectStorageInput) (*DescribeLocationObjectStorageOutput, error) {
@@ -1985,14 +1985,13 @@ const opDescribeLocationS3 = "DescribeLocationS3"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationS3Request method.
+//	req, resp := client.DescribeLocationS3Request(params)
 //
-//    // Example sending a request using the DescribeLocationS3Request method.
-//    req, resp := client.DescribeLocationS3Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationS3
 func (c *DataSync) DescribeLocationS3Request(input *DescribeLocationS3Input) (req *request.Request, output *DescribeLocationS3Output) {
@@ -2023,11 +2022,12 @@ func (c *DataSync) DescribeLocationS3Request(input *DescribeLocationS3Input) (re
 // API operation DescribeLocationS3 for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationS3
 func (c *DataSync) DescribeLocationS3(input *DescribeLocationS3Input) (*DescribeLocationS3Output, error) {
@@ -2067,14 +2067,13 @@ const opDescribeLocationSmb = "DescribeLocationSmb"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLocationSmbRequest method.
+//	req, resp := client.DescribeLocationSmbRequest(params)
 //
-//    // Example sending a request using the DescribeLocationSmbRequest method.
-//    req, resp := client.DescribeLocationSmbRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationSmb
 func (c *DataSync) DescribeLocationSmbRequest(input *DescribeLocationSmbInput) (req *request.Request, output *DescribeLocationSmbOutput) {
@@ -2105,11 +2104,12 @@ func (c *DataSync) DescribeLocationSmbRequest(input *DescribeLocationSmbInput) (
 // API operation DescribeLocationSmb for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeLocationSmb
 func (c *DataSync) DescribeLocationSmb(input *DescribeLocationSmbInput) (*DescribeLocationSmbOutput, error) {
@@ -2149,14 +2149,13 @@ const opDescribeTask = "DescribeTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTaskRequest method.
+//	req, resp := client.DescribeTaskRequest(params)
 //
-//    // Example sending a request using the DescribeTaskRequest method.
-//    req, resp := client.DescribeTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeTask
 func (c *DataSync) DescribeTaskRequest(input *DescribeTaskInput) (req *request.Request, output *DescribeTaskOutput) {
@@ -2187,11 +2186,12 @@ func (c *DataSync) DescribeTaskRequest(input *DescribeTaskInput) (req *request.R
 // API operation DescribeTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeTask
 func (c *DataSync) DescribeTask(input *DescribeTaskInput) (*DescribeTaskOutput, error) {
@@ -2231,14 +2231,13 @@ const opDescribeTaskExecution = "DescribeTaskExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTaskExecutionRequest method.
+//	req, resp := client.DescribeTaskExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeTaskExecutionRequest method.
-//    req, resp := client.DescribeTaskExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeTaskExecution
 func (c *DataSync) DescribeTaskExecutionRequest(input *DescribeTaskExecutionInput) (req *request.Request, output *DescribeTaskExecutionOutput) {
@@ -2269,11 +2268,12 @@ func (c *DataSync) DescribeTaskExecutionRequest(input *DescribeTaskExecutionInpu
 // API operation DescribeTaskExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/DescribeTaskExecution
 func (c *DataSync) DescribeTaskExecution(input *DescribeTaskExecutionInput) (*DescribeTaskExecutionOutput, error) {
@@ -2313,14 +2313,13 @@ const opListAgents = "ListAgents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAgentsRequest method.
+//	req, resp := client.ListAgentsRequest(params)
 //
-//    // Example sending a request using the ListAgentsRequest method.
-//    req, resp := client.ListAgentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListAgents
 func (c *DataSync) ListAgentsRequest(input *ListAgentsInput) (req *request.Request, output *ListAgentsOutput) {
@@ -2367,11 +2366,12 @@ func (c *DataSync) ListAgentsRequest(input *ListAgentsInput) (req *request.Reque
 // API operation ListAgents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListAgents
 func (c *DataSync) ListAgents(input *ListAgentsInput) (*ListAgentsOutput, error) {
@@ -2403,15 +2403,14 @@ func (c *DataSync) ListAgentsWithContext(ctx aws.Context, input *ListAgentsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAgents operation.
-//    pageNum := 0
-//    err := client.ListAgentsPages(params,
-//        func(page *datasync.ListAgentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAgents operation.
+//	pageNum := 0
+//	err := client.ListAgentsPages(params,
+//	    func(page *datasync.ListAgentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataSync) ListAgentsPages(input *ListAgentsInput, fn func(*ListAgentsOutput, bool) bool) error {
 	return c.ListAgentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2463,14 +2462,13 @@ const opListLocations = "ListLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLocationsRequest method.
+//	req, resp := client.ListLocationsRequest(params)
 //
-//    // Example sending a request using the ListLocationsRequest method.
-//    req, resp := client.ListLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListLocations
 func (c *DataSync) ListLocationsRequest(input *ListLocationsInput) (req *request.Request, output *ListLocationsOutput) {
@@ -2512,11 +2510,12 @@ func (c *DataSync) ListLocationsRequest(input *ListLocationsInput) (req *request
 // API operation ListLocations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListLocations
 func (c *DataSync) ListLocations(input *ListLocationsInput) (*ListLocationsOutput, error) {
@@ -2548,15 +2547,14 @@ func (c *DataSync) ListLocationsWithContext(ctx aws.Context, input *ListLocation
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListLocations operation.
-//    pageNum := 0
-//    err := client.ListLocationsPages(params,
-//        func(page *datasync.ListLocationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListLocations operation.
+//	pageNum := 0
+//	err := client.ListLocationsPages(params,
+//	    func(page *datasync.ListLocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataSync) ListLocationsPages(input *ListLocationsInput, fn func(*ListLocationsOutput, bool) bool) error {
 	return c.ListLocationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2608,14 +2606,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTagsForResource
 func (c *DataSync) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2652,11 +2649,12 @@ func (c *DataSync) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTagsForResource
 func (c *DataSync) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2688,15 +2686,14 @@ func (c *DataSync) ListTagsForResourceWithContext(ctx aws.Context, input *ListTa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *datasync.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *datasync.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataSync) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2748,14 +2745,13 @@ const opListTaskExecutions = "ListTaskExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTaskExecutionsRequest method.
+//	req, resp := client.ListTaskExecutionsRequest(params)
 //
-//    // Example sending a request using the ListTaskExecutionsRequest method.
-//    req, resp := client.ListTaskExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTaskExecutions
 func (c *DataSync) ListTaskExecutionsRequest(input *ListTaskExecutionsInput) (req *request.Request, output *ListTaskExecutionsOutput) {
@@ -2792,11 +2788,12 @@ func (c *DataSync) ListTaskExecutionsRequest(input *ListTaskExecutionsInput) (re
 // API operation ListTaskExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTaskExecutions
 func (c *DataSync) ListTaskExecutions(input *ListTaskExecutionsInput) (*ListTaskExecutionsOutput, error) {
@@ -2828,15 +2825,14 @@ func (c *DataSync) ListTaskExecutionsWithContext(ctx aws.Context, input *ListTas
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTaskExecutions operation.
-//    pageNum := 0
-//    err := client.ListTaskExecutionsPages(params,
-//        func(page *datasync.ListTaskExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTaskExecutions operation.
+//	pageNum := 0
+//	err := client.ListTaskExecutionsPages(params,
+//	    func(page *datasync.ListTaskExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataSync) ListTaskExecutionsPages(input *ListTaskExecutionsInput, fn func(*ListTaskExecutionsOutput, bool) bool) error {
 	return c.ListTaskExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2888,14 +2884,13 @@ const opListTasks = "ListTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTasksRequest method.
+//	req, resp := client.ListTasksRequest(params)
 //
-//    // Example sending a request using the ListTasksRequest method.
-//    req, resp := client.ListTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTasks
 func (c *DataSync) ListTasksRequest(input *ListTasksInput) (req *request.Request, output *ListTasksOutput) {
@@ -2932,11 +2927,12 @@ func (c *DataSync) ListTasksRequest(input *ListTasksInput) (req *request.Request
 // API operation ListTasks for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/ListTasks
 func (c *DataSync) ListTasks(input *ListTasksInput) (*ListTasksOutput, error) {
@@ -2968,15 +2964,14 @@ func (c *DataSync) ListTasksWithContext(ctx aws.Context, input *ListTasksInput, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTasks operation.
-//    pageNum := 0
-//    err := client.ListTasksPages(params,
-//        func(page *datasync.ListTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTasks operation.
+//	pageNum := 0
+//	err := client.ListTasksPages(params,
+//	    func(page *datasync.ListTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *DataSync) ListTasksPages(input *ListTasksInput, fn func(*ListTasksOutput, bool) bool) error {
 	return c.ListTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3028,14 +3023,13 @@ const opStartTaskExecution = "StartTaskExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTaskExecutionRequest method.
+//	req, resp := client.StartTaskExecutionRequest(params)
 //
-//    // Example sending a request using the StartTaskExecutionRequest method.
-//    req, resp := client.StartTaskExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/StartTaskExecution
 func (c *DataSync) StartTaskExecutionRequest(input *StartTaskExecutionInput) (req *request.Request, output *StartTaskExecutionOutput) {
@@ -3074,11 +3068,12 @@ func (c *DataSync) StartTaskExecutionRequest(input *StartTaskExecutionInput) (re
 // API operation StartTaskExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/StartTaskExecution
 func (c *DataSync) StartTaskExecution(input *StartTaskExecutionInput) (*StartTaskExecutionOutput, error) {
@@ -3118,14 +3113,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/TagResource
 func (c *DataSync) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3157,11 +3151,12 @@ func (c *DataSync) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/TagResource
 func (c *DataSync) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3201,14 +3196,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UntagResource
 func (c *DataSync) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3240,11 +3234,12 @@ func (c *DataSync) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UntagResource
 func (c *DataSync) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3284,14 +3279,13 @@ const opUpdateAgent = "UpdateAgent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAgentRequest method.
+//	req, resp := client.UpdateAgentRequest(params)
 //
-//    // Example sending a request using the UpdateAgentRequest method.
-//    req, resp := client.UpdateAgentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateAgent
 func (c *DataSync) UpdateAgentRequest(input *UpdateAgentInput) (req *request.Request, output *UpdateAgentOutput) {
@@ -3323,11 +3317,12 @@ func (c *DataSync) UpdateAgentRequest(input *UpdateAgentInput) (req *request.Req
 // API operation UpdateAgent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateAgent
 func (c *DataSync) UpdateAgent(input *UpdateAgentInput) (*UpdateAgentOutput, error) {
@@ -3367,14 +3362,13 @@ const opUpdateLocationHdfs = "UpdateLocationHdfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLocationHdfsRequest method.
+//	req, resp := client.UpdateLocationHdfsRequest(params)
 //
-//    // Example sending a request using the UpdateLocationHdfsRequest method.
-//    req, resp := client.UpdateLocationHdfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationHdfs
 func (c *DataSync) UpdateLocationHdfsRequest(input *UpdateLocationHdfsInput) (req *request.Request, output *UpdateLocationHdfsOutput) {
@@ -3407,11 +3401,12 @@ func (c *DataSync) UpdateLocationHdfsRequest(input *UpdateLocationHdfsInput) (re
 // API operation UpdateLocationHdfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationHdfs
 func (c *DataSync) UpdateLocationHdfs(input *UpdateLocationHdfsInput) (*UpdateLocationHdfsOutput, error) {
@@ -3451,14 +3446,13 @@ const opUpdateLocationNfs = "UpdateLocationNfs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLocationNfsRequest method.
+//	req, resp := client.UpdateLocationNfsRequest(params)
 //
-//    // Example sending a request using the UpdateLocationNfsRequest method.
-//    req, resp := client.UpdateLocationNfsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationNfs
 func (c *DataSync) UpdateLocationNfsRequest(input *UpdateLocationNfsInput) (req *request.Request, output *UpdateLocationNfsOutput) {
@@ -3492,11 +3486,12 @@ func (c *DataSync) UpdateLocationNfsRequest(input *UpdateLocationNfsInput) (req 
 // API operation UpdateLocationNfs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationNfs
 func (c *DataSync) UpdateLocationNfs(input *UpdateLocationNfsInput) (*UpdateLocationNfsOutput, error) {
@@ -3536,14 +3531,13 @@ const opUpdateLocationObjectStorage = "UpdateLocationObjectStorage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLocationObjectStorageRequest method.
+//	req, resp := client.UpdateLocationObjectStorageRequest(params)
 //
-//    // Example sending a request using the UpdateLocationObjectStorageRequest method.
-//    req, resp := client.UpdateLocationObjectStorageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationObjectStorage
 func (c *DataSync) UpdateLocationObjectStorageRequest(input *UpdateLocationObjectStorageInput) (req *request.Request, output *UpdateLocationObjectStorageOutput) {
@@ -3577,11 +3571,12 @@ func (c *DataSync) UpdateLocationObjectStorageRequest(input *UpdateLocationObjec
 // API operation UpdateLocationObjectStorage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationObjectStorage
 func (c *DataSync) UpdateLocationObjectStorage(input *UpdateLocationObjectStorageInput) (*UpdateLocationObjectStorageOutput, error) {
@@ -3621,14 +3616,13 @@ const opUpdateLocationSmb = "UpdateLocationSmb"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateLocationSmbRequest method.
+//	req, resp := client.UpdateLocationSmbRequest(params)
 //
-//    // Example sending a request using the UpdateLocationSmbRequest method.
-//    req, resp := client.UpdateLocationSmbRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationSmb
 func (c *DataSync) UpdateLocationSmbRequest(input *UpdateLocationSmbInput) (req *request.Request, output *UpdateLocationSmbOutput) {
@@ -3662,11 +3656,12 @@ func (c *DataSync) UpdateLocationSmbRequest(input *UpdateLocationSmbInput) (req 
 // API operation UpdateLocationSmb for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateLocationSmb
 func (c *DataSync) UpdateLocationSmb(input *UpdateLocationSmbInput) (*UpdateLocationSmbOutput, error) {
@@ -3706,14 +3701,13 @@ const opUpdateTask = "UpdateTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTaskRequest method.
+//	req, resp := client.UpdateTaskRequest(params)
 //
-//    // Example sending a request using the UpdateTaskRequest method.
-//    req, resp := client.UpdateTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateTask
 func (c *DataSync) UpdateTaskRequest(input *UpdateTaskInput) (req *request.Request, output *UpdateTaskOutput) {
@@ -3745,11 +3739,12 @@ func (c *DataSync) UpdateTaskRequest(input *UpdateTaskInput) (req *request.Reque
 // API operation UpdateTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateTask
 func (c *DataSync) UpdateTask(input *UpdateTaskInput) (*UpdateTaskOutput, error) {
@@ -3789,14 +3784,13 @@ const opUpdateTaskExecution = "UpdateTaskExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTaskExecutionRequest method.
+//	req, resp := client.UpdateTaskExecutionRequest(params)
 //
-//    // Example sending a request using the UpdateTaskExecutionRequest method.
-//    req, resp := client.UpdateTaskExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateTaskExecution
 func (c *DataSync) UpdateTaskExecutionRequest(input *UpdateTaskExecutionInput) (req *request.Request, output *UpdateTaskExecutionOutput) {
@@ -3835,11 +3829,12 @@ func (c *DataSync) UpdateTaskExecutionRequest(input *UpdateTaskExecutionInput) (
 // API operation UpdateTaskExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   This exception is thrown when the client submits a malformed request.
 //
-//   * InternalException
-//   This exception is thrown when an error occurs in the DataSync service.
+//   - InvalidRequestException
+//     This exception is thrown when the client submits a malformed request.
+//
+//   - InternalException
+//     This exception is thrown when an error occurs in the DataSync service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09/UpdateTaskExecution
 func (c *DataSync) UpdateTaskExecution(input *UpdateTaskExecutionInput) (*UpdateTaskExecutionOutput, error) {

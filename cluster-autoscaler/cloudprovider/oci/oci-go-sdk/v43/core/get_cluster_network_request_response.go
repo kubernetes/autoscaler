@@ -11,7 +11,7 @@ import (
 
 // GetClusterNetworkRequest wrapper for the GetClusterNetwork operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetClusterNetwork.go.html to see an example of how to use GetClusterNetworkRequest.
 type GetClusterNetworkRequest struct {

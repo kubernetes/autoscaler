@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkSpacesWeb client from just a session.
-//     svc := workspacesweb.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkSpacesWeb client with additional configuration
-//     svc := workspacesweb.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a WorkSpacesWeb client from just a session.
+//	svc := workspacesweb.New(mySession)
+//
+//	// Create a WorkSpacesWeb client with additional configuration
+//	svc := workspacesweb.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *WorkSpacesWeb {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

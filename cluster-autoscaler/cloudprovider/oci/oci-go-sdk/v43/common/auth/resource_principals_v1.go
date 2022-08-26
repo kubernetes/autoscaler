@@ -57,7 +57,7 @@ type resourcePrincipalSessionTokenRequest struct {
 	Body resourcePrincipalSessionTokenRequestBody `contributesTo:"body"`
 }
 
-//acquireResourcePrincipalToken acquires the resource principal from the target service
+// acquireResourcePrincipalToken acquires the resource principal from the target service
 func (c *resourcePrincipalFederationClient) acquireResourcePrincipalToken() (tokenResponse resourcePrincipalTokenResponse, err error) {
 	rpServiceClient := c.ResourcePrincipalTargetServiceClient
 
@@ -83,7 +83,7 @@ func (c *resourcePrincipalFederationClient) acquireResourcePrincipalToken() (tok
 	return
 }
 
-//exchangeToken exchanges a resource principal token from the target service with a session token from identity
+// exchangeToken exchanges a resource principal token from the target service with a session token from identity
 func (c *resourcePrincipalFederationClient) exchangeToken(publicKeyBase64 string, tokenResponse resourcePrincipalTokenResponse) (sessionToken string, err error) {
 	rpServiceClient := c.ResourcePrincipalSessionTokenClient
 
@@ -121,7 +121,7 @@ func (c *resourcePrincipalFederationClient) exchangeToken(publicKeyBase64 string
 	return
 }
 
-//getSecurityToken makes the appropiate calls to acquire a resource principal security token
+// getSecurityToken makes the appropiate calls to acquire a resource principal security token
 func (c *resourcePrincipalFederationClient) getSecurityToken() (securityToken, error) {
 	var err error
 	ipFederationClient := c.instancePrincipalKeyProvider.FederationClient
@@ -169,7 +169,7 @@ func (c *resourcePrincipalFederationClient) renewSecurityToken() (err error) {
 	return nil
 }
 
-//ResourcePrincipal Key provider in charge of resource principal acquiring tokens
+// ResourcePrincipal Key provider in charge of resource principal acquiring tokens
 type resourcePrincipalKeyProviderV1 struct {
 	ResourcePrincipalClient resourcePrincipalFederationClient
 }
@@ -229,7 +229,7 @@ func (p *resourcePrincipalConfigurationProvider) GetClaim(key string) (interface
 	return nil, nil
 }
 
-//Resource Principals
+// Resource Principals
 type resourcePrincipalConfigurationProvider struct {
 	keyProvider resourcePrincipalKeyProviderV1
 	region      *common.Region

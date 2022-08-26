@@ -11,7 +11,7 @@ import (
 
 // CreateIpv6Request wrapper for the CreateIpv6 operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreateIpv6.go.html to see an example of how to use CreateIpv6Request.
 type CreateIpv6Request struct {

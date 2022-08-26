@@ -11,7 +11,7 @@ import (
 
 // UpdateInstanceRequest wrapper for the UpdateInstance operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateInstance.go.html to see an example of how to use UpdateInstanceRequest.
 type UpdateInstanceRequest struct {

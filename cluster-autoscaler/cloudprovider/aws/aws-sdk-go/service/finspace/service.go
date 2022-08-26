@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Finspace client from just a session.
-//     svc := finspace.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Finspace client with additional configuration
-//     svc := finspace.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Finspace client from just a session.
+//	svc := finspace.New(mySession)
+//
+//	// Create a Finspace client with additional configuration
+//	svc := finspace.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Finspace {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

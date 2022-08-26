@@ -5,12 +5,12 @@ package auth
 
 import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/oci-go-sdk/v43/common"
 
-//dispatcherModifier gives ability to modify a HTTPRequestDispatcher before use.
+// dispatcherModifier gives ability to modify a HTTPRequestDispatcher before use.
 type dispatcherModifier struct {
 	modifiers []func(common.HTTPRequestDispatcher) (common.HTTPRequestDispatcher, error)
 }
 
-//newDispatcherModifier creates a new dispatcherModifier with optional initial modifier (may be nil).
+// newDispatcherModifier creates a new dispatcherModifier with optional initial modifier (may be nil).
 func newDispatcherModifier(modifier func(common.HTTPRequestDispatcher) (common.HTTPRequestDispatcher, error)) *dispatcherModifier {
 	dispatcherModifier := &dispatcherModifier{
 		modifiers: make([]func(common.HTTPRequestDispatcher) (common.HTTPRequestDispatcher, error), 0),
@@ -21,12 +21,12 @@ func newDispatcherModifier(modifier func(common.HTTPRequestDispatcher) (common.H
 	return dispatcherModifier
 }
 
-//QueueModifier queues up a new modifier
+// QueueModifier queues up a new modifier
 func (c *dispatcherModifier) QueueModifier(modifier func(common.HTTPRequestDispatcher) (common.HTTPRequestDispatcher, error)) {
 	c.modifiers = append(c.modifiers, modifier)
 }
 
-//Modify the provided HTTPRequestDispatcher with this modifier, and return the result, or error if something goes wrong
+// Modify the provided HTTPRequestDispatcher with this modifier, and return the result, or error if something goes wrong
 func (c *dispatcherModifier) Modify(dispatcher common.HTTPRequestDispatcher) (common.HTTPRequestDispatcher, error) {
 	if len(c.modifiers) > 0 {
 		for _, modifier := range c.modifiers {

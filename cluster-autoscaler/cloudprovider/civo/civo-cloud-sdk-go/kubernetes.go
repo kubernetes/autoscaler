@@ -139,7 +139,7 @@ type KubernetesClusterConfig struct {
 	CNIPlugin         string                        `json:"cni_plugin,omitempty"`
 }
 
-//KubernetesClusterPoolConfig is used to create a new cluster pool
+// KubernetesClusterPoolConfig is used to create a new cluster pool
 type KubernetesClusterPoolConfig struct {
 	ID    string `json:"id,omitempty"`
 	Count int    `json:"count,omitempty"`

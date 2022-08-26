@@ -11,7 +11,7 @@ import (
 
 // GetImageShapeCompatibilityEntryRequest wrapper for the GetImageShapeCompatibilityEntry operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetImageShapeCompatibilityEntry.go.html to see an example of how to use GetImageShapeCompatibilityEntryRequest.
 type GetImageShapeCompatibilityEntryRequest struct {

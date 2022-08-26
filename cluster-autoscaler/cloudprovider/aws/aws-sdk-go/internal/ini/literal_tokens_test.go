@@ -162,8 +162,8 @@ func TestNewLiteralToken(t *testing.T) {
 			),
 		},
 		{
-			name: "utf8 whitespace",
-			b: []rune("00"),
+			name:         "utf8 whitespace",
+			b:            []rune("00"),
 			expectedRead: 1,
 			expectedToken: newToken(TokenLit,
 				[]rune("0"),
@@ -171,8 +171,8 @@ func TestNewLiteralToken(t *testing.T) {
 			),
 		},
 		{
-			name: "utf8 whitespace expr",
-			b: []rune("0=00"),
+			name:         "utf8 whitespace expr",
+			b:            []rune("0=00"),
 			expectedRead: 1,
 			expectedToken: newToken(TokenLit,
 				[]rune("0"),

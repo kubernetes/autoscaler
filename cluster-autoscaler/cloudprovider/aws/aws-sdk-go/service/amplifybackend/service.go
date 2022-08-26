@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a AmplifyBackend client from just a session.
-//     svc := amplifybackend.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a AmplifyBackend client with additional configuration
-//     svc := amplifybackend.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a AmplifyBackend client from just a session.
+//	svc := amplifybackend.New(mySession)
+//
+//	// Create a AmplifyBackend client with additional configuration
+//	svc := amplifybackend.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *AmplifyBackend {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

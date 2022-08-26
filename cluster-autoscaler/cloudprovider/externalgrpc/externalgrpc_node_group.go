@@ -32,7 +32,6 @@ import (
 // NodeGroup implements cloudprovider.NodeGroup interface. NodeGroup contains
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
-//
 type NodeGroup struct {
 	id      string // this must be a stable identifier
 	minSize int    // cached value

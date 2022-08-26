@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Signer client from just a session.
-//     svc := signer.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Signer client with additional configuration
-//     svc := signer.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Signer client from just a session.
+//	svc := signer.New(mySession)
+//
+//	// Create a Signer client with additional configuration
+//	svc := signer.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Signer {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

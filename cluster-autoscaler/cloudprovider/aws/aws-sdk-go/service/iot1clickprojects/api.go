@@ -29,14 +29,13 @@ const opAssociateDeviceWithPlacement = "AssociateDeviceWithPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDeviceWithPlacementRequest method.
+//	req, resp := client.AssociateDeviceWithPlacementRequest(params)
 //
-//    // Example sending a request using the AssociateDeviceWithPlacementRequest method.
-//    req, resp := client.AssociateDeviceWithPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/AssociateDeviceWithPlacement
 func (c *IoT1ClickProjects) AssociateDeviceWithPlacementRequest(input *AssociateDeviceWithPlacementInput) (req *request.Request, output *AssociateDeviceWithPlacementOutput) {
@@ -68,13 +67,14 @@ func (c *IoT1ClickProjects) AssociateDeviceWithPlacementRequest(input *Associate
 // API operation AssociateDeviceWithPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceConflictException
+//   - InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - ResourceConflictException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/AssociateDeviceWithPlacement
 func (c *IoT1ClickProjects) AssociateDeviceWithPlacement(input *AssociateDeviceWithPlacementInput) (*AssociateDeviceWithPlacementOutput, error) {
@@ -114,14 +114,13 @@ const opCreatePlacement = "CreatePlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePlacementRequest method.
+//	req, resp := client.CreatePlacementRequest(params)
 //
-//    // Example sending a request using the CreatePlacementRequest method.
-//    req, resp := client.CreatePlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/CreatePlacement
 func (c *IoT1ClickProjects) CreatePlacementRequest(input *CreatePlacementInput) (req *request.Request, output *CreatePlacementOutput) {
@@ -153,13 +152,14 @@ func (c *IoT1ClickProjects) CreatePlacementRequest(input *CreatePlacementInput) 
 // API operation CreatePlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceConflictException
+//   - InvalidRequestException
 //
-//   * ResourceNotFoundException
+//   - ResourceConflictException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/CreatePlacement
 func (c *IoT1ClickProjects) CreatePlacement(input *CreatePlacementInput) (*CreatePlacementOutput, error) {
@@ -199,14 +199,13 @@ const opCreateProject = "CreateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProjectRequest method.
+//	req, resp := client.CreateProjectRequest(params)
 //
-//    // Example sending a request using the CreateProjectRequest method.
-//    req, resp := client.CreateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/CreateProject
 func (c *IoT1ClickProjects) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
@@ -239,11 +238,12 @@ func (c *IoT1ClickProjects) CreateProjectRequest(input *CreateProjectInput) (req
 // API operation CreateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceConflictException
+//   - InvalidRequestException
+//
+//   - ResourceConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/CreateProject
 func (c *IoT1ClickProjects) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
@@ -283,14 +283,13 @@ const opDeletePlacement = "DeletePlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePlacementRequest method.
+//	req, resp := client.DeletePlacementRequest(params)
 //
-//    // Example sending a request using the DeletePlacementRequest method.
-//    req, resp := client.DeletePlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DeletePlacement
 func (c *IoT1ClickProjects) DeletePlacementRequest(input *DeletePlacementInput) (req *request.Request, output *DeletePlacementOutput) {
@@ -325,13 +324,14 @@ func (c *IoT1ClickProjects) DeletePlacementRequest(input *DeletePlacementInput) 
 // API operation DeletePlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * TooManyRequestsException
+//   - ResourceNotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DeletePlacement
 func (c *IoT1ClickProjects) DeletePlacement(input *DeletePlacementInput) (*DeletePlacementOutput, error) {
@@ -371,14 +371,13 @@ const opDeleteProject = "DeleteProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProjectRequest method.
+//	req, resp := client.DeleteProjectRequest(params)
 //
-//    // Example sending a request using the DeleteProjectRequest method.
-//    req, resp := client.DeleteProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DeleteProject
 func (c *IoT1ClickProjects) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
@@ -413,13 +412,14 @@ func (c *IoT1ClickProjects) DeleteProjectRequest(input *DeleteProjectInput) (req
 // API operation DeleteProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * TooManyRequestsException
+//   - ResourceNotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DeleteProject
 func (c *IoT1ClickProjects) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
@@ -459,14 +459,13 @@ const opDescribePlacement = "DescribePlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePlacementRequest method.
+//	req, resp := client.DescribePlacementRequest(params)
 //
-//    // Example sending a request using the DescribePlacementRequest method.
-//    req, resp := client.DescribePlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DescribePlacement
 func (c *IoT1ClickProjects) DescribePlacementRequest(input *DescribePlacementInput) (req *request.Request, output *DescribePlacementOutput) {
@@ -497,11 +496,12 @@ func (c *IoT1ClickProjects) DescribePlacementRequest(input *DescribePlacementInp
 // API operation DescribePlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DescribePlacement
 func (c *IoT1ClickProjects) DescribePlacement(input *DescribePlacementInput) (*DescribePlacementOutput, error) {
@@ -541,14 +541,13 @@ const opDescribeProject = "DescribeProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProjectRequest method.
+//	req, resp := client.DescribeProjectRequest(params)
 //
-//    // Example sending a request using the DescribeProjectRequest method.
-//    req, resp := client.DescribeProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DescribeProject
 func (c *IoT1ClickProjects) DescribeProjectRequest(input *DescribeProjectInput) (req *request.Request, output *DescribeProjectOutput) {
@@ -579,11 +578,12 @@ func (c *IoT1ClickProjects) DescribeProjectRequest(input *DescribeProjectInput) 
 // API operation DescribeProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DescribeProject
 func (c *IoT1ClickProjects) DescribeProject(input *DescribeProjectInput) (*DescribeProjectOutput, error) {
@@ -623,14 +623,13 @@ const opDisassociateDeviceFromPlacement = "DisassociateDeviceFromPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateDeviceFromPlacementRequest method.
+//	req, resp := client.DisassociateDeviceFromPlacementRequest(params)
 //
-//    // Example sending a request using the DisassociateDeviceFromPlacementRequest method.
-//    req, resp := client.DisassociateDeviceFromPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DisassociateDeviceFromPlacement
 func (c *IoT1ClickProjects) DisassociateDeviceFromPlacementRequest(input *DisassociateDeviceFromPlacementInput) (req *request.Request, output *DisassociateDeviceFromPlacementOutput) {
@@ -662,13 +661,14 @@ func (c *IoT1ClickProjects) DisassociateDeviceFromPlacementRequest(input *Disass
 // API operation DisassociateDeviceFromPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * TooManyRequestsException
+//   - ResourceNotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/DisassociateDeviceFromPlacement
 func (c *IoT1ClickProjects) DisassociateDeviceFromPlacement(input *DisassociateDeviceFromPlacementInput) (*DisassociateDeviceFromPlacementOutput, error) {
@@ -708,14 +708,13 @@ const opGetDevicesInPlacement = "GetDevicesInPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDevicesInPlacementRequest method.
+//	req, resp := client.GetDevicesInPlacementRequest(params)
 //
-//    // Example sending a request using the GetDevicesInPlacementRequest method.
-//    req, resp := client.GetDevicesInPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/GetDevicesInPlacement
 func (c *IoT1ClickProjects) GetDevicesInPlacementRequest(input *GetDevicesInPlacementInput) (req *request.Request, output *GetDevicesInPlacementOutput) {
@@ -746,11 +745,12 @@ func (c *IoT1ClickProjects) GetDevicesInPlacementRequest(input *GetDevicesInPlac
 // API operation GetDevicesInPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/GetDevicesInPlacement
 func (c *IoT1ClickProjects) GetDevicesInPlacement(input *GetDevicesInPlacementInput) (*GetDevicesInPlacementOutput, error) {
@@ -790,14 +790,13 @@ const opListPlacements = "ListPlacements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPlacementsRequest method.
+//	req, resp := client.ListPlacementsRequest(params)
 //
-//    // Example sending a request using the ListPlacementsRequest method.
-//    req, resp := client.ListPlacementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListPlacements
 func (c *IoT1ClickProjects) ListPlacementsRequest(input *ListPlacementsInput) (req *request.Request, output *ListPlacementsOutput) {
@@ -834,11 +833,12 @@ func (c *IoT1ClickProjects) ListPlacementsRequest(input *ListPlacementsInput) (r
 // API operation ListPlacements for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListPlacements
 func (c *IoT1ClickProjects) ListPlacements(input *ListPlacementsInput) (*ListPlacementsOutput, error) {
@@ -870,15 +870,14 @@ func (c *IoT1ClickProjects) ListPlacementsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPlacements operation.
-//    pageNum := 0
-//    err := client.ListPlacementsPages(params,
-//        func(page *iot1clickprojects.ListPlacementsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPlacements operation.
+//	pageNum := 0
+//	err := client.ListPlacementsPages(params,
+//	    func(page *iot1clickprojects.ListPlacementsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoT1ClickProjects) ListPlacementsPages(input *ListPlacementsInput, fn func(*ListPlacementsOutput, bool) bool) error {
 	return c.ListPlacementsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -930,14 +929,13 @@ const opListProjects = "ListProjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProjectsRequest method.
+//	req, resp := client.ListProjectsRequest(params)
 //
-//    // Example sending a request using the ListProjectsRequest method.
-//    req, resp := client.ListProjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListProjects
 func (c *IoT1ClickProjects) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
@@ -975,9 +973,10 @@ func (c *IoT1ClickProjects) ListProjectsRequest(input *ListProjectsInput) (req *
 // API operation ListProjects for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
+//
+//   - InvalidRequestException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListProjects
 func (c *IoT1ClickProjects) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
@@ -1009,15 +1008,14 @@ func (c *IoT1ClickProjects) ListProjectsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListProjects operation.
-//    pageNum := 0
-//    err := client.ListProjectsPages(params,
-//        func(page *iot1clickprojects.ListProjectsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListProjects operation.
+//	pageNum := 0
+//	err := client.ListProjectsPages(params,
+//	    func(page *iot1clickprojects.ListProjectsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoT1ClickProjects) ListProjectsPages(input *ListProjectsInput, fn func(*ListProjectsOutput, bool) bool) error {
 	return c.ListProjectsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1069,14 +1067,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListTagsForResource
 func (c *IoT1ClickProjects) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1108,11 +1105,12 @@ func (c *IoT1ClickProjects) ListTagsForResourceRequest(input *ListTagsForResourc
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/ListTagsForResource
 func (c *IoT1ClickProjects) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1152,14 +1150,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/TagResource
 func (c *IoT1ClickProjects) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1193,11 +1190,12 @@ func (c *IoT1ClickProjects) TagResourceRequest(input *TagResourceInput) (req *re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/TagResource
 func (c *IoT1ClickProjects) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1237,14 +1235,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UntagResource
 func (c *IoT1ClickProjects) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1276,11 +1273,12 @@ func (c *IoT1ClickProjects) UntagResourceRequest(input *UntagResourceInput) (req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
+//
+//   - ResourceNotFoundException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UntagResource
 func (c *IoT1ClickProjects) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1320,14 +1318,13 @@ const opUpdatePlacement = "UpdatePlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePlacementRequest method.
+//	req, resp := client.UpdatePlacementRequest(params)
 //
-//    // Example sending a request using the UpdatePlacementRequest method.
-//    req, resp := client.UpdatePlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UpdatePlacement
 func (c *IoT1ClickProjects) UpdatePlacementRequest(input *UpdatePlacementInput) (req *request.Request, output *UpdatePlacementOutput) {
@@ -1360,13 +1357,14 @@ func (c *IoT1ClickProjects) UpdatePlacementRequest(input *UpdatePlacementInput) 
 // API operation UpdatePlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * TooManyRequestsException
+//   - ResourceNotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UpdatePlacement
 func (c *IoT1ClickProjects) UpdatePlacement(input *UpdatePlacementInput) (*UpdatePlacementOutput, error) {
@@ -1406,14 +1404,13 @@ const opUpdateProject = "UpdateProject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProjectRequest method.
+//	req, resp := client.UpdateProjectRequest(params)
 //
-//    // Example sending a request using the UpdateProjectRequest method.
-//    req, resp := client.UpdateProjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UpdateProject
 func (c *IoT1ClickProjects) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
@@ -1448,13 +1445,14 @@ func (c *IoT1ClickProjects) UpdateProjectRequest(input *UpdateProjectInput) (req
 // API operation UpdateProject for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
 //
-//   * InvalidRequestException
+//   - InternalFailureException
 //
-//   * ResourceNotFoundException
+//   - InvalidRequestException
 //
-//   * TooManyRequestsException
+//   - ResourceNotFoundException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iot1click-projects-2018-05-14/UpdateProject
 func (c *IoT1ClickProjects) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a EFS client from just a session.
-//     svc := efs.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a EFS client with additional configuration
-//     svc := efs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a EFS client from just a session.
+//	svc := efs.New(mySession)
+//
+//	// Create a EFS client with additional configuration
+//	svc := efs.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *EFS {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

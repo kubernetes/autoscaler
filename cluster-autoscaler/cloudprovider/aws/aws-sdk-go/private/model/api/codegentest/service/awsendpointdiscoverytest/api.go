@@ -30,14 +30,13 @@ const opDescribeEndpoints = "DescribeEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointsRequest method.
+//	req, resp := client.DescribeEndpointsRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointsRequest method.
-//    req, resp := client.DescribeEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *AwsEndpointDiscoveryTest) DescribeEndpointsRequest(input *DescribeEndpointsInput) (req *request.Request, output *DescribeEndpointsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEndpoints,
@@ -173,14 +172,13 @@ const opTestDiscoveryIdentifiersRequired = "TestDiscoveryIdentifiersRequired"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestDiscoveryIdentifiersRequiredRequest method.
+//	req, resp := client.TestDiscoveryIdentifiersRequiredRequest(params)
 //
-//    // Example sending a request using the TestDiscoveryIdentifiersRequiredRequest method.
-//    req, resp := client.TestDiscoveryIdentifiersRequiredRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *AwsEndpointDiscoveryTest) TestDiscoveryIdentifiersRequiredRequest(input *TestDiscoveryIdentifiersRequiredInput) (req *request.Request, output *TestDiscoveryIdentifiersRequiredOutput) {
 	op := &request.Operation{
 		Name:       opTestDiscoveryIdentifiersRequired,
@@ -266,14 +264,13 @@ const opTestDiscoveryOptional = "TestDiscoveryOptional"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestDiscoveryOptionalRequest method.
+//	req, resp := client.TestDiscoveryOptionalRequest(params)
 //
-//    // Example sending a request using the TestDiscoveryOptionalRequest method.
-//    req, resp := client.TestDiscoveryOptionalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *AwsEndpointDiscoveryTest) TestDiscoveryOptionalRequest(input *TestDiscoveryOptionalInput) (req *request.Request, output *TestDiscoveryOptionalOutput) {
 	op := &request.Operation{
 		Name:       opTestDiscoveryOptional,
@@ -360,14 +357,13 @@ const opTestDiscoveryRequired = "TestDiscoveryRequired"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestDiscoveryRequiredRequest method.
+//	req, resp := client.TestDiscoveryRequiredRequest(params)
 //
-//    // Example sending a request using the TestDiscoveryRequiredRequest method.
-//    req, resp := client.TestDiscoveryRequiredRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *AwsEndpointDiscoveryTest) TestDiscoveryRequiredRequest(input *TestDiscoveryRequiredInput) (req *request.Request, output *TestDiscoveryRequiredOutput) {
 	op := &request.Operation{
 		Name:       opTestDiscoveryRequired,

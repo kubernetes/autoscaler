@@ -11,7 +11,7 @@ import (
 
 // UpdateVolumeGroupRequest wrapper for the UpdateVolumeGroup operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateVolumeGroup.go.html to see an example of how to use UpdateVolumeGroupRequest.
 type UpdateVolumeGroupRequest struct {

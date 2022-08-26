@@ -28,14 +28,13 @@ const opGetEntitlements = "GetEntitlements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEntitlementsRequest method.
+//	req, resp := client.GetEntitlementsRequest(params)
 //
-//    // Example sending a request using the GetEntitlementsRequest method.
-//    req, resp := client.GetEntitlementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/entitlement.marketplace-2017-01-11/GetEntitlements
 func (c *MarketplaceEntitlementService) GetEntitlementsRequest(input *GetEntitlementsInput) (req *request.Request, output *GetEntitlementsOutput) {
@@ -67,15 +66,16 @@ func (c *MarketplaceEntitlementService) GetEntitlementsRequest(input *GetEntitle
 // API operation GetEntitlements for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters in your request was invalid.
 //
-//   * ThrottlingException
-//   The calls to the GetEntitlements API are throttled.
+//   - InvalidParameterException
+//     One or more parameters in your request was invalid.
 //
-//   * InternalServiceErrorException
-//   An internal error has occurred. Retry your request. If the problem persists,
-//   post a message with details on the AWS forums.
+//   - ThrottlingException
+//     The calls to the GetEntitlements API are throttled.
+//
+//   - InternalServiceErrorException
+//     An internal error has occurred. Retry your request. If the problem persists,
+//     post a message with details on the AWS forums.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/entitlement.marketplace-2017-01-11/GetEntitlements
 func (c *MarketplaceEntitlementService) GetEntitlements(input *GetEntitlementsInput) (*GetEntitlementsOutput, error) {

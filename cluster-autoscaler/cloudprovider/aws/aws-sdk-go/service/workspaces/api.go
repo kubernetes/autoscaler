@@ -29,14 +29,13 @@ const opAssociateConnectionAlias = "AssociateConnectionAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateConnectionAliasRequest method.
+//	req, resp := client.AssociateConnectionAliasRequest(params)
 //
-//    // Example sending a request using the AssociateConnectionAliasRequest method.
-//    req, resp := client.AssociateConnectionAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AssociateConnectionAlias
 func (c *WorkSpaces) AssociateConnectionAliasRequest(input *AssociateConnectionAliasInput) (req *request.Request, output *AssociateConnectionAliasOutput) {
@@ -72,23 +71,24 @@ func (c *WorkSpaces) AssociateConnectionAliasRequest(input *AssociateConnectionA
 // API operation AssociateConnectionAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AssociateConnectionAlias
 func (c *WorkSpaces) AssociateConnectionAlias(input *AssociateConnectionAliasInput) (*AssociateConnectionAliasOutput, error) {
@@ -128,14 +128,13 @@ const opAssociateIpGroups = "AssociateIpGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateIpGroupsRequest method.
+//	req, resp := client.AssociateIpGroupsRequest(params)
 //
-//    // Example sending a request using the AssociateIpGroupsRequest method.
-//    req, resp := client.AssociateIpGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AssociateIpGroups
 func (c *WorkSpaces) AssociateIpGroupsRequest(input *AssociateIpGroupsInput) (req *request.Request, output *AssociateIpGroupsOutput) {
@@ -167,23 +166,24 @@ func (c *WorkSpaces) AssociateIpGroupsRequest(input *AssociateIpGroupsInput) (re
 // API operation AssociateIpGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AssociateIpGroups
 func (c *WorkSpaces) AssociateIpGroups(input *AssociateIpGroupsInput) (*AssociateIpGroupsOutput, error) {
@@ -223,14 +223,13 @@ const opAuthorizeIpRules = "AuthorizeIpRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AuthorizeIpRulesRequest method.
+//	req, resp := client.AuthorizeIpRulesRequest(params)
 //
-//    // Example sending a request using the AuthorizeIpRulesRequest method.
-//    req, resp := client.AuthorizeIpRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AuthorizeIpRules
 func (c *WorkSpaces) AuthorizeIpRulesRequest(input *AuthorizeIpRulesInput) (req *request.Request, output *AuthorizeIpRulesOutput) {
@@ -265,20 +264,21 @@ func (c *WorkSpaces) AuthorizeIpRulesRequest(input *AuthorizeIpRulesInput) (req 
 // API operation AuthorizeIpRules for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/AuthorizeIpRules
 func (c *WorkSpaces) AuthorizeIpRules(input *AuthorizeIpRulesInput) (*AuthorizeIpRulesOutput, error) {
@@ -318,14 +318,13 @@ const opCopyWorkspaceImage = "CopyWorkspaceImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyWorkspaceImageRequest method.
+//	req, resp := client.CopyWorkspaceImageRequest(params)
 //
-//    // Example sending a request using the CopyWorkspaceImageRequest method.
-//    req, resp := client.CopyWorkspaceImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CopyWorkspaceImage
 func (c *WorkSpaces) CopyWorkspaceImageRequest(input *CopyWorkspaceImageInput) (req *request.Request, output *CopyWorkspaceImageOutput) {
@@ -370,26 +369,27 @@ func (c *WorkSpaces) CopyWorkspaceImageRequest(input *CopyWorkspaceImageInput) (
 // API operation CopyWorkspaceImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CopyWorkspaceImage
 func (c *WorkSpaces) CopyWorkspaceImage(input *CopyWorkspaceImageInput) (*CopyWorkspaceImageOutput, error) {
@@ -429,14 +429,13 @@ const opCreateConnectClientAddIn = "CreateConnectClientAddIn"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectClientAddInRequest method.
+//	req, resp := client.CreateConnectClientAddInRequest(params)
 //
-//    // Example sending a request using the CreateConnectClientAddInRequest method.
-//    req, resp := client.CreateConnectClientAddInRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateConnectClientAddIn
 func (c *WorkSpaces) CreateConnectClientAddInRequest(input *CreateConnectClientAddInInput) (req *request.Request, output *CreateConnectClientAddInOutput) {
@@ -471,20 +470,21 @@ func (c *WorkSpaces) CreateConnectClientAddInRequest(input *CreateConnectClientA
 // API operation CreateConnectClientAddIn for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceCreationFailedException
-//   The resource could not be created.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceCreationFailedException
+//     The resource could not be created.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateConnectClientAddIn
 func (c *WorkSpaces) CreateConnectClientAddIn(input *CreateConnectClientAddInInput) (*CreateConnectClientAddInOutput, error) {
@@ -524,14 +524,13 @@ const opCreateConnectionAlias = "CreateConnectionAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConnectionAliasRequest method.
+//	req, resp := client.CreateConnectionAliasRequest(params)
 //
-//    // Example sending a request using the CreateConnectionAliasRequest method.
-//    req, resp := client.CreateConnectionAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateConnectionAlias
 func (c *WorkSpaces) CreateConnectionAliasRequest(input *CreateConnectionAliasInput) (req *request.Request, output *CreateConnectionAliasOutput) {
@@ -564,23 +563,24 @@ func (c *WorkSpaces) CreateConnectionAliasRequest(input *CreateConnectionAliasIn
 // API operation CreateConnectionAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateConnectionAlias
 func (c *WorkSpaces) CreateConnectionAlias(input *CreateConnectionAliasInput) (*CreateConnectionAliasOutput, error) {
@@ -620,14 +620,13 @@ const opCreateIpGroup = "CreateIpGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIpGroupRequest method.
+//	req, resp := client.CreateIpGroupRequest(params)
 //
-//    // Example sending a request using the CreateIpGroupRequest method.
-//    req, resp := client.CreateIpGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateIpGroup
 func (c *WorkSpaces) CreateIpGroupRequest(input *CreateIpGroupInput) (req *request.Request, output *CreateIpGroupOutput) {
@@ -670,20 +669,21 @@ func (c *WorkSpaces) CreateIpGroupRequest(input *CreateIpGroupInput) (req *reque
 // API operation CreateIpGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceCreationFailedException
-//   The resource could not be created.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceCreationFailedException
+//     The resource could not be created.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateIpGroup
 func (c *WorkSpaces) CreateIpGroup(input *CreateIpGroupInput) (*CreateIpGroupOutput, error) {
@@ -723,14 +723,13 @@ const opCreateTags = "CreateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTagsRequest method.
+//	req, resp := client.CreateTagsRequest(params)
 //
-//    // Example sending a request using the CreateTagsRequest method.
-//    req, resp := client.CreateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateTags
 func (c *WorkSpaces) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
@@ -762,14 +761,15 @@ func (c *WorkSpaces) CreateTagsRequest(input *CreateTagsInput) (req *request.Req
 // API operation CreateTags for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateTags
 func (c *WorkSpaces) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
@@ -809,14 +809,13 @@ const opCreateUpdatedWorkspaceImage = "CreateUpdatedWorkspaceImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUpdatedWorkspaceImageRequest method.
+//	req, resp := client.CreateUpdatedWorkspaceImageRequest(params)
 //
-//    // Example sending a request using the CreateUpdatedWorkspaceImageRequest method.
-//    req, resp := client.CreateUpdatedWorkspaceImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateUpdatedWorkspaceImage
 func (c *WorkSpaces) CreateUpdatedWorkspaceImageRequest(input *CreateUpdatedWorkspaceImageInput) (req *request.Request, output *CreateUpdatedWorkspaceImageOutput) {
@@ -844,14 +843,14 @@ func (c *WorkSpaces) CreateUpdatedWorkspaceImageRequest(input *CreateUpdatedWork
 // To determine which WorkSpace images need to be updated with the latest Amazon
 // WorkSpaces requirements, use DescribeWorkspaceImages (https://docs.aws.amazon.com/workspaces/latest/api/API_DescribeWorkspaceImages.html).
 //
-//    * Only Windows 10, Windows Sever 2016, and Windows Server 2019 WorkSpace
-//    images can be programmatically updated at this time.
+//   - Only Windows 10, Windows Sever 2016, and Windows Server 2019 WorkSpace
+//     images can be programmatically updated at this time.
 //
-//    * Microsoft Windows updates and other application updates are not included
-//    in the update process.
+//   - Microsoft Windows updates and other application updates are not included
+//     in the update process.
 //
-//    * The source WorkSpace image is not deleted. You can delete the source
-//    image after you've verified your new updated image and created a new bundle.
+//   - The source WorkSpace image is not deleted. You can delete the source
+//     image after you've verified your new updated image and created a new bundle.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -861,26 +860,27 @@ func (c *WorkSpaces) CreateUpdatedWorkspaceImageRequest(input *CreateUpdatedWork
 // API operation CreateUpdatedWorkspaceImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateUpdatedWorkspaceImage
 func (c *WorkSpaces) CreateUpdatedWorkspaceImage(input *CreateUpdatedWorkspaceImageInput) (*CreateUpdatedWorkspaceImageOutput, error) {
@@ -920,14 +920,13 @@ const opCreateWorkspaceBundle = "CreateWorkspaceBundle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkspaceBundleRequest method.
+//	req, resp := client.CreateWorkspaceBundleRequest(params)
 //
-//    // Example sending a request using the CreateWorkspaceBundleRequest method.
-//    req, resp := client.CreateWorkspaceBundleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateWorkspaceBundle
 func (c *WorkSpaces) CreateWorkspaceBundleRequest(input *CreateWorkspaceBundleInput) (req *request.Request, output *CreateWorkspaceBundleOutput) {
@@ -959,23 +958,24 @@ func (c *WorkSpaces) CreateWorkspaceBundleRequest(input *CreateWorkspaceBundleIn
 // API operation CreateWorkspaceBundle for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceUnavailableException
-//   The specified resource is not available.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateWorkspaceBundle
 func (c *WorkSpaces) CreateWorkspaceBundle(input *CreateWorkspaceBundleInput) (*CreateWorkspaceBundleOutput, error) {
@@ -1015,14 +1015,13 @@ const opCreateWorkspaces = "CreateWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkspacesRequest method.
+//	req, resp := client.CreateWorkspacesRequest(params)
 //
-//    // Example sending a request using the CreateWorkspacesRequest method.
-//    req, resp := client.CreateWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateWorkspaces
 func (c *WorkSpaces) CreateWorkspacesRequest(input *CreateWorkspacesInput) (req *request.Request, output *CreateWorkspacesOutput) {
@@ -1055,11 +1054,12 @@ func (c *WorkSpaces) CreateWorkspacesRequest(input *CreateWorkspacesInput) (req 
 // API operation CreateWorkspaces for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/CreateWorkspaces
 func (c *WorkSpaces) CreateWorkspaces(input *CreateWorkspacesInput) (*CreateWorkspacesOutput, error) {
@@ -1099,14 +1099,13 @@ const opDeleteClientBranding = "DeleteClientBranding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClientBrandingRequest method.
+//	req, resp := client.DeleteClientBrandingRequest(params)
 //
-//    // Example sending a request using the DeleteClientBrandingRequest method.
-//    req, resp := client.DeleteClientBrandingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteClientBranding
 func (c *WorkSpaces) DeleteClientBrandingRequest(input *DeleteClientBrandingInput) (req *request.Request, output *DeleteClientBrandingOutput) {
@@ -1144,14 +1143,15 @@ func (c *WorkSpaces) DeleteClientBrandingRequest(input *DeleteClientBrandingInpu
 // API operation DeleteClientBranding for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteClientBranding
 func (c *WorkSpaces) DeleteClientBranding(input *DeleteClientBrandingInput) (*DeleteClientBrandingOutput, error) {
@@ -1191,14 +1191,13 @@ const opDeleteConnectClientAddIn = "DeleteConnectClientAddIn"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectClientAddInRequest method.
+//	req, resp := client.DeleteConnectClientAddInRequest(params)
 //
-//    // Example sending a request using the DeleteConnectClientAddInRequest method.
-//    req, resp := client.DeleteConnectClientAddInRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteConnectClientAddIn
 func (c *WorkSpaces) DeleteConnectClientAddInRequest(input *DeleteConnectClientAddInInput) (req *request.Request, output *DeleteConnectClientAddInOutput) {
@@ -1230,14 +1229,15 @@ func (c *WorkSpaces) DeleteConnectClientAddInRequest(input *DeleteConnectClientA
 // API operation DeleteConnectClientAddIn for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteConnectClientAddIn
 func (c *WorkSpaces) DeleteConnectClientAddIn(input *DeleteConnectClientAddInInput) (*DeleteConnectClientAddInOutput, error) {
@@ -1277,14 +1277,13 @@ const opDeleteConnectionAlias = "DeleteConnectionAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConnectionAliasRequest method.
+//	req, resp := client.DeleteConnectionAliasRequest(params)
 //
-//    // Example sending a request using the DeleteConnectionAliasRequest method.
-//    req, resp := client.DeleteConnectionAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteConnectionAlias
 func (c *WorkSpaces) DeleteConnectionAliasRequest(input *DeleteConnectionAliasInput) (req *request.Request, output *DeleteConnectionAliasOutput) {
@@ -1328,23 +1327,24 @@ func (c *WorkSpaces) DeleteConnectionAliasRequest(input *DeleteConnectionAliasIn
 // API operation DeleteConnectionAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteConnectionAlias
 func (c *WorkSpaces) DeleteConnectionAlias(input *DeleteConnectionAliasInput) (*DeleteConnectionAliasOutput, error) {
@@ -1384,14 +1384,13 @@ const opDeleteIpGroup = "DeleteIpGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIpGroupRequest method.
+//	req, resp := client.DeleteIpGroupRequest(params)
 //
-//    // Example sending a request using the DeleteIpGroupRequest method.
-//    req, resp := client.DeleteIpGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteIpGroup
 func (c *WorkSpaces) DeleteIpGroupRequest(input *DeleteIpGroupInput) (req *request.Request, output *DeleteIpGroupOutput) {
@@ -1425,17 +1424,18 @@ func (c *WorkSpaces) DeleteIpGroupRequest(input *DeleteIpGroupInput) (req *reque
 // API operation DeleteIpGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteIpGroup
 func (c *WorkSpaces) DeleteIpGroup(input *DeleteIpGroupInput) (*DeleteIpGroupOutput, error) {
@@ -1475,14 +1475,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteTags
 func (c *WorkSpaces) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
@@ -1514,11 +1513,12 @@ func (c *WorkSpaces) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Req
 // API operation DeleteTags for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteTags
 func (c *WorkSpaces) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
@@ -1558,14 +1558,13 @@ const opDeleteWorkspaceBundle = "DeleteWorkspaceBundle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkspaceBundleRequest method.
+//	req, resp := client.DeleteWorkspaceBundleRequest(params)
 //
-//    // Example sending a request using the DeleteWorkspaceBundleRequest method.
-//    req, resp := client.DeleteWorkspaceBundleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteWorkspaceBundle
 func (c *WorkSpaces) DeleteWorkspaceBundleRequest(input *DeleteWorkspaceBundleInput) (req *request.Request, output *DeleteWorkspaceBundleOutput) {
@@ -1598,17 +1597,18 @@ func (c *WorkSpaces) DeleteWorkspaceBundleRequest(input *DeleteWorkspaceBundleIn
 // API operation DeleteWorkspaceBundle for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteWorkspaceBundle
 func (c *WorkSpaces) DeleteWorkspaceBundle(input *DeleteWorkspaceBundleInput) (*DeleteWorkspaceBundleOutput, error) {
@@ -1648,14 +1648,13 @@ const opDeleteWorkspaceImage = "DeleteWorkspaceImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkspaceImageRequest method.
+//	req, resp := client.DeleteWorkspaceImageRequest(params)
 //
-//    // Example sending a request using the DeleteWorkspaceImageRequest method.
-//    req, resp := client.DeleteWorkspaceImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteWorkspaceImage
 func (c *WorkSpaces) DeleteWorkspaceImageRequest(input *DeleteWorkspaceImageInput) (req *request.Request, output *DeleteWorkspaceImageOutput) {
@@ -1689,14 +1688,15 @@ func (c *WorkSpaces) DeleteWorkspaceImageRequest(input *DeleteWorkspaceImageInpu
 // API operation DeleteWorkspaceImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeleteWorkspaceImage
 func (c *WorkSpaces) DeleteWorkspaceImage(input *DeleteWorkspaceImageInput) (*DeleteWorkspaceImageOutput, error) {
@@ -1736,14 +1736,13 @@ const opDeregisterWorkspaceDirectory = "DeregisterWorkspaceDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterWorkspaceDirectoryRequest method.
+//	req, resp := client.DeregisterWorkspaceDirectoryRequest(params)
 //
-//    // Example sending a request using the DeregisterWorkspaceDirectoryRequest method.
-//    req, resp := client.DeregisterWorkspaceDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeregisterWorkspaceDirectory
 func (c *WorkSpaces) DeregisterWorkspaceDirectoryRequest(input *DeregisterWorkspaceDirectoryInput) (req *request.Request, output *DeregisterWorkspaceDirectoryOutput) {
@@ -1788,20 +1787,21 @@ func (c *WorkSpaces) DeregisterWorkspaceDirectoryRequest(input *DeregisterWorksp
 // API operation DeregisterWorkspaceDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DeregisterWorkspaceDirectory
 func (c *WorkSpaces) DeregisterWorkspaceDirectory(input *DeregisterWorkspaceDirectoryInput) (*DeregisterWorkspaceDirectoryOutput, error) {
@@ -1841,14 +1841,13 @@ const opDescribeAccount = "DescribeAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountRequest method.
+//	req, resp := client.DescribeAccountRequest(params)
 //
-//    // Example sending a request using the DescribeAccountRequest method.
-//    req, resp := client.DescribeAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeAccount
 func (c *WorkSpaces) DescribeAccountRequest(input *DescribeAccountInput) (req *request.Request, output *DescribeAccountOutput) {
@@ -1880,8 +1879,8 @@ func (c *WorkSpaces) DescribeAccountRequest(input *DescribeAccountInput) (req *r
 // API operation DescribeAccount for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeAccount
 func (c *WorkSpaces) DescribeAccount(input *DescribeAccountInput) (*DescribeAccountOutput, error) {
@@ -1921,14 +1920,13 @@ const opDescribeAccountModifications = "DescribeAccountModifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountModificationsRequest method.
+//	req, resp := client.DescribeAccountModificationsRequest(params)
 //
-//    // Example sending a request using the DescribeAccountModificationsRequest method.
-//    req, resp := client.DescribeAccountModificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeAccountModifications
 func (c *WorkSpaces) DescribeAccountModificationsRequest(input *DescribeAccountModificationsInput) (req *request.Request, output *DescribeAccountModificationsOutput) {
@@ -1960,8 +1958,8 @@ func (c *WorkSpaces) DescribeAccountModificationsRequest(input *DescribeAccountM
 // API operation DescribeAccountModifications for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeAccountModifications
 func (c *WorkSpaces) DescribeAccountModifications(input *DescribeAccountModificationsInput) (*DescribeAccountModificationsOutput, error) {
@@ -2001,14 +1999,13 @@ const opDescribeClientBranding = "DescribeClientBranding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientBrandingRequest method.
+//	req, resp := client.DescribeClientBrandingRequest(params)
 //
-//    // Example sending a request using the DescribeClientBrandingRequest method.
-//    req, resp := client.DescribeClientBrandingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeClientBranding
 func (c *WorkSpaces) DescribeClientBrandingRequest(input *DescribeClientBrandingInput) (req *request.Request, output *DescribeClientBrandingOutput) {
@@ -2045,14 +2042,15 @@ func (c *WorkSpaces) DescribeClientBrandingRequest(input *DescribeClientBranding
 // API operation DescribeClientBranding for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeClientBranding
 func (c *WorkSpaces) DescribeClientBranding(input *DescribeClientBrandingInput) (*DescribeClientBrandingOutput, error) {
@@ -2092,14 +2090,13 @@ const opDescribeClientProperties = "DescribeClientProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClientPropertiesRequest method.
+//	req, resp := client.DescribeClientPropertiesRequest(params)
 //
-//    // Example sending a request using the DescribeClientPropertiesRequest method.
-//    req, resp := client.DescribeClientPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeClientProperties
 func (c *WorkSpaces) DescribeClientPropertiesRequest(input *DescribeClientPropertiesInput) (req *request.Request, output *DescribeClientPropertiesOutput) {
@@ -2130,14 +2127,15 @@ func (c *WorkSpaces) DescribeClientPropertiesRequest(input *DescribeClientProper
 // API operation DescribeClientProperties for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeClientProperties
 func (c *WorkSpaces) DescribeClientProperties(input *DescribeClientPropertiesInput) (*DescribeClientPropertiesOutput, error) {
@@ -2177,14 +2175,13 @@ const opDescribeConnectClientAddIns = "DescribeConnectClientAddIns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectClientAddInsRequest method.
+//	req, resp := client.DescribeConnectClientAddInsRequest(params)
 //
-//    // Example sending a request using the DescribeConnectClientAddInsRequest method.
-//    req, resp := client.DescribeConnectClientAddInsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectClientAddIns
 func (c *WorkSpaces) DescribeConnectClientAddInsRequest(input *DescribeConnectClientAddInsInput) (req *request.Request, output *DescribeConnectClientAddInsOutput) {
@@ -2215,14 +2212,15 @@ func (c *WorkSpaces) DescribeConnectClientAddInsRequest(input *DescribeConnectCl
 // API operation DescribeConnectClientAddIns for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectClientAddIns
 func (c *WorkSpaces) DescribeConnectClientAddIns(input *DescribeConnectClientAddInsInput) (*DescribeConnectClientAddInsOutput, error) {
@@ -2262,14 +2260,13 @@ const opDescribeConnectionAliasPermissions = "DescribeConnectionAliasPermissions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionAliasPermissionsRequest method.
+//	req, resp := client.DescribeConnectionAliasPermissionsRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionAliasPermissionsRequest method.
-//    req, resp := client.DescribeConnectionAliasPermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectionAliasPermissions
 func (c *WorkSpaces) DescribeConnectionAliasPermissionsRequest(input *DescribeConnectionAliasPermissionsInput) (req *request.Request, output *DescribeConnectionAliasPermissionsOutput) {
@@ -2303,17 +2300,18 @@ func (c *WorkSpaces) DescribeConnectionAliasPermissionsRequest(input *DescribeCo
 // API operation DescribeConnectionAliasPermissions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectionAliasPermissions
 func (c *WorkSpaces) DescribeConnectionAliasPermissions(input *DescribeConnectionAliasPermissionsInput) (*DescribeConnectionAliasPermissionsOutput, error) {
@@ -2353,14 +2351,13 @@ const opDescribeConnectionAliases = "DescribeConnectionAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConnectionAliasesRequest method.
+//	req, resp := client.DescribeConnectionAliasesRequest(params)
 //
-//    // Example sending a request using the DescribeConnectionAliasesRequest method.
-//    req, resp := client.DescribeConnectionAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectionAliases
 func (c *WorkSpaces) DescribeConnectionAliasesRequest(input *DescribeConnectionAliasesInput) (req *request.Request, output *DescribeConnectionAliasesOutput) {
@@ -2393,14 +2390,15 @@ func (c *WorkSpaces) DescribeConnectionAliasesRequest(input *DescribeConnectionA
 // API operation DescribeConnectionAliases for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeConnectionAliases
 func (c *WorkSpaces) DescribeConnectionAliases(input *DescribeConnectionAliasesInput) (*DescribeConnectionAliasesOutput, error) {
@@ -2440,14 +2438,13 @@ const opDescribeIpGroups = "DescribeIpGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIpGroupsRequest method.
+//	req, resp := client.DescribeIpGroupsRequest(params)
 //
-//    // Example sending a request using the DescribeIpGroupsRequest method.
-//    req, resp := client.DescribeIpGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeIpGroups
 func (c *WorkSpaces) DescribeIpGroupsRequest(input *DescribeIpGroupsInput) (req *request.Request, output *DescribeIpGroupsOutput) {
@@ -2478,11 +2475,12 @@ func (c *WorkSpaces) DescribeIpGroupsRequest(input *DescribeIpGroupsInput) (req 
 // API operation DescribeIpGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeIpGroups
 func (c *WorkSpaces) DescribeIpGroups(input *DescribeIpGroupsInput) (*DescribeIpGroupsOutput, error) {
@@ -2522,14 +2520,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeTags
 func (c *WorkSpaces) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
@@ -2560,8 +2557,8 @@ func (c *WorkSpaces) DescribeTagsRequest(input *DescribeTagsInput) (req *request
 // API operation DescribeTags for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeTags
 func (c *WorkSpaces) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
@@ -2601,14 +2598,13 @@ const opDescribeWorkspaceBundles = "DescribeWorkspaceBundles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceBundlesRequest method.
+//	req, resp := client.DescribeWorkspaceBundlesRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceBundlesRequest method.
-//    req, resp := client.DescribeWorkspaceBundlesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceBundles
 func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBundlesInput) (req *request.Request, output *DescribeWorkspaceBundlesOutput) {
@@ -2647,8 +2643,8 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesRequest(input *DescribeWorkspaceBun
 // API operation DescribeWorkspaceBundles for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceBundles
 func (c *WorkSpaces) DescribeWorkspaceBundles(input *DescribeWorkspaceBundlesInput) (*DescribeWorkspaceBundlesOutput, error) {
@@ -2680,15 +2676,14 @@ func (c *WorkSpaces) DescribeWorkspaceBundlesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeWorkspaceBundles operation.
-//    pageNum := 0
-//    err := client.DescribeWorkspaceBundlesPages(params,
-//        func(page *workspaces.DescribeWorkspaceBundlesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeWorkspaceBundles operation.
+//	pageNum := 0
+//	err := client.DescribeWorkspaceBundlesPages(params,
+//	    func(page *workspaces.DescribeWorkspaceBundlesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpaces) DescribeWorkspaceBundlesPages(input *DescribeWorkspaceBundlesInput, fn func(*DescribeWorkspaceBundlesOutput, bool) bool) error {
 	return c.DescribeWorkspaceBundlesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2740,14 +2735,13 @@ const opDescribeWorkspaceDirectories = "DescribeWorkspaceDirectories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceDirectoriesRequest method.
+//	req, resp := client.DescribeWorkspaceDirectoriesRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceDirectoriesRequest method.
-//    req, resp := client.DescribeWorkspaceDirectoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceDirectories
 func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspaceDirectoriesInput) (req *request.Request, output *DescribeWorkspaceDirectoriesOutput) {
@@ -2784,8 +2778,8 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesRequest(input *DescribeWorkspac
 // API operation DescribeWorkspaceDirectories for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceDirectories
 func (c *WorkSpaces) DescribeWorkspaceDirectories(input *DescribeWorkspaceDirectoriesInput) (*DescribeWorkspaceDirectoriesOutput, error) {
@@ -2817,15 +2811,14 @@ func (c *WorkSpaces) DescribeWorkspaceDirectoriesWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeWorkspaceDirectories operation.
-//    pageNum := 0
-//    err := client.DescribeWorkspaceDirectoriesPages(params,
-//        func(page *workspaces.DescribeWorkspaceDirectoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeWorkspaceDirectories operation.
+//	pageNum := 0
+//	err := client.DescribeWorkspaceDirectoriesPages(params,
+//	    func(page *workspaces.DescribeWorkspaceDirectoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpaces) DescribeWorkspaceDirectoriesPages(input *DescribeWorkspaceDirectoriesInput, fn func(*DescribeWorkspaceDirectoriesOutput, bool) bool) error {
 	return c.DescribeWorkspaceDirectoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2877,14 +2870,13 @@ const opDescribeWorkspaceImagePermissions = "DescribeWorkspaceImagePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceImagePermissionsRequest method.
+//	req, resp := client.DescribeWorkspaceImagePermissionsRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceImagePermissionsRequest method.
-//    req, resp := client.DescribeWorkspaceImagePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceImagePermissions
 func (c *WorkSpaces) DescribeWorkspaceImagePermissionsRequest(input *DescribeWorkspaceImagePermissionsInput) (req *request.Request, output *DescribeWorkspaceImagePermissionsOutput) {
@@ -2916,14 +2908,15 @@ func (c *WorkSpaces) DescribeWorkspaceImagePermissionsRequest(input *DescribeWor
 // API operation DescribeWorkspaceImagePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceImagePermissions
 func (c *WorkSpaces) DescribeWorkspaceImagePermissions(input *DescribeWorkspaceImagePermissionsInput) (*DescribeWorkspaceImagePermissionsOutput, error) {
@@ -2963,14 +2956,13 @@ const opDescribeWorkspaceImages = "DescribeWorkspaceImages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceImagesRequest method.
+//	req, resp := client.DescribeWorkspaceImagesRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceImagesRequest method.
-//    req, resp := client.DescribeWorkspaceImagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceImages
 func (c *WorkSpaces) DescribeWorkspaceImagesRequest(input *DescribeWorkspaceImagesInput) (req *request.Request, output *DescribeWorkspaceImagesOutput) {
@@ -3002,8 +2994,8 @@ func (c *WorkSpaces) DescribeWorkspaceImagesRequest(input *DescribeWorkspaceImag
 // API operation DescribeWorkspaceImages for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceImages
 func (c *WorkSpaces) DescribeWorkspaceImages(input *DescribeWorkspaceImagesInput) (*DescribeWorkspaceImagesOutput, error) {
@@ -3043,14 +3035,13 @@ const opDescribeWorkspaceSnapshots = "DescribeWorkspaceSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceSnapshotsRequest method.
+//	req, resp := client.DescribeWorkspaceSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceSnapshotsRequest method.
-//    req, resp := client.DescribeWorkspaceSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceSnapshots
 func (c *WorkSpaces) DescribeWorkspaceSnapshotsRequest(input *DescribeWorkspaceSnapshotsInput) (req *request.Request, output *DescribeWorkspaceSnapshotsOutput) {
@@ -3081,14 +3072,15 @@ func (c *WorkSpaces) DescribeWorkspaceSnapshotsRequest(input *DescribeWorkspaceS
 // API operation DescribeWorkspaceSnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaceSnapshots
 func (c *WorkSpaces) DescribeWorkspaceSnapshots(input *DescribeWorkspaceSnapshotsInput) (*DescribeWorkspaceSnapshotsOutput, error) {
@@ -3128,14 +3120,13 @@ const opDescribeWorkspaces = "DescribeWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspacesRequest method.
+//	req, resp := client.DescribeWorkspacesRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspacesRequest method.
-//    req, resp := client.DescribeWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaces
 func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (req *request.Request, output *DescribeWorkspacesOutput) {
@@ -3175,11 +3166,12 @@ func (c *WorkSpaces) DescribeWorkspacesRequest(input *DescribeWorkspacesInput) (
 // API operation DescribeWorkspaces for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspaces
 func (c *WorkSpaces) DescribeWorkspaces(input *DescribeWorkspacesInput) (*DescribeWorkspacesOutput, error) {
@@ -3211,15 +3203,14 @@ func (c *WorkSpaces) DescribeWorkspacesWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeWorkspaces operation.
-//    pageNum := 0
-//    err := client.DescribeWorkspacesPages(params,
-//        func(page *workspaces.DescribeWorkspacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeWorkspaces operation.
+//	pageNum := 0
+//	err := client.DescribeWorkspacesPages(params,
+//	    func(page *workspaces.DescribeWorkspacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpaces) DescribeWorkspacesPages(input *DescribeWorkspacesInput, fn func(*DescribeWorkspacesOutput, bool) bool) error {
 	return c.DescribeWorkspacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3271,14 +3262,13 @@ const opDescribeWorkspacesConnectionStatus = "DescribeWorkspacesConnectionStatus
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspacesConnectionStatusRequest method.
+//	req, resp := client.DescribeWorkspacesConnectionStatusRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspacesConnectionStatusRequest method.
-//    req, resp := client.DescribeWorkspacesConnectionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspacesConnectionStatus
 func (c *WorkSpaces) DescribeWorkspacesConnectionStatusRequest(input *DescribeWorkspacesConnectionStatusInput) (req *request.Request, output *DescribeWorkspacesConnectionStatusOutput) {
@@ -3309,8 +3299,8 @@ func (c *WorkSpaces) DescribeWorkspacesConnectionStatusRequest(input *DescribeWo
 // API operation DescribeWorkspacesConnectionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DescribeWorkspacesConnectionStatus
 func (c *WorkSpaces) DescribeWorkspacesConnectionStatus(input *DescribeWorkspacesConnectionStatusInput) (*DescribeWorkspacesConnectionStatusOutput, error) {
@@ -3350,14 +3340,13 @@ const opDisassociateConnectionAlias = "DisassociateConnectionAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateConnectionAliasRequest method.
+//	req, resp := client.DisassociateConnectionAliasRequest(params)
 //
-//    // Example sending a request using the DisassociateConnectionAliasRequest method.
-//    req, resp := client.DisassociateConnectionAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DisassociateConnectionAlias
 func (c *WorkSpaces) DisassociateConnectionAliasRequest(input *DisassociateConnectionAliasInput) (req *request.Request, output *DisassociateConnectionAliasOutput) {
@@ -3395,20 +3384,21 @@ func (c *WorkSpaces) DisassociateConnectionAliasRequest(input *DisassociateConne
 // API operation DisassociateConnectionAlias for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DisassociateConnectionAlias
 func (c *WorkSpaces) DisassociateConnectionAlias(input *DisassociateConnectionAliasInput) (*DisassociateConnectionAliasOutput, error) {
@@ -3448,14 +3438,13 @@ const opDisassociateIpGroups = "DisassociateIpGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateIpGroupsRequest method.
+//	req, resp := client.DisassociateIpGroupsRequest(params)
 //
-//    // Example sending a request using the DisassociateIpGroupsRequest method.
-//    req, resp := client.DisassociateIpGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DisassociateIpGroups
 func (c *WorkSpaces) DisassociateIpGroupsRequest(input *DisassociateIpGroupsInput) (req *request.Request, output *DisassociateIpGroupsOutput) {
@@ -3487,17 +3476,18 @@ func (c *WorkSpaces) DisassociateIpGroupsRequest(input *DisassociateIpGroupsInpu
 // API operation DisassociateIpGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/DisassociateIpGroups
 func (c *WorkSpaces) DisassociateIpGroups(input *DisassociateIpGroupsInput) (*DisassociateIpGroupsOutput, error) {
@@ -3537,14 +3527,13 @@ const opImportClientBranding = "ImportClientBranding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportClientBrandingRequest method.
+//	req, resp := client.ImportClientBrandingRequest(params)
 //
-//    // Example sending a request using the ImportClientBrandingRequest method.
-//    req, resp := client.ImportClientBrandingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ImportClientBranding
 func (c *WorkSpaces) ImportClientBrandingRequest(input *ImportClientBrandingInput) (req *request.Request, output *ImportClientBrandingOutput) {
@@ -3573,17 +3562,17 @@ func (c *WorkSpaces) ImportClientBrandingRequest(input *ImportClientBrandingInpu
 // After you import client branding, the default branding experience for the
 // specified platform type is replaced with the imported experience
 //
-//    * You must specify at least one platform type when importing client branding.
+//   - You must specify at least one platform type when importing client branding.
 //
-//    * You can import up to 6 MB of data with each request. If your request
-//    exceeds this limit, you can import client branding for different platform
-//    types using separate requests.
+//   - You can import up to 6 MB of data with each request. If your request
+//     exceeds this limit, you can import client branding for different platform
+//     types using separate requests.
 //
-//    * In each platform type, the SupportEmail and SupportLink parameters are
-//    mutually exclusive. You can specify only one parameter for each platform
-//    type, but not both.
+//   - In each platform type, the SupportEmail and SupportLink parameters are
+//     mutually exclusive. You can specify only one parameter for each platform
+//     type, but not both.
 //
-//    * Imported data can take up to a minute to appear in the WorkSpaces client.
+//   - Imported data can take up to a minute to appear in the WorkSpaces client.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3593,14 +3582,15 @@ func (c *WorkSpaces) ImportClientBrandingRequest(input *ImportClientBrandingInpu
 // API operation ImportClientBranding for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ImportClientBranding
 func (c *WorkSpaces) ImportClientBranding(input *ImportClientBrandingInput) (*ImportClientBrandingOutput, error) {
@@ -3640,14 +3630,13 @@ const opImportWorkspaceImage = "ImportWorkspaceImage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportWorkspaceImageRequest method.
+//	req, resp := client.ImportWorkspaceImageRequest(params)
 //
-//    // Example sending a request using the ImportWorkspaceImageRequest method.
-//    req, resp := client.ImportWorkspaceImageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ImportWorkspaceImage
 func (c *WorkSpaces) ImportWorkspaceImageRequest(input *ImportWorkspaceImageInput) (req *request.Request, output *ImportWorkspaceImageOutput) {
@@ -3682,23 +3671,24 @@ func (c *WorkSpaces) ImportWorkspaceImageRequest(input *ImportWorkspaceImageInpu
 // API operation ImportWorkspaceImage for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
 //
-//   * ResourceAlreadyExistsException
-//   The specified resource already exists.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceAlreadyExistsException
+//     The specified resource already exists.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ImportWorkspaceImage
 func (c *WorkSpaces) ImportWorkspaceImage(input *ImportWorkspaceImageInput) (*ImportWorkspaceImageOutput, error) {
@@ -3738,14 +3728,13 @@ const opListAvailableManagementCidrRanges = "ListAvailableManagementCidrRanges"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAvailableManagementCidrRangesRequest method.
+//	req, resp := client.ListAvailableManagementCidrRangesRequest(params)
 //
-//    // Example sending a request using the ListAvailableManagementCidrRangesRequest method.
-//    req, resp := client.ListAvailableManagementCidrRangesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ListAvailableManagementCidrRanges
 func (c *WorkSpaces) ListAvailableManagementCidrRangesRequest(input *ListAvailableManagementCidrRangesInput) (req *request.Request, output *ListAvailableManagementCidrRangesOutput) {
@@ -3787,11 +3776,12 @@ func (c *WorkSpaces) ListAvailableManagementCidrRangesRequest(input *ListAvailab
 // API operation ListAvailableManagementCidrRanges for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ListAvailableManagementCidrRanges
 func (c *WorkSpaces) ListAvailableManagementCidrRanges(input *ListAvailableManagementCidrRangesInput) (*ListAvailableManagementCidrRangesOutput, error) {
@@ -3831,14 +3821,13 @@ const opMigrateWorkspace = "MigrateWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MigrateWorkspaceRequest method.
+//	req, resp := client.MigrateWorkspaceRequest(params)
 //
-//    // Example sending a request using the MigrateWorkspaceRequest method.
-//    req, resp := client.MigrateWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/MigrateWorkspace
 func (c *WorkSpaces) MigrateWorkspaceRequest(input *MigrateWorkspaceInput) (req *request.Request, output *MigrateWorkspaceOutput) {
@@ -3880,24 +3869,25 @@ func (c *WorkSpaces) MigrateWorkspaceRequest(input *MigrateWorkspaceInput) (req 
 // API operation MigrateWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * OperationInProgressException
-//   The properties of this WorkSpace are currently being modified. Try again
-//   in a moment.
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - OperationInProgressException
+//     The properties of this WorkSpace are currently being modified. Try again
+//     in a moment.
+//
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/MigrateWorkspace
 func (c *WorkSpaces) MigrateWorkspace(input *MigrateWorkspaceInput) (*MigrateWorkspaceOutput, error) {
@@ -3937,14 +3927,13 @@ const opModifyAccount = "ModifyAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyAccountRequest method.
+//	req, resp := client.ModifyAccountRequest(params)
 //
-//    // Example sending a request using the ModifyAccountRequest method.
-//    req, resp := client.ModifyAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyAccount
 func (c *WorkSpaces) ModifyAccountRequest(input *ModifyAccountInput) (req *request.Request, output *ModifyAccountOutput) {
@@ -3977,20 +3966,21 @@ func (c *WorkSpaces) ModifyAccountRequest(input *ModifyAccountInput) (req *reque
 // API operation ModifyAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceUnavailableException
+//     The specified resource is not available.
+//
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyAccount
 func (c *WorkSpaces) ModifyAccount(input *ModifyAccountInput) (*ModifyAccountOutput, error) {
@@ -4030,14 +4020,13 @@ const opModifyClientProperties = "ModifyClientProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyClientPropertiesRequest method.
+//	req, resp := client.ModifyClientPropertiesRequest(params)
 //
-//    // Example sending a request using the ModifyClientPropertiesRequest method.
-//    req, resp := client.ModifyClientPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyClientProperties
 func (c *WorkSpaces) ModifyClientPropertiesRequest(input *ModifyClientPropertiesInput) (req *request.Request, output *ModifyClientPropertiesOutput) {
@@ -4069,14 +4058,15 @@ func (c *WorkSpaces) ModifyClientPropertiesRequest(input *ModifyClientProperties
 // API operation ModifyClientProperties for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyClientProperties
 func (c *WorkSpaces) ModifyClientProperties(input *ModifyClientPropertiesInput) (*ModifyClientPropertiesOutput, error) {
@@ -4116,14 +4106,13 @@ const opModifySelfservicePermissions = "ModifySelfservicePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifySelfservicePermissionsRequest method.
+//	req, resp := client.ModifySelfservicePermissionsRequest(params)
 //
-//    // Example sending a request using the ModifySelfservicePermissionsRequest method.
-//    req, resp := client.ModifySelfservicePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifySelfservicePermissions
 func (c *WorkSpaces) ModifySelfservicePermissionsRequest(input *ModifySelfservicePermissionsInput) (req *request.Request, output *ModifySelfservicePermissionsOutput) {
@@ -4157,14 +4146,15 @@ func (c *WorkSpaces) ModifySelfservicePermissionsRequest(input *ModifySelfservic
 // API operation ModifySelfservicePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifySelfservicePermissions
 func (c *WorkSpaces) ModifySelfservicePermissions(input *ModifySelfservicePermissionsInput) (*ModifySelfservicePermissionsOutput, error) {
@@ -4204,14 +4194,13 @@ const opModifyWorkspaceAccessProperties = "ModifyWorkspaceAccessProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyWorkspaceAccessPropertiesRequest method.
+//	req, resp := client.ModifyWorkspaceAccessPropertiesRequest(params)
 //
-//    // Example sending a request using the ModifyWorkspaceAccessPropertiesRequest method.
-//    req, resp := client.ModifyWorkspaceAccessPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceAccessProperties
 func (c *WorkSpaces) ModifyWorkspaceAccessPropertiesRequest(input *ModifyWorkspaceAccessPropertiesInput) (req *request.Request, output *ModifyWorkspaceAccessPropertiesOutput) {
@@ -4244,11 +4233,12 @@ func (c *WorkSpaces) ModifyWorkspaceAccessPropertiesRequest(input *ModifyWorkspa
 // API operation ModifyWorkspaceAccessProperties for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceAccessProperties
 func (c *WorkSpaces) ModifyWorkspaceAccessProperties(input *ModifyWorkspaceAccessPropertiesInput) (*ModifyWorkspaceAccessPropertiesOutput, error) {
@@ -4288,14 +4278,13 @@ const opModifyWorkspaceCreationProperties = "ModifyWorkspaceCreationProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyWorkspaceCreationPropertiesRequest method.
+//	req, resp := client.ModifyWorkspaceCreationPropertiesRequest(params)
 //
-//    // Example sending a request using the ModifyWorkspaceCreationPropertiesRequest method.
-//    req, resp := client.ModifyWorkspaceCreationPropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceCreationProperties
 func (c *WorkSpaces) ModifyWorkspaceCreationPropertiesRequest(input *ModifyWorkspaceCreationPropertiesInput) (req *request.Request, output *ModifyWorkspaceCreationPropertiesOutput) {
@@ -4327,17 +4316,18 @@ func (c *WorkSpaces) ModifyWorkspaceCreationPropertiesRequest(input *ModifyWorks
 // API operation ModifyWorkspaceCreationProperties for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceCreationProperties
 func (c *WorkSpaces) ModifyWorkspaceCreationProperties(input *ModifyWorkspaceCreationPropertiesInput) (*ModifyWorkspaceCreationPropertiesOutput, error) {
@@ -4377,14 +4367,13 @@ const opModifyWorkspaceProperties = "ModifyWorkspaceProperties"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyWorkspacePropertiesRequest method.
+//	req, resp := client.ModifyWorkspacePropertiesRequest(params)
 //
-//    // Example sending a request using the ModifyWorkspacePropertiesRequest method.
-//    req, resp := client.ModifyWorkspacePropertiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceProperties
 func (c *WorkSpaces) ModifyWorkspacePropertiesRequest(input *ModifyWorkspacePropertiesInput) (req *request.Request, output *ModifyWorkspacePropertiesOutput) {
@@ -4418,29 +4407,30 @@ func (c *WorkSpaces) ModifyWorkspacePropertiesRequest(input *ModifyWorkspaceProp
 // API operation ModifyWorkspaceProperties for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * OperationInProgressException
-//   The properties of this WorkSpace are currently being modified. Try again
-//   in a moment.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
-//   * UnsupportedWorkspaceConfigurationException
-//   The configuration of this WorkSpace is not supported for this operation.
-//   For more information, see Required Configuration and Service Components for
-//   WorkSpaces (https://docs.aws.amazon.com/workspaces/latest/adminguide/required-service-components.html).
+//   - OperationInProgressException
+//     The properties of this WorkSpace are currently being modified. Try again
+//     in a moment.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - UnsupportedWorkspaceConfigurationException
+//     The configuration of this WorkSpace is not supported for this operation.
+//     For more information, see Required Configuration and Service Components for
+//     WorkSpaces (https://docs.aws.amazon.com/workspaces/latest/adminguide/required-service-components.html).
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
+//
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceProperties
 func (c *WorkSpaces) ModifyWorkspaceProperties(input *ModifyWorkspacePropertiesInput) (*ModifyWorkspacePropertiesOutput, error) {
@@ -4480,14 +4470,13 @@ const opModifyWorkspaceState = "ModifyWorkspaceState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ModifyWorkspaceStateRequest method.
+//	req, resp := client.ModifyWorkspaceStateRequest(params)
 //
-//    // Example sending a request using the ModifyWorkspaceStateRequest method.
-//    req, resp := client.ModifyWorkspaceStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceState
 func (c *WorkSpaces) ModifyWorkspaceStateRequest(input *ModifyWorkspaceStateInput) (req *request.Request, output *ModifyWorkspaceStateOutput) {
@@ -4525,14 +4514,15 @@ func (c *WorkSpaces) ModifyWorkspaceStateRequest(input *ModifyWorkspaceStateInpu
 // API operation ModifyWorkspaceState for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/ModifyWorkspaceState
 func (c *WorkSpaces) ModifyWorkspaceState(input *ModifyWorkspaceStateInput) (*ModifyWorkspaceStateOutput, error) {
@@ -4572,14 +4562,13 @@ const opRebootWorkspaces = "RebootWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebootWorkspacesRequest method.
+//	req, resp := client.RebootWorkspacesRequest(params)
 //
-//    // Example sending a request using the RebootWorkspacesRequest method.
-//    req, resp := client.RebootWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RebootWorkspaces
 func (c *WorkSpaces) RebootWorkspacesRequest(input *RebootWorkspacesInput) (req *request.Request, output *RebootWorkspacesOutput) {
@@ -4650,14 +4639,13 @@ const opRebuildWorkspaces = "RebuildWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RebuildWorkspacesRequest method.
+//	req, resp := client.RebuildWorkspacesRequest(params)
 //
-//    // Example sending a request using the RebuildWorkspacesRequest method.
-//    req, resp := client.RebuildWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RebuildWorkspaces
 func (c *WorkSpaces) RebuildWorkspacesRequest(input *RebuildWorkspacesInput) (req *request.Request, output *RebuildWorkspacesOutput) {
@@ -4733,14 +4721,13 @@ const opRegisterWorkspaceDirectory = "RegisterWorkspaceDirectory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterWorkspaceDirectoryRequest method.
+//	req, resp := client.RegisterWorkspaceDirectoryRequest(params)
 //
-//    // Example sending a request using the RegisterWorkspaceDirectoryRequest method.
-//    req, resp := client.RegisterWorkspaceDirectoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RegisterWorkspaceDirectory
 func (c *WorkSpaces) RegisterWorkspaceDirectoryRequest(input *RegisterWorkspaceDirectoryInput) (req *request.Request, output *RegisterWorkspaceDirectoryOutput) {
@@ -4776,35 +4763,36 @@ func (c *WorkSpaces) RegisterWorkspaceDirectoryRequest(input *RegisterWorkspaceD
 // API operation RegisterWorkspaceDirectory for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * WorkspacesDefaultRoleNotFoundException
-//   The workspaces_DefaultRole role could not be found. If this is the first
-//   time you are registering a directory, you will need to create the workspaces_DefaultRole
-//   role before you can register a directory. For more information, see Creating
-//   the workspaces_DefaultRole Role (https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role).
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - WorkspacesDefaultRoleNotFoundException
+//     The workspaces_DefaultRole role could not be found. If this is the first
+//     time you are registering a directory, you will need to create the workspaces_DefaultRole
+//     role before you can register a directory. For more information, see Creating
+//     the workspaces_DefaultRole Role (https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role).
 //
-//   * UnsupportedNetworkConfigurationException
-//   The configuration of this network is not supported for this operation, or
-//   your network configuration conflicts with the Amazon WorkSpaces management
-//   network IP range. For more information, see Configure a VPC for Amazon WorkSpaces
-//   (https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces-vpc.html).
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - UnsupportedNetworkConfigurationException
+//     The configuration of this network is not supported for this operation, or
+//     your network configuration conflicts with the Amazon WorkSpaces management
+//     network IP range. For more information, see Configure a VPC for Amazon WorkSpaces
+//     (https://docs.aws.amazon.com/workspaces/latest/adminguide/amazon-workspaces-vpc.html).
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RegisterWorkspaceDirectory
 func (c *WorkSpaces) RegisterWorkspaceDirectory(input *RegisterWorkspaceDirectoryInput) (*RegisterWorkspaceDirectoryOutput, error) {
@@ -4844,14 +4832,13 @@ const opRestoreWorkspace = "RestoreWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreWorkspaceRequest method.
+//	req, resp := client.RestoreWorkspaceRequest(params)
 //
-//    // Example sending a request using the RestoreWorkspaceRequest method.
-//    req, resp := client.RestoreWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RestoreWorkspace
 func (c *WorkSpaces) RestoreWorkspaceRequest(input *RestoreWorkspaceInput) (req *request.Request, output *RestoreWorkspaceOutput) {
@@ -4892,14 +4879,15 @@ func (c *WorkSpaces) RestoreWorkspaceRequest(input *RestoreWorkspaceInput) (req 
 // API operation RestoreWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RestoreWorkspace
 func (c *WorkSpaces) RestoreWorkspace(input *RestoreWorkspaceInput) (*RestoreWorkspaceOutput, error) {
@@ -4939,14 +4927,13 @@ const opRevokeIpRules = "RevokeIpRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeIpRulesRequest method.
+//	req, resp := client.RevokeIpRulesRequest(params)
 //
-//    // Example sending a request using the RevokeIpRulesRequest method.
-//    req, resp := client.RevokeIpRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RevokeIpRules
 func (c *WorkSpaces) RevokeIpRulesRequest(input *RevokeIpRulesInput) (req *request.Request, output *RevokeIpRulesOutput) {
@@ -4978,17 +4965,18 @@ func (c *WorkSpaces) RevokeIpRulesRequest(input *RevokeIpRulesInput) (req *reque
 // API operation RevokeIpRules for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/RevokeIpRules
 func (c *WorkSpaces) RevokeIpRules(input *RevokeIpRulesInput) (*RevokeIpRulesOutput, error) {
@@ -5028,14 +5016,13 @@ const opStartWorkspaces = "StartWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartWorkspacesRequest method.
+//	req, resp := client.StartWorkspacesRequest(params)
 //
-//    // Example sending a request using the StartWorkspacesRequest method.
-//    req, resp := client.StartWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/StartWorkspaces
 func (c *WorkSpaces) StartWorkspacesRequest(input *StartWorkspacesInput) (req *request.Request, output *StartWorkspacesOutput) {
@@ -5105,14 +5092,13 @@ const opStopWorkspaces = "StopWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopWorkspacesRequest method.
+//	req, resp := client.StopWorkspacesRequest(params)
 //
-//    // Example sending a request using the StopWorkspacesRequest method.
-//    req, resp := client.StopWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/StopWorkspaces
 func (c *WorkSpaces) StopWorkspacesRequest(input *StopWorkspacesInput) (req *request.Request, output *StopWorkspacesOutput) {
@@ -5182,14 +5168,13 @@ const opTerminateWorkspaces = "TerminateWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TerminateWorkspacesRequest method.
+//	req, resp := client.TerminateWorkspacesRequest(params)
 //
-//    // Example sending a request using the TerminateWorkspacesRequest method.
-//    req, resp := client.TerminateWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/TerminateWorkspaces
 func (c *WorkSpaces) TerminateWorkspacesRequest(input *TerminateWorkspacesInput) (req *request.Request, output *TerminateWorkspacesOutput) {
@@ -5281,14 +5266,13 @@ const opUpdateConnectClientAddIn = "UpdateConnectClientAddIn"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectClientAddInRequest method.
+//	req, resp := client.UpdateConnectClientAddInRequest(params)
 //
-//    // Example sending a request using the UpdateConnectClientAddInRequest method.
-//    req, resp := client.UpdateConnectClientAddInRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateConnectClientAddIn
 func (c *WorkSpaces) UpdateConnectClientAddInRequest(input *UpdateConnectClientAddInInput) (req *request.Request, output *UpdateConnectClientAddInOutput) {
@@ -5321,14 +5305,15 @@ func (c *WorkSpaces) UpdateConnectClientAddInRequest(input *UpdateConnectClientA
 // API operation UpdateConnectClientAddIn for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateConnectClientAddIn
 func (c *WorkSpaces) UpdateConnectClientAddIn(input *UpdateConnectClientAddInInput) (*UpdateConnectClientAddInOutput, error) {
@@ -5368,14 +5353,13 @@ const opUpdateConnectionAliasPermission = "UpdateConnectionAliasPermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConnectionAliasPermissionRequest method.
+//	req, resp := client.UpdateConnectionAliasPermissionRequest(params)
 //
-//    // Example sending a request using the UpdateConnectionAliasPermissionRequest method.
-//    req, resp := client.UpdateConnectionAliasPermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateConnectionAliasPermission
 func (c *WorkSpaces) UpdateConnectionAliasPermissionRequest(input *UpdateConnectionAliasPermissionInput) (req *request.Request, output *UpdateConnectionAliasPermissionOutput) {
@@ -5404,15 +5388,15 @@ func (c *WorkSpaces) UpdateConnectionAliasPermissionRequest(input *UpdateConnect
 // alias is unshared with the account. For more information, see Cross-Region
 // Redirection for Amazon WorkSpaces (https://docs.aws.amazon.com/workspaces/latest/adminguide/cross-region-redirection.html).
 //
-//    * Before performing this operation, call DescribeConnectionAliases (https://docs.aws.amazon.com/workspaces/latest/api/API_DescribeConnectionAliases.html)
-//    to make sure that the current state of the connection alias is CREATED.
+//   - Before performing this operation, call DescribeConnectionAliases (https://docs.aws.amazon.com/workspaces/latest/api/API_DescribeConnectionAliases.html)
+//     to make sure that the current state of the connection alias is CREATED.
 //
-//    * To delete a connection alias that has been shared, the shared account
-//    must first disassociate the connection alias from any directories it has
-//    been associated with. Then you must unshare the connection alias from
-//    the account it has been shared with. You can delete a connection alias
-//    only after it is no longer shared with any accounts or associated with
-//    any directories.
+//   - To delete a connection alias that has been shared, the shared account
+//     must first disassociate the connection alias from any directories it has
+//     been associated with. Then you must unshare the connection alias from
+//     the account it has been shared with. You can delete a connection alias
+//     only after it is no longer shared with any accounts or associated with
+//     any directories.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5422,26 +5406,27 @@ func (c *WorkSpaces) UpdateConnectionAliasPermissionRequest(input *UpdateConnect
 // API operation UpdateConnectionAliasPermission for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * ResourceAssociatedException
-//   The resource is associated with a directory.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceAssociatedException
+//     The resource is associated with a directory.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateConnectionAliasPermission
 func (c *WorkSpaces) UpdateConnectionAliasPermission(input *UpdateConnectionAliasPermissionInput) (*UpdateConnectionAliasPermissionOutput, error) {
@@ -5481,14 +5466,13 @@ const opUpdateRulesOfIpGroup = "UpdateRulesOfIpGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRulesOfIpGroupRequest method.
+//	req, resp := client.UpdateRulesOfIpGroupRequest(params)
 //
-//    // Example sending a request using the UpdateRulesOfIpGroupRequest method.
-//    req, resp := client.UpdateRulesOfIpGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateRulesOfIpGroup
 func (c *WorkSpaces) UpdateRulesOfIpGroupRequest(input *UpdateRulesOfIpGroupInput) (req *request.Request, output *UpdateRulesOfIpGroupOutput) {
@@ -5521,20 +5505,21 @@ func (c *WorkSpaces) UpdateRulesOfIpGroupRequest(input *UpdateRulesOfIpGroupInpu
 // API operation UpdateRulesOfIpGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceLimitExceededException
-//   Your resource limits have been exceeded.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * InvalidResourceStateException
-//   The state of the resource is not valid for this operation.
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - InvalidResourceStateException
+//     The state of the resource is not valid for this operation.
+//
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateRulesOfIpGroup
 func (c *WorkSpaces) UpdateRulesOfIpGroup(input *UpdateRulesOfIpGroupInput) (*UpdateRulesOfIpGroupOutput, error) {
@@ -5574,14 +5559,13 @@ const opUpdateWorkspaceBundle = "UpdateWorkspaceBundle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorkspaceBundleRequest method.
+//	req, resp := client.UpdateWorkspaceBundleRequest(params)
 //
-//    // Example sending a request using the UpdateWorkspaceBundleRequest method.
-//    req, resp := client.UpdateWorkspaceBundleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateWorkspaceBundle
 func (c *WorkSpaces) UpdateWorkspaceBundleRequest(input *UpdateWorkspaceBundleInput) (req *request.Request, output *UpdateWorkspaceBundleOutput) {
@@ -5619,17 +5603,18 @@ func (c *WorkSpaces) UpdateWorkspaceBundleRequest(input *UpdateWorkspaceBundleIn
 // API operation UpdateWorkspaceBundle for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * ResourceNotFoundException
-//   The resource could not be found.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - ResourceNotFoundException
+//     The resource could not be found.
+//
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateWorkspaceBundle
 func (c *WorkSpaces) UpdateWorkspaceBundle(input *UpdateWorkspaceBundleInput) (*UpdateWorkspaceBundleOutput, error) {
@@ -5669,14 +5654,13 @@ const opUpdateWorkspaceImagePermission = "UpdateWorkspaceImagePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorkspaceImagePermissionRequest method.
+//	req, resp := client.UpdateWorkspaceImagePermissionRequest(params)
 //
-//    // Example sending a request using the UpdateWorkspaceImagePermissionRequest method.
-//    req, resp := client.UpdateWorkspaceImagePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateWorkspaceImagePermission
 func (c *WorkSpaces) UpdateWorkspaceImagePermissionRequest(input *UpdateWorkspaceImagePermissionInput) (req *request.Request, output *UpdateWorkspaceImagePermissionOutput) {
@@ -5714,13 +5698,13 @@ func (c *WorkSpaces) UpdateWorkspaceImagePermissionRequest(input *UpdateWorkspac
 // For more information about sharing images, see Share or Unshare a Custom
 // WorkSpaces Image (https://docs.aws.amazon.com/workspaces/latest/adminguide/share-custom-image.html).
 //
-//    * To delete an image that has been shared, you must unshare the image
-//    before you delete it.
+//   - To delete an image that has been shared, you must unshare the image
+//     before you delete it.
 //
-//    * Sharing Bring Your Own License (BYOL) images across Amazon Web Services
-//    accounts isn't supported at this time in Amazon Web Services GovCloud
-//    (US). To share BYOL images across accounts in Amazon Web Services GovCloud
-//    (US), contact Amazon Web Services Support.
+//   - Sharing Bring Your Own License (BYOL) images across Amazon Web Services
+//     accounts isn't supported at this time in Amazon Web Services GovCloud
+//     (US). To share BYOL images across accounts in Amazon Web Services GovCloud
+//     (US), contact Amazon Web Services Support.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5730,20 +5714,21 @@ func (c *WorkSpaces) UpdateWorkspaceImagePermissionRequest(input *UpdateWorkspac
 // API operation UpdateWorkspaceImagePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource could not be found.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available.
+//   - ResourceNotFoundException
+//     The resource could not be found.
 //
-//   * AccessDeniedException
-//   The user is not authorized to access a resource.
+//   - ResourceUnavailableException
+//     The specified resource is not available.
 //
-//   * InvalidParameterValuesException
-//   One or more parameter values are not valid.
+//   - AccessDeniedException
+//     The user is not authorized to access a resource.
 //
-//   * OperationNotSupportedException
-//   This operation is not supported.
+//   - InvalidParameterValuesException
+//     One or more parameter values are not valid.
+//
+//   - OperationNotSupportedException
+//     This operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-2015-04-08/UpdateWorkspaceImagePermission
 func (c *WorkSpaces) UpdateWorkspaceImagePermission(input *UpdateWorkspaceImagePermissionInput) (*UpdateWorkspaceImagePermissionOutput, error) {

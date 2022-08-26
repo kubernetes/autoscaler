@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Personalize client from just a session.
-//     svc := personalize.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Personalize client with additional configuration
-//     svc := personalize.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Personalize client from just a session.
+//	svc := personalize.New(mySession)
+//
+//	// Create a Personalize client with additional configuration
+//	svc := personalize.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Personalize {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

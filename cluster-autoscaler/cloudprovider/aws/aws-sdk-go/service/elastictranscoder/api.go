@@ -28,14 +28,13 @@ const opCancelJob = "CancelJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelJobRequest method.
+//	req, resp := client.CancelJobRequest(params)
 //
-//    // Example sending a request using the CancelJobRequest method.
-//    req, resp := client.CancelJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) CancelJobRequest(input *CancelJobInput) (req *request.Request, output *CancelJobOutput) {
 	op := &request.Operation{
 		Name:       opCancelJob,
@@ -69,27 +68,27 @@ func (c *ElasticTranscoder) CancelJobRequest(input *CancelJobInput) (req *reques
 // API operation CancelJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * ResourceInUseException
-//   The resource you are attempting to change is in use. For example, you are
-//   attempting to delete a pipeline that is currently in use.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceInUseException
+//     The resource you are attempting to change is in use. For example, you are
+//     attempting to delete a pipeline that is currently in use.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) CancelJob(input *CancelJobInput) (*CancelJobOutput, error) {
 	req, out := c.CancelJobRequest(input)
 	return out, req.Send()
@@ -127,14 +126,13 @@ const opCreateJob = "CreateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJobRequest method.
+//	req, resp := client.CreateJobRequest(params)
 //
-//    // Example sending a request using the CreateJobRequest method.
-//    req, resp := client.CreateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) CreateJobRequest(input *CreateJobInput) (req *request.Request, output *CreateJobResponse) {
 	op := &request.Operation{
 		Name:       opCreateJob,
@@ -169,27 +167,27 @@ func (c *ElasticTranscoder) CreateJobRequest(input *CreateJobInput) (req *reques
 // API operation CreateJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * LimitExceededException
-//   Too many operations for a given AWS account. For example, the number of pipelines
-//   exceeds the maximum allowed.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - LimitExceededException
+//     Too many operations for a given AWS account. For example, the number of pipelines
+//     exceeds the maximum allowed.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) CreateJob(input *CreateJobInput) (*CreateJobResponse, error) {
 	req, out := c.CreateJobRequest(input)
 	return out, req.Send()
@@ -227,14 +225,13 @@ const opCreatePipeline = "CreatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePipelineRequest method.
+//	req, resp := client.CreatePipelineRequest(params)
 //
-//    // Example sending a request using the CreatePipelineRequest method.
-//    req, resp := client.CreatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) CreatePipelineRequest(input *CreatePipelineInput) (req *request.Request, output *CreatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opCreatePipeline,
@@ -263,27 +260,27 @@ func (c *ElasticTranscoder) CreatePipelineRequest(input *CreatePipelineInput) (r
 // API operation CreatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - IncompatibleVersionException
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
-//   * LimitExceededException
-//   Too many operations for a given AWS account. For example, the number of pipelines
-//   exceeds the maximum allowed.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - LimitExceededException
+//     Too many operations for a given AWS account. For example, the number of pipelines
+//     exceeds the maximum allowed.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) CreatePipeline(input *CreatePipelineInput) (*CreatePipelineOutput, error) {
 	req, out := c.CreatePipelineRequest(input)
 	return out, req.Send()
@@ -321,14 +318,13 @@ const opCreatePreset = "CreatePreset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePresetRequest method.
+//	req, resp := client.CreatePresetRequest(params)
 //
-//    // Example sending a request using the CreatePresetRequest method.
-//    req, resp := client.CreatePresetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) CreatePresetRequest(input *CreatePresetInput) (req *request.Request, output *CreatePresetOutput) {
 	op := &request.Operation{
 		Name:       opCreatePreset,
@@ -371,22 +367,22 @@ func (c *ElasticTranscoder) CreatePresetRequest(input *CreatePresetInput) (req *
 // API operation CreatePreset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - IncompatibleVersionException
 //
-//   * LimitExceededException
-//   Too many operations for a given AWS account. For example, the number of pipelines
-//   exceeds the maximum allowed.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - LimitExceededException
+//     Too many operations for a given AWS account. For example, the number of pipelines
+//     exceeds the maximum allowed.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) CreatePreset(input *CreatePresetInput) (*CreatePresetOutput, error) {
 	req, out := c.CreatePresetRequest(input)
 	return out, req.Send()
@@ -424,14 +420,13 @@ const opDeletePipeline = "DeletePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePipelineRequest method.
+//	req, resp := client.DeletePipelineRequest(params)
 //
-//    // Example sending a request using the DeletePipelineRequest method.
-//    req, resp := client.DeletePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) DeletePipelineRequest(input *DeletePipelineInput) (req *request.Request, output *DeletePipelineOutput) {
 	op := &request.Operation{
 		Name:       opDeletePipeline,
@@ -465,27 +460,27 @@ func (c *ElasticTranscoder) DeletePipelineRequest(input *DeletePipelineInput) (r
 // API operation DeletePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * ResourceInUseException
-//   The resource you are attempting to change is in use. For example, you are
-//   attempting to delete a pipeline that is currently in use.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceInUseException
+//     The resource you are attempting to change is in use. For example, you are
+//     attempting to delete a pipeline that is currently in use.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) DeletePipeline(input *DeletePipelineInput) (*DeletePipelineOutput, error) {
 	req, out := c.DeletePipelineRequest(input)
 	return out, req.Send()
@@ -523,14 +518,13 @@ const opDeletePreset = "DeletePreset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePresetRequest method.
+//	req, resp := client.DeletePresetRequest(params)
 //
-//    // Example sending a request using the DeletePresetRequest method.
-//    req, resp := client.DeletePresetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) DeletePresetRequest(input *DeletePresetInput) (req *request.Request, output *DeletePresetOutput) {
 	op := &request.Operation{
 		Name:       opDeletePreset,
@@ -562,23 +556,23 @@ func (c *ElasticTranscoder) DeletePresetRequest(input *DeletePresetInput) (req *
 // API operation DeletePreset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) DeletePreset(input *DeletePresetInput) (*DeletePresetOutput, error) {
 	req, out := c.DeletePresetRequest(input)
 	return out, req.Send()
@@ -616,14 +610,13 @@ const opListJobsByPipeline = "ListJobsByPipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsByPipelineRequest method.
+//	req, resp := client.ListJobsByPipelineRequest(params)
 //
-//    // Example sending a request using the ListJobsByPipelineRequest method.
-//    req, resp := client.ListJobsByPipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ListJobsByPipelineRequest(input *ListJobsByPipelineInput) (req *request.Request, output *ListJobsByPipelineOutput) {
 	op := &request.Operation{
 		Name:       opListJobsByPipeline,
@@ -662,23 +655,23 @@ func (c *ElasticTranscoder) ListJobsByPipelineRequest(input *ListJobsByPipelineI
 // API operation ListJobsByPipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ListJobsByPipeline(input *ListJobsByPipelineInput) (*ListJobsByPipelineOutput, error) {
 	req, out := c.ListJobsByPipelineRequest(input)
 	return out, req.Send()
@@ -708,15 +701,14 @@ func (c *ElasticTranscoder) ListJobsByPipelineWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobsByPipeline operation.
-//    pageNum := 0
-//    err := client.ListJobsByPipelinePages(params,
-//        func(page *elastictranscoder.ListJobsByPipelineOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobsByPipeline operation.
+//	pageNum := 0
+//	err := client.ListJobsByPipelinePages(params,
+//	    func(page *elastictranscoder.ListJobsByPipelineOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticTranscoder) ListJobsByPipelinePages(input *ListJobsByPipelineInput, fn func(*ListJobsByPipelineOutput, bool) bool) error {
 	return c.ListJobsByPipelinePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -768,14 +760,13 @@ const opListJobsByStatus = "ListJobsByStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsByStatusRequest method.
+//	req, resp := client.ListJobsByStatusRequest(params)
 //
-//    // Example sending a request using the ListJobsByStatusRequest method.
-//    req, resp := client.ListJobsByStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ListJobsByStatusRequest(input *ListJobsByStatusInput) (req *request.Request, output *ListJobsByStatusOutput) {
 	op := &request.Operation{
 		Name:       opListJobsByStatus,
@@ -812,23 +803,23 @@ func (c *ElasticTranscoder) ListJobsByStatusRequest(input *ListJobsByStatusInput
 // API operation ListJobsByStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ListJobsByStatus(input *ListJobsByStatusInput) (*ListJobsByStatusOutput, error) {
 	req, out := c.ListJobsByStatusRequest(input)
 	return out, req.Send()
@@ -858,15 +849,14 @@ func (c *ElasticTranscoder) ListJobsByStatusWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobsByStatus operation.
-//    pageNum := 0
-//    err := client.ListJobsByStatusPages(params,
-//        func(page *elastictranscoder.ListJobsByStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobsByStatus operation.
+//	pageNum := 0
+//	err := client.ListJobsByStatusPages(params,
+//	    func(page *elastictranscoder.ListJobsByStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticTranscoder) ListJobsByStatusPages(input *ListJobsByStatusInput, fn func(*ListJobsByStatusOutput, bool) bool) error {
 	return c.ListJobsByStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -918,14 +908,13 @@ const opListPipelines = "ListPipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPipelinesRequest method.
+//	req, resp := client.ListPipelinesRequest(params)
 //
-//    // Example sending a request using the ListPipelinesRequest method.
-//    req, resp := client.ListPipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ListPipelinesRequest(input *ListPipelinesInput) (req *request.Request, output *ListPipelinesOutput) {
 	op := &request.Operation{
 		Name:       opListPipelines,
@@ -961,18 +950,18 @@ func (c *ElasticTranscoder) ListPipelinesRequest(input *ListPipelinesInput) (req
 // API operation ListPipelines for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - IncompatibleVersionException
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ListPipelines(input *ListPipelinesInput) (*ListPipelinesOutput, error) {
 	req, out := c.ListPipelinesRequest(input)
 	return out, req.Send()
@@ -1002,15 +991,14 @@ func (c *ElasticTranscoder) ListPipelinesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPipelines operation.
-//    pageNum := 0
-//    err := client.ListPipelinesPages(params,
-//        func(page *elastictranscoder.ListPipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPipelines operation.
+//	pageNum := 0
+//	err := client.ListPipelinesPages(params,
+//	    func(page *elastictranscoder.ListPipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticTranscoder) ListPipelinesPages(input *ListPipelinesInput, fn func(*ListPipelinesOutput, bool) bool) error {
 	return c.ListPipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1062,14 +1050,13 @@ const opListPresets = "ListPresets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPresetsRequest method.
+//	req, resp := client.ListPresetsRequest(params)
 //
-//    // Example sending a request using the ListPresetsRequest method.
-//    req, resp := client.ListPresetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ListPresetsRequest(input *ListPresetsInput) (req *request.Request, output *ListPresetsOutput) {
 	op := &request.Operation{
 		Name:       opListPresets,
@@ -1105,18 +1092,18 @@ func (c *ElasticTranscoder) ListPresetsRequest(input *ListPresetsInput) (req *re
 // API operation ListPresets for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - IncompatibleVersionException
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ListPresets(input *ListPresetsInput) (*ListPresetsOutput, error) {
 	req, out := c.ListPresetsRequest(input)
 	return out, req.Send()
@@ -1146,15 +1133,14 @@ func (c *ElasticTranscoder) ListPresetsWithContext(ctx aws.Context, input *ListP
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPresets operation.
-//    pageNum := 0
-//    err := client.ListPresetsPages(params,
-//        func(page *elastictranscoder.ListPresetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPresets operation.
+//	pageNum := 0
+//	err := client.ListPresetsPages(params,
+//	    func(page *elastictranscoder.ListPresetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticTranscoder) ListPresetsPages(input *ListPresetsInput, fn func(*ListPresetsOutput, bool) bool) error {
 	return c.ListPresetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1206,14 +1192,13 @@ const opReadJob = "ReadJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReadJobRequest method.
+//	req, resp := client.ReadJobRequest(params)
 //
-//    // Example sending a request using the ReadJobRequest method.
-//    req, resp := client.ReadJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ReadJobRequest(input *ReadJobInput) (req *request.Request, output *ReadJobOutput) {
 	op := &request.Operation{
 		Name:       opReadJob,
@@ -1242,23 +1227,23 @@ func (c *ElasticTranscoder) ReadJobRequest(input *ReadJobInput) (req *request.Re
 // API operation ReadJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ReadJob(input *ReadJobInput) (*ReadJobOutput, error) {
 	req, out := c.ReadJobRequest(input)
 	return out, req.Send()
@@ -1296,14 +1281,13 @@ const opReadPipeline = "ReadPipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReadPipelineRequest method.
+//	req, resp := client.ReadPipelineRequest(params)
 //
-//    // Example sending a request using the ReadPipelineRequest method.
-//    req, resp := client.ReadPipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ReadPipelineRequest(input *ReadPipelineInput) (req *request.Request, output *ReadPipelineOutput) {
 	op := &request.Operation{
 		Name:       opReadPipeline,
@@ -1332,23 +1316,23 @@ func (c *ElasticTranscoder) ReadPipelineRequest(input *ReadPipelineInput) (req *
 // API operation ReadPipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ReadPipeline(input *ReadPipelineInput) (*ReadPipelineOutput, error) {
 	req, out := c.ReadPipelineRequest(input)
 	return out, req.Send()
@@ -1386,14 +1370,13 @@ const opReadPreset = "ReadPreset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReadPresetRequest method.
+//	req, resp := client.ReadPresetRequest(params)
 //
-//    // Example sending a request using the ReadPresetRequest method.
-//    req, resp := client.ReadPresetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) ReadPresetRequest(input *ReadPresetInput) (req *request.Request, output *ReadPresetOutput) {
 	op := &request.Operation{
 		Name:       opReadPreset,
@@ -1422,23 +1405,23 @@ func (c *ElasticTranscoder) ReadPresetRequest(input *ReadPresetInput) (req *requ
 // API operation ReadPreset for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) ReadPreset(input *ReadPresetInput) (*ReadPresetOutput, error) {
 	req, out := c.ReadPresetRequest(input)
 	return out, req.Send()
@@ -1476,14 +1459,13 @@ const opTestRole = "TestRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestRoleRequest method.
+//	req, resp := client.TestRoleRequest(params)
 //
-//    // Example sending a request using the TestRoleRequest method.
-//    req, resp := client.TestRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // Deprecated: TestRole has been deprecated
 func (c *ElasticTranscoder) TestRoleRequest(input *TestRoleInput) (req *request.Request, output *TestRoleOutput) {
@@ -1523,23 +1505,23 @@ func (c *ElasticTranscoder) TestRoleRequest(input *TestRoleInput) (req *request.
 // API operation TestRole for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 //
 // Deprecated: TestRole has been deprecated
 func (c *ElasticTranscoder) TestRole(input *TestRoleInput) (*TestRoleOutput, error) {
@@ -1581,14 +1563,13 @@ const opUpdatePipeline = "UpdatePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePipelineRequest method.
+//	req, resp := client.UpdatePipelineRequest(params)
 //
-//    // Example sending a request using the UpdatePipelineRequest method.
-//    req, resp := client.UpdatePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) UpdatePipelineRequest(input *UpdatePipelineInput) (req *request.Request, output *UpdatePipelineOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipeline,
@@ -1622,27 +1603,27 @@ func (c *ElasticTranscoder) UpdatePipelineRequest(input *UpdatePipelineInput) (r
 // API operation UpdatePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - IncompatibleVersionException
 //
-//   * ResourceInUseException
-//   The resource you are attempting to change is in use. For example, you are
-//   attempting to delete a pipeline that is currently in use.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - ResourceInUseException
+//     The resource you are attempting to change is in use. For example, you are
+//     attempting to delete a pipeline that is currently in use.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) UpdatePipeline(input *UpdatePipelineInput) (*UpdatePipelineOutput, error) {
 	req, out := c.UpdatePipelineRequest(input)
 	return out, req.Send()
@@ -1680,14 +1661,13 @@ const opUpdatePipelineNotifications = "UpdatePipelineNotifications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePipelineNotificationsRequest method.
+//	req, resp := client.UpdatePipelineNotificationsRequest(params)
 //
-//    // Example sending a request using the UpdatePipelineNotificationsRequest method.
-//    req, resp := client.UpdatePipelineNotificationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) UpdatePipelineNotificationsRequest(input *UpdatePipelineNotificationsInput) (req *request.Request, output *UpdatePipelineNotificationsOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipelineNotifications,
@@ -1720,27 +1700,27 @@ func (c *ElasticTranscoder) UpdatePipelineNotificationsRequest(input *UpdatePipe
 // API operation UpdatePipelineNotifications for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * ResourceInUseException
-//   The resource you are attempting to change is in use. For example, you are
-//   attempting to delete a pipeline that is currently in use.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceInUseException
+//     The resource you are attempting to change is in use. For example, you are
+//     attempting to delete a pipeline that is currently in use.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) UpdatePipelineNotifications(input *UpdatePipelineNotificationsInput) (*UpdatePipelineNotificationsOutput, error) {
 	req, out := c.UpdatePipelineNotificationsRequest(input)
 	return out, req.Send()
@@ -1778,14 +1758,13 @@ const opUpdatePipelineStatus = "UpdatePipelineStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePipelineStatusRequest method.
+//	req, resp := client.UpdatePipelineStatusRequest(params)
 //
-//    // Example sending a request using the UpdatePipelineStatusRequest method.
-//    req, resp := client.UpdatePipelineStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticTranscoder) UpdatePipelineStatusRequest(input *UpdatePipelineStatusInput) (req *request.Request, output *UpdatePipelineStatusOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePipelineStatus,
@@ -1821,27 +1800,27 @@ func (c *ElasticTranscoder) UpdatePipelineStatusRequest(input *UpdatePipelineSta
 // API operation UpdatePipelineStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   One or more required parameter values were not provided in the request.
 //
-//   * IncompatibleVersionException
+//   - ValidationException
+//     One or more required parameter values were not provided in the request.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist or is not available. For example, the
-//   pipeline to which you're trying to add a job doesn't exist or is still being
-//   created.
+//   - IncompatibleVersionException
 //
-//   * ResourceInUseException
-//   The resource you are attempting to change is in use. For example, you are
-//   attempting to delete a pipeline that is currently in use.
+//   - ResourceNotFoundException
+//     The requested resource does not exist or is not available. For example, the
+//     pipeline to which you're trying to add a job doesn't exist or is still being
+//     created.
 //
-//   * AccessDeniedException
-//   General authentication failure. The request was not signed correctly.
+//   - ResourceInUseException
+//     The resource you are attempting to change is in use. For example, you are
+//     attempting to delete a pipeline that is currently in use.
 //
-//   * InternalServiceException
-//   Elastic Transcoder encountered an unexpected exception while trying to fulfill
-//   the request.
+//   - AccessDeniedException
+//     General authentication failure. The request was not signed correctly.
 //
+//   - InternalServiceException
+//     Elastic Transcoder encountered an unexpected exception while trying to fulfill
+//     the request.
 func (c *ElasticTranscoder) UpdatePipelineStatus(input *UpdatePipelineStatusInput) (*UpdatePipelineStatusOutput, error) {
 	req, out := c.UpdatePipelineStatusRequest(input)
 	return out, req.Send()
@@ -4956,7 +4935,6 @@ func (s *JobInput) SetTimeSpan(v *TimeSpan) *JobInput {
 	return s
 }
 
-//
 // Outputs recommended instead.
 //
 // If you specified one output for a job, information about that output. If
