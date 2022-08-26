@@ -101,15 +101,17 @@ type RemovalSimulator struct {
 	clusterSnapshot  ClusterSnapshot
 	predicateChecker PredicateChecker
 	usageTracker     *UsageTracker
+	canPersist       bool
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
-func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, usageTracker *UsageTracker) *RemovalSimulator {
+func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot ClusterSnapshot, predicateChecker PredicateChecker, usageTracker *UsageTracker, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:          listers,
 		clusterSnapshot:  clusterSnapshot,
 		predicateChecker: predicateChecker,
 		usageTracker:     usageTracker,
+		canPersist:       persistSuccessfulSimulations,
 	}
 }
 
@@ -174,7 +176,9 @@ func (r *RemovalSimulator) CheckNodeRemoval(
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
-	err = r.findPlaceFor(nodeName, podsToRemove, destinationMap, oldHints, newHints, timestamp)
+	err = r.withForkedSnapshot(func() error {
+		return r.findPlaceFor(nodeName, podsToRemove, destinationMap, oldHints, newHints, timestamp)
+	})
 	if err != nil {
 		klog.V(2).Infof("node %s is not suitable for removal: %v", nodeName, err)
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: NoPlaceToMovePods}
@@ -205,19 +209,29 @@ func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp
 	return result
 }
 
-func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
-	oldHints map[string]string, newHints map[string]string, timestamp time.Time) error {
-
-	if err := r.clusterSnapshot.Fork(); err != nil {
+func (r *RemovalSimulator) withForkedSnapshot(f func() error) (err error) {
+	if err = r.clusterSnapshot.Fork(); err != nil {
 		return err
 	}
 	defer func() {
-		err := r.clusterSnapshot.Revert()
-		if err != nil {
-			klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", err)
+		if err == nil && r.canPersist {
+			cleanupErr := r.clusterSnapshot.Commit()
+			if cleanupErr != nil {
+				klog.Fatalf("Got error when calling ClusterSnapshot.Commit(); %v", cleanupErr)
+			}
+		} else {
+			cleanupErr := r.clusterSnapshot.Revert()
+			if cleanupErr != nil {
+				klog.Fatalf("Got error when calling ClusterSnapshot.Revert(); %v", cleanupErr)
+			}
 		}
 	}()
+	err = f()
+	return err
+}
 
+func (r *RemovalSimulator) findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes map[string]bool,
+	oldHints map[string]string, newHints map[string]string, timestamp time.Time) error {
 	podKey := func(pod *apiv1.Pod) string {
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
