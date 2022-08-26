@@ -29,14 +29,13 @@ const opAcceptAdministratorInvitation = "AcceptAdministratorInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptAdministratorInvitationRequest method.
+//	req, resp := client.AcceptAdministratorInvitationRequest(params)
 //
-//    // Example sending a request using the AcceptAdministratorInvitationRequest method.
-//    req, resp := client.AcceptAdministratorInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/AcceptAdministratorInvitation
 func (c *SecurityHub) AcceptAdministratorInvitationRequest(input *AcceptAdministratorInvitationInput) (req *request.Request, output *AcceptAdministratorInvitationOutput) {
@@ -75,25 +74,26 @@ func (c *SecurityHub) AcceptAdministratorInvitationRequest(input *AcceptAdminist
 // API operation AcceptAdministratorInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/AcceptAdministratorInvitation
 func (c *SecurityHub) AcceptAdministratorInvitation(input *AcceptAdministratorInvitationInput) (*AcceptAdministratorInvitationOutput, error) {
@@ -133,14 +133,13 @@ const opAcceptInvitation = "AcceptInvitation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptInvitationRequest method.
+//	req, resp := client.AcceptInvitationRequest(params)
 //
-//    // Example sending a request using the AcceptInvitationRequest method.
-//    req, resp := client.AcceptInvitationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/AcceptInvitation
 //
@@ -193,25 +192,26 @@ func (c *SecurityHub) AcceptInvitationRequest(input *AcceptInvitationInput) (req
 // API operation AcceptInvitation for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/AcceptInvitation
 //
@@ -255,14 +255,13 @@ const opBatchDisableStandards = "BatchDisableStandards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisableStandardsRequest method.
+//	req, resp := client.BatchDisableStandardsRequest(params)
 //
-//    // Example sending a request using the BatchDisableStandardsRequest method.
-//    req, resp := client.BatchDisableStandardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchDisableStandards
 func (c *SecurityHub) BatchDisableStandardsRequest(input *BatchDisableStandardsInput) (req *request.Request, output *BatchDisableStandardsOutput) {
@@ -296,22 +295,23 @@ func (c *SecurityHub) BatchDisableStandardsRequest(input *BatchDisableStandardsI
 // API operation BatchDisableStandards for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchDisableStandards
 func (c *SecurityHub) BatchDisableStandards(input *BatchDisableStandardsInput) (*BatchDisableStandardsOutput, error) {
@@ -351,14 +351,13 @@ const opBatchEnableStandards = "BatchEnableStandards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchEnableStandardsRequest method.
+//	req, resp := client.BatchEnableStandardsRequest(params)
 //
-//    // Example sending a request using the BatchEnableStandardsRequest method.
-//    req, resp := client.BatchEnableStandardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchEnableStandards
 func (c *SecurityHub) BatchEnableStandardsRequest(input *BatchEnableStandardsInput) (req *request.Request, output *BatchEnableStandardsOutput) {
@@ -393,22 +392,23 @@ func (c *SecurityHub) BatchEnableStandardsRequest(input *BatchEnableStandardsInp
 // API operation BatchEnableStandards for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchEnableStandards
 func (c *SecurityHub) BatchEnableStandards(input *BatchEnableStandardsInput) (*BatchEnableStandardsOutput, error) {
@@ -448,14 +448,13 @@ const opBatchImportFindings = "BatchImportFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchImportFindingsRequest method.
+//	req, resp := client.BatchImportFindingsRequest(params)
 //
-//    // Example sending a request using the BatchImportFindingsRequest method.
-//    req, resp := client.BatchImportFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchImportFindings
 func (c *SecurityHub) BatchImportFindingsRequest(input *BatchImportFindingsInput) (req *request.Request, output *BatchImportFindingsOutput) {
@@ -482,17 +481,17 @@ func (c *SecurityHub) BatchImportFindingsRequest(input *BatchImportFindingsInput
 //
 // BatchImportFindings must be called by one of the following:
 //
-//    * The Amazon Web Services account that is associated with a finding if
-//    you are using the default product ARN (https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-custom-providers.html#securityhub-custom-providers-bfi-reqs)
-//    or are a partner sending findings from within a customer's Amazon Web
-//    Services account. In these cases, the identifier of the account that you
-//    are calling BatchImportFindings from needs to be the same as the AwsAccountId
-//    attribute for the finding.
+//   - The Amazon Web Services account that is associated with a finding if
+//     you are using the default product ARN (https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-custom-providers.html#securityhub-custom-providers-bfi-reqs)
+//     or are a partner sending findings from within a customer's Amazon Web
+//     Services account. In these cases, the identifier of the account that you
+//     are calling BatchImportFindings from needs to be the same as the AwsAccountId
+//     attribute for the finding.
 //
-//    * An Amazon Web Services account that Security Hub has allow-listed for
-//    an official partner integration. In this case, you can call BatchImportFindings
-//    from the allow-listed account and send findings from different customer
-//    accounts in the same batch.
+//   - An Amazon Web Services account that Security Hub has allow-listed for
+//     an official partner integration. In this case, you can call BatchImportFindings
+//     from the allow-listed account and send findings from different customer
+//     accounts in the same batch.
 //
 // The maximum allowed size for a finding is 240 Kb. An error is returned for
 // any finding larger than 240 Kb.
@@ -501,26 +500,26 @@ func (c *SecurityHub) BatchImportFindingsRequest(input *BatchImportFindingsInput
 // the following finding fields and objects, which Security Hub customers use
 // to manage their investigation workflow.
 //
-//    * Note
+//   - Note
 //
-//    * UserDefinedFields
+//   - UserDefinedFields
 //
-//    * VerificationState
+//   - VerificationState
 //
-//    * Workflow
+//   - Workflow
 //
 // Finding providers also should not use BatchImportFindings to update the following
 // attributes.
 //
-//    * Confidence
+//   - Confidence
 //
-//    * Criticality
+//   - Criticality
 //
-//    * RelatedFindings
+//   - RelatedFindings
 //
-//    * Severity
+//   - Severity
 //
-//    * Types
+//   - Types
 //
 // Instead, finding providers use FindingProviderFields to provide values for
 // these attributes.
@@ -533,22 +532,23 @@ func (c *SecurityHub) BatchImportFindingsRequest(input *BatchImportFindingsInput
 // API operation BatchImportFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchImportFindings
 func (c *SecurityHub) BatchImportFindings(input *BatchImportFindingsInput) (*BatchImportFindingsOutput, error) {
@@ -588,14 +588,13 @@ const opBatchUpdateFindings = "BatchUpdateFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpdateFindingsRequest method.
+//	req, resp := client.BatchUpdateFindingsRequest(params)
 //
-//    // Example sending a request using the BatchUpdateFindingsRequest method.
-//    req, resp := client.BatchUpdateFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchUpdateFindings
 func (c *SecurityHub) BatchUpdateFindingsRequest(input *BatchUpdateFindingsInput) (req *request.Request, output *BatchUpdateFindingsOutput) {
@@ -627,23 +626,23 @@ func (c *SecurityHub) BatchUpdateFindingsRequest(input *BatchUpdateFindingsInput
 // Administrator and member accounts can use BatchUpdateFindings to update the
 // following finding fields and objects.
 //
-//    * Confidence
+//   - Confidence
 //
-//    * Criticality
+//   - Criticality
 //
-//    * Note
+//   - Note
 //
-//    * RelatedFindings
+//   - RelatedFindings
 //
-//    * Severity
+//   - Severity
 //
-//    * Types
+//   - Types
 //
-//    * UserDefinedFields
+//   - UserDefinedFields
 //
-//    * VerificationState
+//   - VerificationState
 //
-//    * Workflow
+//   - Workflow
 //
 // You can configure IAM policies to restrict access to fields and field values.
 // For example, you might not want member accounts to be able to suppress findings
@@ -659,22 +658,23 @@ func (c *SecurityHub) BatchUpdateFindingsRequest(input *BatchUpdateFindingsInput
 // API operation BatchUpdateFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/BatchUpdateFindings
 func (c *SecurityHub) BatchUpdateFindings(input *BatchUpdateFindingsInput) (*BatchUpdateFindingsOutput, error) {
@@ -714,14 +714,13 @@ const opCreateActionTarget = "CreateActionTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateActionTargetRequest method.
+//	req, resp := client.CreateActionTargetRequest(params)
 //
-//    // Example sending a request using the CreateActionTargetRequest method.
-//    req, resp := client.CreateActionTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateActionTarget
 func (c *SecurityHub) CreateActionTargetRequest(input *CreateActionTargetInput) (req *request.Request, output *CreateActionTargetOutput) {
@@ -755,25 +754,26 @@ func (c *SecurityHub) CreateActionTargetRequest(input *CreateActionTargetInput) 
 // API operation CreateActionTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateActionTarget
 func (c *SecurityHub) CreateActionTarget(input *CreateActionTargetInput) (*CreateActionTargetOutput, error) {
@@ -813,14 +813,13 @@ const opCreateFindingAggregator = "CreateFindingAggregator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFindingAggregatorRequest method.
+//	req, resp := client.CreateFindingAggregatorRequest(params)
 //
-//    // Example sending a request using the CreateFindingAggregatorRequest method.
-//    req, resp := client.CreateFindingAggregatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateFindingAggregator
 func (c *SecurityHub) CreateFindingAggregatorRequest(input *CreateFindingAggregatorInput) (req *request.Request, output *CreateFindingAggregatorOutput) {
@@ -855,25 +854,26 @@ func (c *SecurityHub) CreateFindingAggregatorRequest(input *CreateFindingAggrega
 // API operation CreateFindingAggregator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
+//
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateFindingAggregator
 func (c *SecurityHub) CreateFindingAggregator(input *CreateFindingAggregatorInput) (*CreateFindingAggregatorOutput, error) {
@@ -913,14 +913,13 @@ const opCreateInsight = "CreateInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInsightRequest method.
+//	req, resp := client.CreateInsightRequest(params)
 //
-//    // Example sending a request using the CreateInsightRequest method.
-//    req, resp := client.CreateInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateInsight
 func (c *SecurityHub) CreateInsightRequest(input *CreateInsightInput) (req *request.Request, output *CreateInsightOutput) {
@@ -954,25 +953,26 @@ func (c *SecurityHub) CreateInsightRequest(input *CreateInsightInput) (req *requ
 // API operation CreateInsight for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateInsight
 func (c *SecurityHub) CreateInsight(input *CreateInsightInput) (*CreateInsightOutput, error) {
@@ -1012,14 +1012,13 @@ const opCreateMembers = "CreateMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMembersRequest method.
+//	req, resp := client.CreateMembersRequest(params)
 //
-//    // Example sending a request using the CreateMembersRequest method.
-//    req, resp := client.CreateMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateMembers
 func (c *SecurityHub) CreateMembersRequest(input *CreateMembersInput) (req *request.Request, output *CreateMembersOutput) {
@@ -1050,10 +1049,10 @@ func (c *SecurityHub) CreateMembersRequest(input *CreateMembersInput) (req *requ
 // For accounts that are managed using Organizations, CreateMembers is only
 // used in the following cases:
 //
-//    * Security Hub is not configured to automatically add new organization
-//    accounts.
+//   - Security Hub is not configured to automatically add new organization
+//     accounts.
 //
-//    * The account was disassociated or deleted in Security Hub.
+//   - The account was disassociated or deleted in Security Hub.
 //
 // This action can only be used by an account that has Security Hub enabled.
 // To enable Security Hub, you can use the EnableSecurityHub operation.
@@ -1066,15 +1065,15 @@ func (c *SecurityHub) CreateMembersRequest(input *CreateMembersInput) (req *requ
 // Accounts that are managed using Organizations do not receive an invitation.
 // They automatically become a member account in Security Hub.
 //
-//    * If the organization account does not have Security Hub enabled, then
-//    Security Hub and the default standards are automatically enabled. Note
-//    that Security Hub cannot be enabled automatically for the organization
-//    management account. The organization management account must enable Security
-//    Hub before the administrator account enables it as a member account.
+//   - If the organization account does not have Security Hub enabled, then
+//     Security Hub and the default standards are automatically enabled. Note
+//     that Security Hub cannot be enabled automatically for the organization
+//     management account. The organization management account must enable Security
+//     Hub before the administrator account enables it as a member account.
 //
-//    * For organization accounts that already have Security Hub enabled, Security
-//    Hub does not make any other changes to those accounts. It does not change
-//    their enabled standards or controls.
+//   - For organization accounts that already have Security Hub enabled, Security
+//     Hub does not make any other changes to those accounts. It does not change
+//     their enabled standards or controls.
 //
 // A permissions policy is added that permits the administrator account to view
 // the findings generated in the member account.
@@ -1090,25 +1089,26 @@ func (c *SecurityHub) CreateMembersRequest(input *CreateMembersInput) (req *requ
 // API operation CreateMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/CreateMembers
 func (c *SecurityHub) CreateMembers(input *CreateMembersInput) (*CreateMembersOutput, error) {
@@ -1148,14 +1148,13 @@ const opDeclineInvitations = "DeclineInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeclineInvitationsRequest method.
+//	req, resp := client.DeclineInvitationsRequest(params)
 //
-//    // Example sending a request using the DeclineInvitationsRequest method.
-//    req, resp := client.DeclineInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeclineInvitations
 func (c *SecurityHub) DeclineInvitationsRequest(input *DeclineInvitationsInput) (req *request.Request, output *DeclineInvitationsOutput) {
@@ -1189,20 +1188,21 @@ func (c *SecurityHub) DeclineInvitationsRequest(input *DeclineInvitationsInput) 
 // API operation DeclineInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeclineInvitations
 func (c *SecurityHub) DeclineInvitations(input *DeclineInvitationsInput) (*DeclineInvitationsOutput, error) {
@@ -1242,14 +1242,13 @@ const opDeleteActionTarget = "DeleteActionTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteActionTargetRequest method.
+//	req, resp := client.DeleteActionTargetRequest(params)
 //
-//    // Example sending a request using the DeleteActionTargetRequest method.
-//    req, resp := client.DeleteActionTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteActionTarget
 func (c *SecurityHub) DeleteActionTargetRequest(input *DeleteActionTargetInput) (req *request.Request, output *DeleteActionTargetOutput) {
@@ -1283,20 +1282,21 @@ func (c *SecurityHub) DeleteActionTargetRequest(input *DeleteActionTargetInput) 
 // API operation DeleteActionTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteActionTarget
 func (c *SecurityHub) DeleteActionTarget(input *DeleteActionTargetInput) (*DeleteActionTargetOutput, error) {
@@ -1336,14 +1336,13 @@ const opDeleteFindingAggregator = "DeleteFindingAggregator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFindingAggregatorRequest method.
+//	req, resp := client.DeleteFindingAggregatorRequest(params)
 //
-//    // Example sending a request using the DeleteFindingAggregatorRequest method.
-//    req, resp := client.DeleteFindingAggregatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteFindingAggregator
 func (c *SecurityHub) DeleteFindingAggregatorRequest(input *DeleteFindingAggregatorInput) (req *request.Request, output *DeleteFindingAggregatorOutput) {
@@ -1380,28 +1379,29 @@ func (c *SecurityHub) DeleteFindingAggregatorRequest(input *DeleteFindingAggrega
 // API operation DeleteFindingAggregator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteFindingAggregator
 func (c *SecurityHub) DeleteFindingAggregator(input *DeleteFindingAggregatorInput) (*DeleteFindingAggregatorOutput, error) {
@@ -1441,14 +1441,13 @@ const opDeleteInsight = "DeleteInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInsightRequest method.
+//	req, resp := client.DeleteInsightRequest(params)
 //
-//    // Example sending a request using the DeleteInsightRequest method.
-//    req, resp := client.DeleteInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteInsight
 func (c *SecurityHub) DeleteInsightRequest(input *DeleteInsightInput) (req *request.Request, output *DeleteInsightOutput) {
@@ -1479,25 +1478,26 @@ func (c *SecurityHub) DeleteInsightRequest(input *DeleteInsightInput) (req *requ
 // API operation DeleteInsight for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteInsight
 func (c *SecurityHub) DeleteInsight(input *DeleteInsightInput) (*DeleteInsightOutput, error) {
@@ -1537,14 +1537,13 @@ const opDeleteInvitations = "DeleteInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInvitationsRequest method.
+//	req, resp := client.DeleteInvitationsRequest(params)
 //
-//    // Example sending a request using the DeleteInvitationsRequest method.
-//    req, resp := client.DeleteInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteInvitations
 func (c *SecurityHub) DeleteInvitationsRequest(input *DeleteInvitationsInput) (req *request.Request, output *DeleteInvitationsOutput) {
@@ -1579,25 +1578,26 @@ func (c *SecurityHub) DeleteInvitationsRequest(input *DeleteInvitationsInput) (r
 // API operation DeleteInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteInvitations
 func (c *SecurityHub) DeleteInvitations(input *DeleteInvitationsInput) (*DeleteInvitationsOutput, error) {
@@ -1637,14 +1637,13 @@ const opDeleteMembers = "DeleteMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMembersRequest method.
+//	req, resp := client.DeleteMembersRequest(params)
 //
-//    // Example sending a request using the DeleteMembersRequest method.
-//    req, resp := client.DeleteMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteMembers
 func (c *SecurityHub) DeleteMembersRequest(input *DeleteMembersInput) (req *request.Request, output *DeleteMembersOutput) {
@@ -1678,25 +1677,26 @@ func (c *SecurityHub) DeleteMembersRequest(input *DeleteMembersInput) (req *requ
 // API operation DeleteMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DeleteMembers
 func (c *SecurityHub) DeleteMembers(input *DeleteMembersInput) (*DeleteMembersOutput, error) {
@@ -1736,14 +1736,13 @@ const opDescribeActionTargets = "DescribeActionTargets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeActionTargetsRequest method.
+//	req, resp := client.DescribeActionTargetsRequest(params)
 //
-//    // Example sending a request using the DescribeActionTargetsRequest method.
-//    req, resp := client.DescribeActionTargetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeActionTargets
 func (c *SecurityHub) DescribeActionTargetsRequest(input *DescribeActionTargetsInput) (req *request.Request, output *DescribeActionTargetsOutput) {
@@ -1780,20 +1779,21 @@ func (c *SecurityHub) DescribeActionTargetsRequest(input *DescribeActionTargetsI
 // API operation DescribeActionTargets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeActionTargets
 func (c *SecurityHub) DescribeActionTargets(input *DescribeActionTargetsInput) (*DescribeActionTargetsOutput, error) {
@@ -1825,15 +1825,14 @@ func (c *SecurityHub) DescribeActionTargetsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeActionTargets operation.
-//    pageNum := 0
-//    err := client.DescribeActionTargetsPages(params,
-//        func(page *securityhub.DescribeActionTargetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeActionTargets operation.
+//	pageNum := 0
+//	err := client.DescribeActionTargetsPages(params,
+//	    func(page *securityhub.DescribeActionTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) DescribeActionTargetsPages(input *DescribeActionTargetsInput, fn func(*DescribeActionTargetsOutput, bool) bool) error {
 	return c.DescribeActionTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1885,14 +1884,13 @@ const opDescribeHub = "DescribeHub"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeHubRequest method.
+//	req, resp := client.DescribeHubRequest(params)
 //
-//    // Example sending a request using the DescribeHubRequest method.
-//    req, resp := client.DescribeHubRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeHub
 func (c *SecurityHub) DescribeHubRequest(input *DescribeHubInput) (req *request.Request, output *DescribeHubOutput) {
@@ -1924,25 +1922,26 @@ func (c *SecurityHub) DescribeHubRequest(input *DescribeHubInput) (req *request.
 // API operation DescribeHub for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeHub
 func (c *SecurityHub) DescribeHub(input *DescribeHubInput) (*DescribeHubOutput, error) {
@@ -1982,14 +1981,13 @@ const opDescribeOrganizationConfiguration = "DescribeOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOrganizationConfigurationRequest method.
+//	req, resp := client.DescribeOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeOrganizationConfigurationRequest method.
-//    req, resp := client.DescribeOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeOrganizationConfiguration
 func (c *SecurityHub) DescribeOrganizationConfigurationRequest(input *DescribeOrganizationConfigurationInput) (req *request.Request, output *DescribeOrganizationConfigurationOutput) {
@@ -2021,22 +2019,23 @@ func (c *SecurityHub) DescribeOrganizationConfigurationRequest(input *DescribeOr
 // API operation DescribeOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeOrganizationConfiguration
 func (c *SecurityHub) DescribeOrganizationConfiguration(input *DescribeOrganizationConfigurationInput) (*DescribeOrganizationConfigurationOutput, error) {
@@ -2076,14 +2075,13 @@ const opDescribeProducts = "DescribeProducts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeProductsRequest method.
+//	req, resp := client.DescribeProductsRequest(params)
 //
-//    // Example sending a request using the DescribeProductsRequest method.
-//    req, resp := client.DescribeProductsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeProducts
 func (c *SecurityHub) DescribeProductsRequest(input *DescribeProductsInput) (req *request.Request, output *DescribeProductsOutput) {
@@ -2126,22 +2124,23 @@ func (c *SecurityHub) DescribeProductsRequest(input *DescribeProductsInput) (req
 // API operation DescribeProducts for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeProducts
 func (c *SecurityHub) DescribeProducts(input *DescribeProductsInput) (*DescribeProductsOutput, error) {
@@ -2173,15 +2172,14 @@ func (c *SecurityHub) DescribeProductsWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeProducts operation.
-//    pageNum := 0
-//    err := client.DescribeProductsPages(params,
-//        func(page *securityhub.DescribeProductsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeProducts operation.
+//	pageNum := 0
+//	err := client.DescribeProductsPages(params,
+//	    func(page *securityhub.DescribeProductsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) DescribeProductsPages(input *DescribeProductsInput, fn func(*DescribeProductsOutput, bool) bool) error {
 	return c.DescribeProductsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2233,14 +2231,13 @@ const opDescribeStandards = "DescribeStandards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStandardsRequest method.
+//	req, resp := client.DescribeStandardsRequest(params)
 //
-//    // Example sending a request using the DescribeStandardsRequest method.
-//    req, resp := client.DescribeStandardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeStandards
 func (c *SecurityHub) DescribeStandardsRequest(input *DescribeStandardsInput) (req *request.Request, output *DescribeStandardsOutput) {
@@ -2280,17 +2277,18 @@ func (c *SecurityHub) DescribeStandardsRequest(input *DescribeStandardsInput) (r
 // API operation DescribeStandards for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeStandards
 func (c *SecurityHub) DescribeStandards(input *DescribeStandardsInput) (*DescribeStandardsOutput, error) {
@@ -2322,15 +2320,14 @@ func (c *SecurityHub) DescribeStandardsWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStandards operation.
-//    pageNum := 0
-//    err := client.DescribeStandardsPages(params,
-//        func(page *securityhub.DescribeStandardsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStandards operation.
+//	pageNum := 0
+//	err := client.DescribeStandardsPages(params,
+//	    func(page *securityhub.DescribeStandardsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) DescribeStandardsPages(input *DescribeStandardsInput, fn func(*DescribeStandardsOutput, bool) bool) error {
 	return c.DescribeStandardsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2382,14 +2379,13 @@ const opDescribeStandardsControls = "DescribeStandardsControls"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStandardsControlsRequest method.
+//	req, resp := client.DescribeStandardsControlsRequest(params)
 //
-//    // Example sending a request using the DescribeStandardsControlsRequest method.
-//    req, resp := client.DescribeStandardsControlsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeStandardsControls
 func (c *SecurityHub) DescribeStandardsControlsRequest(input *DescribeStandardsControlsInput) (req *request.Request, output *DescribeStandardsControlsOutput) {
@@ -2429,20 +2425,21 @@ func (c *SecurityHub) DescribeStandardsControlsRequest(input *DescribeStandardsC
 // API operation DescribeStandardsControls for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DescribeStandardsControls
 func (c *SecurityHub) DescribeStandardsControls(input *DescribeStandardsControlsInput) (*DescribeStandardsControlsOutput, error) {
@@ -2474,15 +2471,14 @@ func (c *SecurityHub) DescribeStandardsControlsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStandardsControls operation.
-//    pageNum := 0
-//    err := client.DescribeStandardsControlsPages(params,
-//        func(page *securityhub.DescribeStandardsControlsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStandardsControls operation.
+//	pageNum := 0
+//	err := client.DescribeStandardsControlsPages(params,
+//	    func(page *securityhub.DescribeStandardsControlsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) DescribeStandardsControlsPages(input *DescribeStandardsControlsInput, fn func(*DescribeStandardsControlsOutput, bool) bool) error {
 	return c.DescribeStandardsControlsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2534,14 +2530,13 @@ const opDisableImportFindingsForProduct = "DisableImportFindingsForProduct"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableImportFindingsForProductRequest method.
+//	req, resp := client.DisableImportFindingsForProductRequest(params)
 //
-//    // Example sending a request using the DisableImportFindingsForProductRequest method.
-//    req, resp := client.DisableImportFindingsForProductRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableImportFindingsForProduct
 func (c *SecurityHub) DisableImportFindingsForProductRequest(input *DisableImportFindingsForProductInput) (req *request.Request, output *DisableImportFindingsForProductOutput) {
@@ -2575,25 +2570,26 @@ func (c *SecurityHub) DisableImportFindingsForProductRequest(input *DisableImpor
 // API operation DisableImportFindingsForProduct for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableImportFindingsForProduct
 func (c *SecurityHub) DisableImportFindingsForProduct(input *DisableImportFindingsForProductInput) (*DisableImportFindingsForProductOutput, error) {
@@ -2633,14 +2629,13 @@ const opDisableOrganizationAdminAccount = "DisableOrganizationAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableOrganizationAdminAccountRequest method.
+//	req, resp := client.DisableOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the DisableOrganizationAdminAccountRequest method.
-//    req, resp := client.DisableOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableOrganizationAdminAccount
 func (c *SecurityHub) DisableOrganizationAdminAccountRequest(input *DisableOrganizationAdminAccountInput) (req *request.Request, output *DisableOrganizationAdminAccountOutput) {
@@ -2673,22 +2668,23 @@ func (c *SecurityHub) DisableOrganizationAdminAccountRequest(input *DisableOrgan
 // API operation DisableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableOrganizationAdminAccount
 func (c *SecurityHub) DisableOrganizationAdminAccount(input *DisableOrganizationAdminAccountInput) (*DisableOrganizationAdminAccountOutput, error) {
@@ -2728,14 +2724,13 @@ const opDisableSecurityHub = "DisableSecurityHub"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableSecurityHubRequest method.
+//	req, resp := client.DisableSecurityHubRequest(params)
 //
-//    // Example sending a request using the DisableSecurityHubRequest method.
-//    req, resp := client.DisableSecurityHubRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableSecurityHub
 func (c *SecurityHub) DisableSecurityHubRequest(input *DisableSecurityHubInput) (req *request.Request, output *DisableSecurityHubOutput) {
@@ -2780,21 +2775,22 @@ func (c *SecurityHub) DisableSecurityHubRequest(input *DisableSecurityHubInput) 
 // API operation DisableSecurityHub for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisableSecurityHub
 func (c *SecurityHub) DisableSecurityHub(input *DisableSecurityHubInput) (*DisableSecurityHubOutput, error) {
@@ -2834,14 +2830,13 @@ const opDisassociateFromAdministratorAccount = "DisassociateFromAdministratorAcc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateFromAdministratorAccountRequest method.
+//	req, resp := client.DisassociateFromAdministratorAccountRequest(params)
 //
-//    // Example sending a request using the DisassociateFromAdministratorAccountRequest method.
-//    req, resp := client.DisassociateFromAdministratorAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateFromAdministratorAccount
 func (c *SecurityHub) DisassociateFromAdministratorAccountRequest(input *DisassociateFromAdministratorAccountInput) (req *request.Request, output *DisassociateFromAdministratorAccountOutput) {
@@ -2878,25 +2873,26 @@ func (c *SecurityHub) DisassociateFromAdministratorAccountRequest(input *Disasso
 // API operation DisassociateFromAdministratorAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateFromAdministratorAccount
 func (c *SecurityHub) DisassociateFromAdministratorAccount(input *DisassociateFromAdministratorAccountInput) (*DisassociateFromAdministratorAccountOutput, error) {
@@ -2936,14 +2932,13 @@ const opDisassociateFromMasterAccount = "DisassociateFromMasterAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateFromMasterAccountRequest method.
+//	req, resp := client.DisassociateFromMasterAccountRequest(params)
 //
-//    // Example sending a request using the DisassociateFromMasterAccountRequest method.
-//    req, resp := client.DisassociateFromMasterAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateFromMasterAccount
 //
@@ -2994,25 +2989,26 @@ func (c *SecurityHub) DisassociateFromMasterAccountRequest(input *DisassociateFr
 // API operation DisassociateFromMasterAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateFromMasterAccount
 //
@@ -3056,14 +3052,13 @@ const opDisassociateMembers = "DisassociateMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateMembersRequest method.
+//	req, resp := client.DisassociateMembersRequest(params)
 //
-//    // Example sending a request using the DisassociateMembersRequest method.
-//    req, resp := client.DisassociateMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateMembers
 func (c *SecurityHub) DisassociateMembersRequest(input *DisassociateMembersInput) (req *request.Request, output *DisassociateMembersOutput) {
@@ -3099,25 +3094,26 @@ func (c *SecurityHub) DisassociateMembersRequest(input *DisassociateMembersInput
 // API operation DisassociateMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/DisassociateMembers
 func (c *SecurityHub) DisassociateMembers(input *DisassociateMembersInput) (*DisassociateMembersOutput, error) {
@@ -3157,14 +3153,13 @@ const opEnableImportFindingsForProduct = "EnableImportFindingsForProduct"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableImportFindingsForProductRequest method.
+//	req, resp := client.EnableImportFindingsForProductRequest(params)
 //
-//    // Example sending a request using the EnableImportFindingsForProductRequest method.
-//    req, resp := client.EnableImportFindingsForProductRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableImportFindingsForProduct
 func (c *SecurityHub) EnableImportFindingsForProductRequest(input *EnableImportFindingsForProductInput) (req *request.Request, output *EnableImportFindingsForProductOutput) {
@@ -3199,25 +3194,26 @@ func (c *SecurityHub) EnableImportFindingsForProductRequest(input *EnableImportF
 // API operation EnableImportFindingsForProduct for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableImportFindingsForProduct
 func (c *SecurityHub) EnableImportFindingsForProduct(input *EnableImportFindingsForProductInput) (*EnableImportFindingsForProductOutput, error) {
@@ -3257,14 +3253,13 @@ const opEnableOrganizationAdminAccount = "EnableOrganizationAdminAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableOrganizationAdminAccountRequest method.
+//	req, resp := client.EnableOrganizationAdminAccountRequest(params)
 //
-//    // Example sending a request using the EnableOrganizationAdminAccountRequest method.
-//    req, resp := client.EnableOrganizationAdminAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableOrganizationAdminAccount
 func (c *SecurityHub) EnableOrganizationAdminAccountRequest(input *EnableOrganizationAdminAccountInput) (req *request.Request, output *EnableOrganizationAdminAccountOutput) {
@@ -3297,22 +3292,23 @@ func (c *SecurityHub) EnableOrganizationAdminAccountRequest(input *EnableOrganiz
 // API operation EnableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableOrganizationAdminAccount
 func (c *SecurityHub) EnableOrganizationAdminAccount(input *EnableOrganizationAdminAccountInput) (*EnableOrganizationAdminAccountOutput, error) {
@@ -3352,14 +3348,13 @@ const opEnableSecurityHub = "EnableSecurityHub"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableSecurityHubRequest method.
+//	req, resp := client.EnableSecurityHubRequest(params)
 //
-//    // Example sending a request using the EnableSecurityHubRequest method.
-//    req, resp := client.EnableSecurityHubRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableSecurityHub
 func (c *SecurityHub) EnableSecurityHubRequest(input *EnableSecurityHubInput) (req *request.Request, output *EnableSecurityHubOutput) {
@@ -3391,9 +3386,9 @@ func (c *SecurityHub) EnableSecurityHubRequest(input *EnableSecurityHubInput) (r
 // When you use the EnableSecurityHub operation to enable Security Hub, you
 // also automatically enable the following standards.
 //
-//    * CIS Amazon Web Services Foundations
+//   - CIS Amazon Web Services Foundations
 //
-//    * Amazon Web Services Foundational Security Best Practices
+//   - Amazon Web Services Foundational Security Best Practices
 //
 // You do not enable the Payment Card Industry Data Security Standard (PCI DSS)
 // standard.
@@ -3415,24 +3410,25 @@ func (c *SecurityHub) EnableSecurityHubRequest(input *EnableSecurityHubInput) (r
 // API operation EnableSecurityHub for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * ResourceConflictException
-//   The resource specified in the request conflicts with an existing resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
+//
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/EnableSecurityHub
 func (c *SecurityHub) EnableSecurityHub(input *EnableSecurityHubInput) (*EnableSecurityHubOutput, error) {
@@ -3472,14 +3468,13 @@ const opGetAdministratorAccount = "GetAdministratorAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAdministratorAccountRequest method.
+//	req, resp := client.GetAdministratorAccountRequest(params)
 //
-//    // Example sending a request using the GetAdministratorAccountRequest method.
-//    req, resp := client.GetAdministratorAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetAdministratorAccount
 func (c *SecurityHub) GetAdministratorAccountRequest(input *GetAdministratorAccountInput) (req *request.Request, output *GetAdministratorAccountOutput) {
@@ -3514,25 +3509,26 @@ func (c *SecurityHub) GetAdministratorAccountRequest(input *GetAdministratorAcco
 // API operation GetAdministratorAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetAdministratorAccount
 func (c *SecurityHub) GetAdministratorAccount(input *GetAdministratorAccountInput) (*GetAdministratorAccountOutput, error) {
@@ -3572,14 +3568,13 @@ const opGetEnabledStandards = "GetEnabledStandards"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEnabledStandardsRequest method.
+//	req, resp := client.GetEnabledStandardsRequest(params)
 //
-//    // Example sending a request using the GetEnabledStandardsRequest method.
-//    req, resp := client.GetEnabledStandardsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetEnabledStandards
 func (c *SecurityHub) GetEnabledStandardsRequest(input *GetEnabledStandardsInput) (req *request.Request, output *GetEnabledStandardsOutput) {
@@ -3616,22 +3611,23 @@ func (c *SecurityHub) GetEnabledStandardsRequest(input *GetEnabledStandardsInput
 // API operation GetEnabledStandards for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetEnabledStandards
 func (c *SecurityHub) GetEnabledStandards(input *GetEnabledStandardsInput) (*GetEnabledStandardsOutput, error) {
@@ -3663,15 +3659,14 @@ func (c *SecurityHub) GetEnabledStandardsWithContext(ctx aws.Context, input *Get
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetEnabledStandards operation.
-//    pageNum := 0
-//    err := client.GetEnabledStandardsPages(params,
-//        func(page *securityhub.GetEnabledStandardsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetEnabledStandards operation.
+//	pageNum := 0
+//	err := client.GetEnabledStandardsPages(params,
+//	    func(page *securityhub.GetEnabledStandardsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) GetEnabledStandardsPages(input *GetEnabledStandardsInput, fn func(*GetEnabledStandardsOutput, bool) bool) error {
 	return c.GetEnabledStandardsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3723,14 +3718,13 @@ const opGetFindingAggregator = "GetFindingAggregator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingAggregatorRequest method.
+//	req, resp := client.GetFindingAggregatorRequest(params)
 //
-//    // Example sending a request using the GetFindingAggregatorRequest method.
-//    req, resp := client.GetFindingAggregatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetFindingAggregator
 func (c *SecurityHub) GetFindingAggregatorRequest(input *GetFindingAggregatorInput) (req *request.Request, output *GetFindingAggregatorOutput) {
@@ -3761,28 +3755,29 @@ func (c *SecurityHub) GetFindingAggregatorRequest(input *GetFindingAggregatorInp
 // API operation GetFindingAggregator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetFindingAggregator
 func (c *SecurityHub) GetFindingAggregator(input *GetFindingAggregatorInput) (*GetFindingAggregatorOutput, error) {
@@ -3822,14 +3817,13 @@ const opGetFindings = "GetFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingsRequest method.
+//	req, resp := client.GetFindingsRequest(params)
 //
-//    // Example sending a request using the GetFindingsRequest method.
-//    req, resp := client.GetFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetFindings
 func (c *SecurityHub) GetFindingsRequest(input *GetFindingsInput) (req *request.Request, output *GetFindingsOutput) {
@@ -3870,22 +3864,23 @@ func (c *SecurityHub) GetFindingsRequest(input *GetFindingsInput) (req *request.
 // API operation GetFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetFindings
 func (c *SecurityHub) GetFindings(input *GetFindingsInput) (*GetFindingsOutput, error) {
@@ -3917,15 +3912,14 @@ func (c *SecurityHub) GetFindingsWithContext(ctx aws.Context, input *GetFindings
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetFindings operation.
-//    pageNum := 0
-//    err := client.GetFindingsPages(params,
-//        func(page *securityhub.GetFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetFindings operation.
+//	pageNum := 0
+//	err := client.GetFindingsPages(params,
+//	    func(page *securityhub.GetFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) GetFindingsPages(input *GetFindingsInput, fn func(*GetFindingsOutput, bool) bool) error {
 	return c.GetFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3977,14 +3971,13 @@ const opGetInsightResults = "GetInsightResults"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightResultsRequest method.
+//	req, resp := client.GetInsightResultsRequest(params)
 //
-//    // Example sending a request using the GetInsightResultsRequest method.
-//    req, resp := client.GetInsightResultsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInsightResults
 func (c *SecurityHub) GetInsightResultsRequest(input *GetInsightResultsInput) (req *request.Request, output *GetInsightResultsOutput) {
@@ -4015,25 +4008,26 @@ func (c *SecurityHub) GetInsightResultsRequest(input *GetInsightResultsInput) (r
 // API operation GetInsightResults for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInsightResults
 func (c *SecurityHub) GetInsightResults(input *GetInsightResultsInput) (*GetInsightResultsOutput, error) {
@@ -4073,14 +4067,13 @@ const opGetInsights = "GetInsights"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInsightsRequest method.
+//	req, resp := client.GetInsightsRequest(params)
 //
-//    // Example sending a request using the GetInsightsRequest method.
-//    req, resp := client.GetInsightsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInsights
 func (c *SecurityHub) GetInsightsRequest(input *GetInsightsInput) (req *request.Request, output *GetInsightsOutput) {
@@ -4117,25 +4110,26 @@ func (c *SecurityHub) GetInsightsRequest(input *GetInsightsInput) (req *request.
 // API operation GetInsights for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInsights
 func (c *SecurityHub) GetInsights(input *GetInsightsInput) (*GetInsightsOutput, error) {
@@ -4167,15 +4161,14 @@ func (c *SecurityHub) GetInsightsWithContext(ctx aws.Context, input *GetInsights
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetInsights operation.
-//    pageNum := 0
-//    err := client.GetInsightsPages(params,
-//        func(page *securityhub.GetInsightsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetInsights operation.
+//	pageNum := 0
+//	err := client.GetInsightsPages(params,
+//	    func(page *securityhub.GetInsightsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) GetInsightsPages(input *GetInsightsInput, fn func(*GetInsightsOutput, bool) bool) error {
 	return c.GetInsightsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4227,14 +4220,13 @@ const opGetInvitationsCount = "GetInvitationsCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInvitationsCountRequest method.
+//	req, resp := client.GetInvitationsCountRequest(params)
 //
-//    // Example sending a request using the GetInvitationsCountRequest method.
-//    req, resp := client.GetInvitationsCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInvitationsCount
 func (c *SecurityHub) GetInvitationsCountRequest(input *GetInvitationsCountInput) (req *request.Request, output *GetInvitationsCountOutput) {
@@ -4266,22 +4258,23 @@ func (c *SecurityHub) GetInvitationsCountRequest(input *GetInvitationsCountInput
 // API operation GetInvitationsCount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetInvitationsCount
 func (c *SecurityHub) GetInvitationsCount(input *GetInvitationsCountInput) (*GetInvitationsCountOutput, error) {
@@ -4321,14 +4314,13 @@ const opGetMasterAccount = "GetMasterAccount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMasterAccountRequest method.
+//	req, resp := client.GetMasterAccountRequest(params)
 //
-//    // Example sending a request using the GetMasterAccountRequest method.
-//    req, resp := client.GetMasterAccountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetMasterAccount
 //
@@ -4376,25 +4368,26 @@ func (c *SecurityHub) GetMasterAccountRequest(input *GetMasterAccountInput) (req
 // API operation GetMasterAccount for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetMasterAccount
 //
@@ -4438,14 +4431,13 @@ const opGetMembers = "GetMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMembersRequest method.
+//	req, resp := client.GetMembersRequest(params)
 //
-//    // Example sending a request using the GetMembersRequest method.
-//    req, resp := client.GetMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetMembers
 func (c *SecurityHub) GetMembersRequest(input *GetMembersInput) (req *request.Request, output *GetMembersOutput) {
@@ -4484,25 +4476,26 @@ func (c *SecurityHub) GetMembersRequest(input *GetMembersInput) (req *request.Re
 // API operation GetMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/GetMembers
 func (c *SecurityHub) GetMembers(input *GetMembersInput) (*GetMembersOutput, error) {
@@ -4542,14 +4535,13 @@ const opInviteMembers = "InviteMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InviteMembersRequest method.
+//	req, resp := client.InviteMembersRequest(params)
 //
-//    // Example sending a request using the InviteMembersRequest method.
-//    req, resp := client.InviteMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/InviteMembers
 func (c *SecurityHub) InviteMembersRequest(input *InviteMembersInput) (req *request.Request, output *InviteMembersOutput) {
@@ -4591,25 +4583,26 @@ func (c *SecurityHub) InviteMembersRequest(input *InviteMembersInput) (req *requ
 // API operation InviteMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/InviteMembers
 func (c *SecurityHub) InviteMembers(input *InviteMembersInput) (*InviteMembersOutput, error) {
@@ -4649,14 +4642,13 @@ const opListEnabledProductsForImport = "ListEnabledProductsForImport"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnabledProductsForImportRequest method.
+//	req, resp := client.ListEnabledProductsForImportRequest(params)
 //
-//    // Example sending a request using the ListEnabledProductsForImportRequest method.
-//    req, resp := client.ListEnabledProductsForImportRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListEnabledProductsForImport
 func (c *SecurityHub) ListEnabledProductsForImportRequest(input *ListEnabledProductsForImportInput) (req *request.Request, output *ListEnabledProductsForImportOutput) {
@@ -4694,18 +4686,19 @@ func (c *SecurityHub) ListEnabledProductsForImportRequest(input *ListEnabledProd
 // API operation ListEnabledProductsForImport for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListEnabledProductsForImport
 func (c *SecurityHub) ListEnabledProductsForImport(input *ListEnabledProductsForImportInput) (*ListEnabledProductsForImportOutput, error) {
@@ -4737,15 +4730,14 @@ func (c *SecurityHub) ListEnabledProductsForImportWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnabledProductsForImport operation.
-//    pageNum := 0
-//    err := client.ListEnabledProductsForImportPages(params,
-//        func(page *securityhub.ListEnabledProductsForImportOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnabledProductsForImport operation.
+//	pageNum := 0
+//	err := client.ListEnabledProductsForImportPages(params,
+//	    func(page *securityhub.ListEnabledProductsForImportOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) ListEnabledProductsForImportPages(input *ListEnabledProductsForImportInput, fn func(*ListEnabledProductsForImportOutput, bool) bool) error {
 	return c.ListEnabledProductsForImportPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4797,14 +4789,13 @@ const opListFindingAggregators = "ListFindingAggregators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingAggregatorsRequest method.
+//	req, resp := client.ListFindingAggregatorsRequest(params)
 //
-//    // Example sending a request using the ListFindingAggregatorsRequest method.
-//    req, resp := client.ListFindingAggregatorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListFindingAggregators
 func (c *SecurityHub) ListFindingAggregatorsRequest(input *ListFindingAggregatorsInput) (req *request.Request, output *ListFindingAggregatorsOutput) {
@@ -4842,25 +4833,26 @@ func (c *SecurityHub) ListFindingAggregatorsRequest(input *ListFindingAggregator
 // API operation ListFindingAggregators for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
+//
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListFindingAggregators
 func (c *SecurityHub) ListFindingAggregators(input *ListFindingAggregatorsInput) (*ListFindingAggregatorsOutput, error) {
@@ -4892,15 +4884,14 @@ func (c *SecurityHub) ListFindingAggregatorsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindingAggregators operation.
-//    pageNum := 0
-//    err := client.ListFindingAggregatorsPages(params,
-//        func(page *securityhub.ListFindingAggregatorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindingAggregators operation.
+//	pageNum := 0
+//	err := client.ListFindingAggregatorsPages(params,
+//	    func(page *securityhub.ListFindingAggregatorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) ListFindingAggregatorsPages(input *ListFindingAggregatorsInput, fn func(*ListFindingAggregatorsOutput, bool) bool) error {
 	return c.ListFindingAggregatorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4952,14 +4943,13 @@ const opListInvitations = "ListInvitations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInvitationsRequest method.
+//	req, resp := client.ListInvitationsRequest(params)
 //
-//    // Example sending a request using the ListInvitationsRequest method.
-//    req, resp := client.ListInvitationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListInvitations
 func (c *SecurityHub) ListInvitationsRequest(input *ListInvitationsInput) (req *request.Request, output *ListInvitationsOutput) {
@@ -5001,22 +4991,23 @@ func (c *SecurityHub) ListInvitationsRequest(input *ListInvitationsInput) (req *
 // API operation ListInvitations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListInvitations
 func (c *SecurityHub) ListInvitations(input *ListInvitationsInput) (*ListInvitationsOutput, error) {
@@ -5048,15 +5039,14 @@ func (c *SecurityHub) ListInvitationsWithContext(ctx aws.Context, input *ListInv
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInvitations operation.
-//    pageNum := 0
-//    err := client.ListInvitationsPages(params,
-//        func(page *securityhub.ListInvitationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInvitations operation.
+//	pageNum := 0
+//	err := client.ListInvitationsPages(params,
+//	    func(page *securityhub.ListInvitationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) ListInvitationsPages(input *ListInvitationsInput, fn func(*ListInvitationsOutput, bool) bool) error {
 	return c.ListInvitationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5108,14 +5098,13 @@ const opListMembers = "ListMembers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMembersRequest method.
+//	req, resp := client.ListMembersRequest(params)
 //
-//    // Example sending a request using the ListMembersRequest method.
-//    req, resp := client.ListMembersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListMembers
 func (c *SecurityHub) ListMembersRequest(input *ListMembersInput) (req *request.Request, output *ListMembersOutput) {
@@ -5156,22 +5145,23 @@ func (c *SecurityHub) ListMembersRequest(input *ListMembersInput) (req *request.
 // API operation ListMembers for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListMembers
 func (c *SecurityHub) ListMembers(input *ListMembersInput) (*ListMembersOutput, error) {
@@ -5203,15 +5193,14 @@ func (c *SecurityHub) ListMembersWithContext(ctx aws.Context, input *ListMembers
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMembers operation.
-//    pageNum := 0
-//    err := client.ListMembersPages(params,
-//        func(page *securityhub.ListMembersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMembers operation.
+//	pageNum := 0
+//	err := client.ListMembersPages(params,
+//	    func(page *securityhub.ListMembersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) ListMembersPages(input *ListMembersInput, fn func(*ListMembersOutput, bool) bool) error {
 	return c.ListMembersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5263,14 +5252,13 @@ const opListOrganizationAdminAccounts = "ListOrganizationAdminAccounts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOrganizationAdminAccountsRequest method.
+//	req, resp := client.ListOrganizationAdminAccountsRequest(params)
 //
-//    // Example sending a request using the ListOrganizationAdminAccountsRequest method.
-//    req, resp := client.ListOrganizationAdminAccountsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListOrganizationAdminAccounts
 func (c *SecurityHub) ListOrganizationAdminAccountsRequest(input *ListOrganizationAdminAccountsInput) (req *request.Request, output *ListOrganizationAdminAccountsOutput) {
@@ -5308,22 +5296,23 @@ func (c *SecurityHub) ListOrganizationAdminAccountsRequest(input *ListOrganizati
 // API operation ListOrganizationAdminAccounts for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListOrganizationAdminAccounts
 func (c *SecurityHub) ListOrganizationAdminAccounts(input *ListOrganizationAdminAccountsInput) (*ListOrganizationAdminAccountsOutput, error) {
@@ -5355,15 +5344,14 @@ func (c *SecurityHub) ListOrganizationAdminAccountsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOrganizationAdminAccounts operation.
-//    pageNum := 0
-//    err := client.ListOrganizationAdminAccountsPages(params,
-//        func(page *securityhub.ListOrganizationAdminAccountsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOrganizationAdminAccounts operation.
+//	pageNum := 0
+//	err := client.ListOrganizationAdminAccountsPages(params,
+//	    func(page *securityhub.ListOrganizationAdminAccountsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SecurityHub) ListOrganizationAdminAccountsPages(input *ListOrganizationAdminAccountsInput, fn func(*ListOrganizationAdminAccountsOutput, bool) bool) error {
 	return c.ListOrganizationAdminAccountsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5415,14 +5403,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListTagsForResource
 func (c *SecurityHub) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -5453,15 +5440,16 @@ func (c *SecurityHub) ListTagsForResourceRequest(input *ListTagsForResourceInput
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/ListTagsForResource
 func (c *SecurityHub) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -5501,14 +5489,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/TagResource
 func (c *SecurityHub) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5540,15 +5527,16 @@ func (c *SecurityHub) TagResourceRequest(input *TagResourceInput) (req *request.
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/TagResource
 func (c *SecurityHub) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5588,14 +5576,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UntagResource
 func (c *SecurityHub) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5627,15 +5614,16 @@ func (c *SecurityHub) UntagResourceRequest(input *UntagResourceInput) (req *requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UntagResource
 func (c *SecurityHub) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5675,14 +5663,13 @@ const opUpdateActionTarget = "UpdateActionTarget"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateActionTargetRequest method.
+//	req, resp := client.UpdateActionTargetRequest(params)
 //
-//    // Example sending a request using the UpdateActionTargetRequest method.
-//    req, resp := client.UpdateActionTargetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateActionTarget
 func (c *SecurityHub) UpdateActionTargetRequest(input *UpdateActionTargetInput) (req *request.Request, output *UpdateActionTargetOutput) {
@@ -5714,23 +5701,24 @@ func (c *SecurityHub) UpdateActionTargetRequest(input *UpdateActionTargetInput) 
 // API operation UpdateActionTarget for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateActionTarget
 func (c *SecurityHub) UpdateActionTarget(input *UpdateActionTargetInput) (*UpdateActionTargetOutput, error) {
@@ -5770,14 +5758,13 @@ const opUpdateFindingAggregator = "UpdateFindingAggregator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFindingAggregatorRequest method.
+//	req, resp := client.UpdateFindingAggregatorRequest(params)
 //
-//    // Example sending a request using the UpdateFindingAggregatorRequest method.
-//    req, resp := client.UpdateFindingAggregatorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateFindingAggregator
 func (c *SecurityHub) UpdateFindingAggregatorRequest(input *UpdateFindingAggregatorInput) (req *request.Request, output *UpdateFindingAggregatorOutput) {
@@ -5812,28 +5799,29 @@ func (c *SecurityHub) UpdateFindingAggregatorRequest(input *UpdateFindingAggrega
 // API operation UpdateFindingAggregator for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permission to perform the action specified in the request.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - AccessDeniedException
+//     You don't have permission to perform the action specified in the request.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateFindingAggregator
 func (c *SecurityHub) UpdateFindingAggregator(input *UpdateFindingAggregatorInput) (*UpdateFindingAggregatorOutput, error) {
@@ -5873,14 +5861,13 @@ const opUpdateFindings = "UpdateFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFindingsRequest method.
+//	req, resp := client.UpdateFindingsRequest(params)
 //
-//    // Example sending a request using the UpdateFindingsRequest method.
-//    req, resp := client.UpdateFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateFindings
 func (c *SecurityHub) UpdateFindingsRequest(input *UpdateFindingsInput) (req *request.Request, output *UpdateFindingsOutput) {
@@ -5916,25 +5903,26 @@ func (c *SecurityHub) UpdateFindingsRequest(input *UpdateFindingsInput) (req *re
 // API operation UpdateFindings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateFindings
 func (c *SecurityHub) UpdateFindings(input *UpdateFindingsInput) (*UpdateFindingsOutput, error) {
@@ -5974,14 +5962,13 @@ const opUpdateInsight = "UpdateInsight"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInsightRequest method.
+//	req, resp := client.UpdateInsightRequest(params)
 //
-//    // Example sending a request using the UpdateInsightRequest method.
-//    req, resp := client.UpdateInsightRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateInsight
 func (c *SecurityHub) UpdateInsightRequest(input *UpdateInsightInput) (req *request.Request, output *UpdateInsightOutput) {
@@ -6013,25 +6000,26 @@ func (c *SecurityHub) UpdateInsightRequest(input *UpdateInsightInput) (req *requ
 // API operation UpdateInsight for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateInsight
 func (c *SecurityHub) UpdateInsight(input *UpdateInsightInput) (*UpdateInsightOutput, error) {
@@ -6071,14 +6059,13 @@ const opUpdateOrganizationConfiguration = "UpdateOrganizationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateOrganizationConfigurationRequest method.
+//	req, resp := client.UpdateOrganizationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateOrganizationConfigurationRequest method.
-//    req, resp := client.UpdateOrganizationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateOrganizationConfiguration
 func (c *SecurityHub) UpdateOrganizationConfigurationRequest(input *UpdateOrganizationConfigurationInput) (req *request.Request, output *UpdateOrganizationConfigurationOutput) {
@@ -6111,22 +6098,23 @@ func (c *SecurityHub) UpdateOrganizationConfigurationRequest(input *UpdateOrgani
 // API operation UpdateOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateOrganizationConfiguration
 func (c *SecurityHub) UpdateOrganizationConfiguration(input *UpdateOrganizationConfigurationInput) (*UpdateOrganizationConfigurationOutput, error) {
@@ -6166,14 +6154,13 @@ const opUpdateSecurityHubConfiguration = "UpdateSecurityHubConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSecurityHubConfigurationRequest method.
+//	req, resp := client.UpdateSecurityHubConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateSecurityHubConfigurationRequest method.
-//    req, resp := client.UpdateSecurityHubConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateSecurityHubConfiguration
 func (c *SecurityHub) UpdateSecurityHubConfigurationRequest(input *UpdateSecurityHubConfigurationInput) (req *request.Request, output *UpdateSecurityHubConfigurationOutput) {
@@ -6205,25 +6192,26 @@ func (c *SecurityHub) UpdateSecurityHubConfigurationRequest(input *UpdateSecurit
 // API operation UpdateSecurityHubConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * LimitExceededException
-//   The request was rejected because it attempted to create resources beyond
-//   the current Amazon Web Services account or throttling limits. The error code
-//   describes the limit exceeded.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - LimitExceededException
+//     The request was rejected because it attempted to create resources beyond
+//     the current Amazon Web Services account or throttling limits. The error code
+//     describes the limit exceeded.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateSecurityHubConfiguration
 func (c *SecurityHub) UpdateSecurityHubConfiguration(input *UpdateSecurityHubConfigurationInput) (*UpdateSecurityHubConfigurationOutput, error) {
@@ -6263,14 +6251,13 @@ const opUpdateStandardsControl = "UpdateStandardsControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStandardsControlRequest method.
+//	req, resp := client.UpdateStandardsControlRequest(params)
 //
-//    // Example sending a request using the UpdateStandardsControlRequest method.
-//    req, resp := client.UpdateStandardsControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateStandardsControl
 func (c *SecurityHub) UpdateStandardsControlRequest(input *UpdateStandardsControlInput) (req *request.Request, output *UpdateStandardsControlOutput) {
@@ -6303,20 +6290,21 @@ func (c *SecurityHub) UpdateStandardsControlRequest(input *UpdateStandardsContro
 // API operation UpdateStandardsControl for usage and error information.
 //
 // Returned Error Types:
-//   * InternalException
-//   Internal server error.
 //
-//   * InvalidInputException
-//   The request was rejected because you supplied an invalid or out-of-range
-//   value for an input parameter.
+//   - InternalException
+//     Internal server error.
 //
-//   * InvalidAccessException
-//   There is an issue with the account used to make the request. Either Security
-//   Hub is not enabled for the account, or the account does not have permission
-//   to perform this action.
+//   - InvalidInputException
+//     The request was rejected because you supplied an invalid or out-of-range
+//     value for an input parameter.
 //
-//   * ResourceNotFoundException
-//   The request was rejected because we can't find the specified resource.
+//   - InvalidAccessException
+//     There is an issue with the account used to make the request. Either Security
+//     Hub is not enabled for the account, or the account does not have permission
+//     to perform this action.
+//
+//   - ResourceNotFoundException
+//     The request was rejected because we can't find the specified resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/securityhub-2018-10-26/UpdateStandardsControl
 func (c *SecurityHub) UpdateStandardsControl(input *UpdateStandardsControlInput) (*UpdateStandardsControlOutput, error) {
@@ -6631,13 +6619,13 @@ func (s *AccountDetails) SetEmail(v string) *AccountDetails {
 // Provides details about one of the following actions that affects or that
 // was taken on a resource:
 //
-//    * A remote IP address issued an Amazon Web Services API call
+//   - A remote IP address issued an Amazon Web Services API call
 //
-//    * A DNS request was received
+//   - A DNS request was received
 //
-//    * A remote IP address attempted to connect to an EC2 instance
+//   - A remote IP address attempted to connect to an EC2 instance
 //
-//    * A remote IP address attempted a port probe on an EC2 instance
+//   - A remote IP address attempted a port probe on an EC2 instance
 type Action struct {
 	_ struct{} `type:"structure"`
 
@@ -9381,11 +9369,11 @@ func (s *AwsCertificateManagerCertificateDetails) SetType(v string) *AwsCertific
 
 // Contains information about one of the following:
 //
-//    * The initial validation of each domain name that occurs as a result of
-//    the RequestCertificate request
+//   - The initial validation of each domain name that occurs as a result of
+//     the RequestCertificate request
 //
-//    * The validation of each domain name in the certificate, as it pertains
-//    to Certificate Manager managed renewal
+//   - The validation of each domain name in the certificate, as it pertains
+//     to Certificate Manager managed renewal
 type AwsCertificateManagerCertificateDomainValidationOption struct {
 	_ struct{} `type:"structure"`
 

@@ -40,22 +40,22 @@ type InstanceConfigurationIscsiAttachVolumeDetails struct {
 	UseChap *bool `mandatory:"false" json:"useChap"`
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m InstanceConfigurationIscsiAttachVolumeDetails) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m InstanceConfigurationIscsiAttachVolumeDetails) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m InstanceConfigurationIscsiAttachVolumeDetails) GetDevice() *string {
 	return m.Device
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m InstanceConfigurationIscsiAttachVolumeDetails) GetIsShareable() *bool {
 	return m.IsShareable
 }

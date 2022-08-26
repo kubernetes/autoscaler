@@ -29,14 +29,13 @@ const opAssociateFileSystemAliases = "AssociateFileSystemAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateFileSystemAliasesRequest method.
+//	req, resp := client.AssociateFileSystemAliasesRequest(params)
 //
-//    // Example sending a request using the AssociateFileSystemAliasesRequest method.
-//    req, resp := client.AssociateFileSystemAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/AssociateFileSystemAliases
 func (c *FSx) AssociateFileSystemAliasesRequest(input *AssociateFileSystemAliasesInput) (req *request.Request, output *AssociateFileSystemAliasesOutput) {
@@ -79,14 +78,15 @@ func (c *FSx) AssociateFileSystemAliasesRequest(input *AssociateFileSystemAliase
 // API operation AssociateFileSystemAliases for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/AssociateFileSystemAliases
 func (c *FSx) AssociateFileSystemAliases(input *AssociateFileSystemAliasesInput) (*AssociateFileSystemAliasesOutput, error) {
@@ -126,14 +126,13 @@ const opCancelDataRepositoryTask = "CancelDataRepositoryTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelDataRepositoryTaskRequest method.
+//	req, resp := client.CancelDataRepositoryTaskRequest(params)
 //
-//    // Example sending a request using the CancelDataRepositoryTaskRequest method.
-//    req, resp := client.CancelDataRepositoryTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CancelDataRepositoryTask
 func (c *FSx) CancelDataRepositoryTaskRequest(input *CancelDataRepositoryTaskInput) (req *request.Request, output *CancelDataRepositoryTaskOutput) {
@@ -158,12 +157,12 @@ func (c *FSx) CancelDataRepositoryTaskRequest(input *CancelDataRepositoryTaskInp
 // is in either the PENDING or EXECUTING state. When you cancel a task, Amazon
 // FSx does the following.
 //
-//    * Any files that FSx has already exported are not reverted.
+//   - Any files that FSx has already exported are not reverted.
 //
-//    * FSx continues to export any files that are "in-flight" when the cancel
-//    operation is received.
+//   - FSx continues to export any files that are "in-flight" when the cancel
+//     operation is received.
 //
-//    * FSx does not export any files that have not yet been exported.
+//   - FSx does not export any files that have not yet been exported.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -173,21 +172,22 @@ func (c *FSx) CancelDataRepositoryTaskRequest(input *CancelDataRepositoryTaskInp
 // API operation CancelDataRepositoryTask for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * DataRepositoryTaskNotFound
-//   The data repository task or tasks you specified could not be found.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * DataRepositoryTaskEnded
-//   The data repository task could not be canceled because the task has already
-//   ended.
+//   - DataRepositoryTaskNotFound
+//     The data repository task or tasks you specified could not be found.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - DataRepositoryTaskEnded
+//     The data repository task could not be canceled because the task has already
+//     ended.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CancelDataRepositoryTask
 func (c *FSx) CancelDataRepositoryTask(input *CancelDataRepositoryTaskInput) (*CancelDataRepositoryTaskOutput, error) {
@@ -227,14 +227,13 @@ const opCopyBackup = "CopyBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CopyBackupRequest method.
+//	req, resp := client.CopyBackupRequest(params)
 //
-//    // Example sending a request using the CopyBackupRequest method.
-//    req, resp := client.CopyBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CopyBackup
 func (c *FSx) CopyBackupRequest(input *CopyBackupInput) (req *request.Request, output *CopyBackupOutput) {
@@ -292,44 +291,45 @@ func (c *FSx) CopyBackupRequest(input *CopyBackupInput) (req *request.Request, o
 // API operation CopyBackup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * BackupNotFound
-//   No Amazon FSx backups were found based upon the supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - BackupNotFound
+//     No Amazon FSx backups were found based upon the supplied parameters.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InvalidSourceKmsKey
-//   The Key Management Service (KMS) key of the source backup is not valid.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * InvalidDestinationKmsKey
-//   The Key Management Service (KMS) key of the destination backup is not valid.
+//   - InvalidSourceKmsKey
+//     The Key Management Service (KMS) key of the source backup is not valid.
 //
-//   * InvalidRegion
-//   The Region provided for SourceRegion is not valid or is in a different Amazon
-//   Web Services partition.
+//   - InvalidDestinationKmsKey
+//     The Key Management Service (KMS) key of the destination backup is not valid.
 //
-//   * SourceBackupUnavailable
-//   The request was rejected because the lifecycle status of the source backup
-//   isn't AVAILABLE.
+//   - InvalidRegion
+//     The Region provided for SourceRegion is not valid or is in a different Amazon
+//     Web Services partition.
 //
-//   * IncompatibleRegionForMultiAZ
-//   Amazon FSx doesn't support Multi-AZ Windows File Server copy backup in the
-//   destination Region, so the copied backup can't be restored.
+//   - SourceBackupUnavailable
+//     The request was rejected because the lifecycle status of the source backup
+//     isn't AVAILABLE.
+//
+//   - IncompatibleRegionForMultiAZ
+//     Amazon FSx doesn't support Multi-AZ Windows File Server copy backup in the
+//     destination Region, so the copied backup can't be restored.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CopyBackup
 func (c *FSx) CopyBackup(input *CopyBackupInput) (*CopyBackupOutput, error) {
@@ -369,14 +369,13 @@ const opCreateBackup = "CreateBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBackupRequest method.
+//	req, resp := client.CreateBackupRequest(params)
 //
-//    // Example sending a request using the CreateBackupRequest method.
-//    req, resp := client.CreateBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateBackup
 func (c *FSx) CreateBackupRequest(input *CreateBackupInput) (req *request.Request, output *CreateBackupOutput) {
@@ -406,22 +405,22 @@ func (c *FSx) CreateBackupRequest(input *CreateBackupInput) (req *request.Reques
 // For Amazon FSx for Lustre file systems, you can create a backup only for
 // file systems that have the following configuration:
 //
-//    * A Persistent deployment type
+//   - A Persistent deployment type
 //
-//    * Are not linked to a data repository
+//   - Are not linked to a data repository
 //
 // For more information about backups, see the following:
 //
-//    * For Amazon FSx for Lustre, see Working with FSx for Lustre backups (https://docs.aws.amazon.com/fsx/latest/LustreGuide/using-backups-fsx.html).
+//   - For Amazon FSx for Lustre, see Working with FSx for Lustre backups (https://docs.aws.amazon.com/fsx/latest/LustreGuide/using-backups-fsx.html).
 //
-//    * For Amazon FSx for Windows, see Working with FSx for Windows backups
-//    (https://docs.aws.amazon.com/fsx/latest/WindowsGuide/using-backups.html).
+//   - For Amazon FSx for Windows, see Working with FSx for Windows backups
+//     (https://docs.aws.amazon.com/fsx/latest/WindowsGuide/using-backups.html).
 //
-//    * For Amazon FSx for NetApp ONTAP, see Working with FSx for NetApp ONTAP
-//    backups (https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/using-backups.html).
+//   - For Amazon FSx for NetApp ONTAP, see Working with FSx for NetApp ONTAP
+//     backups (https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/using-backups.html).
 //
-//    * For Amazon FSx for OpenZFS, see Working with FSx for OpenZFS backups
-//    (https://docs.aws.amazon.com/fsx/latest/OpenZFSGuide/using-backups.html).
+//   - For Amazon FSx for OpenZFS, see Working with FSx for OpenZFS backups
+//     (https://docs.aws.amazon.com/fsx/latest/OpenZFSGuide/using-backups.html).
 //
 // If a backup with the specified client request token exists and the parameters
 // match, this operation returns the description of the existing backup. If
@@ -430,10 +429,10 @@ func (c *FSx) CreateBackupRequest(input *CreateBackupInput) (req *request.Reques
 // with the specified client request token doesn't exist, CreateBackup does
 // the following:
 //
-//    * Creates a new Amazon FSx backup with an assigned ID, and an initial
-//    lifecycle state of CREATING.
+//   - Creates a new Amazon FSx backup with an assigned ID, and an initial
+//     lifecycle state of CREATING.
 //
-//    * Returns the description of the backup.
+//   - Returns the description of the backup.
 //
 // By using the idempotent operation, you can retry a CreateBackup operation
 // without the risk of creating an extra backup. This approach can be useful
@@ -455,33 +454,34 @@ func (c *FSx) CreateBackupRequest(input *CreateBackupInput) (req *request.Reques
 // API operation CreateBackup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * BackupInProgress
-//   Another backup is already under way. Wait for completion before initiating
-//   additional backups of this file system.
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BackupInProgress
+//     Another backup is already under way. Wait for completion before initiating
+//     additional backups of this file system.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateBackup
 func (c *FSx) CreateBackup(input *CreateBackupInput) (*CreateBackupOutput, error) {
@@ -521,14 +521,13 @@ const opCreateDataRepositoryAssociation = "CreateDataRepositoryAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataRepositoryAssociationRequest method.
+//	req, resp := client.CreateDataRepositoryAssociationRequest(params)
 //
-//    // Example sending a request using the CreateDataRepositoryAssociationRequest method.
-//    req, resp := client.CreateDataRepositoryAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateDataRepositoryAssociation
 func (c *FSx) CreateDataRepositoryAssociationRequest(input *CreateDataRepositoryAssociationInput) (req *request.Request, output *CreateDataRepositoryAssociationOutput) {
@@ -569,26 +568,27 @@ func (c *FSx) CreateDataRepositoryAssociationRequest(input *CreateDataRepository
 // API operation CreateDataRepositoryAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateDataRepositoryAssociation
 func (c *FSx) CreateDataRepositoryAssociation(input *CreateDataRepositoryAssociationInput) (*CreateDataRepositoryAssociationOutput, error) {
@@ -628,14 +628,13 @@ const opCreateDataRepositoryTask = "CreateDataRepositoryTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataRepositoryTaskRequest method.
+//	req, resp := client.CreateDataRepositoryTaskRequest(params)
 //
-//    // Example sending a request using the CreateDataRepositoryTaskRequest method.
-//    req, resp := client.CreateDataRepositoryTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateDataRepositoryTask
 func (c *FSx) CreateDataRepositoryTaskRequest(input *CreateDataRepositoryTaskInput) (req *request.Request, output *CreateDataRepositoryTaskOutput) {
@@ -675,30 +674,31 @@ func (c *FSx) CreateDataRepositoryTaskRequest(input *CreateDataRepositoryTaskInp
 // API operation CreateDataRepositoryTask for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
-//   * DataRepositoryTaskExecuting
-//   An existing data repository task is currently executing on the file system.
-//   Wait until the existing task has completed, then create the new task.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - DataRepositoryTaskExecuting
+//     An existing data repository task is currently executing on the file system.
+//     Wait until the existing task has completed, then create the new task.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateDataRepositoryTask
 func (c *FSx) CreateDataRepositoryTask(input *CreateDataRepositoryTaskInput) (*CreateDataRepositoryTaskOutput, error) {
@@ -738,14 +738,13 @@ const opCreateFileSystem = "CreateFileSystem"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFileSystemRequest method.
+//	req, resp := client.CreateFileSystemRequest(params)
 //
-//    // Example sending a request using the CreateFileSystemRequest method.
-//    req, resp := client.CreateFileSystemRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateFileSystem
 func (c *FSx) CreateFileSystemRequest(input *CreateFileSystemInput) (req *request.Request, output *CreateFileSystemOutput) {
@@ -769,13 +768,13 @@ func (c *FSx) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 // Creates a new, empty Amazon FSx file system. You can create the following
 // supported Amazon FSx file systems using the CreateFileSystem API operation:
 //
-//    * Amazon FSx for Lustre
+//   - Amazon FSx for Lustre
 //
-//    * Amazon FSx for NetApp ONTAP
+//   - Amazon FSx for NetApp ONTAP
 //
-//    * Amazon FSx for OpenZFS
+//   - Amazon FSx for OpenZFS
 //
-//    * Amazon FSx for Windows File Server
+//   - Amazon FSx for Windows File Server
 //
 // This operation requires a client request token in the request that Amazon
 // FSx uses to ensure idempotent creation. This means that calling the operation
@@ -795,10 +794,10 @@ func (c *FSx) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 // with the specified client request token doesn't exist, CreateFileSystem does
 // the following:
 //
-//    * Creates a new, empty Amazon FSx file system with an assigned ID, and
-//    an initial lifecycle state of CREATING.
+//   - Creates a new, empty Amazon FSx file system with an assigned ID, and
+//     an initial lifecycle state of CREATING.
 //
-//    * Returns the description of the file system in JSON format.
+//   - Returns the description of the file system in JSON format.
 //
 // This operation requires a client request token in the request that Amazon
 // FSx uses to ensure idempotent creation. This means that calling the operation
@@ -824,39 +823,40 @@ func (c *FSx) CreateFileSystemRequest(input *CreateFileSystemInput) (req *reques
 // API operation CreateFileSystem for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * ActiveDirectoryError
-//   An Active Directory error.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - ActiveDirectoryError
+//     An Active Directory error.
 //
-//   * InvalidImportPath
-//   The path provided for data repository import isn't valid.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InvalidExportPath
-//   The path provided for data repository export isn't valid.
+//   - InvalidImportPath
+//     The path provided for data repository import isn't valid.
 //
-//   * InvalidNetworkSettings
-//   One or more network settings specified in the request are invalid.
+//   - InvalidExportPath
+//     The path provided for data repository export isn't valid.
 //
-//   * InvalidPerUnitStorageThroughput
-//   An invalid value for PerUnitStorageThroughput was provided. Please create
-//   your file system again, using a valid value.
+//   - InvalidNetworkSettings
+//     One or more network settings specified in the request are invalid.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - InvalidPerUnitStorageThroughput
+//     An invalid value for PerUnitStorageThroughput was provided. Please create
+//     your file system again, using a valid value.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
-//   * MissingFileSystemConfiguration
-//   A file system configuration is required for this operation.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - MissingFileSystemConfiguration
+//     A file system configuration is required for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateFileSystem
 func (c *FSx) CreateFileSystem(input *CreateFileSystemInput) (*CreateFileSystemOutput, error) {
@@ -896,14 +896,13 @@ const opCreateFileSystemFromBackup = "CreateFileSystemFromBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFileSystemFromBackupRequest method.
+//	req, resp := client.CreateFileSystemFromBackupRequest(params)
 //
-//    // Example sending a request using the CreateFileSystemFromBackupRequest method.
-//    req, resp := client.CreateFileSystemFromBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateFileSystemFromBackup
 func (c *FSx) CreateFileSystemFromBackupRequest(input *CreateFileSystemFromBackupInput) (req *request.Request, output *CreateFileSystemFromBackupOutput) {
@@ -934,10 +933,10 @@ func (c *FSx) CreateFileSystemFromBackupRequest(input *CreateFileSystemFromBacku
 // with the specified client request token doesn't exist, this operation does
 // the following:
 //
-//    * Creates a new Amazon FSx file system from backup with an assigned ID,
-//    and an initial lifecycle state of CREATING.
+//   - Creates a new Amazon FSx file system from backup with an assigned ID,
+//     and an initial lifecycle state of CREATING.
 //
-//    * Returns the description of the file system.
+//   - Returns the description of the file system.
 //
 // Parameters like the Active Directory, default share name, automatic backup,
 // and backup settings default to the parameters of the file system that was
@@ -964,36 +963,37 @@ func (c *FSx) CreateFileSystemFromBackupRequest(input *CreateFileSystemFromBacku
 // API operation CreateFileSystemFromBackup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * ActiveDirectoryError
-//   An Active Directory error.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - ActiveDirectoryError
+//     An Active Directory error.
 //
-//   * InvalidNetworkSettings
-//   One or more network settings specified in the request are invalid.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * InvalidPerUnitStorageThroughput
-//   An invalid value for PerUnitStorageThroughput was provided. Please create
-//   your file system again, using a valid value.
+//   - InvalidNetworkSettings
+//     One or more network settings specified in the request are invalid.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - InvalidPerUnitStorageThroughput
+//     An invalid value for PerUnitStorageThroughput was provided. Please create
+//     your file system again, using a valid value.
 //
-//   * BackupNotFound
-//   No Amazon FSx backups were found based upon the supplied parameters.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BackupNotFound
+//     No Amazon FSx backups were found based upon the supplied parameters.
 //
-//   * MissingFileSystemConfiguration
-//   A file system configuration is required for this operation.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - MissingFileSystemConfiguration
+//     A file system configuration is required for this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateFileSystemFromBackup
 func (c *FSx) CreateFileSystemFromBackup(input *CreateFileSystemFromBackupInput) (*CreateFileSystemFromBackupOutput, error) {
@@ -1033,14 +1033,13 @@ const opCreateSnapshot = "CreateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSnapshotRequest method.
+//	req, resp := client.CreateSnapshotRequest(params)
 //
-//    // Example sending a request using the CreateSnapshotRequest method.
-//    req, resp := client.CreateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateSnapshot
 func (c *FSx) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Request, output *CreateSnapshotOutput) {
@@ -1072,10 +1071,10 @@ func (c *FSx) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Re
 // with the specified client request token doesn't exist, CreateSnapshot does
 // the following:
 //
-//    * Creates a new OpenZFS snapshot with an assigned ID, and an initial lifecycle
-//    state of CREATING.
+//   - Creates a new OpenZFS snapshot with an assigned ID, and an initial lifecycle
+//     state of CREATING.
 //
-//    * Returns the description of the snapshot.
+//   - Returns the description of the snapshot.
 //
 // By using the idempotent operation, you can retry a CreateSnapshot operation
 // without the risk of creating an extra snapshot. This approach can be useful
@@ -1097,18 +1096,19 @@ func (c *FSx) CreateSnapshotRequest(input *CreateSnapshotInput) (req *request.Re
 // API operation CreateSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateSnapshot
 func (c *FSx) CreateSnapshot(input *CreateSnapshotInput) (*CreateSnapshotOutput, error) {
@@ -1148,14 +1148,13 @@ const opCreateStorageVirtualMachine = "CreateStorageVirtualMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStorageVirtualMachineRequest method.
+//	req, resp := client.CreateStorageVirtualMachineRequest(params)
 //
-//    // Example sending a request using the CreateStorageVirtualMachineRequest method.
-//    req, resp := client.CreateStorageVirtualMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateStorageVirtualMachine
 func (c *FSx) CreateStorageVirtualMachineRequest(input *CreateStorageVirtualMachineInput) (req *request.Request, output *CreateStorageVirtualMachineOutput) {
@@ -1187,29 +1186,30 @@ func (c *FSx) CreateStorageVirtualMachineRequest(input *CreateStorageVirtualMach
 // API operation CreateStorageVirtualMachine for usage and error information.
 //
 // Returned Error Types:
-//   * ActiveDirectoryError
-//   An Active Directory error.
 //
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
+//   - ActiveDirectoryError
+//     An Active Directory error.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateStorageVirtualMachine
 func (c *FSx) CreateStorageVirtualMachine(input *CreateStorageVirtualMachineInput) (*CreateStorageVirtualMachineOutput, error) {
@@ -1249,14 +1249,13 @@ const opCreateVolume = "CreateVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVolumeRequest method.
+//	req, resp := client.CreateVolumeRequest(params)
 //
-//    // Example sending a request using the CreateVolumeRequest method.
-//    req, resp := client.CreateVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateVolume
 func (c *FSx) CreateVolumeRequest(input *CreateVolumeInput) (req *request.Request, output *CreateVolumeOutput) {
@@ -1287,32 +1286,33 @@ func (c *FSx) CreateVolumeRequest(input *CreateVolumeInput) (req *request.Reques
 // API operation CreateVolume for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * MissingVolumeConfiguration
-//   A volume configuration is required for this operation.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - MissingVolumeConfiguration
+//     A volume configuration is required for this operation.
 //
-//   * StorageVirtualMachineNotFound
-//   No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - StorageVirtualMachineNotFound
+//     No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateVolume
 func (c *FSx) CreateVolume(input *CreateVolumeInput) (*CreateVolumeOutput, error) {
@@ -1352,14 +1352,13 @@ const opCreateVolumeFromBackup = "CreateVolumeFromBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVolumeFromBackupRequest method.
+//	req, resp := client.CreateVolumeFromBackupRequest(params)
 //
-//    // Example sending a request using the CreateVolumeFromBackupRequest method.
-//    req, resp := client.CreateVolumeFromBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateVolumeFromBackup
 func (c *FSx) CreateVolumeFromBackupRequest(input *CreateVolumeFromBackupInput) (req *request.Request, output *CreateVolumeFromBackupOutput) {
@@ -1391,32 +1390,33 @@ func (c *FSx) CreateVolumeFromBackupRequest(input *CreateVolumeFromBackupInput) 
 // API operation CreateVolumeFromBackup for usage and error information.
 //
 // Returned Error Types:
-//   * BackupNotFound
-//   No Amazon FSx backups were found based upon the supplied parameters.
 //
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
+//   - BackupNotFound
+//     No Amazon FSx backups were found based upon the supplied parameters.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * MissingVolumeConfiguration
-//   A volume configuration is required for this operation.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - MissingVolumeConfiguration
+//     A volume configuration is required for this operation.
 //
-//   * StorageVirtualMachineNotFound
-//   No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - StorageVirtualMachineNotFound
+//     No FSx for ONTAP SVMs were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/CreateVolumeFromBackup
 func (c *FSx) CreateVolumeFromBackup(input *CreateVolumeFromBackupInput) (*CreateVolumeFromBackupOutput, error) {
@@ -1456,14 +1456,13 @@ const opDeleteBackup = "DeleteBackup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBackupRequest method.
+//	req, resp := client.DeleteBackupRequest(params)
 //
-//    // Example sending a request using the DeleteBackupRequest method.
-//    req, resp := client.DeleteBackupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteBackup
 func (c *FSx) DeleteBackupRequest(input *DeleteBackupInput) (req *request.Request, output *DeleteBackupOutput) {
@@ -1501,29 +1500,30 @@ func (c *FSx) DeleteBackupRequest(input *DeleteBackupInput) (req *request.Reques
 // API operation DeleteBackup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * BackupInProgress
-//   Another backup is already under way. Wait for completion before initiating
-//   additional backups of this file system.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * BackupNotFound
-//   No Amazon FSx backups were found based upon the supplied parameters.
+//   - BackupInProgress
+//     Another backup is already under way. Wait for completion before initiating
+//     additional backups of this file system.
 //
-//   * BackupRestoring
-//   You can't delete a backup while it's being used to restore a file system.
+//   - BackupNotFound
+//     No Amazon FSx backups were found based upon the supplied parameters.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BackupRestoring
+//     You can't delete a backup while it's being used to restore a file system.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * BackupBeingCopied
-//   You can't delete a backup while it's being copied.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - BackupBeingCopied
+//     You can't delete a backup while it's being copied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteBackup
 func (c *FSx) DeleteBackup(input *DeleteBackupInput) (*DeleteBackupOutput, error) {
@@ -1563,14 +1563,13 @@ const opDeleteDataRepositoryAssociation = "DeleteDataRepositoryAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataRepositoryAssociationRequest method.
+//	req, resp := client.DeleteDataRepositoryAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteDataRepositoryAssociationRequest method.
-//    req, resp := client.DeleteDataRepositoryAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteDataRepositoryAssociation
 func (c *FSx) DeleteDataRepositoryAssociationRequest(input *DeleteDataRepositoryAssociationInput) (req *request.Request, output *DeleteDataRepositoryAssociationOutput) {
@@ -1606,23 +1605,24 @@ func (c *FSx) DeleteDataRepositoryAssociationRequest(input *DeleteDataRepository
 // API operation DeleteDataRepositoryAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * DataRepositoryAssociationNotFound
-//   No data repository associations were found based upon the supplied parameters.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - DataRepositoryAssociationNotFound
+//     No data repository associations were found based upon the supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteDataRepositoryAssociation
 func (c *FSx) DeleteDataRepositoryAssociation(input *DeleteDataRepositoryAssociationInput) (*DeleteDataRepositoryAssociationOutput, error) {
@@ -1662,14 +1662,13 @@ const opDeleteFileSystem = "DeleteFileSystem"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFileSystemRequest method.
+//	req, resp := client.DeleteFileSystemRequest(params)
 //
-//    // Example sending a request using the DeleteFileSystemRequest method.
-//    req, resp := client.DeleteFileSystemRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteFileSystem
 func (c *FSx) DeleteFileSystemRequest(input *DeleteFileSystemInput) (req *request.Request, output *DeleteFileSystemOutput) {
@@ -1724,23 +1723,24 @@ func (c *FSx) DeleteFileSystemRequest(input *DeleteFileSystemInput) (req *reques
 // API operation DeleteFileSystem for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteFileSystem
 func (c *FSx) DeleteFileSystem(input *DeleteFileSystemInput) (*DeleteFileSystemOutput, error) {
@@ -1780,14 +1780,13 @@ const opDeleteSnapshot = "DeleteSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSnapshotRequest method.
+//	req, resp := client.DeleteSnapshotRequest(params)
 //
-//    // Example sending a request using the DeleteSnapshotRequest method.
-//    req, resp := client.DeleteSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteSnapshot
 func (c *FSx) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *request.Request, output *DeleteSnapshotOutput) {
@@ -1823,14 +1822,15 @@ func (c *FSx) DeleteSnapshotRequest(input *DeleteSnapshotInput) (req *request.Re
 // API operation DeleteSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * SnapshotNotFound
-//   No Amazon FSx snapshots were found based on the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - SnapshotNotFound
+//     No Amazon FSx snapshots were found based on the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteSnapshot
 func (c *FSx) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
@@ -1870,14 +1870,13 @@ const opDeleteStorageVirtualMachine = "DeleteStorageVirtualMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStorageVirtualMachineRequest method.
+//	req, resp := client.DeleteStorageVirtualMachineRequest(params)
 //
-//    // Example sending a request using the DeleteStorageVirtualMachineRequest method.
-//    req, resp := client.DeleteStorageVirtualMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteStorageVirtualMachine
 func (c *FSx) DeleteStorageVirtualMachineRequest(input *DeleteStorageVirtualMachineInput) (req *request.Request, output *DeleteStorageVirtualMachineOutput) {
@@ -1910,19 +1909,20 @@ func (c *FSx) DeleteStorageVirtualMachineRequest(input *DeleteStorageVirtualMach
 // API operation DeleteStorageVirtualMachine for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * StorageVirtualMachineNotFound
-//   No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - StorageVirtualMachineNotFound
+//     No FSx for ONTAP SVMs were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteStorageVirtualMachine
 func (c *FSx) DeleteStorageVirtualMachine(input *DeleteStorageVirtualMachineInput) (*DeleteStorageVirtualMachineOutput, error) {
@@ -1962,14 +1962,13 @@ const opDeleteVolume = "DeleteVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVolumeRequest method.
+//	req, resp := client.DeleteVolumeRequest(params)
 //
-//    // Example sending a request using the DeleteVolumeRequest method.
-//    req, resp := client.DeleteVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteVolume
 func (c *FSx) DeleteVolumeRequest(input *DeleteVolumeInput) (req *request.Request, output *DeleteVolumeOutput) {
@@ -2000,19 +1999,20 @@ func (c *FSx) DeleteVolumeRequest(input *DeleteVolumeInput) (req *request.Reques
 // API operation DeleteVolume for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DeleteVolume
 func (c *FSx) DeleteVolume(input *DeleteVolumeInput) (*DeleteVolumeOutput, error) {
@@ -2052,14 +2052,13 @@ const opDescribeBackups = "DescribeBackups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBackupsRequest method.
+//	req, resp := client.DescribeBackupsRequest(params)
 //
-//    // Example sending a request using the DescribeBackupsRequest method.
-//    req, resp := client.DescribeBackupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeBackups
 func (c *FSx) DescribeBackupsRequest(input *DescribeBackupsInput) (req *request.Request, output *DescribeBackupsOutput) {
@@ -2104,12 +2103,12 @@ func (c *FSx) DescribeBackupsRequest(input *DescribeBackupsInput) (req *request.
 //
 // When using this operation, keep the following in mind:
 //
-//    * The operation might return fewer than the MaxResults value of backup
-//    descriptions while still including a NextToken value.
+//   - The operation might return fewer than the MaxResults value of backup
+//     descriptions while still including a NextToken value.
 //
-//    * The order of the backups returned in the response of one DescribeBackups
-//    call and the order of the backups returned across the responses of a multi-call
-//    iteration is unspecified.
+//   - The order of the backups returned in the response of one DescribeBackups
+//     call and the order of the backups returned across the responses of a multi-call
+//     iteration is unspecified.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2119,20 +2118,21 @@ func (c *FSx) DescribeBackupsRequest(input *DescribeBackupsInput) (req *request.
 // API operation DescribeBackups for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * BackupNotFound
-//   No Amazon FSx backups were found based upon the supplied parameters.
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BackupNotFound
+//     No Amazon FSx backups were found based upon the supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeBackups
 func (c *FSx) DescribeBackups(input *DescribeBackupsInput) (*DescribeBackupsOutput, error) {
@@ -2164,15 +2164,14 @@ func (c *FSx) DescribeBackupsWithContext(ctx aws.Context, input *DescribeBackups
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBackups operation.
-//    pageNum := 0
-//    err := client.DescribeBackupsPages(params,
-//        func(page *fsx.DescribeBackupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBackups operation.
+//	pageNum := 0
+//	err := client.DescribeBackupsPages(params,
+//	    func(page *fsx.DescribeBackupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeBackupsPages(input *DescribeBackupsInput, fn func(*DescribeBackupsOutput, bool) bool) error {
 	return c.DescribeBackupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2224,14 +2223,13 @@ const opDescribeDataRepositoryAssociations = "DescribeDataRepositoryAssociations
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataRepositoryAssociationsRequest method.
+//	req, resp := client.DescribeDataRepositoryAssociationsRequest(params)
 //
-//    // Example sending a request using the DescribeDataRepositoryAssociationsRequest method.
-//    req, resp := client.DescribeDataRepositoryAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeDataRepositoryAssociations
 func (c *FSx) DescribeDataRepositoryAssociationsRequest(input *DescribeDataRepositoryAssociationsInput) (req *request.Request, output *DescribeDataRepositoryAssociationsOutput) {
@@ -2286,20 +2284,21 @@ func (c *FSx) DescribeDataRepositoryAssociationsRequest(input *DescribeDataRepos
 // API operation DescribeDataRepositoryAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * DataRepositoryAssociationNotFound
-//   No data repository associations were found based upon the supplied parameters.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InvalidDataRepositoryType
-//   You have filtered the response to a data repository type that is not supported.
+//   - DataRepositoryAssociationNotFound
+//     No data repository associations were found based upon the supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - InvalidDataRepositoryType
+//     You have filtered the response to a data repository type that is not supported.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeDataRepositoryAssociations
 func (c *FSx) DescribeDataRepositoryAssociations(input *DescribeDataRepositoryAssociationsInput) (*DescribeDataRepositoryAssociationsOutput, error) {
@@ -2331,15 +2330,14 @@ func (c *FSx) DescribeDataRepositoryAssociationsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataRepositoryAssociations operation.
-//    pageNum := 0
-//    err := client.DescribeDataRepositoryAssociationsPages(params,
-//        func(page *fsx.DescribeDataRepositoryAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataRepositoryAssociations operation.
+//	pageNum := 0
+//	err := client.DescribeDataRepositoryAssociationsPages(params,
+//	    func(page *fsx.DescribeDataRepositoryAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeDataRepositoryAssociationsPages(input *DescribeDataRepositoryAssociationsInput, fn func(*DescribeDataRepositoryAssociationsOutput, bool) bool) error {
 	return c.DescribeDataRepositoryAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2391,14 +2389,13 @@ const opDescribeDataRepositoryTasks = "DescribeDataRepositoryTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataRepositoryTasksRequest method.
+//	req, resp := client.DescribeDataRepositoryTasksRequest(params)
 //
-//    // Example sending a request using the DescribeDataRepositoryTasksRequest method.
-//    req, resp := client.DescribeDataRepositoryTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeDataRepositoryTasks
 func (c *FSx) DescribeDataRepositoryTasksRequest(input *DescribeDataRepositoryTasksInput) (req *request.Request, output *DescribeDataRepositoryTasksOutput) {
@@ -2447,17 +2444,18 @@ func (c *FSx) DescribeDataRepositoryTasksRequest(input *DescribeDataRepositoryTa
 // API operation DescribeDataRepositoryTasks for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * DataRepositoryTaskNotFound
-//   The data repository task or tasks you specified could not be found.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - DataRepositoryTaskNotFound
+//     The data repository task or tasks you specified could not be found.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeDataRepositoryTasks
 func (c *FSx) DescribeDataRepositoryTasks(input *DescribeDataRepositoryTasksInput) (*DescribeDataRepositoryTasksOutput, error) {
@@ -2489,15 +2487,14 @@ func (c *FSx) DescribeDataRepositoryTasksWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataRepositoryTasks operation.
-//    pageNum := 0
-//    err := client.DescribeDataRepositoryTasksPages(params,
-//        func(page *fsx.DescribeDataRepositoryTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataRepositoryTasks operation.
+//	pageNum := 0
+//	err := client.DescribeDataRepositoryTasksPages(params,
+//	    func(page *fsx.DescribeDataRepositoryTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeDataRepositoryTasksPages(input *DescribeDataRepositoryTasksInput, fn func(*DescribeDataRepositoryTasksOutput, bool) bool) error {
 	return c.DescribeDataRepositoryTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2549,14 +2546,13 @@ const opDescribeFileSystemAliases = "DescribeFileSystemAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFileSystemAliasesRequest method.
+//	req, resp := client.DescribeFileSystemAliasesRequest(params)
 //
-//    // Example sending a request using the DescribeFileSystemAliasesRequest method.
-//    req, resp := client.DescribeFileSystemAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeFileSystemAliases
 func (c *FSx) DescribeFileSystemAliasesRequest(input *DescribeFileSystemAliasesInput) (req *request.Request, output *DescribeFileSystemAliasesOutput) {
@@ -2597,14 +2593,15 @@ func (c *FSx) DescribeFileSystemAliasesRequest(input *DescribeFileSystemAliasesI
 // API operation DescribeFileSystemAliases for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeFileSystemAliases
 func (c *FSx) DescribeFileSystemAliases(input *DescribeFileSystemAliasesInput) (*DescribeFileSystemAliasesOutput, error) {
@@ -2636,15 +2633,14 @@ func (c *FSx) DescribeFileSystemAliasesWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFileSystemAliases operation.
-//    pageNum := 0
-//    err := client.DescribeFileSystemAliasesPages(params,
-//        func(page *fsx.DescribeFileSystemAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFileSystemAliases operation.
+//	pageNum := 0
+//	err := client.DescribeFileSystemAliasesPages(params,
+//	    func(page *fsx.DescribeFileSystemAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeFileSystemAliasesPages(input *DescribeFileSystemAliasesInput, fn func(*DescribeFileSystemAliasesOutput, bool) bool) error {
 	return c.DescribeFileSystemAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2696,14 +2692,13 @@ const opDescribeFileSystems = "DescribeFileSystems"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFileSystemsRequest method.
+//	req, resp := client.DescribeFileSystemsRequest(params)
 //
-//    // Example sending a request using the DescribeFileSystemsRequest method.
-//    req, resp := client.DescribeFileSystemsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeFileSystems
 func (c *FSx) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *request.Request, output *DescribeFileSystemsOutput) {
@@ -2748,12 +2743,12 @@ func (c *FSx) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *
 //
 // When using this operation, keep the following in mind:
 //
-//    * The implementation might return fewer than MaxResults file system descriptions
-//    while still including a NextToken value.
+//   - The implementation might return fewer than MaxResults file system descriptions
+//     while still including a NextToken value.
 //
-//    * The order of file systems returned in the response of one DescribeFileSystems
-//    call and the order of file systems returned across the responses of a
-//    multicall iteration is unspecified.
+//   - The order of file systems returned in the response of one DescribeFileSystems
+//     call and the order of file systems returned across the responses of a
+//     multicall iteration is unspecified.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2763,14 +2758,15 @@ func (c *FSx) DescribeFileSystemsRequest(input *DescribeFileSystemsInput) (req *
 // API operation DescribeFileSystems for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeFileSystems
 func (c *FSx) DescribeFileSystems(input *DescribeFileSystemsInput) (*DescribeFileSystemsOutput, error) {
@@ -2802,15 +2798,14 @@ func (c *FSx) DescribeFileSystemsWithContext(ctx aws.Context, input *DescribeFil
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFileSystems operation.
-//    pageNum := 0
-//    err := client.DescribeFileSystemsPages(params,
-//        func(page *fsx.DescribeFileSystemsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFileSystems operation.
+//	pageNum := 0
+//	err := client.DescribeFileSystemsPages(params,
+//	    func(page *fsx.DescribeFileSystemsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeFileSystemsPages(input *DescribeFileSystemsInput, fn func(*DescribeFileSystemsOutput, bool) bool) error {
 	return c.DescribeFileSystemsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2862,14 +2857,13 @@ const opDescribeSnapshots = "DescribeSnapshots"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSnapshotsRequest method.
+//	req, resp := client.DescribeSnapshotsRequest(params)
 //
-//    // Example sending a request using the DescribeSnapshotsRequest method.
-//    req, resp := client.DescribeSnapshotsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeSnapshots
 func (c *FSx) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *request.Request, output *DescribeSnapshotsOutput) {
@@ -2914,12 +2908,12 @@ func (c *FSx) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *requ
 //
 // When using this operation, keep the following in mind:
 //
-//    * The operation might return fewer than the MaxResults value of snapshot
-//    descriptions while still including a NextToken value.
+//   - The operation might return fewer than the MaxResults value of snapshot
+//     descriptions while still including a NextToken value.
 //
-//    * The order of snapshots returned in the response of one DescribeSnapshots
-//    call and the order of backups returned across the responses of a multi-call
-//    iteration is unspecified.
+//   - The order of snapshots returned in the response of one DescribeSnapshots
+//     call and the order of backups returned across the responses of a multi-call
+//     iteration is unspecified.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2929,14 +2923,15 @@ func (c *FSx) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req *requ
 // API operation DescribeSnapshots for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * SnapshotNotFound
-//   No Amazon FSx snapshots were found based on the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - SnapshotNotFound
+//     No Amazon FSx snapshots were found based on the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeSnapshots
 func (c *FSx) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
@@ -2968,15 +2963,14 @@ func (c *FSx) DescribeSnapshotsWithContext(ctx aws.Context, input *DescribeSnaps
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSnapshots operation.
-//    pageNum := 0
-//    err := client.DescribeSnapshotsPages(params,
-//        func(page *fsx.DescribeSnapshotsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotsPages(params,
+//	    func(page *fsx.DescribeSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeSnapshotsPages(input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool) error {
 	return c.DescribeSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3028,14 +3022,13 @@ const opDescribeStorageVirtualMachines = "DescribeStorageVirtualMachines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStorageVirtualMachinesRequest method.
+//	req, resp := client.DescribeStorageVirtualMachinesRequest(params)
 //
-//    // Example sending a request using the DescribeStorageVirtualMachinesRequest method.
-//    req, resp := client.DescribeStorageVirtualMachinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeStorageVirtualMachines
 func (c *FSx) DescribeStorageVirtualMachinesRequest(input *DescribeStorageVirtualMachinesInput) (req *request.Request, output *DescribeStorageVirtualMachinesOutput) {
@@ -3073,14 +3066,15 @@ func (c *FSx) DescribeStorageVirtualMachinesRequest(input *DescribeStorageVirtua
 // API operation DescribeStorageVirtualMachines for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * StorageVirtualMachineNotFound
-//   No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - StorageVirtualMachineNotFound
+//     No FSx for ONTAP SVMs were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeStorageVirtualMachines
 func (c *FSx) DescribeStorageVirtualMachines(input *DescribeStorageVirtualMachinesInput) (*DescribeStorageVirtualMachinesOutput, error) {
@@ -3112,15 +3106,14 @@ func (c *FSx) DescribeStorageVirtualMachinesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeStorageVirtualMachines operation.
-//    pageNum := 0
-//    err := client.DescribeStorageVirtualMachinesPages(params,
-//        func(page *fsx.DescribeStorageVirtualMachinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeStorageVirtualMachines operation.
+//	pageNum := 0
+//	err := client.DescribeStorageVirtualMachinesPages(params,
+//	    func(page *fsx.DescribeStorageVirtualMachinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeStorageVirtualMachinesPages(input *DescribeStorageVirtualMachinesInput, fn func(*DescribeStorageVirtualMachinesOutput, bool) bool) error {
 	return c.DescribeStorageVirtualMachinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3172,14 +3165,13 @@ const opDescribeVolumes = "DescribeVolumes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVolumesRequest method.
+//	req, resp := client.DescribeVolumesRequest(params)
 //
-//    // Example sending a request using the DescribeVolumesRequest method.
-//    req, resp := client.DescribeVolumesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeVolumes
 func (c *FSx) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.Request, output *DescribeVolumesOutput) {
@@ -3217,14 +3209,15 @@ func (c *FSx) DescribeVolumesRequest(input *DescribeVolumesInput) (req *request.
 // API operation DescribeVolumes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DescribeVolumes
 func (c *FSx) DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error) {
@@ -3256,15 +3249,14 @@ func (c *FSx) DescribeVolumesWithContext(ctx aws.Context, input *DescribeVolumes
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeVolumes operation.
-//    pageNum := 0
-//    err := client.DescribeVolumesPages(params,
-//        func(page *fsx.DescribeVolumesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeVolumes operation.
+//	pageNum := 0
+//	err := client.DescribeVolumesPages(params,
+//	    func(page *fsx.DescribeVolumesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) DescribeVolumesPages(input *DescribeVolumesInput, fn func(*DescribeVolumesOutput, bool) bool) error {
 	return c.DescribeVolumesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3316,14 +3308,13 @@ const opDisassociateFileSystemAliases = "DisassociateFileSystemAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateFileSystemAliasesRequest method.
+//	req, resp := client.DisassociateFileSystemAliasesRequest(params)
 //
-//    // Example sending a request using the DisassociateFileSystemAliasesRequest method.
-//    req, resp := client.DisassociateFileSystemAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DisassociateFileSystemAliases
 func (c *FSx) DisassociateFileSystemAliasesRequest(input *DisassociateFileSystemAliasesInput) (req *request.Request, output *DisassociateFileSystemAliasesOutput) {
@@ -3363,14 +3354,15 @@ func (c *FSx) DisassociateFileSystemAliasesRequest(input *DisassociateFileSystem
 // API operation DisassociateFileSystemAliases for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/DisassociateFileSystemAliases
 func (c *FSx) DisassociateFileSystemAliases(input *DisassociateFileSystemAliasesInput) (*DisassociateFileSystemAliasesOutput, error) {
@@ -3410,14 +3402,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/ListTagsForResource
 func (c *FSx) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3460,12 +3451,12 @@ func (c *FSx) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 //
 // When using this action, keep the following in mind:
 //
-//    * The implementation might return fewer than MaxResults file system descriptions
-//    while still including a NextToken value.
+//   - The implementation might return fewer than MaxResults file system descriptions
+//     while still including a NextToken value.
 //
-//    * The order of tags returned in the response of one ListTagsForResource
-//    call and the order of tags returned across the responses of a multi-call
-//    iteration is unspecified.
+//   - The order of tags returned in the response of one ListTagsForResource
+//     call and the order of tags returned across the responses of a multi-call
+//     iteration is unspecified.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3475,21 +3466,22 @@ func (c *FSx) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * ResourceNotFound
-//   The resource specified by the Amazon Resource Name (ARN) can't be found.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * NotServiceResourceError
-//   The resource specified for the tagging operation is not a resource type owned
-//   by Amazon FSx. Use the API of the relevant service to perform the operation.
+//   - ResourceNotFound
+//     The resource specified by the Amazon Resource Name (ARN) can't be found.
 //
-//   * ResourceDoesNotSupportTagging
-//   The resource specified does not support tagging.
+//   - NotServiceResourceError
+//     The resource specified for the tagging operation is not a resource type owned
+//     by Amazon FSx. Use the API of the relevant service to perform the operation.
+//
+//   - ResourceDoesNotSupportTagging
+//     The resource specified does not support tagging.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/ListTagsForResource
 func (c *FSx) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3521,15 +3513,14 @@ func (c *FSx) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsFor
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTagsForResource operation.
-//    pageNum := 0
-//    err := client.ListTagsForResourcePages(params,
-//        func(page *fsx.ListTagsForResourceOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *fsx.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *FSx) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
 	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3581,14 +3572,13 @@ const opReleaseFileSystemNfsV3Locks = "ReleaseFileSystemNfsV3Locks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReleaseFileSystemNfsV3LocksRequest method.
+//	req, resp := client.ReleaseFileSystemNfsV3LocksRequest(params)
 //
-//    // Example sending a request using the ReleaseFileSystemNfsV3LocksRequest method.
-//    req, resp := client.ReleaseFileSystemNfsV3LocksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/ReleaseFileSystemNfsV3Locks
 func (c *FSx) ReleaseFileSystemNfsV3LocksRequest(input *ReleaseFileSystemNfsV3LocksInput) (req *request.Request, output *ReleaseFileSystemNfsV3LocksOutput) {
@@ -3619,23 +3609,24 @@ func (c *FSx) ReleaseFileSystemNfsV3LocksRequest(input *ReleaseFileSystemNfsV3Lo
 // API operation ReleaseFileSystemNfsV3Locks for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/ReleaseFileSystemNfsV3Locks
 func (c *FSx) ReleaseFileSystemNfsV3Locks(input *ReleaseFileSystemNfsV3LocksInput) (*ReleaseFileSystemNfsV3LocksOutput, error) {
@@ -3675,14 +3666,13 @@ const opRestoreVolumeFromSnapshot = "RestoreVolumeFromSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreVolumeFromSnapshotRequest method.
+//	req, resp := client.RestoreVolumeFromSnapshotRequest(params)
 //
-//    // Example sending a request using the RestoreVolumeFromSnapshotRequest method.
-//    req, resp := client.RestoreVolumeFromSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/RestoreVolumeFromSnapshot
 func (c *FSx) RestoreVolumeFromSnapshotRequest(input *RestoreVolumeFromSnapshotInput) (req *request.Request, output *RestoreVolumeFromSnapshotOutput) {
@@ -3714,14 +3704,15 @@ func (c *FSx) RestoreVolumeFromSnapshotRequest(input *RestoreVolumeFromSnapshotI
 // API operation RestoreVolumeFromSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
+//
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/RestoreVolumeFromSnapshot
 func (c *FSx) RestoreVolumeFromSnapshot(input *RestoreVolumeFromSnapshotInput) (*RestoreVolumeFromSnapshotOutput, error) {
@@ -3761,14 +3752,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/TagResource
 func (c *FSx) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3800,21 +3790,22 @@ func (c *FSx) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * ResourceNotFound
-//   The resource specified by the Amazon Resource Name (ARN) can't be found.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * NotServiceResourceError
-//   The resource specified for the tagging operation is not a resource type owned
-//   by Amazon FSx. Use the API of the relevant service to perform the operation.
+//   - ResourceNotFound
+//     The resource specified by the Amazon Resource Name (ARN) can't be found.
 //
-//   * ResourceDoesNotSupportTagging
-//   The resource specified does not support tagging.
+//   - NotServiceResourceError
+//     The resource specified for the tagging operation is not a resource type owned
+//     by Amazon FSx. Use the API of the relevant service to perform the operation.
+//
+//   - ResourceDoesNotSupportTagging
+//     The resource specified does not support tagging.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/TagResource
 func (c *FSx) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3854,14 +3845,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UntagResource
 func (c *FSx) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3893,21 +3883,22 @@ func (c *FSx) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * ResourceNotFound
-//   The resource specified by the Amazon Resource Name (ARN) can't be found.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * NotServiceResourceError
-//   The resource specified for the tagging operation is not a resource type owned
-//   by Amazon FSx. Use the API of the relevant service to perform the operation.
+//   - ResourceNotFound
+//     The resource specified by the Amazon Resource Name (ARN) can't be found.
 //
-//   * ResourceDoesNotSupportTagging
-//   The resource specified does not support tagging.
+//   - NotServiceResourceError
+//     The resource specified for the tagging operation is not a resource type owned
+//     by Amazon FSx. Use the API of the relevant service to perform the operation.
+//
+//   - ResourceDoesNotSupportTagging
+//     The resource specified does not support tagging.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UntagResource
 func (c *FSx) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3947,14 +3938,13 @@ const opUpdateDataRepositoryAssociation = "UpdateDataRepositoryAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDataRepositoryAssociationRequest method.
+//	req, resp := client.UpdateDataRepositoryAssociationRequest(params)
 //
-//    // Example sending a request using the UpdateDataRepositoryAssociationRequest method.
-//    req, resp := client.UpdateDataRepositoryAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateDataRepositoryAssociation
 func (c *FSx) UpdateDataRepositoryAssociationRequest(input *UpdateDataRepositoryAssociationInput) (req *request.Request, output *UpdateDataRepositoryAssociationOutput) {
@@ -3987,23 +3977,24 @@ func (c *FSx) UpdateDataRepositoryAssociationRequest(input *UpdateDataRepository
 // API operation UpdateDataRepositoryAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * DataRepositoryAssociationNotFound
-//   No data repository associations were found based upon the supplied parameters.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - DataRepositoryAssociationNotFound
+//     No data repository associations were found based upon the supplied parameters.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateDataRepositoryAssociation
 func (c *FSx) UpdateDataRepositoryAssociation(input *UpdateDataRepositoryAssociationInput) (*UpdateDataRepositoryAssociationOutput, error) {
@@ -4043,14 +4034,13 @@ const opUpdateFileSystem = "UpdateFileSystem"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFileSystemRequest method.
+//	req, resp := client.UpdateFileSystemRequest(params)
 //
-//    // Example sending a request using the UpdateFileSystemRequest method.
-//    req, resp := client.UpdateFileSystemRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateFileSystem
 func (c *FSx) UpdateFileSystemRequest(input *UpdateFileSystemInput) (req *request.Request, output *UpdateFileSystemOutput) {
@@ -4077,67 +4067,67 @@ func (c *FSx) UpdateFileSystemRequest(input *UpdateFileSystemInput) (req *reques
 // For Amazon FSx for Windows File Server file systems, you can update the following
 // properties:
 //
-//    * AuditLogConfiguration
+//   - AuditLogConfiguration
 //
-//    * AutomaticBackupRetentionDays
+//   - AutomaticBackupRetentionDays
 //
-//    * DailyAutomaticBackupStartTime
+//   - DailyAutomaticBackupStartTime
 //
-//    * SelfManagedActiveDirectoryConfiguration
+//   - SelfManagedActiveDirectoryConfiguration
 //
-//    * StorageCapacity
+//   - StorageCapacity
 //
-//    * ThroughputCapacity
+//   - ThroughputCapacity
 //
-//    * WeeklyMaintenanceStartTime
+//   - WeeklyMaintenanceStartTime
 //
 // For Amazon FSx for Lustre file systems, you can update the following properties:
 //
-//    * AutoImportPolicy
+//   - AutoImportPolicy
 //
-//    * AutomaticBackupRetentionDays
+//   - AutomaticBackupRetentionDays
 //
-//    * DailyAutomaticBackupStartTime
+//   - DailyAutomaticBackupStartTime
 //
-//    * DataCompressionType
+//   - DataCompressionType
 //
-//    * LustreRootSquashConfiguration
+//   - LustreRootSquashConfiguration
 //
-//    * StorageCapacity
+//   - StorageCapacity
 //
-//    * WeeklyMaintenanceStartTime
+//   - WeeklyMaintenanceStartTime
 //
 // For Amazon FSx for NetApp ONTAP file systems, you can update the following
 // properties:
 //
-//    * AutomaticBackupRetentionDays
+//   - AutomaticBackupRetentionDays
 //
-//    * DailyAutomaticBackupStartTime
+//   - DailyAutomaticBackupStartTime
 //
-//    * DiskIopsConfiguration
+//   - DiskIopsConfiguration
 //
-//    * FsxAdminPassword
+//   - FsxAdminPassword
 //
-//    * StorageCapacity
+//   - StorageCapacity
 //
-//    * ThroughputCapacity
+//   - ThroughputCapacity
 //
-//    * WeeklyMaintenanceStartTime
+//   - WeeklyMaintenanceStartTime
 //
 // For the Amazon FSx for OpenZFS file systems, you can update the following
 // properties:
 //
-//    * AutomaticBackupRetentionDays
+//   - AutomaticBackupRetentionDays
 //
-//    * CopyTagsToBackups
+//   - CopyTagsToBackups
 //
-//    * CopyTagsToVolumes
+//   - CopyTagsToVolumes
 //
-//    * DailyAutomaticBackupStartTime
+//   - DailyAutomaticBackupStartTime
 //
-//    * ThroughputCapacity
+//   - ThroughputCapacity
 //
-//    * WeeklyMaintenanceStartTime
+//   - WeeklyMaintenanceStartTime
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4147,29 +4137,30 @@ func (c *FSx) UpdateFileSystemRequest(input *UpdateFileSystemInput) (req *reques
 // API operation UpdateFileSystem for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * FileSystemNotFound
-//   No Amazon FSx file systems were found based upon supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * MissingFileSystemConfiguration
-//   A file system configuration is required for this operation.
+//   - FileSystemNotFound
+//     No Amazon FSx file systems were found based upon supplied parameters.
 //
-//   * ServiceLimitExceeded
-//   An error indicating that a particular service limit was exceeded. You can
-//   increase some service limits by contacting Amazon Web Services Support.
+//   - MissingFileSystemConfiguration
+//     A file system configuration is required for this operation.
+//
+//   - ServiceLimitExceeded
+//     An error indicating that a particular service limit was exceeded. You can
+//     increase some service limits by contacting Amazon Web Services Support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateFileSystem
 func (c *FSx) UpdateFileSystem(input *UpdateFileSystemInput) (*UpdateFileSystemOutput, error) {
@@ -4209,14 +4200,13 @@ const opUpdateSnapshot = "UpdateSnapshot"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSnapshotRequest method.
+//	req, resp := client.UpdateSnapshotRequest(params)
 //
-//    // Example sending a request using the UpdateSnapshotRequest method.
-//    req, resp := client.UpdateSnapshotRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateSnapshot
 func (c *FSx) UpdateSnapshotRequest(input *UpdateSnapshotInput) (req *request.Request, output *UpdateSnapshotOutput) {
@@ -4247,14 +4237,15 @@ func (c *FSx) UpdateSnapshotRequest(input *UpdateSnapshotInput) (req *request.Re
 // API operation UpdateSnapshot for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * SnapshotNotFound
-//   No Amazon FSx snapshots were found based on the supplied parameters.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - SnapshotNotFound
+//     No Amazon FSx snapshots were found based on the supplied parameters.
+//
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateSnapshot
 func (c *FSx) UpdateSnapshot(input *UpdateSnapshotInput) (*UpdateSnapshotOutput, error) {
@@ -4294,14 +4285,13 @@ const opUpdateStorageVirtualMachine = "UpdateStorageVirtualMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStorageVirtualMachineRequest method.
+//	req, resp := client.UpdateStorageVirtualMachineRequest(params)
 //
-//    // Example sending a request using the UpdateStorageVirtualMachineRequest method.
-//    req, resp := client.UpdateStorageVirtualMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateStorageVirtualMachine
 func (c *FSx) UpdateStorageVirtualMachineRequest(input *UpdateStorageVirtualMachineInput) (req *request.Request, output *UpdateStorageVirtualMachineOutput) {
@@ -4332,22 +4322,23 @@ func (c *FSx) UpdateStorageVirtualMachineRequest(input *UpdateStorageVirtualMach
 // API operation UpdateStorageVirtualMachine for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * StorageVirtualMachineNotFound
-//   No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * UnsupportedOperation
-//   The requested operation is not supported for this resource or API.
+//   - StorageVirtualMachineNotFound
+//     No FSx for ONTAP SVMs were found based upon the supplied parameters.
+//
+//   - UnsupportedOperation
+//     The requested operation is not supported for this resource or API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateStorageVirtualMachine
 func (c *FSx) UpdateStorageVirtualMachine(input *UpdateStorageVirtualMachineInput) (*UpdateStorageVirtualMachineOutput, error) {
@@ -4387,14 +4378,13 @@ const opUpdateVolume = "UpdateVolume"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVolumeRequest method.
+//	req, resp := client.UpdateVolumeRequest(params)
 //
-//    // Example sending a request using the UpdateVolumeRequest method.
-//    req, resp := client.UpdateVolumeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateVolume
 func (c *FSx) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.Request, output *UpdateVolumeOutput) {
@@ -4426,22 +4416,23 @@ func (c *FSx) UpdateVolumeRequest(input *UpdateVolumeInput) (req *request.Reques
 // API operation UpdateVolume for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequest
-//   A generic error indicating a failure with a client request.
 //
-//   * IncompatibleParameterError
-//   The error returned when a second request is received with the same client
-//   request token but different parameters settings. A client request token should
-//   always uniquely identify a single request.
+//   - BadRequest
+//     A generic error indicating a failure with a client request.
 //
-//   * InternalServerError
-//   A generic error indicating a server-side failure.
+//   - IncompatibleParameterError
+//     The error returned when a second request is received with the same client
+//     request token but different parameters settings. A client request token should
+//     always uniquely identify a single request.
 //
-//   * MissingVolumeConfiguration
-//   A volume configuration is required for this operation.
+//   - InternalServerError
+//     A generic error indicating a server-side failure.
 //
-//   * VolumeNotFound
-//   No Amazon FSx volumes were found based upon the supplied parameters.
+//   - MissingVolumeConfiguration
+//     A volume configuration is required for this operation.
+//
+//   - VolumeNotFound
+//     No Amazon FSx volumes were found based upon the supplied parameters.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/fsx-2018-03-01/UpdateVolume
 func (c *FSx) UpdateVolume(input *UpdateVolumeInput) (*UpdateVolumeOutput, error) {
@@ -7116,13 +7107,13 @@ func (s *CreateFileSystemInput) SetWindowsConfiguration(v *CreateFileSystemWindo
 // deployment type. Instead, use CreateDataRepositoryAssociation to create a
 // data repository association to link your Lustre file system to a data repository.
 //
-//    * AutoImportPolicy
+//   - AutoImportPolicy
 //
-//    * ExportPath
+//   - ExportPath
 //
-//    * ImportedChunkSize
+//   - ImportedChunkSize
 //
-//    * ImportPath
+//   - ImportPath
 type CreateFileSystemLustreConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -9225,11 +9216,11 @@ func (s *CreateVolumeOutput) SetVolume(v *Volume) *CreateVolumeOutput {
 // for Lustre file system to an Amazon S3 bucket. The data repository association
 // configuration object is returned in the response of the following operations:
 //
-//    * CreateDataRepositoryAssociation
+//   - CreateDataRepositoryAssociation
 //
-//    * UpdateDataRepositoryAssociation
+//   - UpdateDataRepositoryAssociation
 //
-//    * DescribeDataRepositoryAssociations
+//   - DescribeDataRepositoryAssociations
 //
 // Data repository associations are supported only for file systems with the
 // Persistent_2 deployment type.
@@ -14223,9 +14214,9 @@ func (s *LustreLogConfiguration) SetLevel(v string) *LustreLogConfiguration {
 // Error and warning events can be logged from the following data repository
 // operations:
 //
-//    * Automatic export
+//   - Automatic export
 //
-//    * Data repository tasks
+//   - Data repository tasks
 //
 // To learn more about Lustre logging, see Logging to Amazon CloudWatch Logs
 // (https://docs.aws.amazon.com/fsx/latest/LustreGuide/cw-event-logging.html).
@@ -17266,17 +17257,17 @@ func (s TagResourceOutput) GoString() string {
 //
 // Valid tiering policies are the following:
 //
-//    * SNAPSHOT_ONLY - (Default value) moves cold snapshots to the capacity
-//    pool storage tier.
+//   - SNAPSHOT_ONLY - (Default value) moves cold snapshots to the capacity
+//     pool storage tier.
 //
-//    * AUTO - moves cold user data and snapshots to the capacity pool storage
-//    tier based on your access patterns.
+//   - AUTO - moves cold user data and snapshots to the capacity pool storage
+//     tier based on your access patterns.
 //
-//    * ALL - moves all user data blocks in both the active file system and
-//    Snapshot copies to the storage pool tier.
+//   - ALL - moves all user data blocks in both the active file system and
+//     Snapshot copies to the storage pool tier.
 //
-//    * NONE - keeps a volume's data in the primary storage tier, preventing
-//    it from being moved to the capacity pool tier.
+//   - NONE - keeps a volume's data in the primary storage tier, preventing
+//     it from being moved to the capacity pool tier.
 type TieringPolicy struct {
 	_ struct{} `type:"structure"`
 
@@ -19724,41 +19715,41 @@ func ActiveDirectoryErrorType_Values() []string {
 
 // Describes the type of administrative action, as follows:
 //
-//    * FILE_SYSTEM_UPDATE - A file system update administrative action initiated
-//    from the Amazon FSx console, API (UpdateFileSystem), or CLI (update-file-system).
+//   - FILE_SYSTEM_UPDATE - A file system update administrative action initiated
+//     from the Amazon FSx console, API (UpdateFileSystem), or CLI (update-file-system).
 //
-//    * STORAGE_OPTIMIZATION - After the FILE_SYSTEM_UPDATE task to increase
-//    a file system's storage capacity has been completed successfully, a STORAGE_OPTIMIZATION
-//    task starts. For Windows and ONTAP, storage optimization is the process
-//    of migrating the file system data to newer larger disks. For Lustre, storage
-//    optimization consists of rebalancing the data across the existing and
-//    newly added file servers. You can track the storage-optimization progress
-//    using the ProgressPercent property. When STORAGE_OPTIMIZATION has been
-//    completed successfully, the parent FILE_SYSTEM_UPDATE action status changes
-//    to COMPLETED. For more information, see Managing storage capacity (https://docs.aws.amazon.com/fsx/latest/WindowsGuide/managing-storage-capacity.html)
-//    in the Amazon FSx for Windows File Server User Guide, Managing storage
-//    and throughput capacity (https://docs.aws.amazon.com/fsx/latest/LustreGuide/managing-storage-capacity.html)
-//    in the Amazon FSx for Lustre User Guide, and Managing storage capacity
-//    and provisioned IOPS (https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/managing-storage-capacity.html)
-//    in the Amazon FSx for NetApp ONTAP User Guide.
+//   - STORAGE_OPTIMIZATION - After the FILE_SYSTEM_UPDATE task to increase
+//     a file system's storage capacity has been completed successfully, a STORAGE_OPTIMIZATION
+//     task starts. For Windows and ONTAP, storage optimization is the process
+//     of migrating the file system data to newer larger disks. For Lustre, storage
+//     optimization consists of rebalancing the data across the existing and
+//     newly added file servers. You can track the storage-optimization progress
+//     using the ProgressPercent property. When STORAGE_OPTIMIZATION has been
+//     completed successfully, the parent FILE_SYSTEM_UPDATE action status changes
+//     to COMPLETED. For more information, see Managing storage capacity (https://docs.aws.amazon.com/fsx/latest/WindowsGuide/managing-storage-capacity.html)
+//     in the Amazon FSx for Windows File Server User Guide, Managing storage
+//     and throughput capacity (https://docs.aws.amazon.com/fsx/latest/LustreGuide/managing-storage-capacity.html)
+//     in the Amazon FSx for Lustre User Guide, and Managing storage capacity
+//     and provisioned IOPS (https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/managing-storage-capacity.html)
+//     in the Amazon FSx for NetApp ONTAP User Guide.
 //
-//    * FILE_SYSTEM_ALIAS_ASSOCIATION - A file system update to associate a
-//    new Domain Name System (DNS) alias with the file system. For more information,
-//    see AssociateFileSystemAliases (https://docs.aws.amazon.com/fsx/latest/APIReference/API_AssociateFileSystemAliases.html).
+//   - FILE_SYSTEM_ALIAS_ASSOCIATION - A file system update to associate a
+//     new Domain Name System (DNS) alias with the file system. For more information,
+//     see AssociateFileSystemAliases (https://docs.aws.amazon.com/fsx/latest/APIReference/API_AssociateFileSystemAliases.html).
 //
-//    * FILE_SYSTEM_ALIAS_DISASSOCIATION - A file system update to disassociate
-//    a DNS alias from the file system. For more information, see DisassociateFileSystemAliases
-//    (https://docs.aws.amazon.com/fsx/latest/APIReference/API_DisassociateFileSystemAliases.html).
+//   - FILE_SYSTEM_ALIAS_DISASSOCIATION - A file system update to disassociate
+//     a DNS alias from the file system. For more information, see DisassociateFileSystemAliases
+//     (https://docs.aws.amazon.com/fsx/latest/APIReference/API_DisassociateFileSystemAliases.html).
 //
-//    * VOLUME_UPDATE - A volume update to an Amazon FSx for NetApp ONTAP or
-//    Amazon FSx for OpenZFS volume initiated from the Amazon FSx console, API
-//    (UpdateVolume), or CLI (update-volume).
+//   - VOLUME_UPDATE - A volume update to an Amazon FSx for NetApp ONTAP or
+//     Amazon FSx for OpenZFS volume initiated from the Amazon FSx console, API
+//     (UpdateVolume), or CLI (update-volume).
 //
-//    * SNAPSHOT_UPDATE - A snapshot update to an Amazon FSx for OpenZFS volume
-//    initiated from the Amazon FSx console, API (UpdateSnapshot), or CLI (update-snapshot).
+//   - SNAPSHOT_UPDATE - A snapshot update to an Amazon FSx for OpenZFS volume
+//     initiated from the Amazon FSx console, API (UpdateSnapshot), or CLI (update-snapshot).
 //
-//    * RELEASE_NFS_V3_LOCKS - Tracks the release of Network File System (NFS)
-//    V3 locks on an Amazon FSx for OpenZFS file system.
+//   - RELEASE_NFS_V3_LOCKS - Tracks the release of Network File System (NFS)
+//     V3 locks on an Amazon FSx for OpenZFS file system.
 const (
 	// AdministrativeActionTypeFileSystemUpdate is a AdministrativeActionType enum value
 	AdministrativeActionTypeFileSystemUpdate = "FILE_SYSTEM_UPDATE"
@@ -19849,21 +19840,21 @@ func AutoImportPolicyType_Values() []string {
 
 // The lifecycle status of the backup.
 //
-//    * AVAILABLE - The backup is fully available.
+//   - AVAILABLE - The backup is fully available.
 //
-//    * PENDING - For user-initiated backups on Lustre file systems only; Amazon
-//    FSx hasn't started creating the backup.
+//   - PENDING - For user-initiated backups on Lustre file systems only; Amazon
+//     FSx hasn't started creating the backup.
 //
-//    * CREATING - Amazon FSx is creating the new user-initiated backup.
+//   - CREATING - Amazon FSx is creating the new user-initiated backup.
 //
-//    * TRANSFERRING - For user-initiated backups on Lustre file systems only;
-//    Amazon FSx is backing up the file system.
+//   - TRANSFERRING - For user-initiated backups on Lustre file systems only;
+//     Amazon FSx is backing up the file system.
 //
-//    * COPYING - Amazon FSx is copying the backup.
+//   - COPYING - Amazon FSx is copying the backup.
 //
-//    * DELETED - Amazon FSx deleted the backup and it's no longer available.
+//   - DELETED - Amazon FSx deleted the backup and it's no longer available.
 //
-//    * FAILED - Amazon FSx couldn't finish the backup.
+//   - FAILED - Amazon FSx couldn't finish the backup.
 const (
 	// BackupLifecycleAvailable is a BackupLifecycle enum value
 	BackupLifecycleAvailable = "AVAILABLE"

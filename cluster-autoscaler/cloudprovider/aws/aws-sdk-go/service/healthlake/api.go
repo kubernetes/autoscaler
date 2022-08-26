@@ -29,14 +29,13 @@ const opCreateFHIRDatastore = "CreateFHIRDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFHIRDatastoreRequest method.
+//	req, resp := client.CreateFHIRDatastoreRequest(params)
 //
-//    // Example sending a request using the CreateFHIRDatastoreRequest method.
-//    req, resp := client.CreateFHIRDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/CreateFHIRDatastore
 func (c *HealthLake) CreateFHIRDatastoreRequest(input *CreateFHIRDatastoreInput) (req *request.Request, output *CreateFHIRDatastoreOutput) {
@@ -67,18 +66,19 @@ func (c *HealthLake) CreateFHIRDatastoreRequest(input *CreateFHIRDatastoreInput)
 // API operation CreateFHIRDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/CreateFHIRDatastore
 func (c *HealthLake) CreateFHIRDatastore(input *CreateFHIRDatastoreInput) (*CreateFHIRDatastoreOutput, error) {
@@ -118,14 +118,13 @@ const opDeleteFHIRDatastore = "DeleteFHIRDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFHIRDatastoreRequest method.
+//	req, resp := client.DeleteFHIRDatastoreRequest(params)
 //
-//    // Example sending a request using the DeleteFHIRDatastoreRequest method.
-//    req, resp := client.DeleteFHIRDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DeleteFHIRDatastore
 func (c *HealthLake) DeleteFHIRDatastoreRequest(input *DeleteFHIRDatastoreInput) (req *request.Request, output *DeleteFHIRDatastoreOutput) {
@@ -156,25 +155,26 @@ func (c *HealthLake) DeleteFHIRDatastoreRequest(input *DeleteFHIRDatastoreInput)
 // API operation DeleteFHIRDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
 //
-//   * ConflictException
-//   The Data Store is in a transition state and the user requested action can
-//   not be performed.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
 //
-//   * ValidationException
-//   The user input parameter was invalid.
+//   - ConflictException
+//     The Data Store is in a transition state and the user requested action can
+//     not be performed.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DeleteFHIRDatastore
 func (c *HealthLake) DeleteFHIRDatastore(input *DeleteFHIRDatastoreInput) (*DeleteFHIRDatastoreOutput, error) {
@@ -214,14 +214,13 @@ const opDescribeFHIRDatastore = "DescribeFHIRDatastore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFHIRDatastoreRequest method.
+//	req, resp := client.DescribeFHIRDatastoreRequest(params)
 //
-//    // Example sending a request using the DescribeFHIRDatastoreRequest method.
-//    req, resp := client.DescribeFHIRDatastoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRDatastore
 func (c *HealthLake) DescribeFHIRDatastoreRequest(input *DescribeFHIRDatastoreInput) (req *request.Request, output *DescribeFHIRDatastoreOutput) {
@@ -254,18 +253,19 @@ func (c *HealthLake) DescribeFHIRDatastoreRequest(input *DescribeFHIRDatastoreIn
 // API operation DescribeFHIRDatastore for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRDatastore
 func (c *HealthLake) DescribeFHIRDatastore(input *DescribeFHIRDatastoreInput) (*DescribeFHIRDatastoreOutput, error) {
@@ -305,14 +305,13 @@ const opDescribeFHIRExportJob = "DescribeFHIRExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFHIRExportJobRequest method.
+//	req, resp := client.DescribeFHIRExportJobRequest(params)
 //
-//    // Example sending a request using the DescribeFHIRExportJobRequest method.
-//    req, resp := client.DescribeFHIRExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRExportJob
 func (c *HealthLake) DescribeFHIRExportJobRequest(input *DescribeFHIRExportJobInput) (req *request.Request, output *DescribeFHIRExportJobOutput) {
@@ -344,18 +343,19 @@ func (c *HealthLake) DescribeFHIRExportJobRequest(input *DescribeFHIRExportJobIn
 // API operation DescribeFHIRExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRExportJob
 func (c *HealthLake) DescribeFHIRExportJob(input *DescribeFHIRExportJobInput) (*DescribeFHIRExportJobOutput, error) {
@@ -395,14 +395,13 @@ const opDescribeFHIRImportJob = "DescribeFHIRImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFHIRImportJobRequest method.
+//	req, resp := client.DescribeFHIRImportJobRequest(params)
 //
-//    // Example sending a request using the DescribeFHIRImportJobRequest method.
-//    req, resp := client.DescribeFHIRImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRImportJob
 func (c *HealthLake) DescribeFHIRImportJobRequest(input *DescribeFHIRImportJobInput) (req *request.Request, output *DescribeFHIRImportJobOutput) {
@@ -434,18 +433,19 @@ func (c *HealthLake) DescribeFHIRImportJobRequest(input *DescribeFHIRImportJobIn
 // API operation DescribeFHIRImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/DescribeFHIRImportJob
 func (c *HealthLake) DescribeFHIRImportJob(input *DescribeFHIRImportJobInput) (*DescribeFHIRImportJobOutput, error) {
@@ -485,14 +485,13 @@ const opListFHIRDatastores = "ListFHIRDatastores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFHIRDatastoresRequest method.
+//	req, resp := client.ListFHIRDatastoresRequest(params)
 //
-//    // Example sending a request using the ListFHIRDatastoresRequest method.
-//    req, resp := client.ListFHIRDatastoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRDatastores
 func (c *HealthLake) ListFHIRDatastoresRequest(input *ListFHIRDatastoresInput) (req *request.Request, output *ListFHIRDatastoresOutput) {
@@ -530,15 +529,16 @@ func (c *HealthLake) ListFHIRDatastoresRequest(input *ListFHIRDatastoresInput) (
 // API operation ListFHIRDatastores for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRDatastores
 func (c *HealthLake) ListFHIRDatastores(input *ListFHIRDatastoresInput) (*ListFHIRDatastoresOutput, error) {
@@ -570,15 +570,14 @@ func (c *HealthLake) ListFHIRDatastoresWithContext(ctx aws.Context, input *ListF
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFHIRDatastores operation.
-//    pageNum := 0
-//    err := client.ListFHIRDatastoresPages(params,
-//        func(page *healthlake.ListFHIRDatastoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFHIRDatastores operation.
+//	pageNum := 0
+//	err := client.ListFHIRDatastoresPages(params,
+//	    func(page *healthlake.ListFHIRDatastoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *HealthLake) ListFHIRDatastoresPages(input *ListFHIRDatastoresInput, fn func(*ListFHIRDatastoresOutput, bool) bool) error {
 	return c.ListFHIRDatastoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -630,14 +629,13 @@ const opListFHIRExportJobs = "ListFHIRExportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFHIRExportJobsRequest method.
+//	req, resp := client.ListFHIRExportJobsRequest(params)
 //
-//    // Example sending a request using the ListFHIRExportJobsRequest method.
-//    req, resp := client.ListFHIRExportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRExportJobs
 func (c *HealthLake) ListFHIRExportJobsRequest(input *ListFHIRExportJobsInput) (req *request.Request, output *ListFHIRExportJobsOutput) {
@@ -674,21 +672,22 @@ func (c *HealthLake) ListFHIRExportJobsRequest(input *ListFHIRExportJobsInput) (
 // API operation ListFHIRExportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRExportJobs
 func (c *HealthLake) ListFHIRExportJobs(input *ListFHIRExportJobsInput) (*ListFHIRExportJobsOutput, error) {
@@ -720,15 +719,14 @@ func (c *HealthLake) ListFHIRExportJobsWithContext(ctx aws.Context, input *ListF
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFHIRExportJobs operation.
-//    pageNum := 0
-//    err := client.ListFHIRExportJobsPages(params,
-//        func(page *healthlake.ListFHIRExportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFHIRExportJobs operation.
+//	pageNum := 0
+//	err := client.ListFHIRExportJobsPages(params,
+//	    func(page *healthlake.ListFHIRExportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *HealthLake) ListFHIRExportJobsPages(input *ListFHIRExportJobsInput, fn func(*ListFHIRExportJobsOutput, bool) bool) error {
 	return c.ListFHIRExportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -780,14 +778,13 @@ const opListFHIRImportJobs = "ListFHIRImportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFHIRImportJobsRequest method.
+//	req, resp := client.ListFHIRImportJobsRequest(params)
 //
-//    // Example sending a request using the ListFHIRImportJobsRequest method.
-//    req, resp := client.ListFHIRImportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRImportJobs
 func (c *HealthLake) ListFHIRImportJobsRequest(input *ListFHIRImportJobsInput) (req *request.Request, output *ListFHIRImportJobsOutput) {
@@ -824,21 +821,22 @@ func (c *HealthLake) ListFHIRImportJobsRequest(input *ListFHIRImportJobsInput) (
 // API operation ListFHIRImportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListFHIRImportJobs
 func (c *HealthLake) ListFHIRImportJobs(input *ListFHIRImportJobsInput) (*ListFHIRImportJobsOutput, error) {
@@ -870,15 +868,14 @@ func (c *HealthLake) ListFHIRImportJobsWithContext(ctx aws.Context, input *ListF
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFHIRImportJobs operation.
-//    pageNum := 0
-//    err := client.ListFHIRImportJobsPages(params,
-//        func(page *healthlake.ListFHIRImportJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFHIRImportJobs operation.
+//	pageNum := 0
+//	err := client.ListFHIRImportJobsPages(params,
+//	    func(page *healthlake.ListFHIRImportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *HealthLake) ListFHIRImportJobsPages(input *ListFHIRImportJobsInput, fn func(*ListFHIRImportJobsOutput, bool) bool) error {
 	return c.ListFHIRImportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -930,14 +927,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListTagsForResource
 func (c *HealthLake) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -968,11 +964,12 @@ func (c *HealthLake) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
+//
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/ListTagsForResource
 func (c *HealthLake) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1012,14 +1009,13 @@ const opStartFHIRExportJob = "StartFHIRExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFHIRExportJobRequest method.
+//	req, resp := client.StartFHIRExportJobRequest(params)
 //
-//    // Example sending a request using the StartFHIRExportJobRequest method.
-//    req, resp := client.StartFHIRExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/StartFHIRExportJob
 func (c *HealthLake) StartFHIRExportJobRequest(input *StartFHIRExportJobInput) (req *request.Request, output *StartFHIRExportJobOutput) {
@@ -1050,21 +1046,22 @@ func (c *HealthLake) StartFHIRExportJobRequest(input *StartFHIRExportJobInput) (
 // API operation StartFHIRExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/StartFHIRExportJob
 func (c *HealthLake) StartFHIRExportJob(input *StartFHIRExportJobInput) (*StartFHIRExportJobOutput, error) {
@@ -1104,14 +1101,13 @@ const opStartFHIRImportJob = "StartFHIRImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFHIRImportJobRequest method.
+//	req, resp := client.StartFHIRImportJobRequest(params)
 //
-//    // Example sending a request using the StartFHIRImportJobRequest method.
-//    req, resp := client.StartFHIRImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/StartFHIRImportJob
 func (c *HealthLake) StartFHIRImportJobRequest(input *StartFHIRImportJobInput) (req *request.Request, output *StartFHIRImportJobOutput) {
@@ -1142,21 +1138,22 @@ func (c *HealthLake) StartFHIRImportJobRequest(input *StartFHIRImportJobInput) (
 // API operation StartFHIRImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ThrottlingException
-//   The user has exceeded their maximum number of allowed calls to the given
-//   API.
+//   - ValidationException
+//     The user input parameter was invalid.
 //
-//   * AccessDeniedException
-//   Access is denied. Your account is not authorized to perform this operation.
+//   - ThrottlingException
+//     The user has exceeded their maximum number of allowed calls to the given
+//     API.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - AccessDeniedException
+//     Access is denied. Your account is not authorized to perform this operation.
 //
-//   * InternalServerException
-//   Unknown error occurs in the service.
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
+//
+//   - InternalServerException
+//     Unknown error occurs in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/StartFHIRImportJob
 func (c *HealthLake) StartFHIRImportJob(input *StartFHIRImportJobInput) (*StartFHIRImportJobOutput, error) {
@@ -1196,14 +1193,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/TagResource
 func (c *HealthLake) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1235,11 +1231,12 @@ func (c *HealthLake) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
+//
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/TagResource
 func (c *HealthLake) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1279,14 +1276,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/UntagResource
 func (c *HealthLake) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1318,11 +1314,12 @@ func (c *HealthLake) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The user input parameter was invalid.
 //
-//   * ResourceNotFoundException
-//   The requested Data Store was not found.
+//   - ValidationException
+//     The user input parameter was invalid.
+//
+//   - ResourceNotFoundException
+//     The requested Data Store was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/healthlake-2017-07-01/UntagResource
 func (c *HealthLake) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

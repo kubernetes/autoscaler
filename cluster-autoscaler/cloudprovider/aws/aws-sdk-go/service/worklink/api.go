@@ -29,14 +29,13 @@ const opAssociateDomain = "AssociateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateDomainRequest method.
+//	req, resp := client.AssociateDomainRequest(params)
 //
-//    // Example sending a request using the AssociateDomainRequest method.
-//    req, resp := client.AssociateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateDomain
 //
@@ -73,23 +72,24 @@ func (c *WorkLink) AssociateDomainRequest(input *AssociateDomainInput) (req *req
 // API operation AssociateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateDomain
 //
@@ -133,14 +133,13 @@ const opAssociateWebsiteAuthorizationProvider = "AssociateWebsiteAuthorizationPr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateWebsiteAuthorizationProviderRequest method.
+//	req, resp := client.AssociateWebsiteAuthorizationProviderRequest(params)
 //
-//    // Example sending a request using the AssociateWebsiteAuthorizationProviderRequest method.
-//    req, resp := client.AssociateWebsiteAuthorizationProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateWebsiteAuthorizationProvider
 //
@@ -177,23 +176,24 @@ func (c *WorkLink) AssociateWebsiteAuthorizationProviderRequest(input *Associate
 // API operation AssociateWebsiteAuthorizationProvider for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateWebsiteAuthorizationProvider
 //
@@ -237,14 +237,13 @@ const opAssociateWebsiteCertificateAuthority = "AssociateWebsiteCertificateAutho
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateWebsiteCertificateAuthorityRequest method.
+//	req, resp := client.AssociateWebsiteCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the AssociateWebsiteCertificateAuthorityRequest method.
-//    req, resp := client.AssociateWebsiteCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateWebsiteCertificateAuthority
 //
@@ -281,23 +280,24 @@ func (c *WorkLink) AssociateWebsiteCertificateAuthorityRequest(input *AssociateW
 // API operation AssociateWebsiteCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/AssociateWebsiteCertificateAuthority
 //
@@ -341,14 +341,13 @@ const opCreateFleet = "CreateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetRequest method.
+//	req, resp := client.CreateFleetRequest(params)
 //
-//    // Example sending a request using the CreateFleetRequest method.
-//    req, resp := client.CreateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/CreateFleet
 //
@@ -386,23 +385,24 @@ func (c *WorkLink) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 // API operation CreateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/CreateFleet
 //
@@ -446,14 +446,13 @@ const opDeleteFleet = "DeleteFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetRequest method.
+//	req, resp := client.DeleteFleetRequest(params)
 //
-//    // Example sending a request using the DeleteFleetRequest method.
-//    req, resp := client.DeleteFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DeleteFleet
 //
@@ -490,20 +489,21 @@ func (c *WorkLink) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Req
 // API operation DeleteFleet for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DeleteFleet
 //
@@ -547,14 +547,13 @@ const opDescribeAuditStreamConfiguration = "DescribeAuditStreamConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAuditStreamConfigurationRequest method.
+//	req, resp := client.DescribeAuditStreamConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeAuditStreamConfigurationRequest method.
-//    req, resp := client.DescribeAuditStreamConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeAuditStreamConfiguration
 //
@@ -591,20 +590,21 @@ func (c *WorkLink) DescribeAuditStreamConfigurationRequest(input *DescribeAuditS
 // API operation DescribeAuditStreamConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeAuditStreamConfiguration
 //
@@ -648,14 +648,13 @@ const opDescribeCompanyNetworkConfiguration = "DescribeCompanyNetworkConfigurati
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCompanyNetworkConfigurationRequest method.
+//	req, resp := client.DescribeCompanyNetworkConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeCompanyNetworkConfigurationRequest method.
-//    req, resp := client.DescribeCompanyNetworkConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeCompanyNetworkConfiguration
 //
@@ -692,20 +691,21 @@ func (c *WorkLink) DescribeCompanyNetworkConfigurationRequest(input *DescribeCom
 // API operation DescribeCompanyNetworkConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeCompanyNetworkConfiguration
 //
@@ -749,14 +749,13 @@ const opDescribeDevice = "DescribeDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDeviceRequest method.
+//	req, resp := client.DescribeDeviceRequest(params)
 //
-//    // Example sending a request using the DescribeDeviceRequest method.
-//    req, resp := client.DescribeDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDevice
 //
@@ -792,20 +791,21 @@ func (c *WorkLink) DescribeDeviceRequest(input *DescribeDeviceInput) (req *reque
 // API operation DescribeDevice for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDevice
 //
@@ -849,14 +849,13 @@ const opDescribeDevicePolicyConfiguration = "DescribeDevicePolicyConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDevicePolicyConfigurationRequest method.
+//	req, resp := client.DescribeDevicePolicyConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeDevicePolicyConfigurationRequest method.
-//    req, resp := client.DescribeDevicePolicyConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDevicePolicyConfiguration
 //
@@ -892,20 +891,21 @@ func (c *WorkLink) DescribeDevicePolicyConfigurationRequest(input *DescribeDevic
 // API operation DescribeDevicePolicyConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDevicePolicyConfiguration
 //
@@ -949,14 +949,13 @@ const opDescribeDomain = "DescribeDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainRequest method.
+//	req, resp := client.DescribeDomainRequest(params)
 //
-//    // Example sending a request using the DescribeDomainRequest method.
-//    req, resp := client.DescribeDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDomain
 //
@@ -992,20 +991,21 @@ func (c *WorkLink) DescribeDomainRequest(input *DescribeDomainInput) (req *reque
 // API operation DescribeDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeDomain
 //
@@ -1049,14 +1049,13 @@ const opDescribeFleetMetadata = "DescribeFleetMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetMetadataRequest method.
+//	req, resp := client.DescribeFleetMetadataRequest(params)
 //
-//    // Example sending a request using the DescribeFleetMetadataRequest method.
-//    req, resp := client.DescribeFleetMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeFleetMetadata
 //
@@ -1093,20 +1092,21 @@ func (c *WorkLink) DescribeFleetMetadataRequest(input *DescribeFleetMetadataInpu
 // API operation DescribeFleetMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeFleetMetadata
 //
@@ -1150,14 +1150,13 @@ const opDescribeIdentityProviderConfiguration = "DescribeIdentityProviderConfigu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdentityProviderConfigurationRequest method.
+//	req, resp := client.DescribeIdentityProviderConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeIdentityProviderConfigurationRequest method.
-//    req, resp := client.DescribeIdentityProviderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeIdentityProviderConfiguration
 //
@@ -1193,20 +1192,21 @@ func (c *WorkLink) DescribeIdentityProviderConfigurationRequest(input *DescribeI
 // API operation DescribeIdentityProviderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeIdentityProviderConfiguration
 //
@@ -1250,14 +1250,13 @@ const opDescribeWebsiteCertificateAuthority = "DescribeWebsiteCertificateAuthori
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWebsiteCertificateAuthorityRequest method.
+//	req, resp := client.DescribeWebsiteCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the DescribeWebsiteCertificateAuthorityRequest method.
-//    req, resp := client.DescribeWebsiteCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeWebsiteCertificateAuthority
 //
@@ -1293,20 +1292,21 @@ func (c *WorkLink) DescribeWebsiteCertificateAuthorityRequest(input *DescribeWeb
 // API operation DescribeWebsiteCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DescribeWebsiteCertificateAuthority
 //
@@ -1350,14 +1350,13 @@ const opDisassociateDomain = "DisassociateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateDomainRequest method.
+//	req, resp := client.DisassociateDomainRequest(params)
 //
-//    // Example sending a request using the DisassociateDomainRequest method.
-//    req, resp := client.DisassociateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateDomain
 //
@@ -1395,20 +1394,21 @@ func (c *WorkLink) DisassociateDomainRequest(input *DisassociateDomainInput) (re
 // API operation DisassociateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateDomain
 //
@@ -1452,14 +1452,13 @@ const opDisassociateWebsiteAuthorizationProvider = "DisassociateWebsiteAuthoriza
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateWebsiteAuthorizationProviderRequest method.
+//	req, resp := client.DisassociateWebsiteAuthorizationProviderRequest(params)
 //
-//    // Example sending a request using the DisassociateWebsiteAuthorizationProviderRequest method.
-//    req, resp := client.DisassociateWebsiteAuthorizationProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateWebsiteAuthorizationProvider
 //
@@ -1498,23 +1497,24 @@ func (c *WorkLink) DisassociateWebsiteAuthorizationProviderRequest(input *Disass
 // API operation DisassociateWebsiteAuthorizationProvider for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateWebsiteAuthorizationProvider
 //
@@ -1558,14 +1558,13 @@ const opDisassociateWebsiteCertificateAuthority = "DisassociateWebsiteCertificat
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateWebsiteCertificateAuthorityRequest method.
+//	req, resp := client.DisassociateWebsiteCertificateAuthorityRequest(params)
 //
-//    // Example sending a request using the DisassociateWebsiteCertificateAuthorityRequest method.
-//    req, resp := client.DisassociateWebsiteCertificateAuthorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateWebsiteCertificateAuthority
 //
@@ -1602,20 +1601,21 @@ func (c *WorkLink) DisassociateWebsiteCertificateAuthorityRequest(input *Disasso
 // API operation DisassociateWebsiteCertificateAuthority for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/DisassociateWebsiteCertificateAuthority
 //
@@ -1659,14 +1659,13 @@ const opListDevices = "ListDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDevicesRequest method.
+//	req, resp := client.ListDevicesRequest(params)
 //
-//    // Example sending a request using the ListDevicesRequest method.
-//    req, resp := client.ListDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListDevices
 //
@@ -1708,20 +1707,21 @@ func (c *WorkLink) ListDevicesRequest(input *ListDevicesInput) (req *request.Req
 // API operation ListDevices for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListDevices
 //
@@ -1757,15 +1757,14 @@ func (c *WorkLink) ListDevicesWithContext(ctx aws.Context, input *ListDevicesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDevices operation.
-//    pageNum := 0
-//    err := client.ListDevicesPages(params,
-//        func(page *worklink.ListDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDevices operation.
+//	pageNum := 0
+//	err := client.ListDevicesPages(params,
+//	    func(page *worklink.ListDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Amazon WorkLink is no longer supported. This will be removed in a future version of the SDK.
 func (c *WorkLink) ListDevicesPages(input *ListDevicesInput, fn func(*ListDevicesOutput, bool) bool) error {
@@ -1821,14 +1820,13 @@ const opListDomains = "ListDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsRequest method.
+//	req, resp := client.ListDomainsRequest(params)
 //
-//    // Example sending a request using the ListDomainsRequest method.
-//    req, resp := client.ListDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListDomains
 //
@@ -1870,20 +1868,21 @@ func (c *WorkLink) ListDomainsRequest(input *ListDomainsInput) (req *request.Req
 // API operation ListDomains for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListDomains
 //
@@ -1919,15 +1918,14 @@ func (c *WorkLink) ListDomainsWithContext(ctx aws.Context, input *ListDomainsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomains operation.
-//    pageNum := 0
-//    err := client.ListDomainsPages(params,
-//        func(page *worklink.ListDomainsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomains operation.
+//	pageNum := 0
+//	err := client.ListDomainsPages(params,
+//	    func(page *worklink.ListDomainsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Amazon WorkLink is no longer supported. This will be removed in a future version of the SDK.
 func (c *WorkLink) ListDomainsPages(input *ListDomainsInput, fn func(*ListDomainsOutput, bool) bool) error {
@@ -1983,14 +1981,13 @@ const opListFleets = "ListFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFleetsRequest method.
+//	req, resp := client.ListFleetsRequest(params)
 //
-//    // Example sending a request using the ListFleetsRequest method.
-//    req, resp := client.ListFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListFleets
 //
@@ -2032,17 +2029,18 @@ func (c *WorkLink) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 // API operation ListFleets for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListFleets
 //
@@ -2078,15 +2076,14 @@ func (c *WorkLink) ListFleetsWithContext(ctx aws.Context, input *ListFleetsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFleets operation.
-//    pageNum := 0
-//    err := client.ListFleetsPages(params,
-//        func(page *worklink.ListFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFleets operation.
+//	pageNum := 0
+//	err := client.ListFleetsPages(params,
+//	    func(page *worklink.ListFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Amazon WorkLink is no longer supported. This will be removed in a future version of the SDK.
 func (c *WorkLink) ListFleetsPages(input *ListFleetsInput, fn func(*ListFleetsOutput, bool) bool) error {
@@ -2142,14 +2139,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListTagsForResource
 //
@@ -2185,8 +2181,8 @@ func (c *WorkLink) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InvalidRequestException
+//     The request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListTagsForResource
 //
@@ -2230,14 +2226,13 @@ const opListWebsiteAuthorizationProviders = "ListWebsiteAuthorizationProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWebsiteAuthorizationProvidersRequest method.
+//	req, resp := client.ListWebsiteAuthorizationProvidersRequest(params)
 //
-//    // Example sending a request using the ListWebsiteAuthorizationProvidersRequest method.
-//    req, resp := client.ListWebsiteAuthorizationProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListWebsiteAuthorizationProviders
 //
@@ -2280,20 +2275,21 @@ func (c *WorkLink) ListWebsiteAuthorizationProvidersRequest(input *ListWebsiteAu
 // API operation ListWebsiteAuthorizationProviders for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListWebsiteAuthorizationProviders
 //
@@ -2329,15 +2325,14 @@ func (c *WorkLink) ListWebsiteAuthorizationProvidersWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWebsiteAuthorizationProviders operation.
-//    pageNum := 0
-//    err := client.ListWebsiteAuthorizationProvidersPages(params,
-//        func(page *worklink.ListWebsiteAuthorizationProvidersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWebsiteAuthorizationProviders operation.
+//	pageNum := 0
+//	err := client.ListWebsiteAuthorizationProvidersPages(params,
+//	    func(page *worklink.ListWebsiteAuthorizationProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Amazon WorkLink is no longer supported. This will be removed in a future version of the SDK.
 func (c *WorkLink) ListWebsiteAuthorizationProvidersPages(input *ListWebsiteAuthorizationProvidersInput, fn func(*ListWebsiteAuthorizationProvidersOutput, bool) bool) error {
@@ -2393,14 +2388,13 @@ const opListWebsiteCertificateAuthorities = "ListWebsiteCertificateAuthorities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWebsiteCertificateAuthoritiesRequest method.
+//	req, resp := client.ListWebsiteCertificateAuthoritiesRequest(params)
 //
-//    // Example sending a request using the ListWebsiteCertificateAuthoritiesRequest method.
-//    req, resp := client.ListWebsiteCertificateAuthoritiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListWebsiteCertificateAuthorities
 //
@@ -2443,17 +2437,18 @@ func (c *WorkLink) ListWebsiteCertificateAuthoritiesRequest(input *ListWebsiteCe
 // API operation ListWebsiteCertificateAuthorities for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/ListWebsiteCertificateAuthorities
 //
@@ -2489,15 +2484,14 @@ func (c *WorkLink) ListWebsiteCertificateAuthoritiesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWebsiteCertificateAuthorities operation.
-//    pageNum := 0
-//    err := client.ListWebsiteCertificateAuthoritiesPages(params,
-//        func(page *worklink.ListWebsiteCertificateAuthoritiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWebsiteCertificateAuthorities operation.
+//	pageNum := 0
+//	err := client.ListWebsiteCertificateAuthoritiesPages(params,
+//	    func(page *worklink.ListWebsiteCertificateAuthoritiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 //
 // Deprecated: Amazon WorkLink is no longer supported. This will be removed in a future version of the SDK.
 func (c *WorkLink) ListWebsiteCertificateAuthoritiesPages(input *ListWebsiteCertificateAuthoritiesInput, fn func(*ListWebsiteCertificateAuthoritiesOutput, bool) bool) error {
@@ -2553,14 +2547,13 @@ const opRestoreDomainAccess = "RestoreDomainAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RestoreDomainAccessRequest method.
+//	req, resp := client.RestoreDomainAccessRequest(params)
 //
-//    // Example sending a request using the RestoreDomainAccessRequest method.
-//    req, resp := client.RestoreDomainAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/RestoreDomainAccess
 //
@@ -2597,20 +2590,21 @@ func (c *WorkLink) RestoreDomainAccessRequest(input *RestoreDomainAccessInput) (
 // API operation RestoreDomainAccess for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/RestoreDomainAccess
 //
@@ -2654,14 +2648,13 @@ const opRevokeDomainAccess = "RevokeDomainAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeDomainAccessRequest method.
+//	req, resp := client.RevokeDomainAccessRequest(params)
 //
-//    // Example sending a request using the RevokeDomainAccessRequest method.
-//    req, resp := client.RevokeDomainAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/RevokeDomainAccess
 //
@@ -2698,20 +2691,21 @@ func (c *WorkLink) RevokeDomainAccessRequest(input *RevokeDomainAccessInput) (re
 // API operation RevokeDomainAccess for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/RevokeDomainAccess
 //
@@ -2755,14 +2749,13 @@ const opSignOutUser = "SignOutUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SignOutUserRequest method.
+//	req, resp := client.SignOutUserRequest(params)
 //
-//    // Example sending a request using the SignOutUserRequest method.
-//    req, resp := client.SignOutUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/SignOutUser
 //
@@ -2800,20 +2793,21 @@ func (c *WorkLink) SignOutUserRequest(input *SignOutUserInput) (req *request.Req
 // API operation SignOutUser for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/SignOutUser
 //
@@ -2857,14 +2851,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/TagResource
 //
@@ -2903,8 +2896,8 @@ func (c *WorkLink) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InvalidRequestException
+//     The request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/TagResource
 //
@@ -2948,14 +2941,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UntagResource
 //
@@ -2992,8 +2984,8 @@ func (c *WorkLink) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InvalidRequestException
+//     The request is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UntagResource
 //
@@ -3037,14 +3029,13 @@ const opUpdateAuditStreamConfiguration = "UpdateAuditStreamConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAuditStreamConfigurationRequest method.
+//	req, resp := client.UpdateAuditStreamConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateAuditStreamConfigurationRequest method.
-//    req, resp := client.UpdateAuditStreamConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateAuditStreamConfiguration
 //
@@ -3081,20 +3072,21 @@ func (c *WorkLink) UpdateAuditStreamConfigurationRequest(input *UpdateAuditStrea
 // API operation UpdateAuditStreamConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateAuditStreamConfiguration
 //
@@ -3138,14 +3130,13 @@ const opUpdateCompanyNetworkConfiguration = "UpdateCompanyNetworkConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCompanyNetworkConfigurationRequest method.
+//	req, resp := client.UpdateCompanyNetworkConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateCompanyNetworkConfigurationRequest method.
-//    req, resp := client.UpdateCompanyNetworkConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateCompanyNetworkConfiguration
 //
@@ -3182,20 +3173,21 @@ func (c *WorkLink) UpdateCompanyNetworkConfigurationRequest(input *UpdateCompany
 // API operation UpdateCompanyNetworkConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateCompanyNetworkConfiguration
 //
@@ -3239,14 +3231,13 @@ const opUpdateDevicePolicyConfiguration = "UpdateDevicePolicyConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDevicePolicyConfigurationRequest method.
+//	req, resp := client.UpdateDevicePolicyConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateDevicePolicyConfigurationRequest method.
-//    req, resp := client.UpdateDevicePolicyConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateDevicePolicyConfiguration
 //
@@ -3283,20 +3274,21 @@ func (c *WorkLink) UpdateDevicePolicyConfigurationRequest(input *UpdateDevicePol
 // API operation UpdateDevicePolicyConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateDevicePolicyConfiguration
 //
@@ -3340,14 +3332,13 @@ const opUpdateDomainMetadata = "UpdateDomainMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainMetadataRequest method.
+//	req, resp := client.UpdateDomainMetadataRequest(params)
 //
-//    // Example sending a request using the UpdateDomainMetadataRequest method.
-//    req, resp := client.UpdateDomainMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateDomainMetadata
 //
@@ -3384,20 +3375,21 @@ func (c *WorkLink) UpdateDomainMetadataRequest(input *UpdateDomainMetadataInput)
 // API operation UpdateDomainMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateDomainMetadata
 //
@@ -3441,14 +3433,13 @@ const opUpdateFleetMetadata = "UpdateFleetMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFleetMetadataRequest method.
+//	req, resp := client.UpdateFleetMetadataRequest(params)
 //
-//    // Example sending a request using the UpdateFleetMetadataRequest method.
-//    req, resp := client.UpdateFleetMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateFleetMetadata
 //
@@ -3485,20 +3476,21 @@ func (c *WorkLink) UpdateFleetMetadataRequest(input *UpdateFleetMetadataInput) (
 // API operation UpdateFleetMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateFleetMetadata
 //
@@ -3542,14 +3534,13 @@ const opUpdateIdentityProviderConfiguration = "UpdateIdentityProviderConfigurati
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIdentityProviderConfigurationRequest method.
+//	req, resp := client.UpdateIdentityProviderConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateIdentityProviderConfigurationRequest method.
-//    req, resp := client.UpdateIdentityProviderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateIdentityProviderConfiguration
 //
@@ -3586,20 +3577,21 @@ func (c *WorkLink) UpdateIdentityProviderConfigurationRequest(input *UpdateIdent
 // API operation UpdateIdentityProviderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   You are not authorized to perform this action.
 //
-//   * InternalServerErrorException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this action.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalServerErrorException
+//     The service is temporarily unavailable.
 //
-//   * ResourceNotFoundException
-//   The requested resource was not found.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit.
+//   - ResourceNotFoundException
+//     The requested resource was not found.
+//
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/worklink-2018-09-25/UpdateIdentityProviderConfiguration
 //

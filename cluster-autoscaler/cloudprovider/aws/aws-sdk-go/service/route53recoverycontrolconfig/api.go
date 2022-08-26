@@ -28,14 +28,13 @@ const opCreateCluster = "CreateCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateClusterRequest method.
+//	req, resp := client.CreateClusterRequest(params)
 //
-//    // Example sending a request using the CreateClusterRequest method.
-//    req, resp := client.CreateClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateCluster
 func (c *Route53RecoveryControlConfig) CreateClusterRequest(input *CreateClusterInput) (req *request.Request, output *CreateClusterOutput) {
@@ -71,30 +70,31 @@ func (c *Route53RecoveryControlConfig) CreateClusterRequest(input *CreateCluster
 // API operation CreateCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * ServiceQuotaExceededException
-//   402 response - You attempted to create more resources than the service allows
-//   based on service quotas.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     402 response - You attempted to create more resources than the service allows
+//     based on service quotas.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateCluster
 func (c *Route53RecoveryControlConfig) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, error) {
@@ -134,14 +134,13 @@ const opCreateControlPanel = "CreateControlPanel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateControlPanelRequest method.
+//	req, resp := client.CreateControlPanelRequest(params)
 //
-//    // Example sending a request using the CreateControlPanelRequest method.
-//    req, resp := client.CreateControlPanelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateControlPanel
 func (c *Route53RecoveryControlConfig) CreateControlPanelRequest(input *CreateControlPanelInput) (req *request.Request, output *CreateControlPanelOutput) {
@@ -176,30 +175,31 @@ func (c *Route53RecoveryControlConfig) CreateControlPanelRequest(input *CreateCo
 // API operation CreateControlPanel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * ServiceQuotaExceededException
-//   402 response - You attempted to create more resources than the service allows
-//   based on service quotas.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     402 response - You attempted to create more resources than the service allows
+//     based on service quotas.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateControlPanel
 func (c *Route53RecoveryControlConfig) CreateControlPanel(input *CreateControlPanelInput) (*CreateControlPanelOutput, error) {
@@ -239,14 +239,13 @@ const opCreateRoutingControl = "CreateRoutingControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRoutingControlRequest method.
+//	req, resp := client.CreateRoutingControlRequest(params)
 //
-//    // Example sending a request using the CreateRoutingControlRequest method.
-//    req, resp := client.CreateRoutingControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateRoutingControl
 func (c *Route53RecoveryControlConfig) CreateRoutingControlRequest(input *CreateRoutingControlInput) (req *request.Request, output *CreateRoutingControlOutput) {
@@ -284,30 +283,31 @@ func (c *Route53RecoveryControlConfig) CreateRoutingControlRequest(input *Create
 // API operation CreateRoutingControl for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * ServiceQuotaExceededException
-//   402 response - You attempted to create more resources than the service allows
-//   based on service quotas.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     402 response - You attempted to create more resources than the service allows
+//     based on service quotas.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateRoutingControl
 func (c *Route53RecoveryControlConfig) CreateRoutingControl(input *CreateRoutingControlInput) (*CreateRoutingControlOutput, error) {
@@ -347,14 +347,13 @@ const opCreateSafetyRule = "CreateSafetyRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSafetyRuleRequest method.
+//	req, resp := client.CreateSafetyRuleRequest(params)
 //
-//    // Example sending a request using the CreateSafetyRuleRequest method.
-//    req, resp := client.CreateSafetyRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateSafetyRule
 func (c *Route53RecoveryControlConfig) CreateSafetyRuleRequest(input *CreateSafetyRuleInput) (req *request.Request, output *CreateSafetyRuleOutput) {
@@ -403,13 +402,14 @@ func (c *Route53RecoveryControlConfig) CreateSafetyRuleRequest(input *CreateSafe
 // API operation CreateSafetyRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/CreateSafetyRule
 func (c *Route53RecoveryControlConfig) CreateSafetyRule(input *CreateSafetyRuleInput) (*CreateSafetyRuleOutput, error) {
@@ -449,14 +449,13 @@ const opDeleteCluster = "DeleteCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteClusterRequest method.
+//	req, resp := client.DeleteClusterRequest(params)
 //
-//    // Example sending a request using the DeleteClusterRequest method.
-//    req, resp := client.DeleteClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteCluster
 func (c *Route53RecoveryControlConfig) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Request, output *DeleteClusterOutput) {
@@ -488,26 +487,27 @@ func (c *Route53RecoveryControlConfig) DeleteClusterRequest(input *DeleteCluster
 // API operation DeleteCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteCluster
 func (c *Route53RecoveryControlConfig) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, error) {
@@ -547,14 +547,13 @@ const opDeleteControlPanel = "DeleteControlPanel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteControlPanelRequest method.
+//	req, resp := client.DeleteControlPanelRequest(params)
 //
-//    // Example sending a request using the DeleteControlPanelRequest method.
-//    req, resp := client.DeleteControlPanelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteControlPanel
 func (c *Route53RecoveryControlConfig) DeleteControlPanelRequest(input *DeleteControlPanelInput) (req *request.Request, output *DeleteControlPanelOutput) {
@@ -586,26 +585,27 @@ func (c *Route53RecoveryControlConfig) DeleteControlPanelRequest(input *DeleteCo
 // API operation DeleteControlPanel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteControlPanel
 func (c *Route53RecoveryControlConfig) DeleteControlPanel(input *DeleteControlPanelInput) (*DeleteControlPanelOutput, error) {
@@ -645,14 +645,13 @@ const opDeleteRoutingControl = "DeleteRoutingControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRoutingControlRequest method.
+//	req, resp := client.DeleteRoutingControlRequest(params)
 //
-//    // Example sending a request using the DeleteRoutingControlRequest method.
-//    req, resp := client.DeleteRoutingControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteRoutingControl
 func (c *Route53RecoveryControlConfig) DeleteRoutingControlRequest(input *DeleteRoutingControlInput) (req *request.Request, output *DeleteRoutingControlOutput) {
@@ -684,26 +683,27 @@ func (c *Route53RecoveryControlConfig) DeleteRoutingControlRequest(input *Delete
 // API operation DeleteRoutingControl for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteRoutingControl
 func (c *Route53RecoveryControlConfig) DeleteRoutingControl(input *DeleteRoutingControlInput) (*DeleteRoutingControlOutput, error) {
@@ -743,14 +743,13 @@ const opDeleteSafetyRule = "DeleteSafetyRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSafetyRuleRequest method.
+//	req, resp := client.DeleteSafetyRuleRequest(params)
 //
-//    // Example sending a request using the DeleteSafetyRuleRequest method.
-//    req, resp := client.DeleteSafetyRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteSafetyRule
 func (c *Route53RecoveryControlConfig) DeleteSafetyRuleRequest(input *DeleteSafetyRuleInput) (req *request.Request, output *DeleteSafetyRuleOutput) {
@@ -783,17 +782,18 @@ func (c *Route53RecoveryControlConfig) DeleteSafetyRuleRequest(input *DeleteSafe
 // API operation DeleteSafetyRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DeleteSafetyRule
 func (c *Route53RecoveryControlConfig) DeleteSafetyRule(input *DeleteSafetyRuleInput) (*DeleteSafetyRuleOutput, error) {
@@ -833,14 +833,13 @@ const opDescribeCluster = "DescribeCluster"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeClusterRequest method.
+//	req, resp := client.DescribeClusterRequest(params)
 //
-//    // Example sending a request using the DescribeClusterRequest method.
-//    req, resp := client.DescribeClusterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeCluster
 func (c *Route53RecoveryControlConfig) DescribeClusterRequest(input *DescribeClusterInput) (req *request.Request, output *DescribeClusterOutput) {
@@ -872,26 +871,27 @@ func (c *Route53RecoveryControlConfig) DescribeClusterRequest(input *DescribeClu
 // API operation DescribeCluster for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeCluster
 func (c *Route53RecoveryControlConfig) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutput, error) {
@@ -931,14 +931,13 @@ const opDescribeControlPanel = "DescribeControlPanel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeControlPanelRequest method.
+//	req, resp := client.DescribeControlPanelRequest(params)
 //
-//    // Example sending a request using the DescribeControlPanelRequest method.
-//    req, resp := client.DescribeControlPanelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeControlPanel
 func (c *Route53RecoveryControlConfig) DescribeControlPanelRequest(input *DescribeControlPanelInput) (req *request.Request, output *DescribeControlPanelOutput) {
@@ -969,26 +968,27 @@ func (c *Route53RecoveryControlConfig) DescribeControlPanelRequest(input *Descri
 // API operation DescribeControlPanel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeControlPanel
 func (c *Route53RecoveryControlConfig) DescribeControlPanel(input *DescribeControlPanelInput) (*DescribeControlPanelOutput, error) {
@@ -1028,14 +1028,13 @@ const opDescribeRoutingControl = "DescribeRoutingControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRoutingControlRequest method.
+//	req, resp := client.DescribeRoutingControlRequest(params)
 //
-//    // Example sending a request using the DescribeRoutingControlRequest method.
-//    req, resp := client.DescribeRoutingControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeRoutingControl
 func (c *Route53RecoveryControlConfig) DescribeRoutingControlRequest(input *DescribeRoutingControlInput) (req *request.Request, output *DescribeRoutingControlOutput) {
@@ -1071,26 +1070,27 @@ func (c *Route53RecoveryControlConfig) DescribeRoutingControlRequest(input *Desc
 // API operation DescribeRoutingControl for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeRoutingControl
 func (c *Route53RecoveryControlConfig) DescribeRoutingControl(input *DescribeRoutingControlInput) (*DescribeRoutingControlOutput, error) {
@@ -1130,14 +1130,13 @@ const opDescribeSafetyRule = "DescribeSafetyRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSafetyRuleRequest method.
+//	req, resp := client.DescribeSafetyRuleRequest(params)
 //
-//    // Example sending a request using the DescribeSafetyRuleRequest method.
-//    req, resp := client.DescribeSafetyRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeSafetyRule
 func (c *Route53RecoveryControlConfig) DescribeSafetyRuleRequest(input *DescribeSafetyRuleInput) (req *request.Request, output *DescribeSafetyRuleOutput) {
@@ -1168,14 +1167,15 @@ func (c *Route53RecoveryControlConfig) DescribeSafetyRuleRequest(input *Describe
 // API operation DescribeSafetyRule for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeSafetyRule
 func (c *Route53RecoveryControlConfig) DescribeSafetyRule(input *DescribeSafetyRuleInput) (*DescribeSafetyRuleOutput, error) {
@@ -1215,14 +1215,13 @@ const opListAssociatedRoute53HealthChecks = "ListAssociatedRoute53HealthChecks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociatedRoute53HealthChecksRequest method.
+//	req, resp := client.ListAssociatedRoute53HealthChecksRequest(params)
 //
-//    // Example sending a request using the ListAssociatedRoute53HealthChecksRequest method.
-//    req, resp := client.ListAssociatedRoute53HealthChecksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListAssociatedRoute53HealthChecks
 func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecksRequest(input *ListAssociatedRoute53HealthChecksInput) (req *request.Request, output *ListAssociatedRoute53HealthChecksOutput) {
@@ -1260,17 +1259,18 @@ func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecksRequest(
 // API operation ListAssociatedRoute53HealthChecks for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListAssociatedRoute53HealthChecks
 func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecks(input *ListAssociatedRoute53HealthChecksInput) (*ListAssociatedRoute53HealthChecksOutput, error) {
@@ -1302,15 +1302,14 @@ func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecksWithCont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssociatedRoute53HealthChecks operation.
-//    pageNum := 0
-//    err := client.ListAssociatedRoute53HealthChecksPages(params,
-//        func(page *route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssociatedRoute53HealthChecks operation.
+//	pageNum := 0
+//	err := client.ListAssociatedRoute53HealthChecksPages(params,
+//	    func(page *route53recoverycontrolconfig.ListAssociatedRoute53HealthChecksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecksPages(input *ListAssociatedRoute53HealthChecksInput, fn func(*ListAssociatedRoute53HealthChecksOutput, bool) bool) error {
 	return c.ListAssociatedRoute53HealthChecksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1362,14 +1361,13 @@ const opListClusters = "ListClusters"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListClustersRequest method.
+//	req, resp := client.ListClustersRequest(params)
 //
-//    // Example sending a request using the ListClustersRequest method.
-//    req, resp := client.ListClustersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListClusters
 func (c *Route53RecoveryControlConfig) ListClustersRequest(input *ListClustersInput) (req *request.Request, output *ListClustersOutput) {
@@ -1406,23 +1404,24 @@ func (c *Route53RecoveryControlConfig) ListClustersRequest(input *ListClustersIn
 // API operation ListClusters for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
+//
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListClusters
 func (c *Route53RecoveryControlConfig) ListClusters(input *ListClustersInput) (*ListClustersOutput, error) {
@@ -1454,15 +1453,14 @@ func (c *Route53RecoveryControlConfig) ListClustersWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListClusters operation.
-//    pageNum := 0
-//    err := client.ListClustersPages(params,
-//        func(page *route53recoverycontrolconfig.ListClustersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListClusters operation.
+//	pageNum := 0
+//	err := client.ListClustersPages(params,
+//	    func(page *route53recoverycontrolconfig.ListClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryControlConfig) ListClustersPages(input *ListClustersInput, fn func(*ListClustersOutput, bool) bool) error {
 	return c.ListClustersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1514,14 +1512,13 @@ const opListControlPanels = "ListControlPanels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListControlPanelsRequest method.
+//	req, resp := client.ListControlPanelsRequest(params)
 //
-//    // Example sending a request using the ListControlPanelsRequest method.
-//    req, resp := client.ListControlPanelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListControlPanels
 func (c *Route53RecoveryControlConfig) ListControlPanelsRequest(input *ListControlPanelsInput) (req *request.Request, output *ListControlPanelsOutput) {
@@ -1558,23 +1555,24 @@ func (c *Route53RecoveryControlConfig) ListControlPanelsRequest(input *ListContr
 // API operation ListControlPanels for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
+//
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListControlPanels
 func (c *Route53RecoveryControlConfig) ListControlPanels(input *ListControlPanelsInput) (*ListControlPanelsOutput, error) {
@@ -1606,15 +1604,14 @@ func (c *Route53RecoveryControlConfig) ListControlPanelsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListControlPanels operation.
-//    pageNum := 0
-//    err := client.ListControlPanelsPages(params,
-//        func(page *route53recoverycontrolconfig.ListControlPanelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListControlPanels operation.
+//	pageNum := 0
+//	err := client.ListControlPanelsPages(params,
+//	    func(page *route53recoverycontrolconfig.ListControlPanelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryControlConfig) ListControlPanelsPages(input *ListControlPanelsInput, fn func(*ListControlPanelsOutput, bool) bool) error {
 	return c.ListControlPanelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1666,14 +1663,13 @@ const opListRoutingControls = "ListRoutingControls"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRoutingControlsRequest method.
+//	req, resp := client.ListRoutingControlsRequest(params)
 //
-//    // Example sending a request using the ListRoutingControlsRequest method.
-//    req, resp := client.ListRoutingControlsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListRoutingControls
 func (c *Route53RecoveryControlConfig) ListRoutingControlsRequest(input *ListRoutingControlsInput) (req *request.Request, output *ListRoutingControlsOutput) {
@@ -1713,23 +1709,24 @@ func (c *Route53RecoveryControlConfig) ListRoutingControlsRequest(input *ListRou
 // API operation ListRoutingControls for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
+//
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListRoutingControls
 func (c *Route53RecoveryControlConfig) ListRoutingControls(input *ListRoutingControlsInput) (*ListRoutingControlsOutput, error) {
@@ -1761,15 +1758,14 @@ func (c *Route53RecoveryControlConfig) ListRoutingControlsWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRoutingControls operation.
-//    pageNum := 0
-//    err := client.ListRoutingControlsPages(params,
-//        func(page *route53recoverycontrolconfig.ListRoutingControlsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRoutingControls operation.
+//	pageNum := 0
+//	err := client.ListRoutingControlsPages(params,
+//	    func(page *route53recoverycontrolconfig.ListRoutingControlsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryControlConfig) ListRoutingControlsPages(input *ListRoutingControlsInput, fn func(*ListRoutingControlsOutput, bool) bool) error {
 	return c.ListRoutingControlsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1821,14 +1817,13 @@ const opListSafetyRules = "ListSafetyRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSafetyRulesRequest method.
+//	req, resp := client.ListSafetyRulesRequest(params)
 //
-//    // Example sending a request using the ListSafetyRulesRequest method.
-//    req, resp := client.ListSafetyRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListSafetyRules
 func (c *Route53RecoveryControlConfig) ListSafetyRulesRequest(input *ListSafetyRulesInput) (req *request.Request, output *ListSafetyRulesOutput) {
@@ -1866,23 +1861,24 @@ func (c *Route53RecoveryControlConfig) ListSafetyRulesRequest(input *ListSafetyR
 // API operation ListSafetyRules for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
+//
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListSafetyRules
 func (c *Route53RecoveryControlConfig) ListSafetyRules(input *ListSafetyRulesInput) (*ListSafetyRulesOutput, error) {
@@ -1914,15 +1910,14 @@ func (c *Route53RecoveryControlConfig) ListSafetyRulesWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSafetyRules operation.
-//    pageNum := 0
-//    err := client.ListSafetyRulesPages(params,
-//        func(page *route53recoverycontrolconfig.ListSafetyRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSafetyRules operation.
+//	pageNum := 0
+//	err := client.ListSafetyRulesPages(params,
+//	    func(page *route53recoverycontrolconfig.ListSafetyRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryControlConfig) ListSafetyRulesPages(input *ListSafetyRulesInput, fn func(*ListSafetyRulesOutput, bool) bool) error {
 	return c.ListSafetyRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1974,14 +1969,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListTagsForResource
 func (c *Route53RecoveryControlConfig) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2012,17 +2006,18 @@ func (c *Route53RecoveryControlConfig) ListTagsForResourceRequest(input *ListTag
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/ListTagsForResource
 func (c *Route53RecoveryControlConfig) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2062,14 +2057,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/TagResource
 func (c *Route53RecoveryControlConfig) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2101,17 +2095,18 @@ func (c *Route53RecoveryControlConfig) TagResourceRequest(input *TagResourceInpu
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/TagResource
 func (c *Route53RecoveryControlConfig) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2151,14 +2146,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UntagResource
 func (c *Route53RecoveryControlConfig) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2190,17 +2184,18 @@ func (c *Route53RecoveryControlConfig) UntagResourceRequest(input *UntagResource
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UntagResource
 func (c *Route53RecoveryControlConfig) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2240,14 +2235,13 @@ const opUpdateControlPanel = "UpdateControlPanel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateControlPanelRequest method.
+//	req, resp := client.UpdateControlPanelRequest(params)
 //
-//    // Example sending a request using the UpdateControlPanelRequest method.
-//    req, resp := client.UpdateControlPanelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateControlPanel
 func (c *Route53RecoveryControlConfig) UpdateControlPanelRequest(input *UpdateControlPanelInput) (req *request.Request, output *UpdateControlPanelOutput) {
@@ -2279,26 +2273,27 @@ func (c *Route53RecoveryControlConfig) UpdateControlPanelRequest(input *UpdateCo
 // API operation UpdateControlPanel for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateControlPanel
 func (c *Route53RecoveryControlConfig) UpdateControlPanel(input *UpdateControlPanelInput) (*UpdateControlPanelOutput, error) {
@@ -2338,14 +2333,13 @@ const opUpdateRoutingControl = "UpdateRoutingControl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoutingControlRequest method.
+//	req, resp := client.UpdateRoutingControlRequest(params)
 //
-//    // Example sending a request using the UpdateRoutingControlRequest method.
-//    req, resp := client.UpdateRoutingControlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateRoutingControl
 func (c *Route53RecoveryControlConfig) UpdateRoutingControlRequest(input *UpdateRoutingControlInput) (req *request.Request, output *UpdateRoutingControlOutput) {
@@ -2378,26 +2372,27 @@ func (c *Route53RecoveryControlConfig) UpdateRoutingControlRequest(input *Update
 // API operation UpdateRoutingControl for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
 //
-//   * AccessDeniedException
-//   403 response - You do not have sufficient access to perform this action.
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
+//   - AccessDeniedException
+//     403 response - You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   429 response - LimitExceededException or TooManyRequestsException.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * ConflictException
-//   409 response - ConflictException. You might be using a predefined variable.
+//   - ThrottlingException
+//     429 response - LimitExceededException or TooManyRequestsException.
+//
+//   - ConflictException
+//     409 response - ConflictException. You might be using a predefined variable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateRoutingControl
 func (c *Route53RecoveryControlConfig) UpdateRoutingControl(input *UpdateRoutingControlInput) (*UpdateRoutingControlOutput, error) {
@@ -2437,14 +2432,13 @@ const opUpdateSafetyRule = "UpdateSafetyRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSafetyRuleRequest method.
+//	req, resp := client.UpdateSafetyRuleRequest(params)
 //
-//    // Example sending a request using the UpdateSafetyRuleRequest method.
-//    req, resp := client.UpdateSafetyRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateSafetyRule
 func (c *Route53RecoveryControlConfig) UpdateSafetyRuleRequest(input *UpdateSafetyRuleInput) (req *request.Request, output *UpdateSafetyRuleOutput) {
@@ -2477,17 +2471,18 @@ func (c *Route53RecoveryControlConfig) UpdateSafetyRuleRequest(input *UpdateSafe
 // API operation UpdateSafetyRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   404 response - MalformedQueryString. The query string contains a syntax error
-//   or resource not found..
 //
-//   * ValidationException
-//   400 response - Multiple causes. For example, you might have a malformed query
-//   string and input parameter might be out of range, or you might have used
-//   parameters together incorrectly.
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found..
 //
-//   * InternalServerException
-//   500 response - InternalServiceError. Temporary service error. Retry the request.
+//   - ValidationException
+//     400 response - Multiple causes. For example, you might have a malformed query
+//     string and input parameter might be out of range, or you might have used
+//     parameters together incorrectly.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/UpdateSafetyRule
 func (c *Route53RecoveryControlConfig) UpdateSafetyRule(input *UpdateSafetyRuleInput) (*UpdateSafetyRuleOutput, error) {

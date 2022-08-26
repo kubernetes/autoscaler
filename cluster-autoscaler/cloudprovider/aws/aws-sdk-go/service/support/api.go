@@ -27,14 +27,13 @@ const opAddAttachmentsToSet = "AddAttachmentsToSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddAttachmentsToSetRequest method.
+//	req, resp := client.AddAttachmentsToSetRequest(params)
 //
-//    // Example sending a request using the AddAttachmentsToSetRequest method.
-//    req, resp := client.AddAttachmentsToSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/AddAttachmentsToSet
 func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (req *request.Request, output *AddAttachmentsToSetOutput) {
@@ -61,13 +60,13 @@ func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (r
 // a case or case communication. The set is available for 1 hour after it's
 // created. The expiryTime returned in the response is when the set expires.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -77,23 +76,24 @@ func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (r
 // API operation AddAttachmentsToSet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * AttachmentSetIdNotFound
-//   An attachment set with the specified ID could not be found.
+//   - InternalServerError
+//     An internal server error occurred.
 //
-//   * AttachmentSetExpired
-//   The expiration time of the attachment set has passed. The set expires 1 hour
-//   after it is created.
+//   - AttachmentSetIdNotFound
+//     An attachment set with the specified ID could not be found.
 //
-//   * AttachmentSetSizeLimitExceeded
-//   A limit for the size of an attachment set has been exceeded. The limits are
-//   three attachments and 5 MB per attachment.
+//   - AttachmentSetExpired
+//     The expiration time of the attachment set has passed. The set expires 1 hour
+//     after it is created.
 //
-//   * AttachmentLimitExceeded
-//   The limit for the number of attachment sets created in a short period of
-//   time has been exceeded.
+//   - AttachmentSetSizeLimitExceeded
+//     A limit for the size of an attachment set has been exceeded. The limits are
+//     three attachments and 5 MB per attachment.
+//
+//   - AttachmentLimitExceeded
+//     The limit for the number of attachment sets created in a short period of
+//     time has been exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/AddAttachmentsToSet
 func (c *Support) AddAttachmentsToSet(input *AddAttachmentsToSetInput) (*AddAttachmentsToSetOutput, error) {
@@ -133,14 +133,13 @@ const opAddCommunicationToCase = "AddCommunicationToCase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddCommunicationToCaseRequest method.
+//	req, resp := client.AddCommunicationToCaseRequest(params)
 //
-//    // Example sending a request using the AddCommunicationToCaseRequest method.
-//    req, resp := client.AddCommunicationToCaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/AddCommunicationToCase
 func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInput) (req *request.Request, output *AddCommunicationToCaseOutput) {
@@ -167,13 +166,13 @@ func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInp
 // the ccEmailAddresses parameter. The communicationBody value contains the
 // text of the communication.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -183,18 +182,19 @@ func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInp
 // API operation AddCommunicationToCase for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * CaseIdNotFound
-//   The requested caseId couldn't be located.
+//   - InternalServerError
+//     An internal server error occurred.
 //
-//   * AttachmentSetIdNotFound
-//   An attachment set with the specified ID could not be found.
+//   - CaseIdNotFound
+//     The requested caseId couldn't be located.
 //
-//   * AttachmentSetExpired
-//   The expiration time of the attachment set has passed. The set expires 1 hour
-//   after it is created.
+//   - AttachmentSetIdNotFound
+//     An attachment set with the specified ID could not be found.
+//
+//   - AttachmentSetExpired
+//     The expiration time of the attachment set has passed. The set expires 1 hour
+//     after it is created.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/AddCommunicationToCase
 func (c *Support) AddCommunicationToCase(input *AddCommunicationToCaseInput) (*AddCommunicationToCaseOutput, error) {
@@ -234,14 +234,13 @@ const opCreateCase = "CreateCase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCaseRequest method.
+//	req, resp := client.CreateCaseRequest(params)
 //
-//    // Example sending a request using the CreateCaseRequest method.
-//    req, resp := client.CreateCaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/CreateCase
 func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Request, output *CreateCaseOutput) {
@@ -269,11 +268,11 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 // The Amazon Web Services Support API doesn't support requesting service limit
 // increases. You can submit a service limit increase in the following ways:
 //
-//    * Submit a request from the Amazon Web Services Support Center Create
-//    Case (https://console.aws.amazon.com/support/home#/case/create) page.
+//   - Submit a request from the Amazon Web Services Support Center Create
+//     Case (https://console.aws.amazon.com/support/home#/case/create) page.
 //
-//    * Use the Service Quotas RequestServiceQuotaIncrease (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_RequestServiceQuotaIncrease.html)
-//    operation.
+//   - Use the Service Quotas RequestServiceQuotaIncrease (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_RequestServiceQuotaIncrease.html)
+//     operation.
 //
 // A successful CreateCase request returns an Amazon Web Services Support case
 // number. You can use the DescribeCases operation and specify the case number
@@ -285,13 +284,13 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 // Services Support Center (https://console.aws.amazon.com/support). Use the
 // DescribeCases operation to get the displayId.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -301,18 +300,19 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 // API operation CreateCase for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * CaseCreationLimitExceeded
-//   The case creation limit for the account has been exceeded.
+//   - InternalServerError
+//     An internal server error occurred.
 //
-//   * AttachmentSetIdNotFound
-//   An attachment set with the specified ID could not be found.
+//   - CaseCreationLimitExceeded
+//     The case creation limit for the account has been exceeded.
 //
-//   * AttachmentSetExpired
-//   The expiration time of the attachment set has passed. The set expires 1 hour
-//   after it is created.
+//   - AttachmentSetIdNotFound
+//     An attachment set with the specified ID could not be found.
+//
+//   - AttachmentSetExpired
+//     The expiration time of the attachment set has passed. The set expires 1 hour
+//     after it is created.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/CreateCase
 func (c *Support) CreateCase(input *CreateCaseInput) (*CreateCaseOutput, error) {
@@ -352,14 +352,13 @@ const opDescribeAttachment = "DescribeAttachment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAttachmentRequest method.
+//	req, resp := client.DescribeAttachmentRequest(params)
 //
-//    // Example sending a request using the DescribeAttachmentRequest method.
-//    req, resp := client.DescribeAttachmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeAttachment
 func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req *request.Request, output *DescribeAttachmentOutput) {
@@ -386,13 +385,13 @@ func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req
 // to a case or case communication. Attachment IDs are returned in the AttachmentDetails
 // objects that are returned by the DescribeCommunications operation.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -402,15 +401,16 @@ func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req
 // API operation DescribeAttachment for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * DescribeAttachmentLimitExceeded
-//   The limit for the number of DescribeAttachment requests in a short period
-//   of time has been exceeded.
+//   - InternalServerError
+//     An internal server error occurred.
 //
-//   * AttachmentIdNotFound
-//   An attachment with the specified ID could not be found.
+//   - DescribeAttachmentLimitExceeded
+//     The limit for the number of DescribeAttachment requests in a short period
+//     of time has been exceeded.
+//
+//   - AttachmentIdNotFound
+//     An attachment with the specified ID could not be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeAttachment
 func (c *Support) DescribeAttachment(input *DescribeAttachmentInput) (*DescribeAttachmentOutput, error) {
@@ -450,14 +450,13 @@ const opDescribeCases = "DescribeCases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCasesRequest method.
+//	req, resp := client.DescribeCasesRequest(params)
 //
-//    // Example sending a request using the DescribeCasesRequest method.
-//    req, resp := client.DescribeCasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCases
 func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.Request, output *DescribeCasesOutput) {
@@ -491,22 +490,22 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 //
 // The response returns the following in JSON format:
 //
-//    * One or more CaseDetails (https://docs.aws.amazon.com/awssupport/latest/APIReference/API_CaseDetails.html)
-//    data types.
+//   - One or more CaseDetails (https://docs.aws.amazon.com/awssupport/latest/APIReference/API_CaseDetails.html)
+//     data types.
 //
-//    * One or more nextToken values, which specify where to paginate the returned
-//    records represented by the CaseDetails objects.
+//   - One or more nextToken values, which specify where to paginate the returned
+//     records represented by the CaseDetails objects.
 //
 // Case data is available for 12 months after creation. If a case was created
 // more than 12 months ago, a request might return an error.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -516,11 +515,12 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 // API operation DescribeCases for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * CaseIdNotFound
-//   The requested caseId couldn't be located.
+//   - InternalServerError
+//     An internal server error occurred.
+//
+//   - CaseIdNotFound
+//     The requested caseId couldn't be located.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCases
 func (c *Support) DescribeCases(input *DescribeCasesInput) (*DescribeCasesOutput, error) {
@@ -552,15 +552,14 @@ func (c *Support) DescribeCasesWithContext(ctx aws.Context, input *DescribeCases
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCases operation.
-//    pageNum := 0
-//    err := client.DescribeCasesPages(params,
-//        func(page *support.DescribeCasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCases operation.
+//	pageNum := 0
+//	err := client.DescribeCasesPages(params,
+//	    func(page *support.DescribeCasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Support) DescribeCasesPages(input *DescribeCasesInput, fn func(*DescribeCasesOutput, bool) bool) error {
 	return c.DescribeCasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -612,14 +611,13 @@ const opDescribeCommunications = "DescribeCommunications"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCommunicationsRequest method.
+//	req, resp := client.DescribeCommunicationsRequest(params)
 //
-//    // Example sending a request using the DescribeCommunicationsRequest method.
-//    req, resp := client.DescribeCommunicationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCommunications
 func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInput) (req *request.Request, output *DescribeCommunicationsOutput) {
@@ -657,13 +655,13 @@ func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInp
 // of the results. Set maxResults to the number of cases that you want to display
 // on each page, and use nextToken to specify the resumption of pagination.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -673,11 +671,12 @@ func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInp
 // API operation DescribeCommunications for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * CaseIdNotFound
-//   The requested caseId couldn't be located.
+//   - InternalServerError
+//     An internal server error occurred.
+//
+//   - CaseIdNotFound
+//     The requested caseId couldn't be located.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCommunications
 func (c *Support) DescribeCommunications(input *DescribeCommunicationsInput) (*DescribeCommunicationsOutput, error) {
@@ -709,15 +708,14 @@ func (c *Support) DescribeCommunicationsWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCommunications operation.
-//    pageNum := 0
-//    err := client.DescribeCommunicationsPages(params,
-//        func(page *support.DescribeCommunicationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCommunications operation.
+//	pageNum := 0
+//	err := client.DescribeCommunicationsPages(params,
+//	    func(page *support.DescribeCommunicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Support) DescribeCommunicationsPages(input *DescribeCommunicationsInput, fn func(*DescribeCommunicationsOutput, bool) bool) error {
 	return c.DescribeCommunicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -769,14 +767,13 @@ const opDescribeServices = "DescribeServices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeServicesRequest method.
+//	req, resp := client.DescribeServicesRequest(params)
 //
-//    // Example sending a request using the DescribeServicesRequest method.
-//    req, resp := client.DescribeServicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeServices
 func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *request.Request, output *DescribeServicesOutput) {
@@ -810,13 +807,13 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 // codes and categories that the DescribeServices operation returns, so that
 // you have the most recent set of service and category codes.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -826,8 +823,8 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 // API operation DescribeServices for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeServices
 func (c *Support) DescribeServices(input *DescribeServicesInput) (*DescribeServicesOutput, error) {
@@ -867,14 +864,13 @@ const opDescribeSeverityLevels = "DescribeSeverityLevels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSeverityLevelsRequest method.
+//	req, resp := client.DescribeSeverityLevelsRequest(params)
 //
-//    // Example sending a request using the DescribeSeverityLevelsRequest method.
-//    req, resp := client.DescribeSeverityLevelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeSeverityLevels
 func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInput) (req *request.Request, output *DescribeSeverityLevelsOutput) {
@@ -899,13 +895,13 @@ func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInp
 // The severity level for a case is also a field in the CaseDetails data type
 // that you include for a CreateCase request.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -915,8 +911,8 @@ func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInp
 // API operation DescribeSeverityLevels for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeSeverityLevels
 func (c *Support) DescribeSeverityLevels(input *DescribeSeverityLevelsInput) (*DescribeSeverityLevelsOutput, error) {
@@ -956,14 +952,13 @@ const opDescribeTrustedAdvisorCheckRefreshStatuses = "DescribeTrustedAdvisorChec
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrustedAdvisorCheckRefreshStatusesRequest method.
+//	req, resp := client.DescribeTrustedAdvisorCheckRefreshStatusesRequest(params)
 //
-//    // Example sending a request using the DescribeTrustedAdvisorCheckRefreshStatusesRequest method.
-//    req, resp := client.DescribeTrustedAdvisorCheckRefreshStatusesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckRefreshStatuses
 func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *DescribeTrustedAdvisorCheckRefreshStatusesInput) (req *request.Request, output *DescribeTrustedAdvisorCheckRefreshStatusesOutput) {
@@ -993,13 +988,13 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 // If you call this operation for these checks, you might see an InvalidParameterValue
 // error.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1009,8 +1004,8 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 // API operation DescribeTrustedAdvisorCheckRefreshStatuses for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckRefreshStatuses
 func (c *Support) DescribeTrustedAdvisorCheckRefreshStatuses(input *DescribeTrustedAdvisorCheckRefreshStatusesInput) (*DescribeTrustedAdvisorCheckRefreshStatusesOutput, error) {
@@ -1050,14 +1045,13 @@ const opDescribeTrustedAdvisorCheckResult = "DescribeTrustedAdvisorCheckResult"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrustedAdvisorCheckResultRequest method.
+//	req, resp := client.DescribeTrustedAdvisorCheckResultRequest(params)
 //
-//    // Example sending a request using the DescribeTrustedAdvisorCheckResultRequest method.
-//    req, resp := client.DescribeTrustedAdvisorCheckResultRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckResult
 func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTrustedAdvisorCheckResultInput) (req *request.Request, output *DescribeTrustedAdvisorCheckResultOutput) {
@@ -1085,28 +1079,28 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 // The response contains a TrustedAdvisorCheckResult object, which contains
 // these three objects:
 //
-//    * TrustedAdvisorCategorySpecificSummary
+//   - TrustedAdvisorCategorySpecificSummary
 //
-//    * TrustedAdvisorResourceDetail
+//   - TrustedAdvisorResourceDetail
 //
-//    * TrustedAdvisorResourcesSummary
+//   - TrustedAdvisorResourcesSummary
 //
 // In addition, the response contains these fields:
 //
-//    * status - The alert status of the check can be ok (green), warning (yellow),
-//    error (red), or not_available.
+//   - status - The alert status of the check can be ok (green), warning (yellow),
+//     error (red), or not_available.
 //
-//    * timestamp - The time of the last refresh of the check.
+//   - timestamp - The time of the last refresh of the check.
 //
-//    * checkId - The unique identifier for the check.
+//   - checkId - The unique identifier for the check.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1116,8 +1110,8 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 // API operation DescribeTrustedAdvisorCheckResult for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckResult
 func (c *Support) DescribeTrustedAdvisorCheckResult(input *DescribeTrustedAdvisorCheckResultInput) (*DescribeTrustedAdvisorCheckResultOutput, error) {
@@ -1157,14 +1151,13 @@ const opDescribeTrustedAdvisorCheckSummaries = "DescribeTrustedAdvisorCheckSumma
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrustedAdvisorCheckSummariesRequest method.
+//	req, resp := client.DescribeTrustedAdvisorCheckSummariesRequest(params)
 //
-//    // Example sending a request using the DescribeTrustedAdvisorCheckSummariesRequest method.
-//    req, resp := client.DescribeTrustedAdvisorCheckSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckSummaries
 func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTrustedAdvisorCheckSummariesInput) (req *request.Request, output *DescribeTrustedAdvisorCheckSummariesOutput) {
@@ -1191,13 +1184,13 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 //
 // The response contains an array of TrustedAdvisorCheckSummary objects.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1207,8 +1200,8 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 // API operation DescribeTrustedAdvisorCheckSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckSummaries
 func (c *Support) DescribeTrustedAdvisorCheckSummaries(input *DescribeTrustedAdvisorCheckSummariesInput) (*DescribeTrustedAdvisorCheckSummariesOutput, error) {
@@ -1248,14 +1241,13 @@ const opDescribeTrustedAdvisorChecks = "DescribeTrustedAdvisorChecks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTrustedAdvisorChecksRequest method.
+//	req, resp := client.DescribeTrustedAdvisorChecksRequest(params)
 //
-//    // Example sending a request using the DescribeTrustedAdvisorChecksRequest method.
-//    req, resp := client.DescribeTrustedAdvisorChecksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorChecks
 func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvisorChecksInput) (req *request.Request, output *DescribeTrustedAdvisorChecksOutput) {
@@ -1282,17 +1274,17 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 // and Japanese ("ja"). The response contains a TrustedAdvisorCheckDescription
 // object for each check. You must set the Amazon Web Services Region to us-east-1.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
-//    * The names and descriptions for Trusted Advisor checks are subject to
-//    change. We recommend that you specify the check ID in your code to uniquely
-//    identify a check.
+//   - The names and descriptions for Trusted Advisor checks are subject to
+//     change. We recommend that you specify the check ID in your code to uniquely
+//     identify a check.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1302,8 +1294,8 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 // API operation DescribeTrustedAdvisorChecks for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorChecks
 func (c *Support) DescribeTrustedAdvisorChecks(input *DescribeTrustedAdvisorChecksInput) (*DescribeTrustedAdvisorChecksOutput, error) {
@@ -1343,14 +1335,13 @@ const opRefreshTrustedAdvisorCheck = "RefreshTrustedAdvisorCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RefreshTrustedAdvisorCheckRequest method.
+//	req, resp := client.RefreshTrustedAdvisorCheckRequest(params)
 //
-//    // Example sending a request using the RefreshTrustedAdvisorCheckRequest method.
-//    req, resp := client.RefreshTrustedAdvisorCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/RefreshTrustedAdvisorCheck
 func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisorCheckInput) (req *request.Request, output *RefreshTrustedAdvisorCheckOutput) {
@@ -1379,13 +1370,13 @@ func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisor
 //
 // The response contains a TrustedAdvisorCheckRefreshStatus object.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1395,8 +1386,8 @@ func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisor
 // API operation RefreshTrustedAdvisorCheck for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
+//   - InternalServerError
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/RefreshTrustedAdvisorCheck
 func (c *Support) RefreshTrustedAdvisorCheck(input *RefreshTrustedAdvisorCheckInput) (*RefreshTrustedAdvisorCheckOutput, error) {
@@ -1436,14 +1427,13 @@ const opResolveCase = "ResolveCase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResolveCaseRequest method.
+//	req, resp := client.ResolveCaseRequest(params)
 //
-//    // Example sending a request using the ResolveCaseRequest method.
-//    req, resp := client.ResolveCaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/ResolveCase
 func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Request, output *ResolveCaseOutput) {
@@ -1467,13 +1457,13 @@ func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Requ
 // Resolves a support case. This operation takes a caseId and returns the initial
 // and final state of the case.
 //
-//    * You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//    plan to use the Amazon Web Services Support API.
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
 //
-//    * If you call the Amazon Web Services Support API from an account that
-//    does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
-//    the SubscriptionRequiredException error message appears. For information
-//    about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//   - If you call the Amazon Web Services Support API from an account that
+//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1483,11 +1473,12 @@ func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Requ
 // API operation ResolveCase for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerError
-//   An internal server error occurred.
 //
-//   * CaseIdNotFound
-//   The requested caseId couldn't be located.
+//   - InternalServerError
+//     An internal server error occurred.
+//
+//   - CaseIdNotFound
+//     The requested caseId couldn't be located.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/ResolveCase
 func (c *Support) ResolveCase(input *ResolveCaseInput) (*ResolveCaseOutput, error) {
@@ -2217,42 +2208,42 @@ func (s *CaseCreationLimitExceeded) RequestID() string {
 // is contained in the response from a DescribeCases request. CaseDetails contains
 // the following fields:
 //
-//    * caseId - The support case ID requested or returned in the call. The
-//    case ID is an alphanumeric string formatted as shown in this example:
-//    case-12345678910-2013-c4c1d2bf33c5cf47.
+//   - caseId - The support case ID requested or returned in the call. The
+//     case ID is an alphanumeric string formatted as shown in this example:
+//     case-12345678910-2013-c4c1d2bf33c5cf47.
 //
-//    * categoryCode - The category of problem for the support case. Corresponds
-//    to the CategoryCode values returned by a call to DescribeServices.
+//   - categoryCode - The category of problem for the support case. Corresponds
+//     to the CategoryCode values returned by a call to DescribeServices.
 //
-//    * displayId - The identifier for the case on pages in the Amazon Web Services
-//    Support Center.
+//   - displayId - The identifier for the case on pages in the Amazon Web Services
+//     Support Center.
 //
-//    * language - The ISO 639-1 code for the language in which Amazon Web Services
-//    provides support. Amazon Web Services Support currently supports English
-//    ("en") and Japanese ("ja"). Language parameters must be passed explicitly
-//    for operations that take them.
+//   - language - The ISO 639-1 code for the language in which Amazon Web Services
+//     provides support. Amazon Web Services Support currently supports English
+//     ("en") and Japanese ("ja"). Language parameters must be passed explicitly
+//     for operations that take them.
 //
-//    * nextToken - A resumption point for pagination.
+//   - nextToken - A resumption point for pagination.
 //
-//    * recentCommunications - One or more Communication objects. Fields of
-//    these objects are attachments, body, caseId, submittedBy, and timeCreated.
+//   - recentCommunications - One or more Communication objects. Fields of
+//     these objects are attachments, body, caseId, submittedBy, and timeCreated.
 //
-//    * serviceCode - The identifier for the Amazon Web Services service that
-//    corresponds to the service code defined in the call to DescribeServices.
+//   - serviceCode - The identifier for the Amazon Web Services service that
+//     corresponds to the service code defined in the call to DescribeServices.
 //
-//    * severityCode - The severity code assigned to the case. Contains one
-//    of the values returned by the call to DescribeSeverityLevels. The possible
-//    values are: low, normal, high, urgent, and critical.
+//   - severityCode - The severity code assigned to the case. Contains one
+//     of the values returned by the call to DescribeSeverityLevels. The possible
+//     values are: low, normal, high, urgent, and critical.
 //
-//    * status - The status of the case in the Amazon Web Services Support Center.
-//    Valid values: opened pending-customer-action reopened resolved unassigned
-//    work-in-progress
+//   - status - The status of the case in the Amazon Web Services Support Center.
+//     Valid values: opened pending-customer-action reopened resolved unassigned
+//     work-in-progress
 //
-//    * subject - The subject line of the case.
+//   - subject - The subject line of the case.
 //
-//    * submittedBy - The email address of the account that submitted the case.
+//   - submittedBy - The email address of the account that submitted the case.
 //
-//    * timeCreated - The time the case was created, in ISO-8601 format.
+//   - timeCreated - The time the case was created, in ISO-8601 format.
 type CaseDetails struct {
 	_ struct{} `type:"structure"`
 

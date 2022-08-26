@@ -12,13 +12,13 @@
 //
 // The WorkMail API is designed for the following scenarios:
 //
-//    * Listing and describing organizations
+//   - Listing and describing organizations
 //
-//    * Managing users
+//   - Managing users
 //
-//    * Managing groups
+//   - Managing groups
 //
-//    * Managing resources
+//   - Managing resources
 //
 // All WorkMail API operations are Amazon-authenticated and certificate-signed.
 // They not only require the use of the AWS SDK, but also allow for the exclusive
@@ -36,7 +36,7 @@
 // See workmail package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/workmail/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon WorkMail with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

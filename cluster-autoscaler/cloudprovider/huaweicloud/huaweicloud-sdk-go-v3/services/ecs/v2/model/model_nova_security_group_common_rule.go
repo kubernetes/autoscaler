@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaSecurityGroupCommonRule struct {
 	// 起始端口，范围1-65535，且不大于to_port。 ip_protocol设置为icmp时，from_port表示type，范围是0-255。
 

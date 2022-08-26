@@ -28,14 +28,13 @@ const opDeleteThingShadow = "DeleteThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteThingShadowRequest method.
+//	req, resp := client.DeleteThingShadowRequest(params)
 //
-//    // Example sending a request using the DeleteThingShadowRequest method.
-//    req, resp := client.DeleteThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (req *request.Request, output *DeleteThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opDeleteThingShadow,
@@ -70,30 +69,30 @@ func (c *IoTDataPlane) DeleteThingShadowRequest(input *DeleteThingShadowInput) (
 // API operation DeleteThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) DeleteThingShadow(input *DeleteThingShadowInput) (*DeleteThingShadowOutput, error) {
 	req, out := c.DeleteThingShadowRequest(input)
 	return out, req.Send()
@@ -131,14 +130,13 @@ const opGetRetainedMessage = "GetRetainedMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRetainedMessageRequest method.
+//	req, resp := client.GetRetainedMessageRequest(params)
 //
-//    // Example sending a request using the GetRetainedMessageRequest method.
-//    req, resp := client.GetRetainedMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) GetRetainedMessageRequest(input *GetRetainedMessageInput) (req *request.Request, output *GetRetainedMessageOutput) {
 	op := &request.Operation{
 		Name:       opGetRetainedMessage,
@@ -177,27 +175,27 @@ func (c *IoTDataPlane) GetRetainedMessageRequest(input *GetRetainedMessageInput)
 // API operation GetRetainedMessage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) GetRetainedMessage(input *GetRetainedMessageInput) (*GetRetainedMessageOutput, error) {
 	req, out := c.GetRetainedMessageRequest(input)
 	return out, req.Send()
@@ -235,14 +233,13 @@ const opGetThingShadow = "GetThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetThingShadowRequest method.
+//	req, resp := client.GetThingShadowRequest(params)
 //
-//    // Example sending a request using the GetThingShadowRequest method.
-//    req, resp := client.GetThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *request.Request, output *GetThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opGetThingShadow,
@@ -277,30 +274,30 @@ func (c *IoTDataPlane) GetThingShadowRequest(input *GetThingShadowInput) (req *r
 // API operation GetThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) GetThingShadow(input *GetThingShadowInput) (*GetThingShadowOutput, error) {
 	req, out := c.GetThingShadowRequest(input)
 	return out, req.Send()
@@ -338,14 +335,13 @@ const opListNamedShadowsForThing = "ListNamedShadowsForThing"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNamedShadowsForThingRequest method.
+//	req, resp := client.ListNamedShadowsForThingRequest(params)
 //
-//    // Example sending a request using the ListNamedShadowsForThingRequest method.
-//    req, resp := client.ListNamedShadowsForThingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) ListNamedShadowsForThingRequest(input *ListNamedShadowsForThingInput) (req *request.Request, output *ListNamedShadowsForThingOutput) {
 	op := &request.Operation{
 		Name:       opListNamedShadowsForThing,
@@ -377,27 +373,27 @@ func (c *IoTDataPlane) ListNamedShadowsForThingRequest(input *ListNamedShadowsFo
 // API operation ListNamedShadowsForThing for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) ListNamedShadowsForThing(input *ListNamedShadowsForThingInput) (*ListNamedShadowsForThingOutput, error) {
 	req, out := c.ListNamedShadowsForThingRequest(input)
 	return out, req.Send()
@@ -435,14 +431,13 @@ const opListRetainedMessages = "ListRetainedMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRetainedMessagesRequest method.
+//	req, resp := client.ListRetainedMessagesRequest(params)
 //
-//    // Example sending a request using the ListRetainedMessagesRequest method.
-//    req, resp := client.ListRetainedMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) ListRetainedMessagesRequest(input *ListRetainedMessagesInput) (req *request.Request, output *ListRetainedMessagesOutput) {
 	op := &request.Operation{
 		Name:       opListRetainedMessages,
@@ -491,24 +486,24 @@ func (c *IoTDataPlane) ListRetainedMessagesRequest(input *ListRetainedMessagesIn
 // API operation ListRetainedMessages for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is not valid.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) ListRetainedMessages(input *ListRetainedMessagesInput) (*ListRetainedMessagesOutput, error) {
 	req, out := c.ListRetainedMessagesRequest(input)
 	return out, req.Send()
@@ -538,15 +533,14 @@ func (c *IoTDataPlane) ListRetainedMessagesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRetainedMessages operation.
-//    pageNum := 0
-//    err := client.ListRetainedMessagesPages(params,
-//        func(page *iotdataplane.ListRetainedMessagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRetainedMessages operation.
+//	pageNum := 0
+//	err := client.ListRetainedMessagesPages(params,
+//	    func(page *iotdataplane.ListRetainedMessagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *IoTDataPlane) ListRetainedMessagesPages(input *ListRetainedMessagesInput, fn func(*ListRetainedMessagesOutput, bool) bool) error {
 	return c.ListRetainedMessagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -598,14 +592,13 @@ const opPublish = "Publish"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishRequest method.
+//	req, resp := client.PublishRequest(params)
 //
-//    // Example sending a request using the PublishRequest method.
-//    req, resp := client.PublishRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request, output *PublishOutput) {
 	op := &request.Operation{
 		Name:       opPublish,
@@ -644,18 +637,18 @@ func (c *IoTDataPlane) PublishRequest(input *PublishInput) (req *request.Request
 // API operation Publish for usage and error information.
 //
 // Returned Error Types:
-//   * InternalFailureException
-//   An unexpected error has occurred.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 func (c *IoTDataPlane) Publish(input *PublishInput) (*PublishOutput, error) {
 	req, out := c.PublishRequest(input)
 	return out, req.Send()
@@ -693,14 +686,13 @@ const opUpdateThingShadow = "UpdateThingShadow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateThingShadowRequest method.
+//	req, resp := client.UpdateThingShadowRequest(params)
 //
-//    // Example sending a request using the UpdateThingShadowRequest method.
-//    req, resp := client.UpdateThingShadowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (req *request.Request, output *UpdateThingShadowOutput) {
 	op := &request.Operation{
 		Name:       opUpdateThingShadow,
@@ -735,33 +727,33 @@ func (c *IoTDataPlane) UpdateThingShadowRequest(input *UpdateThingShadowInput) (
 // API operation UpdateThingShadow for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The specified version does not match the version of the document.
 //
-//   * RequestEntityTooLargeException
-//   The payload exceeds the maximum size allowed.
+//   - ConflictException
+//     The specified version does not match the version of the document.
 //
-//   * InvalidRequestException
-//   The request is not valid.
+//   - RequestEntityTooLargeException
+//     The payload exceeds the maximum size allowed.
 //
-//   * ThrottlingException
-//   The rate exceeds the limit.
+//   - InvalidRequestException
+//     The request is not valid.
 //
-//   * UnauthorizedException
-//   You are not authorized to perform this operation.
+//   - ThrottlingException
+//     The rate exceeds the limit.
 //
-//   * ServiceUnavailableException
-//   The service is temporarily unavailable.
+//   - UnauthorizedException
+//     You are not authorized to perform this operation.
 //
-//   * InternalFailureException
-//   An unexpected error has occurred.
+//   - ServiceUnavailableException
+//     The service is temporarily unavailable.
 //
-//   * MethodNotAllowedException
-//   The specified combination of HTTP verb and URI is not supported.
+//   - InternalFailureException
+//     An unexpected error has occurred.
 //
-//   * UnsupportedDocumentEncodingException
-//   The document encoding is not supported.
+//   - MethodNotAllowedException
+//     The specified combination of HTTP verb and URI is not supported.
 //
+//   - UnsupportedDocumentEncodingException
+//     The document encoding is not supported.
 func (c *IoTDataPlane) UpdateThingShadow(input *UpdateThingShadowInput) (*UpdateThingShadowOutput, error) {
 	req, out := c.UpdateThingShadowRequest(input)
 	return out, req.Send()

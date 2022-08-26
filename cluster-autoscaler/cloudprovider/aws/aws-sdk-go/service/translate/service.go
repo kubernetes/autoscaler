@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Translate client from just a session.
-//     svc := translate.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Translate client with additional configuration
-//     svc := translate.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Translate client from just a session.
+//	svc := translate.New(mySession)
+//
+//	// Create a Translate client with additional configuration
+//	svc := translate.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Translate {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

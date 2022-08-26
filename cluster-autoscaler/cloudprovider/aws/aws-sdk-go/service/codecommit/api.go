@@ -29,14 +29,13 @@ const opAssociateApprovalRuleTemplateWithRepository = "AssociateApprovalRuleTemp
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateApprovalRuleTemplateWithRepositoryRequest method.
+//	req, resp := client.AssociateApprovalRuleTemplateWithRepositoryRequest(params)
 //
-//    // Example sending a request using the AssociateApprovalRuleTemplateWithRepositoryRequest method.
-//    req, resp := client.AssociateApprovalRuleTemplateWithRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/AssociateApprovalRuleTemplateWithRepository
 func (c *CodeCommit) AssociateApprovalRuleTemplateWithRepositoryRequest(input *AssociateApprovalRuleTemplateWithRepositoryInput) (req *request.Request, output *AssociateApprovalRuleTemplateWithRepositoryOutput) {
@@ -74,50 +73,51 @@ func (c *CodeCommit) AssociateApprovalRuleTemplateWithRepositoryRequest(input *A
 // API operation AssociateApprovalRuleTemplateWithRepository for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * MaximumRuleTemplatesAssociatedWithRepositoryException
-//   The maximum number of approval rule templates for a repository has been exceeded.
-//   You cannot associate more than 25 approval rule templates with a repository.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - MaximumRuleTemplatesAssociatedWithRepositoryException
+//     The maximum number of approval rule templates for a repository has been exceeded.
+//     You cannot associate more than 25 approval rule templates with a repository.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/AssociateApprovalRuleTemplateWithRepository
 func (c *CodeCommit) AssociateApprovalRuleTemplateWithRepository(input *AssociateApprovalRuleTemplateWithRepositoryInput) (*AssociateApprovalRuleTemplateWithRepositoryOutput, error) {
@@ -157,14 +157,13 @@ const opBatchAssociateApprovalRuleTemplateWithRepositories = "BatchAssociateAppr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchAssociateApprovalRuleTemplateWithRepositoriesRequest method.
+//	req, resp := client.BatchAssociateApprovalRuleTemplateWithRepositoriesRequest(params)
 //
-//    // Example sending a request using the BatchAssociateApprovalRuleTemplateWithRepositoriesRequest method.
-//    req, resp := client.BatchAssociateApprovalRuleTemplateWithRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchAssociateApprovalRuleTemplateWithRepositories
 func (c *CodeCommit) BatchAssociateApprovalRuleTemplateWithRepositoriesRequest(input *BatchAssociateApprovalRuleTemplateWithRepositoriesInput) (req *request.Request, output *BatchAssociateApprovalRuleTemplateWithRepositoriesOutput) {
@@ -196,40 +195,41 @@ func (c *CodeCommit) BatchAssociateApprovalRuleTemplateWithRepositoriesRequest(i
 // API operation BatchAssociateApprovalRuleTemplateWithRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * RepositoryNamesRequiredException
-//   At least one repository name object is required, but was not specified.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * MaximumRepositoryNamesExceededException
-//   The maximum number of allowed repository names was exceeded. Currently, this
-//   number is 100.
+//   - RepositoryNamesRequiredException
+//     At least one repository name object is required, but was not specified.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumRepositoryNamesExceededException
+//     The maximum number of allowed repository names was exceeded. Currently, this
+//     number is 100.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchAssociateApprovalRuleTemplateWithRepositories
 func (c *CodeCommit) BatchAssociateApprovalRuleTemplateWithRepositories(input *BatchAssociateApprovalRuleTemplateWithRepositoriesInput) (*BatchAssociateApprovalRuleTemplateWithRepositoriesOutput, error) {
@@ -269,14 +269,13 @@ const opBatchDescribeMergeConflicts = "BatchDescribeMergeConflicts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDescribeMergeConflictsRequest method.
+//	req, resp := client.BatchDescribeMergeConflictsRequest(params)
 //
-//    // Example sending a request using the BatchDescribeMergeConflictsRequest method.
-//    req, resp := client.BatchDescribeMergeConflictsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchDescribeMergeConflicts
 func (c *CodeCommit) BatchDescribeMergeConflictsRequest(input *BatchDescribeMergeConflictsInput) (req *request.Request, output *BatchDescribeMergeConflictsOutput) {
@@ -308,77 +307,78 @@ func (c *CodeCommit) BatchDescribeMergeConflictsRequest(input *BatchDescribeMerg
 // API operation BatchDescribeMergeConflicts for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * MergeOptionRequiredException
-//   A merge option or stategy is required, and none was provided.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidMergeOptionException
-//   The specified merge option is not valid for this operation. Not all merge
-//   strategies are supported for all operations.
+//   - MergeOptionRequiredException
+//     A merge option or stategy is required, and none was provided.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMergeOptionException
+//     The specified merge option is not valid for this operation. Not all merge
+//     strategies are supported for all operations.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidMaxConflictFilesException
-//   The specified value for the number of conflict files to return is not valid.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidMaxMergeHunksException
-//   The specified value for the number of merge hunks to return is not valid.
+//   - InvalidMaxConflictFilesException
+//     The specified value for the number of conflict files to return is not valid.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - InvalidMaxMergeHunksException
+//     The specified value for the number of merge hunks to return is not valid.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchDescribeMergeConflicts
 func (c *CodeCommit) BatchDescribeMergeConflicts(input *BatchDescribeMergeConflictsInput) (*BatchDescribeMergeConflictsOutput, error) {
@@ -418,14 +418,13 @@ const opBatchDisassociateApprovalRuleTemplateFromRepositories = "BatchDisassocia
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDisassociateApprovalRuleTemplateFromRepositoriesRequest method.
+//	req, resp := client.BatchDisassociateApprovalRuleTemplateFromRepositoriesRequest(params)
 //
-//    // Example sending a request using the BatchDisassociateApprovalRuleTemplateFromRepositoriesRequest method.
-//    req, resp := client.BatchDisassociateApprovalRuleTemplateFromRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchDisassociateApprovalRuleTemplateFromRepositories
 func (c *CodeCommit) BatchDisassociateApprovalRuleTemplateFromRepositoriesRequest(input *BatchDisassociateApprovalRuleTemplateFromRepositoriesInput) (req *request.Request, output *BatchDisassociateApprovalRuleTemplateFromRepositoriesOutput) {
@@ -457,40 +456,41 @@ func (c *CodeCommit) BatchDisassociateApprovalRuleTemplateFromRepositoriesReques
 // API operation BatchDisassociateApprovalRuleTemplateFromRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * RepositoryNamesRequiredException
-//   At least one repository name object is required, but was not specified.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * MaximumRepositoryNamesExceededException
-//   The maximum number of allowed repository names was exceeded. Currently, this
-//   number is 100.
+//   - RepositoryNamesRequiredException
+//     At least one repository name object is required, but was not specified.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumRepositoryNamesExceededException
+//     The maximum number of allowed repository names was exceeded. Currently, this
+//     number is 100.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchDisassociateApprovalRuleTemplateFromRepositories
 func (c *CodeCommit) BatchDisassociateApprovalRuleTemplateFromRepositories(input *BatchDisassociateApprovalRuleTemplateFromRepositoriesInput) (*BatchDisassociateApprovalRuleTemplateFromRepositoriesOutput, error) {
@@ -530,14 +530,13 @@ const opBatchGetCommits = "BatchGetCommits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetCommitsRequest method.
+//	req, resp := client.BatchGetCommitsRequest(params)
 //
-//    // Example sending a request using the BatchGetCommitsRequest method.
-//    req, resp := client.BatchGetCommitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchGetCommits
 func (c *CodeCommit) BatchGetCommitsRequest(input *BatchGetCommitsInput) (req *request.Request, output *BatchGetCommitsOutput) {
@@ -568,42 +567,43 @@ func (c *CodeCommit) BatchGetCommitsRequest(input *BatchGetCommitsInput) (req *r
 // API operation BatchGetCommits for usage and error information.
 //
 // Returned Error Types:
-//   * CommitIdsListRequiredException
-//   A list of commit IDs is required, but was either not specified or the list
-//   was empty.
 //
-//   * CommitIdsLimitExceededException
-//   The maximum number of allowed commit IDs in a batch request is 100. Verify
-//   that your batch requests contains no more than 100 commit IDs, and then try
-//   again.
+//   - CommitIdsListRequiredException
+//     A list of commit IDs is required, but was either not specified or the list
+//     was empty.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - CommitIdsLimitExceededException
+//     The maximum number of allowed commit IDs in a batch request is 100. Verify
+//     that your batch requests contains no more than 100 commit IDs, and then try
+//     again.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchGetCommits
 func (c *CodeCommit) BatchGetCommits(input *BatchGetCommitsInput) (*BatchGetCommitsOutput, error) {
@@ -643,14 +643,13 @@ const opBatchGetRepositories = "BatchGetRepositories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchGetRepositoriesRequest method.
+//	req, resp := client.BatchGetRepositoriesRequest(params)
 //
-//    // Example sending a request using the BatchGetRepositoriesRequest method.
-//    req, resp := client.BatchGetRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchGetRepositories
 func (c *CodeCommit) BatchGetRepositoriesRequest(input *BatchGetRepositoriesInput) (req *request.Request, output *BatchGetRepositoriesOutput) {
@@ -687,34 +686,35 @@ func (c *CodeCommit) BatchGetRepositoriesRequest(input *BatchGetRepositoriesInpu
 // API operation BatchGetRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNamesRequiredException
-//   At least one repository name object is required, but was not specified.
 //
-//   * MaximumRepositoryNamesExceededException
-//   The maximum number of allowed repository names was exceeded. Currently, this
-//   number is 100.
+//   - RepositoryNamesRequiredException
+//     At least one repository name object is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - MaximumRepositoryNamesExceededException
+//     The maximum number of allowed repository names was exceeded. Currently, this
+//     number is 100.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/BatchGetRepositories
 func (c *CodeCommit) BatchGetRepositories(input *BatchGetRepositoriesInput) (*BatchGetRepositoriesOutput, error) {
@@ -754,14 +754,13 @@ const opCreateApprovalRuleTemplate = "CreateApprovalRuleTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApprovalRuleTemplateRequest method.
+//	req, resp := client.CreateApprovalRuleTemplateRequest(params)
 //
-//    // Example sending a request using the CreateApprovalRuleTemplateRequest method.
-//    req, resp := client.CreateApprovalRuleTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateApprovalRuleTemplate
 func (c *CodeCommit) CreateApprovalRuleTemplateRequest(input *CreateApprovalRuleTemplateInput) (req *request.Request, output *CreateApprovalRuleTemplateOutput) {
@@ -796,34 +795,35 @@ func (c *CodeCommit) CreateApprovalRuleTemplateRequest(input *CreateApprovalRule
 // API operation CreateApprovalRuleTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateNameAlreadyExistsException
-//   You cannot create an approval rule template with that name because a template
-//   with that name already exists in this AWS Region for your AWS account. Approval
-//   rule template names must be unique.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateContentRequiredException
-//   The content for the approval rule template is empty. You must provide some
-//   content for an approval rule template. The content cannot be null.
+//   - ApprovalRuleTemplateNameAlreadyExistsException
+//     You cannot create an approval rule template with that name because a template
+//     with that name already exists in this AWS Region for your AWS account. Approval
+//     rule template names must be unique.
 //
-//   * InvalidApprovalRuleTemplateContentException
-//   The content of the approval rule template is not valid.
+//   - ApprovalRuleTemplateContentRequiredException
+//     The content for the approval rule template is empty. You must provide some
+//     content for an approval rule template. The content cannot be null.
 //
-//   * InvalidApprovalRuleTemplateDescriptionException
-//   The description for the approval rule template is not valid because it exceeds
-//   the maximum characters allowed for a description. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - InvalidApprovalRuleTemplateContentException
+//     The content of the approval rule template is not valid.
 //
-//   * NumberOfRuleTemplatesExceededException
-//   The maximum number of approval rule templates has been exceeded for this
-//   AWS Region.
+//   - InvalidApprovalRuleTemplateDescriptionException
+//     The description for the approval rule template is not valid because it exceeds
+//     the maximum characters allowed for a description. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//
+//   - NumberOfRuleTemplatesExceededException
+//     The maximum number of approval rule templates has been exceeded for this
+//     AWS Region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateApprovalRuleTemplate
 func (c *CodeCommit) CreateApprovalRuleTemplate(input *CreateApprovalRuleTemplateInput) (*CreateApprovalRuleTemplateOutput, error) {
@@ -863,14 +863,13 @@ const opCreateBranch = "CreateBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBranchRequest method.
+//	req, resp := client.CreateBranchRequest(params)
 //
-//    // Example sending a request using the CreateBranchRequest method.
-//    req, resp := client.CreateBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateBranch
 func (c *CodeCommit) CreateBranchRequest(input *CreateBranchInput) (req *request.Request, output *CreateBranchOutput) {
@@ -905,53 +904,54 @@ func (c *CodeCommit) CreateBranchRequest(input *CreateBranchInput) (req *request
 // API operation CreateBranch for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * BranchNameExistsException
-//   Cannot create the branch with the specified name because the commit conflicts
-//   with an existing branch with the same name. Branch names must be unique.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameExistsException
+//     Cannot create the branch with the specified name because the commit conflicts
+//     with an existing branch with the same name. Branch names must be unique.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateBranch
 func (c *CodeCommit) CreateBranch(input *CreateBranchInput) (*CreateBranchOutput, error) {
@@ -991,14 +991,13 @@ const opCreateCommit = "CreateCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCommitRequest method.
+//	req, resp := client.CreateCommitRequest(params)
 //
-//    // Example sending a request using the CreateCommitRequest method.
-//    req, resp := client.CreateCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateCommit
 func (c *CodeCommit) CreateCommitRequest(input *CreateCommitInput) (req *request.Request, output *CreateCommitOutput) {
@@ -1029,163 +1028,164 @@ func (c *CodeCommit) CreateCommitRequest(input *CreateCommitInput) (req *request
 // API operation CreateCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * ParentCommitIdRequiredException
-//   A parent commit ID is required. To view the full commit ID of a branch in
-//   a repository, use GetBranch or a Git command (for example, git pull or git
-//   log).
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidParentCommitIdException
-//   The parent commit ID is not valid. The commit ID cannot be empty, and must
-//   match the head commit ID for the branch of the repository where you want
-//   to add or update a file.
+//   - ParentCommitIdRequiredException
+//     A parent commit ID is required. To view the full commit ID of a branch in
+//     a repository, use GetBranch or a Git command (for example, git pull or git
+//     log).
 //
-//   * ParentCommitDoesNotExistException
-//   The parent commit ID is not valid because it does not exist. The specified
-//   parent commit ID does not exist in the specified branch of the repository.
+//   - InvalidParentCommitIdException
+//     The parent commit ID is not valid. The commit ID cannot be empty, and must
+//     match the head commit ID for the branch of the repository where you want
+//     to add or update a file.
 //
-//   * ParentCommitIdOutdatedException
-//   The file could not be added because the provided parent commit ID is not
-//   the current tip of the specified branch. To view the full commit ID of the
-//   current head of the branch, use GetBranch.
+//   - ParentCommitDoesNotExistException
+//     The parent commit ID is not valid because it does not exist. The specified
+//     parent commit ID does not exist in the specified branch of the repository.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - ParentCommitIdOutdatedException
+//     The file could not be added because the provided parent commit ID is not
+//     the current tip of the specified branch. To view the full commit ID of the
+//     current head of the branch, use GetBranch.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * FileEntryRequiredException
-//   The commit cannot be created because no files have been specified as added,
-//   updated, or changed (PutFile or DeleteFile) for the commit.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * MaximumFileEntriesExceededException
-//   The number of specified files to change as part of this commit exceeds the
-//   maximum number of files that can be changed in a single commit. Consider
-//   using a Git client for these changes.
+//   - FileEntryRequiredException
+//     The commit cannot be created because no files have been specified as added,
+//     updated, or changed (PutFile or DeleteFile) for the commit.
 //
-//   * PutFileEntryConflictException
-//   The commit cannot be created because one or more files specified in the commit
-//   reference both a file and a folder.
+//   - MaximumFileEntriesExceededException
+//     The number of specified files to change as part of this commit exceeds the
+//     maximum number of files that can be changed in a single commit. Consider
+//     using a Git client for these changes.
 //
-//   * SourceFileOrContentRequiredException
-//   The commit cannot be created because no source files or file content have
-//   been specified for the commit.
+//   - PutFileEntryConflictException
+//     The commit cannot be created because one or more files specified in the commit
+//     reference both a file and a folder.
 //
-//   * FileContentAndSourceFileSpecifiedException
-//   The commit cannot be created because both a source file and file content
-//   have been specified for the same file. You cannot provide both. Either specify
-//   a source file or provide the file content directly.
+//   - SourceFileOrContentRequiredException
+//     The commit cannot be created because no source files or file content have
+//     been specified for the commit.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - FileContentAndSourceFileSpecifiedException
+//     The commit cannot be created because both a source file and file content
+//     have been specified for the same file. You cannot provide both. Either specify
+//     a source file or provide the file content directly.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * SamePathRequestException
-//   The commit cannot be created because one or more changes in this commit duplicate
-//   actions in the same file path. For example, you cannot make the same delete
-//   request to the same file in the same file path twice, or make a delete request
-//   and a move request to the same file as part of the same commit.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * FileDoesNotExistException
-//   The specified file does not exist. Verify that you have used the correct
-//   file name, full path, and extension.
+//   - SamePathRequestException
+//     The commit cannot be created because one or more changes in this commit duplicate
+//     actions in the same file path. For example, you cannot make the same delete
+//     request to the same file in the same file path twice, or make a delete request
+//     and a move request to the same file as part of the same commit.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - FileDoesNotExistException
+//     The specified file does not exist. Verify that you have used the correct
+//     file name, full path, and extension.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * InvalidDeletionParameterException
-//   The specified deletion parameter is not valid.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * RestrictedSourceFileException
-//   The commit cannot be created because one of the changes specifies copying
-//   or moving a .gitkeep file.
+//   - InvalidDeletionParameterException
+//     The specified deletion parameter is not valid.
 //
-//   * FileModeRequiredException
-//   The commit cannot be created because no file mode has been specified. A file
-//   mode is required to update mode permissions for a file.
+//   - RestrictedSourceFileException
+//     The commit cannot be created because one of the changes specifies copying
+//     or moving a .gitkeep file.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - FileModeRequiredException
+//     The commit cannot be created because no file mode has been specified. A file
+//     mode is required to update mode permissions for a file.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * NoChangeException
-//   The commit cannot be created because no changes will be made to the repository
-//   as a result of this commit. A commit must contain at least one change.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * FileNameConflictsWithDirectoryNameException
-//   A file cannot be added to the repository because the specified file name
-//   has the same name as a directory in this repository. Either provide another
-//   name for the file, or add the file in a directory that does not match the
-//   file name.
+//   - NoChangeException
+//     The commit cannot be created because no changes will be made to the repository
+//     as a result of this commit. A commit must contain at least one change.
 //
-//   * DirectoryNameConflictsWithFileNameException
-//   A file cannot be added to the repository because the specified path name
-//   has the same name as a file that already exists in this repository. Either
-//   provide a different name for the file, or specify a different path for the
-//   file.
+//   - FileNameConflictsWithDirectoryNameException
+//     A file cannot be added to the repository because the specified file name
+//     has the same name as a directory in this repository. Either provide another
+//     name for the file, or add the file in a directory that does not match the
+//     file name.
 //
-//   * FilePathConflictsWithSubmodulePathException
-//   The commit cannot be created because a specified file path points to a submodule.
-//   Verify that the destination files have valid file paths that do not point
-//   to a submodule.
+//   - DirectoryNameConflictsWithFileNameException
+//     A file cannot be added to the repository because the specified path name
+//     has the same name as a file that already exists in this repository. Either
+//     provide a different name for the file, or specify a different path for the
+//     file.
+//
+//   - FilePathConflictsWithSubmodulePathException
+//     The commit cannot be created because a specified file path points to a submodule.
+//     Verify that the destination files have valid file paths that do not point
+//     to a submodule.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateCommit
 func (c *CodeCommit) CreateCommit(input *CreateCommitInput) (*CreateCommitOutput, error) {
@@ -1225,14 +1225,13 @@ const opCreatePullRequest = "CreatePullRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePullRequestRequest method.
+//	req, resp := client.CreatePullRequestRequest(params)
 //
-//    // Example sending a request using the CreatePullRequestRequest method.
-//    req, resp := client.CreatePullRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreatePullRequest
 func (c *CodeCommit) CreatePullRequestRequest(input *CreatePullRequestInput) (req *request.Request, output *CreatePullRequestOutput) {
@@ -1263,106 +1262,107 @@ func (c *CodeCommit) CreatePullRequestRequest(input *CreatePullRequestInput) (re
 // API operation CreatePullRequest for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * ClientRequestTokenRequiredException
-//   A client request token is required. A client request token is an unique,
-//   client-generated idempotency token that, when provided in a request, ensures
-//   the request cannot be repeated with a changed parameter. If a request is
-//   received with the same parameters and a token is included, the request returns
-//   information about the initial request that used that token.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * InvalidClientRequestTokenException
-//   The client request token is not valid.
+//   - ClientRequestTokenRequiredException
+//     A client request token is required. A client request token is an unique,
+//     client-generated idempotency token that, when provided in a request, ensures
+//     the request cannot be repeated with a changed parameter. If a request is
+//     received with the same parameters and a token is included, the request returns
+//     information about the initial request that used that token.
 //
-//   * IdempotencyParameterMismatchException
-//   The client request token is not valid. Either the token is not in a valid
-//   format, or the token has been used in a previous request and cannot be reused.
+//   - InvalidClientRequestTokenException
+//     The client request token is not valid.
 //
-//   * ReferenceNameRequiredException
-//   A reference name is required, but none was provided.
+//   - IdempotencyParameterMismatchException
+//     The client request token is not valid. Either the token is not in a valid
+//     format, or the token has been used in a previous request and cannot be reused.
 //
-//   * InvalidReferenceNameException
-//   The specified reference name format is not valid. Reference names must conform
-//   to the Git references format (for example, refs/heads/master). For more information,
-//   see Git Internals - Git References (https://git-scm.com/book/en/v2/Git-Internals-Git-References)
-//   or consult your Git documentation.
+//   - ReferenceNameRequiredException
+//     A reference name is required, but none was provided.
 //
-//   * ReferenceDoesNotExistException
-//   The specified reference does not exist. You must provide a full commit ID.
+//   - InvalidReferenceNameException
+//     The specified reference name format is not valid. Reference names must conform
+//     to the Git references format (for example, refs/heads/master). For more information,
+//     see Git Internals - Git References (https://git-scm.com/book/en/v2/Git-Internals-Git-References)
+//     or consult your Git documentation.
 //
-//   * ReferenceTypeNotSupportedException
-//   The specified reference is not a supported type.
+//   - ReferenceDoesNotExistException
+//     The specified reference does not exist. You must provide a full commit ID.
 //
-//   * TitleRequiredException
-//   A pull request title is required. It cannot be empty or null.
+//   - ReferenceTypeNotSupportedException
+//     The specified reference is not a supported type.
 //
-//   * InvalidTitleException
-//   The title of the pull request is not valid. Pull request titles cannot exceed
-//   100 characters in length.
+//   - TitleRequiredException
+//     A pull request title is required. It cannot be empty or null.
 //
-//   * InvalidDescriptionException
-//   The pull request description is not valid. Descriptions cannot be more than
-//   1,000 characters.
+//   - InvalidTitleException
+//     The title of the pull request is not valid. Pull request titles cannot exceed
+//     100 characters in length.
 //
-//   * TargetsRequiredException
-//   An array of target objects is required. It cannot be empty or null.
+//   - InvalidDescriptionException
+//     The pull request description is not valid. Descriptions cannot be more than
+//     1,000 characters.
 //
-//   * InvalidTargetsException
-//   The targets for the pull request is not valid or not in a valid format. Targets
-//   are a list of target objects. Each target object must contain the full values
-//   for the repository name, source branch, and destination branch for a pull
-//   request.
+//   - TargetsRequiredException
+//     An array of target objects is required. It cannot be empty or null.
 //
-//   * TargetRequiredException
-//   A pull request target is required. It cannot be empty or null. A pull request
-//   target must contain the full values for the repository name, source branch,
-//   and destination branch for the pull request.
+//   - InvalidTargetsException
+//     The targets for the pull request is not valid or not in a valid format. Targets
+//     are a list of target objects. Each target object must contain the full values
+//     for the repository name, source branch, and destination branch for a pull
+//     request.
 //
-//   * InvalidTargetException
-//   The target for the pull request is not valid. A target must contain the full
-//   values for the repository name, source branch, and destination branch for
-//   the pull request.
+//   - TargetRequiredException
+//     A pull request target is required. It cannot be empty or null. A pull request
+//     target must contain the full values for the repository name, source branch,
+//     and destination branch for the pull request.
 //
-//   * MultipleRepositoriesInPullRequestException
-//   You cannot include more than one repository in a pull request. Make sure
-//   you have specified only one repository name in your request, and then try
-//   again.
+//   - InvalidTargetException
+//     The target for the pull request is not valid. A target must contain the full
+//     values for the repository name, source branch, and destination branch for
+//     the pull request.
 //
-//   * MaximumOpenPullRequestsExceededException
-//   You cannot create the pull request because the repository has too many open
-//   pull requests. The maximum number of open pull requests for a repository
-//   is 1,000. Close one or more open pull requests, and then try again.
+//   - MultipleRepositoriesInPullRequestException
+//     You cannot include more than one repository in a pull request. Make sure
+//     you have specified only one repository name in your request, and then try
+//     again.
 //
-//   * SourceAndDestinationAreSameException
-//   The source branch and destination branch for the pull request are the same.
-//   You must specify different branches for the source and destination.
+//   - MaximumOpenPullRequestsExceededException
+//     You cannot create the pull request because the repository has too many open
+//     pull requests. The maximum number of open pull requests for a repository
+//     is 1,000. Close one or more open pull requests, and then try again.
+//
+//   - SourceAndDestinationAreSameException
+//     The source branch and destination branch for the pull request are the same.
+//     You must specify different branches for the source and destination.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreatePullRequest
 func (c *CodeCommit) CreatePullRequest(input *CreatePullRequestInput) (*CreatePullRequestOutput, error) {
@@ -1402,14 +1402,13 @@ const opCreatePullRequestApprovalRule = "CreatePullRequestApprovalRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePullRequestApprovalRuleRequest method.
+//	req, resp := client.CreatePullRequestApprovalRuleRequest(params)
 //
-//    // Example sending a request using the CreatePullRequestApprovalRuleRequest method.
-//    req, resp := client.CreatePullRequestApprovalRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreatePullRequestApprovalRule
 func (c *CodeCommit) CreatePullRequestApprovalRuleRequest(input *CreatePullRequestApprovalRuleInput) (req *request.Request, output *CreatePullRequestApprovalRuleOutput) {
@@ -1440,56 +1439,57 @@ func (c *CodeCommit) CreatePullRequestApprovalRuleRequest(input *CreatePullReque
 // API operation CreatePullRequestApprovalRule for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleNameRequiredException
-//   An approval rule name is required, but was not specified.
 //
-//   * InvalidApprovalRuleNameException
-//   The name for the approval rule is not valid.
+//   - ApprovalRuleNameRequiredException
+//     An approval rule name is required, but was not specified.
 //
-//   * ApprovalRuleNameAlreadyExistsException
-//   An approval rule with that name already exists. Approval rule names must
-//   be unique within the scope of a pull request.
+//   - InvalidApprovalRuleNameException
+//     The name for the approval rule is not valid.
 //
-//   * ApprovalRuleContentRequiredException
-//   The content for the approval rule is empty. You must provide some content
-//   for an approval rule. The content cannot be null.
+//   - ApprovalRuleNameAlreadyExistsException
+//     An approval rule with that name already exists. Approval rule names must
+//     be unique within the scope of a pull request.
 //
-//   * InvalidApprovalRuleContentException
-//   The content for the approval rule is not valid.
+//   - ApprovalRuleContentRequiredException
+//     The content for the approval rule is empty. You must provide some content
+//     for an approval rule. The content cannot be null.
 //
-//   * NumberOfRulesExceededException
-//   The approval rule cannot be added. The pull request has the maximum number
-//   of approval rules associated with it.
+//   - InvalidApprovalRuleContentException
+//     The content for the approval rule is not valid.
 //
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
+//   - NumberOfRulesExceededException
+//     The approval rule cannot be added. The pull request has the maximum number
+//     of approval rules associated with it.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreatePullRequestApprovalRule
 func (c *CodeCommit) CreatePullRequestApprovalRule(input *CreatePullRequestApprovalRuleInput) (*CreatePullRequestApprovalRuleOutput, error) {
@@ -1529,14 +1529,13 @@ const opCreateRepository = "CreateRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRepositoryRequest method.
+//	req, resp := client.CreateRepositoryRequest(params)
 //
-//    // Example sending a request using the CreateRepositoryRequest method.
-//    req, resp := client.CreateRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateRepository
 func (c *CodeCommit) CreateRepositoryRequest(input *CreateRepositoryInput) (req *request.Request, output *CreateRepositoryOutput) {
@@ -1567,51 +1566,52 @@ func (c *CodeCommit) CreateRepositoryRequest(input *CreateRepositoryInput) (req 
 // API operation CreateRepository for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameExistsException
-//   The specified repository name already exists.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryNameExistsException
+//     The specified repository name already exists.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * InvalidRepositoryDescriptionException
-//   The specified repository description is not valid.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * RepositoryLimitExceededException
-//   A repository resource limit was exceeded.
+//   - InvalidRepositoryDescriptionException
+//     The specified repository description is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryLimitExceededException
+//     A repository resource limit was exceeded.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * InvalidTagsMapException
-//   The map of tags is not valid.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * TooManyTagsException
-//   The maximum number of tags for an AWS CodeCommit resource has been exceeded.
+//   - InvalidTagsMapException
+//     The map of tags is not valid.
 //
-//   * InvalidSystemTagUsageException
-//   The specified tag is not valid. Key names cannot be prefixed with aws:.
+//   - TooManyTagsException
+//     The maximum number of tags for an AWS CodeCommit resource has been exceeded.
 //
-//   * TagPolicyException
-//   The tag policy is not valid.
+//   - InvalidSystemTagUsageException
+//     The specified tag is not valid. Key names cannot be prefixed with aws:.
+//
+//   - TagPolicyException
+//     The tag policy is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateRepository
 func (c *CodeCommit) CreateRepository(input *CreateRepositoryInput) (*CreateRepositoryOutput, error) {
@@ -1651,14 +1651,13 @@ const opCreateUnreferencedMergeCommit = "CreateUnreferencedMergeCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUnreferencedMergeCommitRequest method.
+//	req, resp := client.CreateUnreferencedMergeCommitRequest(params)
 //
-//    // Example sending a request using the CreateUnreferencedMergeCommitRequest method.
-//    req, resp := client.CreateUnreferencedMergeCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateUnreferencedMergeCommit
 func (c *CodeCommit) CreateUnreferencedMergeCommitRequest(input *CreateUnreferencedMergeCommitInput) (req *request.Request, output *CreateUnreferencedMergeCommitOutput) {
@@ -1696,138 +1695,139 @@ func (c *CodeCommit) CreateUnreferencedMergeCommitRequest(input *CreateUnreferen
 // API operation CreateUnreferencedMergeCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * MergeOptionRequiredException
-//   A merge option or stategy is required, and none was provided.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidMergeOptionException
-//   The specified merge option is not valid for this operation. Not all merge
-//   strategies are supported for all operations.
+//   - MergeOptionRequiredException
+//     A merge option or stategy is required, and none was provided.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - InvalidMergeOptionException
+//     The specified merge option is not valid for this operation. Not all merge
+//     strategies are supported for all operations.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidConflictResolutionException
-//   The specified conflict resolution list is not valid.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - InvalidConflictResolutionException
+//     The specified conflict resolution list is not valid.
 //
-//   * MaximumConflictResolutionEntriesExceededException
-//   The number of allowed conflict resolution entries was exceeded.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * MultipleConflictResolutionEntriesException
-//   More than one conflict resolution entries exists for the conflict. A conflict
-//   can have only one conflict resolution entry.
+//   - MaximumConflictResolutionEntriesExceededException
+//     The number of allowed conflict resolution entries was exceeded.
 //
-//   * ReplacementTypeRequiredException
-//   A replacement type is required.
+//   - MultipleConflictResolutionEntriesException
+//     More than one conflict resolution entries exists for the conflict. A conflict
+//     can have only one conflict resolution entry.
 //
-//   * InvalidReplacementTypeException
-//   Automerge was specified for resolving the conflict, but the specified replacement
-//   type is not valid.
+//   - ReplacementTypeRequiredException
+//     A replacement type is required.
 //
-//   * ReplacementContentRequiredException
-//   USE_NEW_CONTENT was specified, but no replacement content has been provided.
+//   - InvalidReplacementTypeException
+//     Automerge was specified for resolving the conflict, but the specified replacement
+//     type is not valid.
 //
-//   * InvalidReplacementContentException
-//   Automerge was specified for resolving the conflict, but the replacement type
-//   is not valid or content is missing.
+//   - ReplacementContentRequiredException
+//     USE_NEW_CONTENT was specified, but no replacement content has been provided.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - InvalidReplacementContentException
+//     Automerge was specified for resolving the conflict, but the replacement type
+//     is not valid or content is missing.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * FileModeRequiredException
-//   The commit cannot be created because no file mode has been specified. A file
-//   mode is required to update mode permissions for a file.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - FileModeRequiredException
+//     The commit cannot be created because no file mode has been specified. A file
+//     mode is required to update mode permissions for a file.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/CreateUnreferencedMergeCommit
 func (c *CodeCommit) CreateUnreferencedMergeCommit(input *CreateUnreferencedMergeCommitInput) (*CreateUnreferencedMergeCommitOutput, error) {
@@ -1867,14 +1867,13 @@ const opDeleteApprovalRuleTemplate = "DeleteApprovalRuleTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApprovalRuleTemplateRequest method.
+//	req, resp := client.DeleteApprovalRuleTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteApprovalRuleTemplateRequest method.
-//    req, resp := client.DeleteApprovalRuleTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteApprovalRuleTemplate
 func (c *CodeCommit) DeleteApprovalRuleTemplateRequest(input *DeleteApprovalRuleTemplateInput) (req *request.Request, output *DeleteApprovalRuleTemplateOutput) {
@@ -1906,18 +1905,19 @@ func (c *CodeCommit) DeleteApprovalRuleTemplateRequest(input *DeleteApprovalRule
 // API operation DeleteApprovalRuleTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateInUseException
-//   The approval rule template is associated with one or more repositories. You
-//   cannot delete a template that is associated with a repository. Remove all
-//   associations, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//
+//   - ApprovalRuleTemplateInUseException
+//     The approval rule template is associated with one or more repositories. You
+//     cannot delete a template that is associated with a repository. Remove all
+//     associations, and then try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteApprovalRuleTemplate
 func (c *CodeCommit) DeleteApprovalRuleTemplate(input *DeleteApprovalRuleTemplateInput) (*DeleteApprovalRuleTemplateOutput, error) {
@@ -1957,14 +1957,13 @@ const opDeleteBranch = "DeleteBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBranchRequest method.
+//	req, resp := client.DeleteBranchRequest(params)
 //
-//    // Example sending a request using the DeleteBranchRequest method.
-//    req, resp := client.DeleteBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteBranch
 func (c *CodeCommit) DeleteBranchRequest(input *DeleteBranchInput) (req *request.Request, output *DeleteBranchOutput) {
@@ -1996,44 +1995,45 @@ func (c *CodeCommit) DeleteBranchRequest(input *DeleteBranchInput) (req *request
 // API operation DeleteBranch for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * DefaultBranchCannotBeDeletedException
-//   The specified branch is the default branch for the repository, and cannot
-//   be deleted. To delete this branch, you must first set another branch as the
-//   default branch.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - DefaultBranchCannotBeDeletedException
+//     The specified branch is the default branch for the repository, and cannot
+//     be deleted. To delete this branch, you must first set another branch as the
+//     default branch.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteBranch
 func (c *CodeCommit) DeleteBranch(input *DeleteBranchInput) (*DeleteBranchOutput, error) {
@@ -2073,14 +2073,13 @@ const opDeleteCommentContent = "DeleteCommentContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCommentContentRequest method.
+//	req, resp := client.DeleteCommentContentRequest(params)
 //
-//    // Example sending a request using the DeleteCommentContentRequest method.
-//    req, resp := client.DeleteCommentContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteCommentContent
 func (c *CodeCommit) DeleteCommentContentRequest(input *DeleteCommentContentInput) (req *request.Request, output *DeleteCommentContentOutput) {
@@ -2111,20 +2110,21 @@ func (c *CodeCommit) DeleteCommentContentRequest(input *DeleteCommentContentInpu
 // API operation DeleteCommentContent for usage and error information.
 //
 // Returned Error Types:
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
 //
-//   * CommentDeletedException
-//   This comment has already been deleted. You cannot edit or delete a deleted
-//   comment.
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
+//
+//   - CommentDeletedException
+//     This comment has already been deleted. You cannot edit or delete a deleted
+//     comment.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteCommentContent
 func (c *CodeCommit) DeleteCommentContent(input *DeleteCommentContentInput) (*DeleteCommentContentOutput, error) {
@@ -2164,14 +2164,13 @@ const opDeleteFile = "DeleteFile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFileRequest method.
+//	req, resp := client.DeleteFileRequest(params)
 //
-//    // Example sending a request using the DeleteFileRequest method.
-//    req, resp := client.DeleteFileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteFile
 func (c *CodeCommit) DeleteFileRequest(input *DeleteFileInput) (req *request.Request, output *DeleteFileOutput) {
@@ -2204,88 +2203,89 @@ func (c *CodeCommit) DeleteFileRequest(input *DeleteFileInput) (req *request.Req
 // API operation DeleteFile for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * ParentCommitIdRequiredException
-//   A parent commit ID is required. To view the full commit ID of a branch in
-//   a repository, use GetBranch or a Git command (for example, git pull or git
-//   log).
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidParentCommitIdException
-//   The parent commit ID is not valid. The commit ID cannot be empty, and must
-//   match the head commit ID for the branch of the repository where you want
-//   to add or update a file.
+//   - ParentCommitIdRequiredException
+//     A parent commit ID is required. To view the full commit ID of a branch in
+//     a repository, use GetBranch or a Git command (for example, git pull or git
+//     log).
 //
-//   * ParentCommitDoesNotExistException
-//   The parent commit ID is not valid because it does not exist. The specified
-//   parent commit ID does not exist in the specified branch of the repository.
+//   - InvalidParentCommitIdException
+//     The parent commit ID is not valid. The commit ID cannot be empty, and must
+//     match the head commit ID for the branch of the repository where you want
+//     to add or update a file.
 //
-//   * ParentCommitIdOutdatedException
-//   The file could not be added because the provided parent commit ID is not
-//   the current tip of the specified branch. To view the full commit ID of the
-//   current head of the branch, use GetBranch.
+//   - ParentCommitDoesNotExistException
+//     The parent commit ID is not valid because it does not exist. The specified
+//     parent commit ID does not exist in the specified branch of the repository.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - ParentCommitIdOutdatedException
+//     The file could not be added because the provided parent commit ID is not
+//     the current tip of the specified branch. To view the full commit ID of the
+//     current head of the branch, use GetBranch.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileDoesNotExistException
-//   The specified file does not exist. Verify that you have used the correct
-//   file name, full path, and extension.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - FileDoesNotExistException
+//     The specified file does not exist. Verify that you have used the correct
+//     file name, full path, and extension.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteFile
 func (c *CodeCommit) DeleteFile(input *DeleteFileInput) (*DeleteFileOutput, error) {
@@ -2325,14 +2325,13 @@ const opDeletePullRequestApprovalRule = "DeletePullRequestApprovalRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePullRequestApprovalRuleRequest method.
+//	req, resp := client.DeletePullRequestApprovalRuleRequest(params)
 //
-//    // Example sending a request using the DeletePullRequestApprovalRuleRequest method.
-//    req, resp := client.DeletePullRequestApprovalRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeletePullRequestApprovalRule
 func (c *CodeCommit) DeletePullRequestApprovalRuleRequest(input *DeletePullRequestApprovalRuleInput) (req *request.Request, output *DeletePullRequestApprovalRuleOutput) {
@@ -2368,45 +2367,46 @@ func (c *CodeCommit) DeletePullRequestApprovalRuleRequest(input *DeletePullReque
 // API operation DeletePullRequestApprovalRule for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * ApprovalRuleNameRequiredException
-//   An approval rule name is required, but was not specified.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * InvalidApprovalRuleNameException
-//   The name for the approval rule is not valid.
+//   - ApprovalRuleNameRequiredException
+//     An approval rule name is required, but was not specified.
 //
-//   * CannotDeleteApprovalRuleFromTemplateException
-//   The approval rule cannot be deleted from the pull request because it was
-//   created by an approval rule template and applied to the pull request automatically.
+//   - InvalidApprovalRuleNameException
+//     The name for the approval rule is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CannotDeleteApprovalRuleFromTemplateException
+//     The approval rule cannot be deleted from the pull request because it was
+//     created by an approval rule template and applied to the pull request automatically.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeletePullRequestApprovalRule
 func (c *CodeCommit) DeletePullRequestApprovalRule(input *DeletePullRequestApprovalRuleInput) (*DeletePullRequestApprovalRuleOutput, error) {
@@ -2446,14 +2446,13 @@ const opDeleteRepository = "DeleteRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRepositoryRequest method.
+//	req, resp := client.DeleteRepositoryRequest(params)
 //
-//    // Example sending a request using the DeleteRepositoryRequest method.
-//    req, resp := client.DeleteRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteRepository
 func (c *CodeCommit) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req *request.Request, output *DeleteRepositoryOutput) {
@@ -2489,30 +2488,31 @@ func (c *CodeCommit) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req 
 // API operation DeleteRepository for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DeleteRepository
 func (c *CodeCommit) DeleteRepository(input *DeleteRepositoryInput) (*DeleteRepositoryOutput, error) {
@@ -2552,14 +2552,13 @@ const opDescribeMergeConflicts = "DescribeMergeConflicts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMergeConflictsRequest method.
+//	req, resp := client.DescribeMergeConflictsRequest(params)
 //
-//    // Example sending a request using the DescribeMergeConflictsRequest method.
-//    req, resp := client.DescribeMergeConflictsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DescribeMergeConflicts
 func (c *CodeCommit) DescribeMergeConflictsRequest(input *DescribeMergeConflictsInput) (req *request.Request, output *DescribeMergeConflictsOutput) {
@@ -2599,84 +2598,85 @@ func (c *CodeCommit) DescribeMergeConflictsRequest(input *DescribeMergeConflicts
 // API operation DescribeMergeConflicts for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * MergeOptionRequiredException
-//   A merge option or stategy is required, and none was provided.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidMergeOptionException
-//   The specified merge option is not valid for this operation. Not all merge
-//   strategies are supported for all operations.
+//   - MergeOptionRequiredException
+//     A merge option or stategy is required, and none was provided.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMergeOptionException
+//     The specified merge option is not valid for this operation. Not all merge
+//     strategies are supported for all operations.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileDoesNotExistException
-//   The specified file does not exist. Verify that you have used the correct
-//   file name, full path, and extension.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * InvalidMaxMergeHunksException
-//   The specified value for the number of merge hunks to return is not valid.
+//   - FileDoesNotExistException
+//     The specified file does not exist. Verify that you have used the correct
+//     file name, full path, and extension.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - InvalidMaxMergeHunksException
+//     The specified value for the number of merge hunks to return is not valid.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DescribeMergeConflicts
 func (c *CodeCommit) DescribeMergeConflicts(input *DescribeMergeConflictsInput) (*DescribeMergeConflictsOutput, error) {
@@ -2708,15 +2708,14 @@ func (c *CodeCommit) DescribeMergeConflictsWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeMergeConflicts operation.
-//    pageNum := 0
-//    err := client.DescribeMergeConflictsPages(params,
-//        func(page *codecommit.DescribeMergeConflictsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeMergeConflicts operation.
+//	pageNum := 0
+//	err := client.DescribeMergeConflictsPages(params,
+//	    func(page *codecommit.DescribeMergeConflictsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) DescribeMergeConflictsPages(input *DescribeMergeConflictsInput, fn func(*DescribeMergeConflictsOutput, bool) bool) error {
 	return c.DescribeMergeConflictsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2768,14 +2767,13 @@ const opDescribePullRequestEvents = "DescribePullRequestEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePullRequestEventsRequest method.
+//	req, resp := client.DescribePullRequestEventsRequest(params)
 //
-//    // Example sending a request using the DescribePullRequestEventsRequest method.
-//    req, resp := client.DescribePullRequestEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DescribePullRequestEvents
 func (c *CodeCommit) DescribePullRequestEventsRequest(input *DescribePullRequestEventsInput) (req *request.Request, output *DescribePullRequestEventsOutput) {
@@ -2812,49 +2810,50 @@ func (c *CodeCommit) DescribePullRequestEventsRequest(input *DescribePullRequest
 // API operation DescribePullRequestEvents for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidPullRequestEventTypeException
-//   The pull request event type is not valid.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidActorArnException
-//   The Amazon Resource Name (ARN) is not valid. Make sure that you have provided
-//   the full ARN for the user who initiated the change for the pull request,
-//   and then try again.
+//   - InvalidPullRequestEventTypeException
+//     The pull request event type is not valid.
 //
-//   * ActorDoesNotExistException
-//   The specified Amazon Resource Name (ARN) does not exist in the AWS account.
+//   - InvalidActorArnException
+//     The Amazon Resource Name (ARN) is not valid. Make sure that you have provided
+//     the full ARN for the user who initiated the change for the pull request,
+//     and then try again.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - ActorDoesNotExistException
+//     The specified Amazon Resource Name (ARN) does not exist in the AWS account.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DescribePullRequestEvents
 func (c *CodeCommit) DescribePullRequestEvents(input *DescribePullRequestEventsInput) (*DescribePullRequestEventsOutput, error) {
@@ -2886,15 +2885,14 @@ func (c *CodeCommit) DescribePullRequestEventsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePullRequestEvents operation.
-//    pageNum := 0
-//    err := client.DescribePullRequestEventsPages(params,
-//        func(page *codecommit.DescribePullRequestEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePullRequestEvents operation.
+//	pageNum := 0
+//	err := client.DescribePullRequestEventsPages(params,
+//	    func(page *codecommit.DescribePullRequestEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) DescribePullRequestEventsPages(input *DescribePullRequestEventsInput, fn func(*DescribePullRequestEventsOutput, bool) bool) error {
 	return c.DescribePullRequestEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2946,14 +2944,13 @@ const opDisassociateApprovalRuleTemplateFromRepository = "DisassociateApprovalRu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateApprovalRuleTemplateFromRepositoryRequest method.
+//	req, resp := client.DisassociateApprovalRuleTemplateFromRepositoryRequest(params)
 //
-//    // Example sending a request using the DisassociateApprovalRuleTemplateFromRepositoryRequest method.
-//    req, resp := client.DisassociateApprovalRuleTemplateFromRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DisassociateApprovalRuleTemplateFromRepository
 func (c *CodeCommit) DisassociateApprovalRuleTemplateFromRepositoryRequest(input *DisassociateApprovalRuleTemplateFromRepositoryInput) (req *request.Request, output *DisassociateApprovalRuleTemplateFromRepositoryOutput) {
@@ -2988,46 +2985,47 @@ func (c *CodeCommit) DisassociateApprovalRuleTemplateFromRepositoryRequest(input
 // API operation DisassociateApprovalRuleTemplateFromRepository for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/DisassociateApprovalRuleTemplateFromRepository
 func (c *CodeCommit) DisassociateApprovalRuleTemplateFromRepository(input *DisassociateApprovalRuleTemplateFromRepositoryInput) (*DisassociateApprovalRuleTemplateFromRepositoryOutput, error) {
@@ -3067,14 +3065,13 @@ const opEvaluatePullRequestApprovalRules = "EvaluatePullRequestApprovalRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EvaluatePullRequestApprovalRulesRequest method.
+//	req, resp := client.EvaluatePullRequestApprovalRulesRequest(params)
 //
-//    // Example sending a request using the EvaluatePullRequestApprovalRulesRequest method.
-//    req, resp := client.EvaluatePullRequestApprovalRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/EvaluatePullRequestApprovalRules
 func (c *CodeCommit) EvaluatePullRequestApprovalRulesRequest(input *EvaluatePullRequestApprovalRulesInput) (req *request.Request, output *EvaluatePullRequestApprovalRulesOutput) {
@@ -3106,42 +3103,43 @@ func (c *CodeCommit) EvaluatePullRequestApprovalRulesRequest(input *EvaluatePull
 // API operation EvaluatePullRequestApprovalRules for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidRevisionIdException
-//   The revision ID is not valid. Use GetPullRequest to determine the value.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RevisionIdRequiredException
-//   A revision ID is required, but was not provided.
+//   - InvalidRevisionIdException
+//     The revision ID is not valid. Use GetPullRequest to determine the value.
 //
-//   * RevisionNotCurrentException
-//   The revision ID provided in the request does not match the current revision
-//   ID. Use GetPullRequest to retrieve the current revision ID.
+//   - RevisionIdRequiredException
+//     A revision ID is required, but was not provided.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RevisionNotCurrentException
+//     The revision ID provided in the request does not match the current revision
+//     ID. Use GetPullRequest to retrieve the current revision ID.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/EvaluatePullRequestApprovalRules
 func (c *CodeCommit) EvaluatePullRequestApprovalRules(input *EvaluatePullRequestApprovalRulesInput) (*EvaluatePullRequestApprovalRulesOutput, error) {
@@ -3181,14 +3179,13 @@ const opGetApprovalRuleTemplate = "GetApprovalRuleTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApprovalRuleTemplateRequest method.
+//	req, resp := client.GetApprovalRuleTemplateRequest(params)
 //
-//    // Example sending a request using the GetApprovalRuleTemplateRequest method.
-//    req, resp := client.GetApprovalRuleTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetApprovalRuleTemplate
 func (c *CodeCommit) GetApprovalRuleTemplateRequest(input *GetApprovalRuleTemplateInput) (req *request.Request, output *GetApprovalRuleTemplateOutput) {
@@ -3219,18 +3216,19 @@ func (c *CodeCommit) GetApprovalRuleTemplateRequest(input *GetApprovalRuleTempla
 // API operation GetApprovalRuleTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetApprovalRuleTemplate
 func (c *CodeCommit) GetApprovalRuleTemplate(input *GetApprovalRuleTemplateInput) (*GetApprovalRuleTemplateOutput, error) {
@@ -3270,14 +3268,13 @@ const opGetBlob = "GetBlob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBlobRequest method.
+//	req, resp := client.GetBlobRequest(params)
 //
-//    // Example sending a request using the GetBlobRequest method.
-//    req, resp := client.GetBlobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetBlob
 func (c *CodeCommit) GetBlobRequest(input *GetBlobInput) (req *request.Request, output *GetBlobOutput) {
@@ -3308,47 +3305,48 @@ func (c *CodeCommit) GetBlobRequest(input *GetBlobInput) (req *request.Request, 
 // API operation GetBlob for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * BlobIdRequiredException
-//   A blob ID is required, but was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidBlobIdException
-//   The specified blob is not valid.
+//   - BlobIdRequiredException
+//     A blob ID is required, but was not specified.
 //
-//   * BlobIdDoesNotExistException
-//   The specified blob does not exist.
+//   - InvalidBlobIdException
+//     The specified blob is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - BlobIdDoesNotExistException
+//     The specified blob does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * FileTooLargeException
-//   The specified file exceeds the file size limit for AWS CodeCommit. For more
-//   information about limits in AWS CodeCommit, see AWS CodeCommit User Guide
-//   (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
+//
+//   - FileTooLargeException
+//     The specified file exceeds the file size limit for AWS CodeCommit. For more
+//     information about limits in AWS CodeCommit, see AWS CodeCommit User Guide
+//     (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetBlob
 func (c *CodeCommit) GetBlob(input *GetBlobInput) (*GetBlobOutput, error) {
@@ -3388,14 +3386,13 @@ const opGetBranch = "GetBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBranchRequest method.
+//	req, resp := client.GetBranchRequest(params)
 //
-//    // Example sending a request using the GetBranchRequest method.
-//    req, resp := client.GetBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetBranch
 func (c *CodeCommit) GetBranchRequest(input *GetBranchInput) (req *request.Request, output *GetBranchOutput) {
@@ -3427,42 +3424,43 @@ func (c *CodeCommit) GetBranchRequest(input *GetBranchInput) (req *request.Reque
 // API operation GetBranch for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetBranch
 func (c *CodeCommit) GetBranch(input *GetBranchInput) (*GetBranchOutput, error) {
@@ -3502,14 +3500,13 @@ const opGetComment = "GetComment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCommentRequest method.
+//	req, resp := client.GetCommentRequest(params)
 //
-//    // Example sending a request using the GetCommentRequest method.
-//    req, resp := client.GetCommentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetComment
 func (c *CodeCommit) GetCommentRequest(input *GetCommentInput) (req *request.Request, output *GetCommentOutput) {
@@ -3544,35 +3541,36 @@ func (c *CodeCommit) GetCommentRequest(input *GetCommentInput) (req *request.Req
 // API operation GetComment for usage and error information.
 //
 // Returned Error Types:
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
 //
-//   * CommentDeletedException
-//   This comment has already been deleted. You cannot edit or delete a deleted
-//   comment.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDeletedException
+//     This comment has already been deleted. You cannot edit or delete a deleted
+//     comment.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetComment
 func (c *CodeCommit) GetComment(input *GetCommentInput) (*GetCommentOutput, error) {
@@ -3612,14 +3610,13 @@ const opGetCommentReactions = "GetCommentReactions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCommentReactionsRequest method.
+//	req, resp := client.GetCommentReactionsRequest(params)
 //
-//    // Example sending a request using the GetCommentReactionsRequest method.
-//    req, resp := client.GetCommentReactionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentReactions
 func (c *CodeCommit) GetCommentReactionsRequest(input *GetCommentReactionsInput) (req *request.Request, output *GetCommentReactionsOutput) {
@@ -3657,29 +3654,30 @@ func (c *CodeCommit) GetCommentReactionsRequest(input *GetCommentReactionsInput)
 // API operation GetCommentReactions for usage and error information.
 //
 // Returned Error Types:
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
 //
-//   * InvalidReactionUserArnException
-//   The Amazon Resource Name (ARN) of the user or identity is not valid.
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - InvalidReactionUserArnException
+//     The Amazon Resource Name (ARN) of the user or identity is not valid.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * CommentDeletedException
-//   This comment has already been deleted. You cannot edit or delete a deleted
-//   comment.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
+//
+//   - CommentDeletedException
+//     This comment has already been deleted. You cannot edit or delete a deleted
+//     comment.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentReactions
 func (c *CodeCommit) GetCommentReactions(input *GetCommentReactionsInput) (*GetCommentReactionsOutput, error) {
@@ -3711,15 +3709,14 @@ func (c *CodeCommit) GetCommentReactionsWithContext(ctx aws.Context, input *GetC
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCommentReactions operation.
-//    pageNum := 0
-//    err := client.GetCommentReactionsPages(params,
-//        func(page *codecommit.GetCommentReactionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCommentReactions operation.
+//	pageNum := 0
+//	err := client.GetCommentReactionsPages(params,
+//	    func(page *codecommit.GetCommentReactionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) GetCommentReactionsPages(input *GetCommentReactionsInput, fn func(*GetCommentReactionsOutput, bool) bool) error {
 	return c.GetCommentReactionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3771,14 +3768,13 @@ const opGetCommentsForComparedCommit = "GetCommentsForComparedCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCommentsForComparedCommitRequest method.
+//	req, resp := client.GetCommentsForComparedCommitRequest(params)
 //
-//    // Example sending a request using the GetCommentsForComparedCommitRequest method.
-//    req, resp := client.GetCommentsForComparedCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentsForComparedCommit
 func (c *CodeCommit) GetCommentsForComparedCommitRequest(input *GetCommentsForComparedCommitInput) (req *request.Request, output *GetCommentsForComparedCommitOutput) {
@@ -3819,49 +3815,50 @@ func (c *CodeCommit) GetCommentsForComparedCommitRequest(input *GetCommentsForCo
 // API operation GetCommentsForComparedCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentsForComparedCommit
 func (c *CodeCommit) GetCommentsForComparedCommit(input *GetCommentsForComparedCommitInput) (*GetCommentsForComparedCommitOutput, error) {
@@ -3893,15 +3890,14 @@ func (c *CodeCommit) GetCommentsForComparedCommitWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCommentsForComparedCommit operation.
-//    pageNum := 0
-//    err := client.GetCommentsForComparedCommitPages(params,
-//        func(page *codecommit.GetCommentsForComparedCommitOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCommentsForComparedCommit operation.
+//	pageNum := 0
+//	err := client.GetCommentsForComparedCommitPages(params,
+//	    func(page *codecommit.GetCommentsForComparedCommitOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) GetCommentsForComparedCommitPages(input *GetCommentsForComparedCommitInput, fn func(*GetCommentsForComparedCommitOutput, bool) bool) error {
 	return c.GetCommentsForComparedCommitPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3953,14 +3949,13 @@ const opGetCommentsForPullRequest = "GetCommentsForPullRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCommentsForPullRequestRequest method.
+//	req, resp := client.GetCommentsForPullRequestRequest(params)
 //
-//    // Example sending a request using the GetCommentsForPullRequestRequest method.
-//    req, resp := client.GetCommentsForPullRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentsForPullRequest
 func (c *CodeCommit) GetCommentsForPullRequestRequest(input *GetCommentsForPullRequestInput) (req *request.Request, output *GetCommentsForPullRequestOutput) {
@@ -4001,66 +3996,67 @@ func (c *CodeCommit) GetCommentsForPullRequestRequest(input *GetCommentsForPullR
 // API operation GetCommentsForPullRequest for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
 //
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * RepositoryNotAssociatedWithPullRequestException
-//   The repository does not contain any pull requests with that pull request
-//   ID. Use GetPullRequest to verify the correct repository name for the pull
-//   request ID.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryNotAssociatedWithPullRequestException
+//     The repository does not contain any pull requests with that pull request
+//     ID. Use GetPullRequest to verify the correct repository name for the pull
+//     request ID.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommentsForPullRequest
 func (c *CodeCommit) GetCommentsForPullRequest(input *GetCommentsForPullRequestInput) (*GetCommentsForPullRequestOutput, error) {
@@ -4092,15 +4088,14 @@ func (c *CodeCommit) GetCommentsForPullRequestWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCommentsForPullRequest operation.
-//    pageNum := 0
-//    err := client.GetCommentsForPullRequestPages(params,
-//        func(page *codecommit.GetCommentsForPullRequestOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCommentsForPullRequest operation.
+//	pageNum := 0
+//	err := client.GetCommentsForPullRequestPages(params,
+//	    func(page *codecommit.GetCommentsForPullRequestOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) GetCommentsForPullRequestPages(input *GetCommentsForPullRequestInput, fn func(*GetCommentsForPullRequestOutput, bool) bool) error {
 	return c.GetCommentsForPullRequestPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4152,14 +4147,13 @@ const opGetCommit = "GetCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCommitRequest method.
+//	req, resp := client.GetCommitRequest(params)
 //
-//    // Example sending a request using the GetCommitRequest method.
-//    req, resp := client.GetCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommit
 func (c *CodeCommit) GetCommitRequest(input *GetCommitInput) (req *request.Request, output *GetCommitOutput) {
@@ -4191,42 +4185,43 @@ func (c *CodeCommit) GetCommitRequest(input *GetCommitInput) (req *request.Reque
 // API operation GetCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * CommitIdDoesNotExistException
-//   The specified commit ID does not exist.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CommitIdDoesNotExistException
+//     The specified commit ID does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetCommit
 func (c *CodeCommit) GetCommit(input *GetCommitInput) (*GetCommitOutput, error) {
@@ -4266,14 +4261,13 @@ const opGetDifferences = "GetDifferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDifferencesRequest method.
+//	req, resp := client.GetDifferencesRequest(params)
 //
-//    // Example sending a request using the GetDifferencesRequest method.
-//    req, resp := client.GetDifferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetDifferences
 func (c *CodeCommit) GetDifferencesRequest(input *GetDifferencesInput) (req *request.Request, output *GetDifferencesOutput) {
@@ -4312,58 +4306,59 @@ func (c *CodeCommit) GetDifferencesRequest(input *GetDifferencesInput) (req *req
 // API operation GetDifferences for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * PathDoesNotExistException
-//   The specified path does not exist.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PathDoesNotExistException
+//     The specified path does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetDifferences
 func (c *CodeCommit) GetDifferences(input *GetDifferencesInput) (*GetDifferencesOutput, error) {
@@ -4395,15 +4390,14 @@ func (c *CodeCommit) GetDifferencesWithContext(ctx aws.Context, input *GetDiffer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetDifferences operation.
-//    pageNum := 0
-//    err := client.GetDifferencesPages(params,
-//        func(page *codecommit.GetDifferencesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetDifferences operation.
+//	pageNum := 0
+//	err := client.GetDifferencesPages(params,
+//	    func(page *codecommit.GetDifferencesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) GetDifferencesPages(input *GetDifferencesInput, fn func(*GetDifferencesOutput, bool) bool) error {
 	return c.GetDifferencesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4455,14 +4449,13 @@ const opGetFile = "GetFile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFileRequest method.
+//	req, resp := client.GetFileRequest(params)
 //
-//    // Example sending a request using the GetFileRequest method.
-//    req, resp := client.GetFileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetFile
 func (c *CodeCommit) GetFileRequest(input *GetFileInput) (req *request.Request, output *GetFileOutput) {
@@ -4493,55 +4486,56 @@ func (c *CodeCommit) GetFileRequest(input *GetFileInput) (req *request.Request, 
 // API operation GetFile for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileDoesNotExistException
-//   The specified file does not exist. Verify that you have used the correct
-//   file name, full path, and extension.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - FileDoesNotExistException
+//     The specified file does not exist. Verify that you have used the correct
+//     file name, full path, and extension.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * FileTooLargeException
-//   The specified file exceeds the file size limit for AWS CodeCommit. For more
-//   information about limits in AWS CodeCommit, see AWS CodeCommit User Guide
-//   (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
+//
+//   - FileTooLargeException
+//     The specified file exceeds the file size limit for AWS CodeCommit. For more
+//     information about limits in AWS CodeCommit, see AWS CodeCommit User Guide
+//     (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetFile
 func (c *CodeCommit) GetFile(input *GetFileInput) (*GetFileOutput, error) {
@@ -4581,14 +4575,13 @@ const opGetFolder = "GetFolder"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFolderRequest method.
+//	req, resp := client.GetFolderRequest(params)
 //
-//    // Example sending a request using the GetFolderRequest method.
-//    req, resp := client.GetFolderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetFolder
 func (c *CodeCommit) GetFolderRequest(input *GetFolderInput) (req *request.Request, output *GetFolderOutput) {
@@ -4619,50 +4612,51 @@ func (c *CodeCommit) GetFolderRequest(input *GetFolderInput) (req *request.Reque
 // API operation GetFolder for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FolderDoesNotExistException
-//   The specified folder does not exist. Either the folder name is not correct,
-//   or you did not enter the full path to the folder.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - FolderDoesNotExistException
+//     The specified folder does not exist. Either the folder name is not correct,
+//     or you did not enter the full path to the folder.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetFolder
 func (c *CodeCommit) GetFolder(input *GetFolderInput) (*GetFolderOutput, error) {
@@ -4702,14 +4696,13 @@ const opGetMergeCommit = "GetMergeCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMergeCommitRequest method.
+//	req, resp := client.GetMergeCommitRequest(params)
 //
-//    // Example sending a request using the GetMergeCommitRequest method.
-//    req, resp := client.GetMergeCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeCommit
 func (c *CodeCommit) GetMergeCommitRequest(input *GetMergeCommitInput) (req *request.Request, output *GetMergeCommitOutput) {
@@ -4740,49 +4733,50 @@ func (c *CodeCommit) GetMergeCommitRequest(input *GetMergeCommitInput) (req *req
 // API operation GetMergeCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeCommit
 func (c *CodeCommit) GetMergeCommit(input *GetMergeCommitInput) (*GetMergeCommitOutput, error) {
@@ -4822,14 +4816,13 @@ const opGetMergeConflicts = "GetMergeConflicts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMergeConflictsRequest method.
+//	req, resp := client.GetMergeConflictsRequest(params)
 //
-//    // Example sending a request using the GetMergeConflictsRequest method.
-//    req, resp := client.GetMergeConflictsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeConflicts
 func (c *CodeCommit) GetMergeConflictsRequest(input *GetMergeConflictsInput) (req *request.Request, output *GetMergeConflictsOutput) {
@@ -4867,82 +4860,83 @@ func (c *CodeCommit) GetMergeConflictsRequest(input *GetMergeConflictsInput) (re
 // API operation GetMergeConflicts for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * MergeOptionRequiredException
-//   A merge option or stategy is required, and none was provided.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidMergeOptionException
-//   The specified merge option is not valid for this operation. Not all merge
-//   strategies are supported for all operations.
+//   - MergeOptionRequiredException
+//     A merge option or stategy is required, and none was provided.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMergeOptionException
+//     The specified merge option is not valid for this operation. Not all merge
+//     strategies are supported for all operations.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidMaxConflictFilesException
-//   The specified value for the number of conflict files to return is not valid.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - InvalidMaxConflictFilesException
+//     The specified value for the number of conflict files to return is not valid.
 //
-//   * InvalidDestinationCommitSpecifierException
-//   The destination commit specifier is not valid. You must provide a valid branch
-//   name, tag, or full commit ID.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidSourceCommitSpecifierException
-//   The source commit specifier is not valid. You must provide a valid branch
-//   name, tag, or full commit ID.
+//   - InvalidDestinationCommitSpecifierException
+//     The destination commit specifier is not valid. You must provide a valid branch
+//     name, tag, or full commit ID.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidSourceCommitSpecifierException
+//     The source commit specifier is not valid. You must provide a valid branch
+//     name, tag, or full commit ID.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeConflicts
 func (c *CodeCommit) GetMergeConflicts(input *GetMergeConflictsInput) (*GetMergeConflictsOutput, error) {
@@ -4974,15 +4968,14 @@ func (c *CodeCommit) GetMergeConflictsWithContext(ctx aws.Context, input *GetMer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetMergeConflicts operation.
-//    pageNum := 0
-//    err := client.GetMergeConflictsPages(params,
-//        func(page *codecommit.GetMergeConflictsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetMergeConflicts operation.
+//	pageNum := 0
+//	err := client.GetMergeConflictsPages(params,
+//	    func(page *codecommit.GetMergeConflictsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) GetMergeConflictsPages(input *GetMergeConflictsInput, fn func(*GetMergeConflictsOutput, bool) bool) error {
 	return c.GetMergeConflictsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5034,14 +5027,13 @@ const opGetMergeOptions = "GetMergeOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMergeOptionsRequest method.
+//	req, resp := client.GetMergeOptionsRequest(params)
 //
-//    // Example sending a request using the GetMergeOptionsRequest method.
-//    req, resp := client.GetMergeOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeOptions
 func (c *CodeCommit) GetMergeOptionsRequest(input *GetMergeOptionsInput) (req *request.Request, output *GetMergeOptionsOutput) {
@@ -5074,61 +5066,62 @@ func (c *CodeCommit) GetMergeOptionsRequest(input *GetMergeOptionsInput) (req *r
 // API operation GetMergeOptions for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetMergeOptions
 func (c *CodeCommit) GetMergeOptions(input *GetMergeOptionsInput) (*GetMergeOptionsOutput, error) {
@@ -5168,14 +5161,13 @@ const opGetPullRequest = "GetPullRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPullRequestRequest method.
+//	req, resp := client.GetPullRequestRequest(params)
 //
-//    // Example sending a request using the GetPullRequestRequest method.
-//    req, resp := client.GetPullRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequest
 func (c *CodeCommit) GetPullRequestRequest(input *GetPullRequestInput) (req *request.Request, output *GetPullRequestOutput) {
@@ -5206,32 +5198,33 @@ func (c *CodeCommit) GetPullRequestRequest(input *GetPullRequestInput) (req *req
 // API operation GetPullRequest for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequest
 func (c *CodeCommit) GetPullRequest(input *GetPullRequestInput) (*GetPullRequestOutput, error) {
@@ -5271,14 +5264,13 @@ const opGetPullRequestApprovalStates = "GetPullRequestApprovalStates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPullRequestApprovalStatesRequest method.
+//	req, resp := client.GetPullRequestApprovalStatesRequest(params)
 //
-//    // Example sending a request using the GetPullRequestApprovalStatesRequest method.
-//    req, resp := client.GetPullRequestApprovalStatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequestApprovalStates
 func (c *CodeCommit) GetPullRequestApprovalStatesRequest(input *GetPullRequestApprovalStatesInput) (req *request.Request, output *GetPullRequestApprovalStatesOutput) {
@@ -5311,38 +5303,39 @@ func (c *CodeCommit) GetPullRequestApprovalStatesRequest(input *GetPullRequestAp
 // API operation GetPullRequestApprovalStates for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidRevisionIdException
-//   The revision ID is not valid. Use GetPullRequest to determine the value.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RevisionIdRequiredException
-//   A revision ID is required, but was not provided.
+//   - InvalidRevisionIdException
+//     The revision ID is not valid. Use GetPullRequest to determine the value.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RevisionIdRequiredException
+//     A revision ID is required, but was not provided.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequestApprovalStates
 func (c *CodeCommit) GetPullRequestApprovalStates(input *GetPullRequestApprovalStatesInput) (*GetPullRequestApprovalStatesOutput, error) {
@@ -5382,14 +5375,13 @@ const opGetPullRequestOverrideState = "GetPullRequestOverrideState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPullRequestOverrideStateRequest method.
+//	req, resp := client.GetPullRequestOverrideStateRequest(params)
 //
-//    // Example sending a request using the GetPullRequestOverrideStateRequest method.
-//    req, resp := client.GetPullRequestOverrideStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequestOverrideState
 func (c *CodeCommit) GetPullRequestOverrideStateRequest(input *GetPullRequestOverrideStateInput) (req *request.Request, output *GetPullRequestOverrideStateOutput) {
@@ -5422,38 +5414,39 @@ func (c *CodeCommit) GetPullRequestOverrideStateRequest(input *GetPullRequestOve
 // API operation GetPullRequestOverrideState for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidRevisionIdException
-//   The revision ID is not valid. Use GetPullRequest to determine the value.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RevisionIdRequiredException
-//   A revision ID is required, but was not provided.
+//   - InvalidRevisionIdException
+//     The revision ID is not valid. Use GetPullRequest to determine the value.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RevisionIdRequiredException
+//     A revision ID is required, but was not provided.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetPullRequestOverrideState
 func (c *CodeCommit) GetPullRequestOverrideState(input *GetPullRequestOverrideStateInput) (*GetPullRequestOverrideStateOutput, error) {
@@ -5493,14 +5486,13 @@ const opGetRepository = "GetRepository"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositoryRequest method.
+//	req, resp := client.GetRepositoryRequest(params)
 //
-//    // Example sending a request using the GetRepositoryRequest method.
-//    req, resp := client.GetRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetRepository
 func (c *CodeCommit) GetRepositoryRequest(input *GetRepositoryInput) (req *request.Request, output *GetRepositoryOutput) {
@@ -5537,33 +5529,34 @@ func (c *CodeCommit) GetRepositoryRequest(input *GetRepositoryInput) (req *reque
 // API operation GetRepository for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetRepository
 func (c *CodeCommit) GetRepository(input *GetRepositoryInput) (*GetRepositoryOutput, error) {
@@ -5603,14 +5596,13 @@ const opGetRepositoryTriggers = "GetRepositoryTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRepositoryTriggersRequest method.
+//	req, resp := client.GetRepositoryTriggersRequest(params)
 //
-//    // Example sending a request using the GetRepositoryTriggersRequest method.
-//    req, resp := client.GetRepositoryTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetRepositoryTriggers
 func (c *CodeCommit) GetRepositoryTriggersRequest(input *GetRepositoryTriggersInput) (req *request.Request, output *GetRepositoryTriggersOutput) {
@@ -5641,33 +5633,34 @@ func (c *CodeCommit) GetRepositoryTriggersRequest(input *GetRepositoryTriggersIn
 // API operation GetRepositoryTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/GetRepositoryTriggers
 func (c *CodeCommit) GetRepositoryTriggers(input *GetRepositoryTriggersInput) (*GetRepositoryTriggersOutput, error) {
@@ -5707,14 +5700,13 @@ const opListApprovalRuleTemplates = "ListApprovalRuleTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListApprovalRuleTemplatesRequest method.
+//	req, resp := client.ListApprovalRuleTemplatesRequest(params)
 //
-//    // Example sending a request using the ListApprovalRuleTemplatesRequest method.
-//    req, resp := client.ListApprovalRuleTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListApprovalRuleTemplates
 func (c *CodeCommit) ListApprovalRuleTemplatesRequest(input *ListApprovalRuleTemplatesInput) (req *request.Request, output *ListApprovalRuleTemplatesOutput) {
@@ -5753,11 +5745,12 @@ func (c *CodeCommit) ListApprovalRuleTemplatesRequest(input *ListApprovalRuleTem
 // API operation ListApprovalRuleTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
+//
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListApprovalRuleTemplates
 func (c *CodeCommit) ListApprovalRuleTemplates(input *ListApprovalRuleTemplatesInput) (*ListApprovalRuleTemplatesOutput, error) {
@@ -5789,15 +5782,14 @@ func (c *CodeCommit) ListApprovalRuleTemplatesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApprovalRuleTemplates operation.
-//    pageNum := 0
-//    err := client.ListApprovalRuleTemplatesPages(params,
-//        func(page *codecommit.ListApprovalRuleTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApprovalRuleTemplates operation.
+//	pageNum := 0
+//	err := client.ListApprovalRuleTemplatesPages(params,
+//	    func(page *codecommit.ListApprovalRuleTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListApprovalRuleTemplatesPages(input *ListApprovalRuleTemplatesInput, fn func(*ListApprovalRuleTemplatesOutput, bool) bool) error {
 	return c.ListApprovalRuleTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5849,14 +5841,13 @@ const opListAssociatedApprovalRuleTemplatesForRepository = "ListAssociatedApprov
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssociatedApprovalRuleTemplatesForRepositoryRequest method.
+//	req, resp := client.ListAssociatedApprovalRuleTemplatesForRepositoryRequest(params)
 //
-//    // Example sending a request using the ListAssociatedApprovalRuleTemplatesForRepositoryRequest method.
-//    req, resp := client.ListAssociatedApprovalRuleTemplatesForRepositoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListAssociatedApprovalRuleTemplatesForRepository
 func (c *CodeCommit) ListAssociatedApprovalRuleTemplatesForRepositoryRequest(input *ListAssociatedApprovalRuleTemplatesForRepositoryInput) (req *request.Request, output *ListAssociatedApprovalRuleTemplatesForRepositoryOutput) {
@@ -5893,39 +5884,40 @@ func (c *CodeCommit) ListAssociatedApprovalRuleTemplatesForRepositoryRequest(inp
 // API operation ListAssociatedApprovalRuleTemplatesForRepository for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListAssociatedApprovalRuleTemplatesForRepository
 func (c *CodeCommit) ListAssociatedApprovalRuleTemplatesForRepository(input *ListAssociatedApprovalRuleTemplatesForRepositoryInput) (*ListAssociatedApprovalRuleTemplatesForRepositoryOutput, error) {
@@ -5957,15 +5949,14 @@ func (c *CodeCommit) ListAssociatedApprovalRuleTemplatesForRepositoryWithContext
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssociatedApprovalRuleTemplatesForRepository operation.
-//    pageNum := 0
-//    err := client.ListAssociatedApprovalRuleTemplatesForRepositoryPages(params,
-//        func(page *codecommit.ListAssociatedApprovalRuleTemplatesForRepositoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssociatedApprovalRuleTemplatesForRepository operation.
+//	pageNum := 0
+//	err := client.ListAssociatedApprovalRuleTemplatesForRepositoryPages(params,
+//	    func(page *codecommit.ListAssociatedApprovalRuleTemplatesForRepositoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListAssociatedApprovalRuleTemplatesForRepositoryPages(input *ListAssociatedApprovalRuleTemplatesForRepositoryInput, fn func(*ListAssociatedApprovalRuleTemplatesForRepositoryOutput, bool) bool) error {
 	return c.ListAssociatedApprovalRuleTemplatesForRepositoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6017,14 +6008,13 @@ const opListBranches = "ListBranches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBranchesRequest method.
+//	req, resp := client.ListBranchesRequest(params)
 //
-//    // Example sending a request using the ListBranchesRequest method.
-//    req, resp := client.ListBranchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListBranches
 func (c *CodeCommit) ListBranchesRequest(input *ListBranchesInput) (req *request.Request, output *ListBranchesOutput) {
@@ -6061,36 +6051,37 @@ func (c *CodeCommit) ListBranchesRequest(input *ListBranchesInput) (req *request
 // API operation ListBranches for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
+//
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListBranches
 func (c *CodeCommit) ListBranches(input *ListBranchesInput) (*ListBranchesOutput, error) {
@@ -6122,15 +6113,14 @@ func (c *CodeCommit) ListBranchesWithContext(ctx aws.Context, input *ListBranche
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBranches operation.
-//    pageNum := 0
-//    err := client.ListBranchesPages(params,
-//        func(page *codecommit.ListBranchesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBranches operation.
+//	pageNum := 0
+//	err := client.ListBranchesPages(params,
+//	    func(page *codecommit.ListBranchesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListBranchesPages(input *ListBranchesInput, fn func(*ListBranchesOutput, bool) bool) error {
 	return c.ListBranchesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6182,14 +6172,13 @@ const opListPullRequests = "ListPullRequests"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPullRequestsRequest method.
+//	req, resp := client.ListPullRequestsRequest(params)
 //
-//    // Example sending a request using the ListPullRequestsRequest method.
-//    req, resp := client.ListPullRequestsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListPullRequests
 func (c *CodeCommit) ListPullRequestsRequest(input *ListPullRequestsInput) (req *request.Request, output *ListPullRequestsOutput) {
@@ -6227,50 +6216,51 @@ func (c *CodeCommit) ListPullRequestsRequest(input *ListPullRequestsInput) (req 
 // API operation ListPullRequests for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPullRequestStatusException
-//   The pull request status is not valid. The only valid values are OPEN and
-//   CLOSED.
 //
-//   * InvalidAuthorArnException
-//   The Amazon Resource Name (ARN) is not valid. Make sure that you have provided
-//   the full ARN for the author of the pull request, and then try again.
+//   - InvalidPullRequestStatusException
+//     The pull request status is not valid. The only valid values are OPEN and
+//     CLOSED.
 //
-//   * AuthorDoesNotExistException
-//   The specified Amazon Resource Name (ARN) does not exist in the AWS account.
+//   - InvalidAuthorArnException
+//     The Amazon Resource Name (ARN) is not valid. Make sure that you have provided
+//     the full ARN for the author of the pull request, and then try again.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - AuthorDoesNotExistException
+//     The specified Amazon Resource Name (ARN) does not exist in the AWS account.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListPullRequests
 func (c *CodeCommit) ListPullRequests(input *ListPullRequestsInput) (*ListPullRequestsOutput, error) {
@@ -6302,15 +6292,14 @@ func (c *CodeCommit) ListPullRequestsWithContext(ctx aws.Context, input *ListPul
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPullRequests operation.
-//    pageNum := 0
-//    err := client.ListPullRequestsPages(params,
-//        func(page *codecommit.ListPullRequestsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPullRequests operation.
+//	pageNum := 0
+//	err := client.ListPullRequestsPages(params,
+//	    func(page *codecommit.ListPullRequestsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListPullRequestsPages(input *ListPullRequestsInput, fn func(*ListPullRequestsOutput, bool) bool) error {
 	return c.ListPullRequestsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6362,14 +6351,13 @@ const opListRepositories = "ListRepositories"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoriesRequest method.
+//	req, resp := client.ListRepositoriesRequest(params)
 //
-//    // Example sending a request using the ListRepositoriesRequest method.
-//    req, resp := client.ListRepositoriesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListRepositories
 func (c *CodeCommit) ListRepositoriesRequest(input *ListRepositoriesInput) (req *request.Request, output *ListRepositoriesOutput) {
@@ -6406,14 +6394,15 @@ func (c *CodeCommit) ListRepositoriesRequest(input *ListRepositoriesInput) (req 
 // API operation ListRepositories for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidSortByException
-//   The specified sort by value is not valid.
 //
-//   * InvalidOrderException
-//   The specified sort order is not valid.
+//   - InvalidSortByException
+//     The specified sort by value is not valid.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidOrderException
+//     The specified sort order is not valid.
+//
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListRepositories
 func (c *CodeCommit) ListRepositories(input *ListRepositoriesInput) (*ListRepositoriesOutput, error) {
@@ -6445,15 +6434,14 @@ func (c *CodeCommit) ListRepositoriesWithContext(ctx aws.Context, input *ListRep
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositories operation.
-//    pageNum := 0
-//    err := client.ListRepositoriesPages(params,
-//        func(page *codecommit.ListRepositoriesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositories operation.
+//	pageNum := 0
+//	err := client.ListRepositoriesPages(params,
+//	    func(page *codecommit.ListRepositoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListRepositoriesPages(input *ListRepositoriesInput, fn func(*ListRepositoriesOutput, bool) bool) error {
 	return c.ListRepositoriesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6505,14 +6493,13 @@ const opListRepositoriesForApprovalRuleTemplate = "ListRepositoriesForApprovalRu
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRepositoriesForApprovalRuleTemplateRequest method.
+//	req, resp := client.ListRepositoriesForApprovalRuleTemplateRequest(params)
 //
-//    // Example sending a request using the ListRepositoriesForApprovalRuleTemplateRequest method.
-//    req, resp := client.ListRepositoriesForApprovalRuleTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListRepositoriesForApprovalRuleTemplate
 func (c *CodeCommit) ListRepositoriesForApprovalRuleTemplateRequest(input *ListRepositoriesForApprovalRuleTemplateInput) (req *request.Request, output *ListRepositoriesForApprovalRuleTemplateOutput) {
@@ -6549,39 +6536,40 @@ func (c *CodeCommit) ListRepositoriesForApprovalRuleTemplateRequest(input *ListR
 // API operation ListRepositoriesForApprovalRuleTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * InvalidMaxResultsException
-//   The specified number of maximum results is not valid.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * InvalidContinuationTokenException
-//   The specified continuation token is not valid.
+//   - InvalidMaxResultsException
+//     The specified number of maximum results is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidContinuationTokenException
+//     The specified continuation token is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListRepositoriesForApprovalRuleTemplate
 func (c *CodeCommit) ListRepositoriesForApprovalRuleTemplate(input *ListRepositoriesForApprovalRuleTemplateInput) (*ListRepositoriesForApprovalRuleTemplateOutput, error) {
@@ -6613,15 +6601,14 @@ func (c *CodeCommit) ListRepositoriesForApprovalRuleTemplateWithContext(ctx aws.
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRepositoriesForApprovalRuleTemplate operation.
-//    pageNum := 0
-//    err := client.ListRepositoriesForApprovalRuleTemplatePages(params,
-//        func(page *codecommit.ListRepositoriesForApprovalRuleTemplateOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRepositoriesForApprovalRuleTemplate operation.
+//	pageNum := 0
+//	err := client.ListRepositoriesForApprovalRuleTemplatePages(params,
+//	    func(page *codecommit.ListRepositoriesForApprovalRuleTemplateOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CodeCommit) ListRepositoriesForApprovalRuleTemplatePages(input *ListRepositoriesForApprovalRuleTemplateInput, fn func(*ListRepositoriesForApprovalRuleTemplateOutput, bool) bool) error {
 	return c.ListRepositoriesForApprovalRuleTemplatePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6673,14 +6660,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListTagsForResource
 func (c *CodeCommit) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -6714,26 +6700,27 @@ func (c *CodeCommit) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * ResourceArnRequiredException
-//   A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
-//   For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
-//   and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidResourceArnException
-//   The value for the resource ARN is not valid. For more information about resources
-//   in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//   - ResourceArnRequiredException
+//     A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
+//     For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
+//     and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
+//
+//   - InvalidResourceArnException
+//     The value for the resource ARN is not valid. For more information about resources
+//     in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/ListTagsForResource
 func (c *CodeCommit) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -6773,14 +6760,13 @@ const opMergeBranchesByFastForward = "MergeBranchesByFastForward"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergeBranchesByFastForwardRequest method.
+//	req, resp := client.MergeBranchesByFastForwardRequest(params)
 //
-//    // Example sending a request using the MergeBranchesByFastForwardRequest method.
-//    req, resp := client.MergeBranchesByFastForwardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesByFastForward
 func (c *CodeCommit) MergeBranchesByFastForwardRequest(input *MergeBranchesByFastForwardInput) (req *request.Request, output *MergeBranchesByFastForwardOutput) {
@@ -6811,74 +6797,75 @@ func (c *CodeCommit) MergeBranchesByFastForwardRequest(input *MergeBranchesByFas
 // API operation MergeBranchesByFastForward for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidTargetBranchException
-//   The specified target branch is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - InvalidTargetBranchException
+//     The specified target branch is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesByFastForward
 func (c *CodeCommit) MergeBranchesByFastForward(input *MergeBranchesByFastForwardInput) (*MergeBranchesByFastForwardOutput, error) {
@@ -6918,14 +6905,13 @@ const opMergeBranchesBySquash = "MergeBranchesBySquash"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergeBranchesBySquashRequest method.
+//	req, resp := client.MergeBranchesBySquashRequest(params)
 //
-//    // Example sending a request using the MergeBranchesBySquashRequest method.
-//    req, resp := client.MergeBranchesBySquashRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesBySquash
 func (c *CodeCommit) MergeBranchesBySquashRequest(input *MergeBranchesBySquashInput) (req *request.Request, output *MergeBranchesBySquashOutput) {
@@ -6956,148 +6942,149 @@ func (c *CodeCommit) MergeBranchesBySquashRequest(input *MergeBranchesBySquashIn
 // API operation MergeBranchesBySquash for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidTargetBranchException
-//   The specified target branch is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - InvalidTargetBranchException
+//     The specified target branch is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidConflictResolutionException
-//   The specified conflict resolution list is not valid.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumConflictResolutionEntriesExceededException
-//   The number of allowed conflict resolution entries was exceeded.
+//   - InvalidConflictResolutionException
+//     The specified conflict resolution list is not valid.
 //
-//   * MultipleConflictResolutionEntriesException
-//   More than one conflict resolution entries exists for the conflict. A conflict
-//   can have only one conflict resolution entry.
+//   - MaximumConflictResolutionEntriesExceededException
+//     The number of allowed conflict resolution entries was exceeded.
 //
-//   * ReplacementTypeRequiredException
-//   A replacement type is required.
+//   - MultipleConflictResolutionEntriesException
+//     More than one conflict resolution entries exists for the conflict. A conflict
+//     can have only one conflict resolution entry.
 //
-//   * InvalidReplacementTypeException
-//   Automerge was specified for resolving the conflict, but the specified replacement
-//   type is not valid.
+//   - ReplacementTypeRequiredException
+//     A replacement type is required.
 //
-//   * ReplacementContentRequiredException
-//   USE_NEW_CONTENT was specified, but no replacement content has been provided.
+//   - InvalidReplacementTypeException
+//     Automerge was specified for resolving the conflict, but the specified replacement
+//     type is not valid.
 //
-//   * InvalidReplacementContentException
-//   Automerge was specified for resolving the conflict, but the replacement type
-//   is not valid or content is missing.
+//   - ReplacementContentRequiredException
+//     USE_NEW_CONTENT was specified, but no replacement content has been provided.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - InvalidReplacementContentException
+//     Automerge was specified for resolving the conflict, but the replacement type
+//     is not valid or content is missing.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * FileModeRequiredException
-//   The commit cannot be created because no file mode has been specified. A file
-//   mode is required to update mode permissions for a file.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - FileModeRequiredException
+//     The commit cannot be created because no file mode has been specified. A file
+//     mode is required to update mode permissions for a file.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesBySquash
 func (c *CodeCommit) MergeBranchesBySquash(input *MergeBranchesBySquashInput) (*MergeBranchesBySquashOutput, error) {
@@ -7137,14 +7124,13 @@ const opMergeBranchesByThreeWay = "MergeBranchesByThreeWay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergeBranchesByThreeWayRequest method.
+//	req, resp := client.MergeBranchesByThreeWayRequest(params)
 //
-//    // Example sending a request using the MergeBranchesByThreeWayRequest method.
-//    req, resp := client.MergeBranchesByThreeWayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesByThreeWay
 func (c *CodeCommit) MergeBranchesByThreeWayRequest(input *MergeBranchesByThreeWayInput) (req *request.Request, output *MergeBranchesByThreeWayOutput) {
@@ -7175,148 +7161,149 @@ func (c *CodeCommit) MergeBranchesByThreeWayRequest(input *MergeBranchesByThreeW
 // API operation MergeBranchesByThreeWay for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * CommitRequiredException
-//   A commit was not specified.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidCommitException
-//   The specified commit is not valid.
+//   - CommitRequiredException
+//     A commit was not specified.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - InvalidCommitException
+//     The specified commit is not valid.
 //
-//   * InvalidTargetBranchException
-//   The specified target branch is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - InvalidTargetBranchException
+//     The specified target branch is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidConflictResolutionException
-//   The specified conflict resolution list is not valid.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * MaximumConflictResolutionEntriesExceededException
-//   The number of allowed conflict resolution entries was exceeded.
+//   - InvalidConflictResolutionException
+//     The specified conflict resolution list is not valid.
 //
-//   * MultipleConflictResolutionEntriesException
-//   More than one conflict resolution entries exists for the conflict. A conflict
-//   can have only one conflict resolution entry.
+//   - MaximumConflictResolutionEntriesExceededException
+//     The number of allowed conflict resolution entries was exceeded.
 //
-//   * ReplacementTypeRequiredException
-//   A replacement type is required.
+//   - MultipleConflictResolutionEntriesException
+//     More than one conflict resolution entries exists for the conflict. A conflict
+//     can have only one conflict resolution entry.
 //
-//   * InvalidReplacementTypeException
-//   Automerge was specified for resolving the conflict, but the specified replacement
-//   type is not valid.
+//   - ReplacementTypeRequiredException
+//     A replacement type is required.
 //
-//   * ReplacementContentRequiredException
-//   USE_NEW_CONTENT was specified, but no replacement content has been provided.
+//   - InvalidReplacementTypeException
+//     Automerge was specified for resolving the conflict, but the specified replacement
+//     type is not valid.
 //
-//   * InvalidReplacementContentException
-//   Automerge was specified for resolving the conflict, but the replacement type
-//   is not valid or content is missing.
+//   - ReplacementContentRequiredException
+//     USE_NEW_CONTENT was specified, but no replacement content has been provided.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - InvalidReplacementContentException
+//     Automerge was specified for resolving the conflict, but the replacement type
+//     is not valid or content is missing.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * FileModeRequiredException
-//   The commit cannot be created because no file mode has been specified. A file
-//   mode is required to update mode permissions for a file.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - FileModeRequiredException
+//     The commit cannot be created because no file mode has been specified. A file
+//     mode is required to update mode permissions for a file.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergeBranchesByThreeWay
 func (c *CodeCommit) MergeBranchesByThreeWay(input *MergeBranchesByThreeWayInput) (*MergeBranchesByThreeWayOutput, error) {
@@ -7356,14 +7343,13 @@ const opMergePullRequestByFastForward = "MergePullRequestByFastForward"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergePullRequestByFastForwardRequest method.
+//	req, resp := client.MergePullRequestByFastForwardRequest(params)
 //
-//    // Example sending a request using the MergePullRequestByFastForwardRequest method.
-//    req, resp := client.MergePullRequestByFastForwardRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestByFastForward
 func (c *CodeCommit) MergePullRequestByFastForwardRequest(input *MergePullRequestByFastForwardInput) (req *request.Request, output *MergePullRequestByFastForwardOutput) {
@@ -7397,77 +7383,78 @@ func (c *CodeCommit) MergePullRequestByFastForwardRequest(input *MergePullReques
 // API operation MergePullRequestByFastForward for usage and error information.
 //
 // Returned Error Types:
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * TipOfSourceReferenceIsDifferentException
-//   The tip of the source branch in the destination repository does not match
-//   the tip of the source branch specified in your request. The pull request
-//   might have been updated. Make sure that you have the latest changes.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * ReferenceDoesNotExistException
-//   The specified reference does not exist. You must provide a full commit ID.
+//   - TipOfSourceReferenceIsDifferentException
+//     The tip of the source branch in the destination repository does not match
+//     the tip of the source branch specified in your request. The pull request
+//     might have been updated. Make sure that you have the latest changes.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - ReferenceDoesNotExistException
+//     The specified reference does not exist. You must provide a full commit ID.
 //
-//   * RepositoryNotAssociatedWithPullRequestException
-//   The repository does not contain any pull requests with that pull request
-//   ID. Use GetPullRequest to verify the correct repository name for the pull
-//   request ID.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryNotAssociatedWithPullRequestException
+//     The repository does not contain any pull requests with that pull request
+//     ID. Use GetPullRequest to verify the correct repository name for the pull
+//     request ID.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * PullRequestApprovalRulesNotSatisfiedException
-//   The pull request cannot be merged because one or more approval rules applied
-//   to the pull request have conditions that have not been met.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestApprovalRulesNotSatisfiedException
+//     The pull request cannot be merged because one or more approval rules applied
+//     to the pull request have conditions that have not been met.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestByFastForward
 func (c *CodeCommit) MergePullRequestByFastForward(input *MergePullRequestByFastForwardInput) (*MergePullRequestByFastForwardOutput, error) {
@@ -7507,14 +7494,13 @@ const opMergePullRequestBySquash = "MergePullRequestBySquash"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergePullRequestBySquashRequest method.
+//	req, resp := client.MergePullRequestBySquashRequest(params)
 //
-//    // Example sending a request using the MergePullRequestBySquashRequest method.
-//    req, resp := client.MergePullRequestBySquashRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestBySquash
 func (c *CodeCommit) MergePullRequestBySquashRequest(input *MergePullRequestBySquashInput) (req *request.Request, output *MergePullRequestBySquashOutput) {
@@ -7547,149 +7533,150 @@ func (c *CodeCommit) MergePullRequestBySquashRequest(input *MergePullRequestBySq
 // API operation MergePullRequestBySquash for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
 //
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * TipOfSourceReferenceIsDifferentException
-//   The tip of the source branch in the destination repository does not match
-//   the tip of the source branch specified in your request. The pull request
-//   might have been updated. Make sure that you have the latest changes.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - TipOfSourceReferenceIsDifferentException
+//     The tip of the source branch in the destination repository does not match
+//     the tip of the source branch specified in your request. The pull request
+//     might have been updated. Make sure that you have the latest changes.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidConflictResolutionException
-//   The specified conflict resolution list is not valid.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * ReplacementTypeRequiredException
-//   A replacement type is required.
+//   - InvalidConflictResolutionException
+//     The specified conflict resolution list is not valid.
 //
-//   * InvalidReplacementTypeException
-//   Automerge was specified for resolving the conflict, but the specified replacement
-//   type is not valid.
+//   - ReplacementTypeRequiredException
+//     A replacement type is required.
 //
-//   * MultipleConflictResolutionEntriesException
-//   More than one conflict resolution entries exists for the conflict. A conflict
-//   can have only one conflict resolution entry.
+//   - InvalidReplacementTypeException
+//     Automerge was specified for resolving the conflict, but the specified replacement
+//     type is not valid.
 //
-//   * ReplacementContentRequiredException
-//   USE_NEW_CONTENT was specified, but no replacement content has been provided.
+//   - MultipleConflictResolutionEntriesException
+//     More than one conflict resolution entries exists for the conflict. A conflict
+//     can have only one conflict resolution entry.
 //
-//   * MaximumConflictResolutionEntriesExceededException
-//   The number of allowed conflict resolution entries was exceeded.
+//   - ReplacementContentRequiredException
+//     USE_NEW_CONTENT was specified, but no replacement content has been provided.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - MaximumConflictResolutionEntriesExceededException
+//     The number of allowed conflict resolution entries was exceeded.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * InvalidReplacementContentException
-//   Automerge was specified for resolving the conflict, but the replacement type
-//   is not valid or content is missing.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - InvalidReplacementContentException
+//     Automerge was specified for resolving the conflict, but the replacement type
+//     is not valid or content is missing.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * RepositoryNotAssociatedWithPullRequestException
-//   The repository does not contain any pull requests with that pull request
-//   ID. Use GetPullRequest to verify the correct repository name for the pull
-//   request ID.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * PullRequestApprovalRulesNotSatisfiedException
-//   The pull request cannot be merged because one or more approval rules applied
-//   to the pull request have conditions that have not been met.
+//   - RepositoryNotAssociatedWithPullRequestException
+//     The repository does not contain any pull requests with that pull request
+//     ID. Use GetPullRequest to verify the correct repository name for the pull
+//     request ID.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestApprovalRulesNotSatisfiedException
+//     The pull request cannot be merged because one or more approval rules applied
+//     to the pull request have conditions that have not been met.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestBySquash
 func (c *CodeCommit) MergePullRequestBySquash(input *MergePullRequestBySquashInput) (*MergePullRequestBySquashOutput, error) {
@@ -7729,14 +7716,13 @@ const opMergePullRequestByThreeWay = "MergePullRequestByThreeWay"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergePullRequestByThreeWayRequest method.
+//	req, resp := client.MergePullRequestByThreeWayRequest(params)
 //
-//    // Example sending a request using the MergePullRequestByThreeWayRequest method.
-//    req, resp := client.MergePullRequestByThreeWayRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestByThreeWay
 func (c *CodeCommit) MergePullRequestByThreeWayRequest(input *MergePullRequestByThreeWayInput) (req *request.Request, output *MergePullRequestByThreeWayOutput) {
@@ -7770,149 +7756,150 @@ func (c *CodeCommit) MergePullRequestByThreeWayRequest(input *MergePullRequestBy
 // API operation MergePullRequestByThreeWay for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
 //
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * ManualMergeRequiredException
-//   The pull request cannot be merged automatically into the destination branch.
-//   You must manually merge the branches and resolve any conflicts.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * TipOfSourceReferenceIsDifferentException
-//   The tip of the source branch in the destination repository does not match
-//   the tip of the source branch specified in your request. The pull request
-//   might have been updated. Make sure that you have the latest changes.
+//   - ManualMergeRequiredException
+//     The pull request cannot be merged automatically into the destination branch.
+//     You must manually merge the branches and resolve any conflicts.
 //
-//   * TipsDivergenceExceededException
-//   The divergence between the tips of the provided commit specifiers is too
-//   great to determine whether there might be any merge conflicts. Locally compare
-//   the specifiers using git diff or a diff tool.
+//   - TipOfSourceReferenceIsDifferentException
+//     The tip of the source branch in the destination repository does not match
+//     the tip of the source branch specified in your request. The pull request
+//     might have been updated. Make sure that you have the latest changes.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - TipsDivergenceExceededException
+//     The divergence between the tips of the provided commit specifiers is too
+//     great to determine whether there might be any merge conflicts. Locally compare
+//     the specifiers using git diff or a diff tool.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * InvalidConflictDetailLevelException
-//   The specified conflict detail level is not valid.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * InvalidConflictResolutionStrategyException
-//   The specified conflict resolution strategy is not valid.
+//   - InvalidConflictDetailLevelException
+//     The specified conflict detail level is not valid.
 //
-//   * InvalidConflictResolutionException
-//   The specified conflict resolution list is not valid.
+//   - InvalidConflictResolutionStrategyException
+//     The specified conflict resolution strategy is not valid.
 //
-//   * ReplacementTypeRequiredException
-//   A replacement type is required.
+//   - InvalidConflictResolutionException
+//     The specified conflict resolution list is not valid.
 //
-//   * InvalidReplacementTypeException
-//   Automerge was specified for resolving the conflict, but the specified replacement
-//   type is not valid.
+//   - ReplacementTypeRequiredException
+//     A replacement type is required.
 //
-//   * MultipleConflictResolutionEntriesException
-//   More than one conflict resolution entries exists for the conflict. A conflict
-//   can have only one conflict resolution entry.
+//   - InvalidReplacementTypeException
+//     Automerge was specified for resolving the conflict, but the specified replacement
+//     type is not valid.
 //
-//   * ReplacementContentRequiredException
-//   USE_NEW_CONTENT was specified, but no replacement content has been provided.
+//   - MultipleConflictResolutionEntriesException
+//     More than one conflict resolution entries exists for the conflict. A conflict
+//     can have only one conflict resolution entry.
 //
-//   * MaximumConflictResolutionEntriesExceededException
-//   The number of allowed conflict resolution entries was exceeded.
+//   - ReplacementContentRequiredException
+//     USE_NEW_CONTENT was specified, but no replacement content has been provided.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - MaximumConflictResolutionEntriesExceededException
+//     The number of allowed conflict resolution entries was exceeded.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * InvalidReplacementContentException
-//   Automerge was specified for resolving the conflict, but the replacement type
-//   is not valid or content is missing.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - InvalidReplacementContentException
+//     Automerge was specified for resolving the conflict, but the replacement type
+//     is not valid or content is missing.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * MaximumFileContentToLoadExceededException
-//   The number of files to load exceeds the allowed limit.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * MaximumItemsToCompareExceededException
-//   The number of items to compare between the source or destination branches
-//   and the merge base has exceeded the maximum allowed.
+//   - MaximumFileContentToLoadExceededException
+//     The number of files to load exceeds the allowed limit.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - MaximumItemsToCompareExceededException
+//     The number of items to compare between the source or destination branches
+//     and the merge base has exceeded the maximum allowed.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * RepositoryNotAssociatedWithPullRequestException
-//   The repository does not contain any pull requests with that pull request
-//   ID. Use GetPullRequest to verify the correct repository name for the pull
-//   request ID.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * ConcurrentReferenceUpdateException
-//   The merge cannot be completed because the target branch has been modified.
-//   Another user might have modified the target branch while the merge was in
-//   progress. Wait a few minutes, and then try again.
+//   - RepositoryNotAssociatedWithPullRequestException
+//     The repository does not contain any pull requests with that pull request
+//     ID. Use GetPullRequest to verify the correct repository name for the pull
+//     request ID.
 //
-//   * PullRequestApprovalRulesNotSatisfiedException
-//   The pull request cannot be merged because one or more approval rules applied
-//   to the pull request have conditions that have not been met.
+//   - ConcurrentReferenceUpdateException
+//     The merge cannot be completed because the target branch has been modified.
+//     Another user might have modified the target branch while the merge was in
+//     progress. Wait a few minutes, and then try again.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestApprovalRulesNotSatisfiedException
+//     The pull request cannot be merged because one or more approval rules applied
+//     to the pull request have conditions that have not been met.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/MergePullRequestByThreeWay
 func (c *CodeCommit) MergePullRequestByThreeWay(input *MergePullRequestByThreeWayInput) (*MergePullRequestByThreeWayOutput, error) {
@@ -7952,14 +7939,13 @@ const opOverridePullRequestApprovalRules = "OverridePullRequestApprovalRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the OverridePullRequestApprovalRulesRequest method.
+//	req, resp := client.OverridePullRequestApprovalRulesRequest(params)
 //
-//    // Example sending a request using the OverridePullRequestApprovalRulesRequest method.
-//    req, resp := client.OverridePullRequestApprovalRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/OverridePullRequestApprovalRules
 func (c *CodeCommit) OverridePullRequestApprovalRulesRequest(input *OverridePullRequestApprovalRulesInput) (req *request.Request, output *OverridePullRequestApprovalRulesOutput) {
@@ -7992,55 +7978,56 @@ func (c *CodeCommit) OverridePullRequestApprovalRulesRequest(input *OverridePull
 // API operation OverridePullRequestApprovalRules for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidRevisionIdException
-//   The revision ID is not valid. Use GetPullRequest to determine the value.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RevisionIdRequiredException
-//   A revision ID is required, but was not provided.
+//   - InvalidRevisionIdException
+//     The revision ID is not valid. Use GetPullRequest to determine the value.
 //
-//   * InvalidOverrideStatusException
-//   The override status is not valid. Valid statuses are OVERRIDE and REVOKE.
+//   - RevisionIdRequiredException
+//     A revision ID is required, but was not provided.
 //
-//   * OverrideStatusRequiredException
-//   An override status is required, but no value was provided. Valid values include
-//   OVERRIDE and REVOKE.
+//   - InvalidOverrideStatusException
+//     The override status is not valid. Valid statuses are OVERRIDE and REVOKE.
 //
-//   * OverrideAlreadySetException
-//   The pull request has already had its approval rules set to override.
+//   - OverrideStatusRequiredException
+//     An override status is required, but no value was provided. Valid values include
+//     OVERRIDE and REVOKE.
 //
-//   * RevisionNotCurrentException
-//   The revision ID provided in the request does not match the current revision
-//   ID. Use GetPullRequest to retrieve the current revision ID.
+//   - OverrideAlreadySetException
+//     The pull request has already had its approval rules set to override.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - RevisionNotCurrentException
+//     The revision ID provided in the request does not match the current revision
+//     ID. Use GetPullRequest to retrieve the current revision ID.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/OverridePullRequestApprovalRules
 func (c *CodeCommit) OverridePullRequestApprovalRules(input *OverridePullRequestApprovalRulesInput) (*OverridePullRequestApprovalRulesOutput, error) {
@@ -8080,14 +8067,13 @@ const opPostCommentForComparedCommit = "PostCommentForComparedCommit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostCommentForComparedCommitRequest method.
+//	req, resp := client.PostCommentForComparedCommitRequest(params)
 //
-//    // Example sending a request using the PostCommentForComparedCommitRequest method.
-//    req, resp := client.PostCommentForComparedCommitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentForComparedCommit
 func (c *CodeCommit) PostCommentForComparedCommitRequest(input *PostCommentForComparedCommitInput) (req *request.Request, output *PostCommentForComparedCommitOutput) {
@@ -8118,92 +8104,93 @@ func (c *CodeCommit) PostCommentForComparedCommitRequest(input *PostCommentForCo
 // API operation PostCommentForComparedCommit for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * ClientRequestTokenRequiredException
-//   A client request token is required. A client request token is an unique,
-//   client-generated idempotency token that, when provided in a request, ensures
-//   the request cannot be repeated with a changed parameter. If a request is
-//   received with the same parameters and a token is included, the request returns
-//   information about the initial request that used that token.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidClientRequestTokenException
-//   The client request token is not valid.
+//   - ClientRequestTokenRequiredException
+//     A client request token is required. A client request token is an unique,
+//     client-generated idempotency token that, when provided in a request, ensures
+//     the request cannot be repeated with a changed parameter. If a request is
+//     received with the same parameters and a token is included, the request returns
+//     information about the initial request that used that token.
 //
-//   * IdempotencyParameterMismatchException
-//   The client request token is not valid. Either the token is not in a valid
-//   format, or the token has been used in a previous request and cannot be reused.
+//   - InvalidClientRequestTokenException
+//     The client request token is not valid.
 //
-//   * CommentContentRequiredException
-//   The comment is empty. You must provide some content for a comment. The content
-//   cannot be null.
+//   - IdempotencyParameterMismatchException
+//     The client request token is not valid. Either the token is not in a valid
+//     format, or the token has been used in a previous request and cannot be reused.
 //
-//   * CommentContentSizeLimitExceededException
-//   The comment is too large. Comments are limited to 1,000 characters.
+//   - CommentContentRequiredException
+//     The comment is empty. You must provide some content for a comment. The content
+//     cannot be null.
 //
-//   * InvalidFileLocationException
-//   The location of the file is not valid. Make sure that you include the file
-//   name and extension.
+//   - CommentContentSizeLimitExceededException
+//     The comment is too large. Comments are limited to 1,000 characters.
 //
-//   * InvalidRelativeFileVersionEnumException
-//   Either the enum is not in a valid format, or the specified file version enum
-//   is not valid in respect to the current file version.
+//   - InvalidFileLocationException
+//     The location of the file is not valid. Make sure that you include the file
+//     name and extension.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - InvalidRelativeFileVersionEnumException
+//     Either the enum is not in a valid format, or the specified file version enum
+//     is not valid in respect to the current file version.
 //
-//   * InvalidFilePositionException
-//   The position is not valid. Make sure that the line number exists in the version
-//   of the file you want to comment on.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//   - InvalidFilePositionException
+//     The position is not valid. Make sure that the line number exists in the version
+//     of the file you want to comment on.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * BeforeCommitIdAndAfterCommitIdAreSameException
-//   The before commit ID and the after commit ID are the same, which is not valid.
-//   The before commit ID and the after commit ID must be different commit IDs.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - BeforeCommitIdAndAfterCommitIdAreSameException
+//     The before commit ID and the after commit ID are the same, which is not valid.
+//     The before commit ID and the after commit ID must be different commit IDs.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * PathDoesNotExistException
-//   The specified path does not exist.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - PathDoesNotExistException
+//     The specified path does not exist.
+//
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentForComparedCommit
 func (c *CodeCommit) PostCommentForComparedCommit(input *PostCommentForComparedCommitInput) (*PostCommentForComparedCommitOutput, error) {
@@ -8243,14 +8230,13 @@ const opPostCommentForPullRequest = "PostCommentForPullRequest"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostCommentForPullRequestRequest method.
+//	req, resp := client.PostCommentForPullRequestRequest(params)
 //
-//    // Example sending a request using the PostCommentForPullRequestRequest method.
-//    req, resp := client.PostCommentForPullRequestRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentForPullRequest
 func (c *CodeCommit) PostCommentForPullRequestRequest(input *PostCommentForPullRequestInput) (req *request.Request, output *PostCommentForPullRequestOutput) {
@@ -8281,109 +8267,110 @@ func (c *CodeCommit) PostCommentForPullRequestRequest(input *PostCommentForPullR
 // API operation PostCommentForPullRequest for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * RepositoryNotAssociatedWithPullRequestException
-//   The repository does not contain any pull requests with that pull request
-//   ID. Use GetPullRequest to verify the correct repository name for the pull
-//   request ID.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryNotAssociatedWithPullRequestException
+//     The repository does not contain any pull requests with that pull request
+//     ID. Use GetPullRequest to verify the correct repository name for the pull
+//     request ID.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * ClientRequestTokenRequiredException
-//   A client request token is required. A client request token is an unique,
-//   client-generated idempotency token that, when provided in a request, ensures
-//   the request cannot be repeated with a changed parameter. If a request is
-//   received with the same parameters and a token is included, the request returns
-//   information about the initial request that used that token.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidClientRequestTokenException
-//   The client request token is not valid.
+//   - ClientRequestTokenRequiredException
+//     A client request token is required. A client request token is an unique,
+//     client-generated idempotency token that, when provided in a request, ensures
+//     the request cannot be repeated with a changed parameter. If a request is
+//     received with the same parameters and a token is included, the request returns
+//     information about the initial request that used that token.
 //
-//   * IdempotencyParameterMismatchException
-//   The client request token is not valid. Either the token is not in a valid
-//   format, or the token has been used in a previous request and cannot be reused.
+//   - InvalidClientRequestTokenException
+//     The client request token is not valid.
 //
-//   * CommentContentRequiredException
-//   The comment is empty. You must provide some content for a comment. The content
-//   cannot be null.
+//   - IdempotencyParameterMismatchException
+//     The client request token is not valid. Either the token is not in a valid
+//     format, or the token has been used in a previous request and cannot be reused.
 //
-//   * CommentContentSizeLimitExceededException
-//   The comment is too large. Comments are limited to 1,000 characters.
+//   - CommentContentRequiredException
+//     The comment is empty. You must provide some content for a comment. The content
+//     cannot be null.
 //
-//   * InvalidFileLocationException
-//   The location of the file is not valid. Make sure that you include the file
-//   name and extension.
+//   - CommentContentSizeLimitExceededException
+//     The comment is too large. Comments are limited to 1,000 characters.
 //
-//   * InvalidRelativeFileVersionEnumException
-//   Either the enum is not in a valid format, or the specified file version enum
-//   is not valid in respect to the current file version.
+//   - InvalidFileLocationException
+//     The location of the file is not valid. Make sure that you include the file
+//     name and extension.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - InvalidRelativeFileVersionEnumException
+//     Either the enum is not in a valid format, or the specified file version enum
+//     is not valid in respect to the current file version.
 //
-//   * InvalidFilePositionException
-//   The position is not valid. Make sure that the line number exists in the version
-//   of the file you want to comment on.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * CommitIdRequiredException
-//   A commit ID was not specified.
+//   - InvalidFilePositionException
+//     The position is not valid. Make sure that the line number exists in the version
+//     of the file you want to comment on.
 //
-//   * InvalidCommitIdException
-//   The specified commit ID is not valid.
+//   - CommitIdRequiredException
+//     A commit ID was not specified.
 //
-//   * BeforeCommitIdAndAfterCommitIdAreSameException
-//   The before commit ID and the after commit ID are the same, which is not valid.
-//   The before commit ID and the after commit ID must be different commit IDs.
+//   - InvalidCommitIdException
+//     The specified commit ID is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - BeforeCommitIdAndAfterCommitIdAreSameException
+//     The before commit ID and the after commit ID are the same, which is not valid.
+//     The before commit ID and the after commit ID must be different commit IDs.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * CommitDoesNotExistException
-//   The specified commit does not exist or no commit was specified, and the specified
-//   repository has no default branch.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - CommitDoesNotExistException
+//     The specified commit does not exist or no commit was specified, and the specified
+//     repository has no default branch.
 //
-//   * PathDoesNotExistException
-//   The specified path does not exist.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - PathDoesNotExistException
+//     The specified path does not exist.
+//
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentForPullRequest
 func (c *CodeCommit) PostCommentForPullRequest(input *PostCommentForPullRequestInput) (*PostCommentForPullRequestOutput, error) {
@@ -8423,14 +8410,13 @@ const opPostCommentReply = "PostCommentReply"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PostCommentReplyRequest method.
+//	req, resp := client.PostCommentReplyRequest(params)
 //
-//    // Example sending a request using the PostCommentReplyRequest method.
-//    req, resp := client.PostCommentReplyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentReply
 func (c *CodeCommit) PostCommentReplyRequest(input *PostCommentReplyInput) (req *request.Request, output *PostCommentReplyOutput) {
@@ -8462,37 +8448,38 @@ func (c *CodeCommit) PostCommentReplyRequest(input *PostCommentReplyInput) (req 
 // API operation PostCommentReply for usage and error information.
 //
 // Returned Error Types:
-//   * ClientRequestTokenRequiredException
-//   A client request token is required. A client request token is an unique,
-//   client-generated idempotency token that, when provided in a request, ensures
-//   the request cannot be repeated with a changed parameter. If a request is
-//   received with the same parameters and a token is included, the request returns
-//   information about the initial request that used that token.
 //
-//   * InvalidClientRequestTokenException
-//   The client request token is not valid.
+//   - ClientRequestTokenRequiredException
+//     A client request token is required. A client request token is an unique,
+//     client-generated idempotency token that, when provided in a request, ensures
+//     the request cannot be repeated with a changed parameter. If a request is
+//     received with the same parameters and a token is included, the request returns
+//     information about the initial request that used that token.
 //
-//   * IdempotencyParameterMismatchException
-//   The client request token is not valid. Either the token is not in a valid
-//   format, or the token has been used in a previous request and cannot be reused.
+//   - InvalidClientRequestTokenException
+//     The client request token is not valid.
 //
-//   * CommentContentRequiredException
-//   The comment is empty. You must provide some content for a comment. The content
-//   cannot be null.
+//   - IdempotencyParameterMismatchException
+//     The client request token is not valid. Either the token is not in a valid
+//     format, or the token has been used in a previous request and cannot be reused.
 //
-//   * CommentContentSizeLimitExceededException
-//   The comment is too large. Comments are limited to 1,000 characters.
+//   - CommentContentRequiredException
+//     The comment is empty. You must provide some content for a comment. The content
+//     cannot be null.
 //
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
+//   - CommentContentSizeLimitExceededException
+//     The comment is too large. Comments are limited to 1,000 characters.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
+//
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PostCommentReply
 func (c *CodeCommit) PostCommentReply(input *PostCommentReplyInput) (*PostCommentReplyOutput, error) {
@@ -8532,14 +8519,13 @@ const opPutCommentReaction = "PutCommentReaction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutCommentReactionRequest method.
+//	req, resp := client.PutCommentReactionRequest(params)
 //
-//    // Example sending a request using the PutCommentReactionRequest method.
-//    req, resp := client.PutCommentReactionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutCommentReaction
 func (c *CodeCommit) PutCommentReactionRequest(input *PutCommentReactionInput) (req *request.Request, output *PutCommentReactionOutput) {
@@ -8573,31 +8559,32 @@ func (c *CodeCommit) PutCommentReactionRequest(input *PutCommentReactionInput) (
 // API operation PutCommentReaction for usage and error information.
 //
 // Returned Error Types:
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
 //
-//   * InvalidReactionValueException
-//   The value of the reaction is not valid. For more information, see the AWS
-//   CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html).
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
 //
-//   * ReactionValueRequiredException
-//   A reaction value is required.
+//   - InvalidReactionValueException
+//     The value of the reaction is not valid. For more information, see the AWS
+//     CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html).
 //
-//   * ReactionLimitExceededException
-//   The number of reactions has been exceeded. Reactions are limited to one reaction
-//   per user for each individual comment ID.
+//   - ReactionValueRequiredException
+//     A reaction value is required.
 //
-//   * CommentDeletedException
-//   This comment has already been deleted. You cannot edit or delete a deleted
-//   comment.
+//   - ReactionLimitExceededException
+//     The number of reactions has been exceeded. Reactions are limited to one reaction
+//     per user for each individual comment ID.
+//
+//   - CommentDeletedException
+//     This comment has already been deleted. You cannot edit or delete a deleted
+//     comment.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutCommentReaction
 func (c *CodeCommit) PutCommentReaction(input *PutCommentReactionInput) (*PutCommentReactionOutput, error) {
@@ -8637,14 +8624,13 @@ const opPutFile = "PutFile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutFileRequest method.
+//	req, resp := client.PutFileRequest(params)
 //
-//    // Example sending a request using the PutFileRequest method.
-//    req, resp := client.PutFileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutFile
 func (c *CodeCommit) PutFileRequest(input *PutFileInput) (req *request.Request, output *PutFileOutput) {
@@ -8676,128 +8662,129 @@ func (c *CodeCommit) PutFileRequest(input *PutFileInput) (req *request.Request, 
 // API operation PutFile for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * ParentCommitIdRequiredException
-//   A parent commit ID is required. To view the full commit ID of a branch in
-//   a repository, use GetBranch or a Git command (for example, git pull or git
-//   log).
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidParentCommitIdException
-//   The parent commit ID is not valid. The commit ID cannot be empty, and must
-//   match the head commit ID for the branch of the repository where you want
-//   to add or update a file.
+//   - ParentCommitIdRequiredException
+//     A parent commit ID is required. To view the full commit ID of a branch in
+//     a repository, use GetBranch or a Git command (for example, git pull or git
+//     log).
 //
-//   * ParentCommitDoesNotExistException
-//   The parent commit ID is not valid because it does not exist. The specified
-//   parent commit ID does not exist in the specified branch of the repository.
+//   - InvalidParentCommitIdException
+//     The parent commit ID is not valid. The commit ID cannot be empty, and must
+//     match the head commit ID for the branch of the repository where you want
+//     to add or update a file.
 //
-//   * ParentCommitIdOutdatedException
-//   The file could not be added because the provided parent commit ID is not
-//   the current tip of the specified branch. To view the full commit ID of the
-//   current head of the branch, use GetBranch.
+//   - ParentCommitDoesNotExistException
+//     The parent commit ID is not valid because it does not exist. The specified
+//     parent commit ID does not exist in the specified branch of the repository.
 //
-//   * FileContentRequiredException
-//   The file cannot be added because it is empty. Empty files cannot be added
-//   to the repository with this API.
+//   - ParentCommitIdOutdatedException
+//     The file could not be added because the provided parent commit ID is not
+//     the current tip of the specified branch. To view the full commit ID of the
+//     current head of the branch, use GetBranch.
 //
-//   * FileContentSizeLimitExceededException
-//   The file cannot be added because it is too large. The maximum file size is
-//   6 MB, and the combined file content change size is 7 MB. Consider making
-//   these changes using a Git client.
+//   - FileContentRequiredException
+//     The file cannot be added because it is empty. Empty files cannot be added
+//     to the repository with this API.
 //
-//   * FolderContentSizeLimitExceededException
-//   The commit cannot be created because at least one of the overall changes
-//   in the commit results in a folder whose contents exceed the limit of 6 MB.
-//   Either reduce the number and size of your changes, or split the changes across
-//   multiple folders.
+//   - FileContentSizeLimitExceededException
+//     The file cannot be added because it is too large. The maximum file size is
+//     6 MB, and the combined file content change size is 7 MB. Consider making
+//     these changes using a Git client.
 //
-//   * PathRequiredException
-//   The folderPath for a location cannot be null.
+//   - FolderContentSizeLimitExceededException
+//     The commit cannot be created because at least one of the overall changes
+//     in the commit results in a folder whose contents exceed the limit of 6 MB.
+//     Either reduce the number and size of your changes, or split the changes across
+//     multiple folders.
 //
-//   * InvalidPathException
-//   The specified path is not valid.
+//   - PathRequiredException
+//     The folderPath for a location cannot be null.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//   - InvalidPathException
+//     The specified path is not valid.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * BranchNameIsTagNameException
-//   The specified branch name is not valid because it is a tag name. Enter the
-//   name of a branch in the repository. For a list of valid branch names, use
-//   ListBranches.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * InvalidFileModeException
-//   The specified file mode permission is not valid. For a list of valid file
-//   mode permissions, see PutFile.
+//   - BranchNameIsTagNameException
+//     The specified branch name is not valid because it is a tag name. Enter the
+//     name of a branch in the repository. For a list of valid branch names, use
+//     ListBranches.
 //
-//   * NameLengthExceededException
-//   The user name is not valid because it has exceeded the character limit for
-//   author names.
+//   - InvalidFileModeException
+//     The specified file mode permission is not valid. For a list of valid file
+//     mode permissions, see PutFile.
 //
-//   * InvalidEmailException
-//   The specified email address either contains one or more characters that are
-//   not allowed, or it exceeds the maximum number of characters allowed for an
-//   email address.
+//   - NameLengthExceededException
+//     The user name is not valid because it has exceeded the character limit for
+//     author names.
 //
-//   * CommitMessageLengthExceededException
-//   The commit message is too long. Provide a shorter string.
+//   - InvalidEmailException
+//     The specified email address either contains one or more characters that are
+//     not allowed, or it exceeds the maximum number of characters allowed for an
+//     email address.
 //
-//   * InvalidDeletionParameterException
-//   The specified deletion parameter is not valid.
+//   - CommitMessageLengthExceededException
+//     The commit message is too long. Provide a shorter string.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidDeletionParameterException
+//     The specified deletion parameter is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
 //
-//   * SameFileContentException
-//   The file was not added or updated because the content of the file is exactly
-//   the same as the content of that file in the repository and branch that you
-//   specified.
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
-//   * FileNameConflictsWithDirectoryNameException
-//   A file cannot be added to the repository because the specified file name
-//   has the same name as a directory in this repository. Either provide another
-//   name for the file, or add the file in a directory that does not match the
-//   file name.
+//   - SameFileContentException
+//     The file was not added or updated because the content of the file is exactly
+//     the same as the content of that file in the repository and branch that you
+//     specified.
 //
-//   * DirectoryNameConflictsWithFileNameException
-//   A file cannot be added to the repository because the specified path name
-//   has the same name as a file that already exists in this repository. Either
-//   provide a different name for the file, or specify a different path for the
-//   file.
+//   - FileNameConflictsWithDirectoryNameException
+//     A file cannot be added to the repository because the specified file name
+//     has the same name as a directory in this repository. Either provide another
+//     name for the file, or add the file in a directory that does not match the
+//     file name.
 //
-//   * FilePathConflictsWithSubmodulePathException
-//   The commit cannot be created because a specified file path points to a submodule.
-//   Verify that the destination files have valid file paths that do not point
-//   to a submodule.
+//   - DirectoryNameConflictsWithFileNameException
+//     A file cannot be added to the repository because the specified path name
+//     has the same name as a file that already exists in this repository. Either
+//     provide a different name for the file, or specify a different path for the
+//     file.
+//
+//   - FilePathConflictsWithSubmodulePathException
+//     The commit cannot be created because a specified file path points to a submodule.
+//     Verify that the destination files have valid file paths that do not point
+//     to a submodule.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutFile
 func (c *CodeCommit) PutFile(input *PutFileInput) (*PutFileOutput, error) {
@@ -8837,14 +8824,13 @@ const opPutRepositoryTriggers = "PutRepositoryTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRepositoryTriggersRequest method.
+//	req, resp := client.PutRepositoryTriggersRequest(params)
 //
-//    // Example sending a request using the PutRepositoryTriggersRequest method.
-//    req, resp := client.PutRepositoryTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutRepositoryTriggers
 func (c *CodeCommit) PutRepositoryTriggersRequest(input *PutRepositoryTriggersInput) (req *request.Request, output *PutRepositoryTriggersOutput) {
@@ -8875,79 +8861,80 @@ func (c *CodeCommit) PutRepositoryTriggersRequest(input *PutRepositoryTriggersIn
 // API operation PutRepositoryTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryTriggersListRequiredException
-//   The list of triggers for the repository is required, but was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * MaximumRepositoryTriggersExceededException
-//   The number of triggers allowed for the repository was exceeded.
+//   - RepositoryTriggersListRequiredException
+//     The list of triggers for the repository is required, but was not specified.
 //
-//   * InvalidRepositoryTriggerNameException
-//   The name of the trigger is not valid.
+//   - MaximumRepositoryTriggersExceededException
+//     The number of triggers allowed for the repository was exceeded.
 //
-//   * InvalidRepositoryTriggerDestinationArnException
-//   The Amazon Resource Name (ARN) for the trigger is not valid for the specified
-//   destination. The most common reason for this error is that the ARN does not
-//   meet the requirements for the service type.
+//   - InvalidRepositoryTriggerNameException
+//     The name of the trigger is not valid.
 //
-//   * InvalidRepositoryTriggerRegionException
-//   The AWS Region for the trigger target does not match the AWS Region for the
-//   repository. Triggers must be created in the same Region as the target for
-//   the trigger.
+//   - InvalidRepositoryTriggerDestinationArnException
+//     The Amazon Resource Name (ARN) for the trigger is not valid for the specified
+//     destination. The most common reason for this error is that the ARN does not
+//     meet the requirements for the service type.
 //
-//   * InvalidRepositoryTriggerCustomDataException
-//   The custom data provided for the trigger is not valid.
+//   - InvalidRepositoryTriggerRegionException
+//     The AWS Region for the trigger target does not match the AWS Region for the
+//     repository. Triggers must be created in the same Region as the target for
+//     the trigger.
 //
-//   * MaximumBranchesExceededException
-//   The number of branches for the trigger was exceeded.
+//   - InvalidRepositoryTriggerCustomDataException
+//     The custom data provided for the trigger is not valid.
 //
-//   * InvalidRepositoryTriggerBranchNameException
-//   One or more branch names specified for the trigger is not valid.
+//   - MaximumBranchesExceededException
+//     The number of branches for the trigger was exceeded.
 //
-//   * InvalidRepositoryTriggerEventsException
-//   One or more events specified for the trigger is not valid. Check to make
-//   sure that all events specified match the requirements for allowed events.
+//   - InvalidRepositoryTriggerBranchNameException
+//     One or more branch names specified for the trigger is not valid.
 //
-//   * RepositoryTriggerNameRequiredException
-//   A name for the trigger is required, but was not specified.
+//   - InvalidRepositoryTriggerEventsException
+//     One or more events specified for the trigger is not valid. Check to make
+//     sure that all events specified match the requirements for allowed events.
 //
-//   * RepositoryTriggerDestinationArnRequiredException
-//   A destination ARN for the target service for the trigger is required, but
-//   was not specified.
+//   - RepositoryTriggerNameRequiredException
+//     A name for the trigger is required, but was not specified.
 //
-//   * RepositoryTriggerBranchNameListRequiredException
-//   At least one branch name is required, but was not specified in the trigger
-//   configuration.
+//   - RepositoryTriggerDestinationArnRequiredException
+//     A destination ARN for the target service for the trigger is required, but
+//     was not specified.
 //
-//   * RepositoryTriggerEventsListRequiredException
-//   At least one event for the trigger is required, but was not specified.
+//   - RepositoryTriggerBranchNameListRequiredException
+//     At least one branch name is required, but was not specified in the trigger
+//     configuration.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryTriggerEventsListRequiredException
+//     At least one event for the trigger is required, but was not specified.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/PutRepositoryTriggers
 func (c *CodeCommit) PutRepositoryTriggers(input *PutRepositoryTriggersInput) (*PutRepositoryTriggersOutput, error) {
@@ -8987,14 +8974,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/TagResource
 func (c *CodeCommit) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -9028,41 +9014,42 @@ func (c *CodeCommit) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * ResourceArnRequiredException
-//   A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
-//   For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
-//   and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidResourceArnException
-//   The value for the resource ARN is not valid. For more information about resources
-//   in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//   - ResourceArnRequiredException
+//     A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
+//     For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
+//     and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
 //
-//   * TagsMapRequiredException
-//   A map of tags is required.
+//   - InvalidResourceArnException
+//     The value for the resource ARN is not valid. For more information about resources
+//     in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
 //
-//   * InvalidTagsMapException
-//   The map of tags is not valid.
+//   - TagsMapRequiredException
+//     A map of tags is required.
 //
-//   * TooManyTagsException
-//   The maximum number of tags for an AWS CodeCommit resource has been exceeded.
+//   - InvalidTagsMapException
+//     The map of tags is not valid.
 //
-//   * InvalidSystemTagUsageException
-//   The specified tag is not valid. Key names cannot be prefixed with aws:.
+//   - TooManyTagsException
+//     The maximum number of tags for an AWS CodeCommit resource has been exceeded.
 //
-//   * TagPolicyException
-//   The tag policy is not valid.
+//   - InvalidSystemTagUsageException
+//     The specified tag is not valid. Key names cannot be prefixed with aws:.
+//
+//   - TagPolicyException
+//     The tag policy is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/TagResource
 func (c *CodeCommit) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -9102,14 +9089,13 @@ const opTestRepositoryTriggers = "TestRepositoryTriggers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestRepositoryTriggersRequest method.
+//	req, resp := client.TestRepositoryTriggersRequest(params)
 //
-//    // Example sending a request using the TestRepositoryTriggersRequest method.
-//    req, resp := client.TestRepositoryTriggersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/TestRepositoryTriggers
 func (c *CodeCommit) TestRepositoryTriggersRequest(input *TestRepositoryTriggersInput) (req *request.Request, output *TestRepositoryTriggersOutput) {
@@ -9143,79 +9129,80 @@ func (c *CodeCommit) TestRepositoryTriggersRequest(input *TestRepositoryTriggers
 // API operation TestRepositoryTriggers for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * RepositoryTriggersListRequiredException
-//   The list of triggers for the repository is required, but was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * MaximumRepositoryTriggersExceededException
-//   The number of triggers allowed for the repository was exceeded.
+//   - RepositoryTriggersListRequiredException
+//     The list of triggers for the repository is required, but was not specified.
 //
-//   * InvalidRepositoryTriggerNameException
-//   The name of the trigger is not valid.
+//   - MaximumRepositoryTriggersExceededException
+//     The number of triggers allowed for the repository was exceeded.
 //
-//   * InvalidRepositoryTriggerDestinationArnException
-//   The Amazon Resource Name (ARN) for the trigger is not valid for the specified
-//   destination. The most common reason for this error is that the ARN does not
-//   meet the requirements for the service type.
+//   - InvalidRepositoryTriggerNameException
+//     The name of the trigger is not valid.
 //
-//   * InvalidRepositoryTriggerRegionException
-//   The AWS Region for the trigger target does not match the AWS Region for the
-//   repository. Triggers must be created in the same Region as the target for
-//   the trigger.
+//   - InvalidRepositoryTriggerDestinationArnException
+//     The Amazon Resource Name (ARN) for the trigger is not valid for the specified
+//     destination. The most common reason for this error is that the ARN does not
+//     meet the requirements for the service type.
 //
-//   * InvalidRepositoryTriggerCustomDataException
-//   The custom data provided for the trigger is not valid.
+//   - InvalidRepositoryTriggerRegionException
+//     The AWS Region for the trigger target does not match the AWS Region for the
+//     repository. Triggers must be created in the same Region as the target for
+//     the trigger.
 //
-//   * MaximumBranchesExceededException
-//   The number of branches for the trigger was exceeded.
+//   - InvalidRepositoryTriggerCustomDataException
+//     The custom data provided for the trigger is not valid.
 //
-//   * InvalidRepositoryTriggerBranchNameException
-//   One or more branch names specified for the trigger is not valid.
+//   - MaximumBranchesExceededException
+//     The number of branches for the trigger was exceeded.
 //
-//   * InvalidRepositoryTriggerEventsException
-//   One or more events specified for the trigger is not valid. Check to make
-//   sure that all events specified match the requirements for allowed events.
+//   - InvalidRepositoryTriggerBranchNameException
+//     One or more branch names specified for the trigger is not valid.
 //
-//   * RepositoryTriggerNameRequiredException
-//   A name for the trigger is required, but was not specified.
+//   - InvalidRepositoryTriggerEventsException
+//     One or more events specified for the trigger is not valid. Check to make
+//     sure that all events specified match the requirements for allowed events.
 //
-//   * RepositoryTriggerDestinationArnRequiredException
-//   A destination ARN for the target service for the trigger is required, but
-//   was not specified.
+//   - RepositoryTriggerNameRequiredException
+//     A name for the trigger is required, but was not specified.
 //
-//   * RepositoryTriggerBranchNameListRequiredException
-//   At least one branch name is required, but was not specified in the trigger
-//   configuration.
+//   - RepositoryTriggerDestinationArnRequiredException
+//     A destination ARN for the target service for the trigger is required, but
+//     was not specified.
 //
-//   * RepositoryTriggerEventsListRequiredException
-//   At least one event for the trigger is required, but was not specified.
+//   - RepositoryTriggerBranchNameListRequiredException
+//     At least one branch name is required, but was not specified in the trigger
+//     configuration.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - RepositoryTriggerEventsListRequiredException
+//     At least one event for the trigger is required, but was not specified.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/TestRepositoryTriggers
 func (c *CodeCommit) TestRepositoryTriggers(input *TestRepositoryTriggersInput) (*TestRepositoryTriggersOutput, error) {
@@ -9255,14 +9242,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UntagResource
 func (c *CodeCommit) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -9296,41 +9282,42 @@ func (c *CodeCommit) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * ResourceArnRequiredException
-//   A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
-//   For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
-//   and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidResourceArnException
-//   The value for the resource ARN is not valid. For more information about resources
-//   in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
-//   in the AWS CodeCommit User Guide.
+//   - ResourceArnRequiredException
+//     A valid Amazon Resource Name (ARN) for an AWS CodeCommit resource is required.
+//     For a list of valid resources in AWS CodeCommit, see CodeCommit Resources
+//     and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
 //
-//   * TagKeysListRequiredException
-//   A list of tag keys is required. The list cannot be empty or null.
+//   - InvalidResourceArnException
+//     The value for the resource ARN is not valid. For more information about resources
+//     in AWS CodeCommit, see CodeCommit Resources and Operations (https://docs.aws.amazon.com/codecommit/latest/userguide/auth-and-access-control-iam-access-control-identity-based.html#arn-formats)
+//     in the AWS CodeCommit User Guide.
 //
-//   * InvalidTagKeysListException
-//   The list of tags is not valid.
+//   - TagKeysListRequiredException
+//     A list of tag keys is required. The list cannot be empty or null.
 //
-//   * TooManyTagsException
-//   The maximum number of tags for an AWS CodeCommit resource has been exceeded.
+//   - InvalidTagKeysListException
+//     The list of tags is not valid.
 //
-//   * InvalidSystemTagUsageException
-//   The specified tag is not valid. Key names cannot be prefixed with aws:.
+//   - TooManyTagsException
+//     The maximum number of tags for an AWS CodeCommit resource has been exceeded.
 //
-//   * TagPolicyException
-//   The tag policy is not valid.
+//   - InvalidSystemTagUsageException
+//     The specified tag is not valid. Key names cannot be prefixed with aws:.
+//
+//   - TagPolicyException
+//     The tag policy is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UntagResource
 func (c *CodeCommit) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -9370,14 +9357,13 @@ const opUpdateApprovalRuleTemplateContent = "UpdateApprovalRuleTemplateContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApprovalRuleTemplateContentRequest method.
+//	req, resp := client.UpdateApprovalRuleTemplateContentRequest(params)
 //
-//    // Example sending a request using the UpdateApprovalRuleTemplateContentRequest method.
-//    req, resp := client.UpdateApprovalRuleTemplateContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateContent
 func (c *CodeCommit) UpdateApprovalRuleTemplateContentRequest(input *UpdateApprovalRuleTemplateContentInput) (req *request.Request, output *UpdateApprovalRuleTemplateContentOutput) {
@@ -9410,28 +9396,29 @@ func (c *CodeCommit) UpdateApprovalRuleTemplateContentRequest(input *UpdateAppro
 // API operation UpdateApprovalRuleTemplateContent for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateContentException
-//   The content of the approval rule template is not valid.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
 //
-//   * InvalidRuleContentSha256Exception
-//   The SHA-256 hash signature for the rule content is not valid.
+//   - InvalidApprovalRuleTemplateContentException
+//     The content of the approval rule template is not valid.
 //
-//   * ApprovalRuleTemplateContentRequiredException
-//   The content for the approval rule template is empty. You must provide some
-//   content for an approval rule template. The content cannot be null.
+//   - InvalidRuleContentSha256Exception
+//     The SHA-256 hash signature for the rule content is not valid.
+//
+//   - ApprovalRuleTemplateContentRequiredException
+//     The content for the approval rule template is empty. You must provide some
+//     content for an approval rule template. The content cannot be null.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateContent
 func (c *CodeCommit) UpdateApprovalRuleTemplateContent(input *UpdateApprovalRuleTemplateContentInput) (*UpdateApprovalRuleTemplateContentOutput, error) {
@@ -9471,14 +9458,13 @@ const opUpdateApprovalRuleTemplateDescription = "UpdateApprovalRuleTemplateDescr
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApprovalRuleTemplateDescriptionRequest method.
+//	req, resp := client.UpdateApprovalRuleTemplateDescriptionRequest(params)
 //
-//    // Example sending a request using the UpdateApprovalRuleTemplateDescriptionRequest method.
-//    req, resp := client.UpdateApprovalRuleTemplateDescriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateDescription
 func (c *CodeCommit) UpdateApprovalRuleTemplateDescriptionRequest(input *UpdateApprovalRuleTemplateDescriptionInput) (req *request.Request, output *UpdateApprovalRuleTemplateDescriptionOutput) {
@@ -9509,23 +9495,24 @@ func (c *CodeCommit) UpdateApprovalRuleTemplateDescriptionRequest(input *UpdateA
 // API operation UpdateApprovalRuleTemplateDescription for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * InvalidApprovalRuleTemplateDescriptionException
-//   The description for the approval rule template is not valid because it exceeds
-//   the maximum characters allowed for a description. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
+//
+//   - InvalidApprovalRuleTemplateDescriptionException
+//     The description for the approval rule template is not valid because it exceeds
+//     the maximum characters allowed for a description. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateDescription
 func (c *CodeCommit) UpdateApprovalRuleTemplateDescription(input *UpdateApprovalRuleTemplateDescriptionInput) (*UpdateApprovalRuleTemplateDescriptionOutput, error) {
@@ -9565,14 +9552,13 @@ const opUpdateApprovalRuleTemplateName = "UpdateApprovalRuleTemplateName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApprovalRuleTemplateNameRequest method.
+//	req, resp := client.UpdateApprovalRuleTemplateNameRequest(params)
 //
-//    // Example sending a request using the UpdateApprovalRuleTemplateNameRequest method.
-//    req, resp := client.UpdateApprovalRuleTemplateNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateName
 func (c *CodeCommit) UpdateApprovalRuleTemplateNameRequest(input *UpdateApprovalRuleTemplateNameInput) (req *request.Request, output *UpdateApprovalRuleTemplateNameOutput) {
@@ -9603,23 +9589,24 @@ func (c *CodeCommit) UpdateApprovalRuleTemplateNameRequest(input *UpdateApproval
 // API operation UpdateApprovalRuleTemplateName for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidApprovalRuleTemplateNameException
-//   The name of the approval rule template is not valid. Template names must
-//   be between 1 and 100 valid characters in length. For more information about
-//   limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateNameRequiredException
-//   An approval rule template name is required, but was not specified.
+//   - InvalidApprovalRuleTemplateNameException
+//     The name of the approval rule template is not valid. Template names must
+//     be between 1 and 100 valid characters in length. For more information about
+//     limits in AWS CodeCommit, see AWS CodeCommit User Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/limits.html).
 //
-//   * ApprovalRuleTemplateDoesNotExistException
-//   The specified approval rule template does not exist. Verify that the name
-//   is correct and that you are signed in to the AWS Region where the template
-//   was created, and then try again.
+//   - ApprovalRuleTemplateNameRequiredException
+//     An approval rule template name is required, but was not specified.
 //
-//   * ApprovalRuleTemplateNameAlreadyExistsException
-//   You cannot create an approval rule template with that name because a template
-//   with that name already exists in this AWS Region for your AWS account. Approval
-//   rule template names must be unique.
+//   - ApprovalRuleTemplateDoesNotExistException
+//     The specified approval rule template does not exist. Verify that the name
+//     is correct and that you are signed in to the AWS Region where the template
+//     was created, and then try again.
+//
+//   - ApprovalRuleTemplateNameAlreadyExistsException
+//     You cannot create an approval rule template with that name because a template
+//     with that name already exists in this AWS Region for your AWS account. Approval
+//     rule template names must be unique.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateApprovalRuleTemplateName
 func (c *CodeCommit) UpdateApprovalRuleTemplateName(input *UpdateApprovalRuleTemplateNameInput) (*UpdateApprovalRuleTemplateNameOutput, error) {
@@ -9659,14 +9646,13 @@ const opUpdateComment = "UpdateComment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCommentRequest method.
+//	req, resp := client.UpdateCommentRequest(params)
 //
-//    // Example sending a request using the UpdateCommentRequest method.
-//    req, resp := client.UpdateCommentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateComment
 func (c *CodeCommit) UpdateCommentRequest(input *UpdateCommentInput) (req *request.Request, output *UpdateCommentOutput) {
@@ -9697,31 +9683,32 @@ func (c *CodeCommit) UpdateCommentRequest(input *UpdateCommentInput) (req *reque
 // API operation UpdateComment for usage and error information.
 //
 // Returned Error Types:
-//   * CommentContentRequiredException
-//   The comment is empty. You must provide some content for a comment. The content
-//   cannot be null.
 //
-//   * CommentContentSizeLimitExceededException
-//   The comment is too large. Comments are limited to 1,000 characters.
+//   - CommentContentRequiredException
+//     The comment is empty. You must provide some content for a comment. The content
+//     cannot be null.
 //
-//   * CommentDoesNotExistException
-//   No comment exists with the provided ID. Verify that you have used the correct
-//   ID, and then try again.
+//   - CommentContentSizeLimitExceededException
+//     The comment is too large. Comments are limited to 1,000 characters.
 //
-//   * CommentIdRequiredException
-//   The comment ID is missing or null. A comment ID is required.
+//   - CommentDoesNotExistException
+//     No comment exists with the provided ID. Verify that you have used the correct
+//     ID, and then try again.
 //
-//   * InvalidCommentIdException
-//   The comment ID is not in a valid format. Make sure that you have provided
-//   the full comment ID.
+//   - CommentIdRequiredException
+//     The comment ID is missing or null. A comment ID is required.
 //
-//   * CommentNotCreatedByCallerException
-//   You cannot modify or delete this comment. Only comment authors can modify
-//   or delete their comments.
+//   - InvalidCommentIdException
+//     The comment ID is not in a valid format. Make sure that you have provided
+//     the full comment ID.
 //
-//   * CommentDeletedException
-//   This comment has already been deleted. You cannot edit or delete a deleted
-//   comment.
+//   - CommentNotCreatedByCallerException
+//     You cannot modify or delete this comment. Only comment authors can modify
+//     or delete their comments.
+//
+//   - CommentDeletedException
+//     This comment has already been deleted. You cannot edit or delete a deleted
+//     comment.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateComment
 func (c *CodeCommit) UpdateComment(input *UpdateCommentInput) (*UpdateCommentOutput, error) {
@@ -9761,14 +9748,13 @@ const opUpdateDefaultBranch = "UpdateDefaultBranch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDefaultBranchRequest method.
+//	req, resp := client.UpdateDefaultBranchRequest(params)
 //
-//    // Example sending a request using the UpdateDefaultBranchRequest method.
-//    req, resp := client.UpdateDefaultBranchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateDefaultBranch
 func (c *CodeCommit) UpdateDefaultBranchRequest(input *UpdateDefaultBranchInput) (req *request.Request, output *UpdateDefaultBranchOutput) {
@@ -9804,42 +9790,43 @@ func (c *CodeCommit) UpdateDefaultBranchRequest(input *UpdateDefaultBranchInput)
 // API operation UpdateDefaultBranch for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * BranchNameRequiredException
-//   A branch name is required, but was not specified.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * InvalidBranchNameException
-//   The specified reference name is not valid.
+//   - BranchNameRequiredException
+//     A branch name is required, but was not specified.
 //
-//   * BranchDoesNotExistException
-//   The specified branch does not exist.
+//   - InvalidBranchNameException
+//     The specified reference name is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - BranchDoesNotExistException
+//     The specified branch does not exist.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateDefaultBranch
 func (c *CodeCommit) UpdateDefaultBranch(input *UpdateDefaultBranchInput) (*UpdateDefaultBranchOutput, error) {
@@ -9879,14 +9866,13 @@ const opUpdatePullRequestApprovalRuleContent = "UpdatePullRequestApprovalRuleCon
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePullRequestApprovalRuleContentRequest method.
+//	req, resp := client.UpdatePullRequestApprovalRuleContentRequest(params)
 //
-//    // Example sending a request using the UpdatePullRequestApprovalRuleContentRequest method.
-//    req, resp := client.UpdatePullRequestApprovalRuleContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestApprovalRuleContent
 func (c *CodeCommit) UpdatePullRequestApprovalRuleContentRequest(input *UpdatePullRequestApprovalRuleContentInput) (req *request.Request, output *UpdatePullRequestApprovalRuleContentOutput) {
@@ -9919,58 +9905,59 @@ func (c *CodeCommit) UpdatePullRequestApprovalRuleContentRequest(input *UpdatePu
 // API operation UpdatePullRequestApprovalRuleContent for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * ApprovalRuleNameRequiredException
-//   An approval rule name is required, but was not specified.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * InvalidApprovalRuleNameException
-//   The name for the approval rule is not valid.
+//   - ApprovalRuleNameRequiredException
+//     An approval rule name is required, but was not specified.
 //
-//   * ApprovalRuleDoesNotExistException
-//   The specified approval rule does not exist.
+//   - InvalidApprovalRuleNameException
+//     The name for the approval rule is not valid.
 //
-//   * InvalidRuleContentSha256Exception
-//   The SHA-256 hash signature for the rule content is not valid.
+//   - ApprovalRuleDoesNotExistException
+//     The specified approval rule does not exist.
 //
-//   * ApprovalRuleContentRequiredException
-//   The content for the approval rule is empty. You must provide some content
-//   for an approval rule. The content cannot be null.
+//   - InvalidRuleContentSha256Exception
+//     The SHA-256 hash signature for the rule content is not valid.
 //
-//   * InvalidApprovalRuleContentException
-//   The content for the approval rule is not valid.
+//   - ApprovalRuleContentRequiredException
+//     The content for the approval rule is empty. You must provide some content
+//     for an approval rule. The content cannot be null.
 //
-//   * CannotModifyApprovalRuleFromTemplateException
-//   The approval rule cannot be modified for the pull request because it was
-//   created by an approval rule template and applied to the pull request automatically.
+//   - InvalidApprovalRuleContentException
+//     The content for the approval rule is not valid.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - CannotModifyApprovalRuleFromTemplateException
+//     The approval rule cannot be modified for the pull request because it was
+//     created by an approval rule template and applied to the pull request automatically.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestApprovalRuleContent
 func (c *CodeCommit) UpdatePullRequestApprovalRuleContent(input *UpdatePullRequestApprovalRuleContentInput) (*UpdatePullRequestApprovalRuleContentOutput, error) {
@@ -10010,14 +9997,13 @@ const opUpdatePullRequestApprovalState = "UpdatePullRequestApprovalState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePullRequestApprovalStateRequest method.
+//	req, resp := client.UpdatePullRequestApprovalStateRequest(params)
 //
-//    // Example sending a request using the UpdatePullRequestApprovalStateRequest method.
-//    req, resp := client.UpdatePullRequestApprovalStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestApprovalState
 func (c *CodeCommit) UpdatePullRequestApprovalStateRequest(input *UpdatePullRequestApprovalStateInput) (req *request.Request, output *UpdatePullRequestApprovalStateOutput) {
@@ -10050,61 +10036,62 @@ func (c *CodeCommit) UpdatePullRequestApprovalStateRequest(input *UpdatePullRequ
 // API operation UpdatePullRequestApprovalState for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidRevisionIdException
-//   The revision ID is not valid. Use GetPullRequest to determine the value.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * RevisionIdRequiredException
-//   A revision ID is required, but was not provided.
+//   - InvalidRevisionIdException
+//     The revision ID is not valid. Use GetPullRequest to determine the value.
 //
-//   * InvalidApprovalStateException
-//   The state for the approval is not valid. Valid values include APPROVE and
-//   REVOKE.
+//   - RevisionIdRequiredException
+//     A revision ID is required, but was not provided.
 //
-//   * ApprovalStateRequiredException
-//   An approval state is required, but was not specified.
+//   - InvalidApprovalStateException
+//     The state for the approval is not valid. Valid values include APPROVE and
+//     REVOKE.
 //
-//   * PullRequestCannotBeApprovedByAuthorException
-//   The approval cannot be applied because the user approving the pull request
-//   matches the user who created the pull request. You cannot approve a pull
-//   request that you created.
+//   - ApprovalStateRequiredException
+//     An approval state is required, but was not specified.
 //
-//   * RevisionNotCurrentException
-//   The revision ID provided in the request does not match the current revision
-//   ID. Use GetPullRequest to retrieve the current revision ID.
+//   - PullRequestCannotBeApprovedByAuthorException
+//     The approval cannot be applied because the user approving the pull request
+//     matches the user who created the pull request. You cannot approve a pull
+//     request that you created.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - RevisionNotCurrentException
+//     The revision ID provided in the request does not match the current revision
+//     ID. Use GetPullRequest to retrieve the current revision ID.
 //
-//   * MaximumNumberOfApprovalsExceededException
-//   The number of approvals required for the approval rule exceeds the maximum
-//   number allowed.
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - MaximumNumberOfApprovalsExceededException
+//     The number of approvals required for the approval rule exceeds the maximum
+//     number allowed.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestApprovalState
 func (c *CodeCommit) UpdatePullRequestApprovalState(input *UpdatePullRequestApprovalStateInput) (*UpdatePullRequestApprovalStateOutput, error) {
@@ -10144,14 +10131,13 @@ const opUpdatePullRequestDescription = "UpdatePullRequestDescription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePullRequestDescriptionRequest method.
+//	req, resp := client.UpdatePullRequestDescriptionRequest(params)
 //
-//    // Example sending a request using the UpdatePullRequestDescriptionRequest method.
-//    req, resp := client.UpdatePullRequestDescriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestDescription
 func (c *CodeCommit) UpdatePullRequestDescriptionRequest(input *UpdatePullRequestDescriptionInput) (req *request.Request, output *UpdatePullRequestDescriptionOutput) {
@@ -10182,24 +10168,25 @@ func (c *CodeCommit) UpdatePullRequestDescriptionRequest(input *UpdatePullReques
 // API operation UpdatePullRequestDescription for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidDescriptionException
-//   The pull request description is not valid. Descriptions cannot be more than
-//   1,000 characters.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - InvalidDescriptionException
+//     The pull request description is not valid. Descriptions cannot be more than
+//     1,000 characters.
+//
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestDescription
 func (c *CodeCommit) UpdatePullRequestDescription(input *UpdatePullRequestDescriptionInput) (*UpdatePullRequestDescriptionOutput, error) {
@@ -10239,14 +10226,13 @@ const opUpdatePullRequestStatus = "UpdatePullRequestStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePullRequestStatusRequest method.
+//	req, resp := client.UpdatePullRequestStatusRequest(params)
 //
-//    // Example sending a request using the UpdatePullRequestStatusRequest method.
-//    req, resp := client.UpdatePullRequestStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestStatus
 func (c *CodeCommit) UpdatePullRequestStatusRequest(input *UpdatePullRequestStatusInput) (req *request.Request, output *UpdatePullRequestStatusOutput) {
@@ -10277,43 +10263,44 @@ func (c *CodeCommit) UpdatePullRequestStatusRequest(input *UpdatePullRequestStat
 // API operation UpdatePullRequestStatus for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * InvalidPullRequestStatusUpdateException
-//   The pull request status update is not valid. The only valid update is from
-//   OPEN to CLOSED.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidPullRequestStatusException
-//   The pull request status is not valid. The only valid values are OPEN and
-//   CLOSED.
+//   - InvalidPullRequestStatusUpdateException
+//     The pull request status update is not valid. The only valid update is from
+//     OPEN to CLOSED.
 //
-//   * PullRequestStatusRequiredException
-//   A pull request status is required, but none was provided.
+//   - InvalidPullRequestStatusException
+//     The pull request status is not valid. The only valid values are OPEN and
+//     CLOSED.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - PullRequestStatusRequiredException
+//     A pull request status is required, but none was provided.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestStatus
 func (c *CodeCommit) UpdatePullRequestStatus(input *UpdatePullRequestStatusInput) (*UpdatePullRequestStatusOutput, error) {
@@ -10353,14 +10340,13 @@ const opUpdatePullRequestTitle = "UpdatePullRequestTitle"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePullRequestTitleRequest method.
+//	req, resp := client.UpdatePullRequestTitleRequest(params)
 //
-//    // Example sending a request using the UpdatePullRequestTitleRequest method.
-//    req, resp := client.UpdatePullRequestTitleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestTitle
 func (c *CodeCommit) UpdatePullRequestTitleRequest(input *UpdatePullRequestTitleInput) (req *request.Request, output *UpdatePullRequestTitleOutput) {
@@ -10391,27 +10377,28 @@ func (c *CodeCommit) UpdatePullRequestTitleRequest(input *UpdatePullRequestTitle
 // API operation UpdatePullRequestTitle for usage and error information.
 //
 // Returned Error Types:
-//   * PullRequestDoesNotExistException
-//   The pull request ID could not be found. Make sure that you have specified
-//   the correct repository name and pull request ID, and then try again.
 //
-//   * InvalidPullRequestIdException
-//   The pull request ID is not valid. Make sure that you have provided the full
-//   ID and that the pull request is in the specified repository, and then try
-//   again.
+//   - PullRequestDoesNotExistException
+//     The pull request ID could not be found. Make sure that you have specified
+//     the correct repository name and pull request ID, and then try again.
 //
-//   * PullRequestIdRequiredException
-//   A pull request ID is required, but none was provided.
+//   - InvalidPullRequestIdException
+//     The pull request ID is not valid. Make sure that you have provided the full
+//     ID and that the pull request is in the specified repository, and then try
+//     again.
 //
-//   * TitleRequiredException
-//   A pull request title is required. It cannot be empty or null.
+//   - PullRequestIdRequiredException
+//     A pull request ID is required, but none was provided.
 //
-//   * InvalidTitleException
-//   The title of the pull request is not valid. Pull request titles cannot exceed
-//   100 characters in length.
+//   - TitleRequiredException
+//     A pull request title is required. It cannot be empty or null.
 //
-//   * PullRequestAlreadyClosedException
-//   The pull request status cannot be updated because it is already closed.
+//   - InvalidTitleException
+//     The title of the pull request is not valid. Pull request titles cannot exceed
+//     100 characters in length.
+//
+//   - PullRequestAlreadyClosedException
+//     The pull request status cannot be updated because it is already closed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdatePullRequestTitle
 func (c *CodeCommit) UpdatePullRequestTitle(input *UpdatePullRequestTitleInput) (*UpdatePullRequestTitleOutput, error) {
@@ -10451,14 +10438,13 @@ const opUpdateRepositoryDescription = "UpdateRepositoryDescription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRepositoryDescriptionRequest method.
+//	req, resp := client.UpdateRepositoryDescriptionRequest(params)
 //
-//    // Example sending a request using the UpdateRepositoryDescriptionRequest method.
-//    req, resp := client.UpdateRepositoryDescriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateRepositoryDescription
 func (c *CodeCommit) UpdateRepositoryDescriptionRequest(input *UpdateRepositoryDescriptionInput) (req *request.Request, output *UpdateRepositoryDescriptionOutput) {
@@ -10496,36 +10482,37 @@ func (c *CodeCommit) UpdateRepositoryDescriptionRequest(input *UpdateRepositoryD
 // API operation UpdateRepositoryDescription for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
 //
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
 //
-//   * InvalidRepositoryDescriptionException
-//   The specified repository description is not valid.
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
-//   * EncryptionIntegrityChecksFailedException
-//   An encryption integrity check failed.
+//   - InvalidRepositoryDescriptionException
+//     The specified repository description is not valid.
 //
-//   * EncryptionKeyAccessDeniedException
-//   An encryption key could not be accessed.
+//   - EncryptionIntegrityChecksFailedException
+//     An encryption integrity check failed.
 //
-//   * EncryptionKeyDisabledException
-//   The encryption key is disabled.
+//   - EncryptionKeyAccessDeniedException
+//     An encryption key could not be accessed.
 //
-//   * EncryptionKeyNotFoundException
-//   No encryption key was found.
+//   - EncryptionKeyDisabledException
+//     The encryption key is disabled.
 //
-//   * EncryptionKeyUnavailableException
-//   The encryption key is not available.
+//   - EncryptionKeyNotFoundException
+//     No encryption key was found.
+//
+//   - EncryptionKeyUnavailableException
+//     The encryption key is not available.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateRepositoryDescription
 func (c *CodeCommit) UpdateRepositoryDescription(input *UpdateRepositoryDescriptionInput) (*UpdateRepositoryDescriptionOutput, error) {
@@ -10565,14 +10552,13 @@ const opUpdateRepositoryName = "UpdateRepositoryName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRepositoryNameRequest method.
+//	req, resp := client.UpdateRepositoryNameRequest(params)
 //
-//    // Example sending a request using the UpdateRepositoryNameRequest method.
-//    req, resp := client.UpdateRepositoryNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateRepositoryName
 func (c *CodeCommit) UpdateRepositoryNameRequest(input *UpdateRepositoryNameInput) (req *request.Request, output *UpdateRepositoryNameOutput) {
@@ -10609,21 +10595,22 @@ func (c *CodeCommit) UpdateRepositoryNameRequest(input *UpdateRepositoryNameInpu
 // API operation UpdateRepositoryName for usage and error information.
 //
 // Returned Error Types:
-//   * RepositoryDoesNotExistException
-//   The specified repository does not exist.
 //
-//   * RepositoryNameExistsException
-//   The specified repository name already exists.
+//   - RepositoryDoesNotExistException
+//     The specified repository does not exist.
 //
-//   * RepositoryNameRequiredException
-//   A repository name is required, but was not specified.
+//   - RepositoryNameExistsException
+//     The specified repository name already exists.
 //
-//   * InvalidRepositoryNameException
-//   A specified repository name is not valid.
+//   - RepositoryNameRequiredException
+//     A repository name is required, but was not specified.
 //
-//   This exception occurs only when a specified repository name is not valid.
-//   Other exceptions occur when a required repository parameter is missing, or
-//   when a specified repository does not exist.
+//   - InvalidRepositoryNameException
+//     A specified repository name is not valid.
+//
+//     This exception occurs only when a specified repository name is not valid.
+//     Other exceptions occur when a required repository parameter is missing, or
+//     when a specified repository does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13/UpdateRepositoryName
 func (c *CodeCommit) UpdateRepositoryName(input *UpdateRepositoryNameInput) (*UpdateRepositoryNameOutput, error) {

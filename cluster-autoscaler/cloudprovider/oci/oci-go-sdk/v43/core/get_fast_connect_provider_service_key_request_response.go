@@ -11,7 +11,7 @@ import (
 
 // GetFastConnectProviderServiceKeyRequest wrapper for the GetFastConnectProviderServiceKey operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/GetFastConnectProviderServiceKey.go.html to see an example of how to use GetFastConnectProviderServiceKeyRequest.
 type GetFastConnectProviderServiceKeyRequest struct {

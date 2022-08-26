@@ -29,14 +29,13 @@ const opAddDraftAppVersionResourceMappings = "AddDraftAppVersionResourceMappings
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddDraftAppVersionResourceMappingsRequest method.
+//	req, resp := client.AddDraftAppVersionResourceMappingsRequest(params)
 //
-//    // Example sending a request using the AddDraftAppVersionResourceMappingsRequest method.
-//    req, resp := client.AddDraftAppVersionResourceMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/AddDraftAppVersionResourceMappings
 func (c *ResilienceHub) AddDraftAppVersionResourceMappingsRequest(input *AddDraftAppVersionResourceMappingsInput) (req *request.Request, output *AddDraftAppVersionResourceMappingsOutput) {
@@ -67,29 +66,30 @@ func (c *ResilienceHub) AddDraftAppVersionResourceMappingsRequest(input *AddDraf
 // API operation AddDraftAppVersionResourceMappings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/AddDraftAppVersionResourceMappings
 func (c *ResilienceHub) AddDraftAppVersionResourceMappings(input *AddDraftAppVersionResourceMappingsInput) (*AddDraftAppVersionResourceMappingsOutput, error) {
@@ -129,14 +129,13 @@ const opCreateApp = "CreateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppRequest method.
+//	req, resp := client.CreateAppRequest(params)
 //
-//    // Example sending a request using the CreateAppRequest method.
-//    req, resp := client.CreateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateApp
 func (c *ResilienceHub) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
@@ -163,11 +162,11 @@ func (c *ResilienceHub) CreateAppRequest(input *CreateAppInput) (req *request.Re
 // you provide an application name, resources from one or more–up to five–CloudFormation
 // stacks, and an appropriate resiliency policy.
 //
-//    <p>After you create a Resilience Hub application, you publish it so that
-//    you can run a resiliency assessment on it. You can then use recommendations
-//    from the assessment to improve resiliency by running another assessment,
-//    comparing results, and then iterating the process until you achieve your
-//    goals for recovery time objective (RTO) and recovery point objective (RPO).</p>
+//	<p>After you create a Resilience Hub application, you publish it so that
+//	you can run a resiliency assessment on it. You can then use recommendations
+//	from the assessment to improve resiliency by running another assessment,
+//	comparing results, and then iterating the process until you achieve your
+//	goals for recovery time objective (RTO) and recovery point objective (RPO).</p>
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -177,34 +176,35 @@ func (c *ResilienceHub) CreateAppRequest(input *CreateAppInput) (req *request.Re
 // API operation CreateApp for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateApp
 func (c *ResilienceHub) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
@@ -244,14 +244,13 @@ const opCreateRecommendationTemplate = "CreateRecommendationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecommendationTemplateRequest method.
+//	req, resp := client.CreateRecommendationTemplateRequest(params)
 //
-//    // Example sending a request using the CreateRecommendationTemplateRequest method.
-//    req, resp := client.CreateRecommendationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateRecommendationTemplate
 func (c *ResilienceHub) CreateRecommendationTemplateRequest(input *CreateRecommendationTemplateInput) (req *request.Request, output *CreateRecommendationTemplateOutput) {
@@ -282,29 +281,30 @@ func (c *ResilienceHub) CreateRecommendationTemplateRequest(input *CreateRecomme
 // API operation CreateRecommendationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateRecommendationTemplate
 func (c *ResilienceHub) CreateRecommendationTemplate(input *CreateRecommendationTemplateInput) (*CreateRecommendationTemplateOutput, error) {
@@ -344,14 +344,13 @@ const opCreateResiliencyPolicy = "CreateResiliencyPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResiliencyPolicyRequest method.
+//	req, resp := client.CreateResiliencyPolicyRequest(params)
 //
-//    // Example sending a request using the CreateResiliencyPolicyRequest method.
-//    req, resp := client.CreateResiliencyPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateResiliencyPolicy
 func (c *ResilienceHub) CreateResiliencyPolicyRequest(input *CreateResiliencyPolicyInput) (req *request.Request, output *CreateResiliencyPolicyOutput) {
@@ -382,31 +381,32 @@ func (c *ResilienceHub) CreateResiliencyPolicyRequest(input *CreateResiliencyPol
 // API operation CreateResiliencyPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/CreateResiliencyPolicy
 func (c *ResilienceHub) CreateResiliencyPolicy(input *CreateResiliencyPolicyInput) (*CreateResiliencyPolicyOutput, error) {
@@ -446,14 +446,13 @@ const opDeleteApp = "DeleteApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppRequest method.
+//	req, resp := client.DeleteAppRequest(params)
 //
-//    // Example sending a request using the DeleteAppRequest method.
-//    req, resp := client.DeleteAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteApp
 func (c *ResilienceHub) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
@@ -485,24 +484,25 @@ func (c *ResilienceHub) DeleteAppRequest(input *DeleteAppInput) (req *request.Re
 // API operation DeleteApp for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
+//
+//   - ValidationException
+//     Indicates that a request was not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteApp
 func (c *ResilienceHub) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
@@ -542,14 +542,13 @@ const opDeleteAppAssessment = "DeleteAppAssessment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppAssessmentRequest method.
+//	req, resp := client.DeleteAppAssessmentRequest(params)
 //
-//    // Example sending a request using the DeleteAppAssessmentRequest method.
-//    req, resp := client.DeleteAppAssessmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteAppAssessment
 func (c *ResilienceHub) DeleteAppAssessmentRequest(input *DeleteAppAssessmentInput) (req *request.Request, output *DeleteAppAssessmentOutput) {
@@ -581,29 +580,30 @@ func (c *ResilienceHub) DeleteAppAssessmentRequest(input *DeleteAppAssessmentInp
 // API operation DeleteAppAssessment for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteAppAssessment
 func (c *ResilienceHub) DeleteAppAssessment(input *DeleteAppAssessmentInput) (*DeleteAppAssessmentOutput, error) {
@@ -643,14 +643,13 @@ const opDeleteRecommendationTemplate = "DeleteRecommendationTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecommendationTemplateRequest method.
+//	req, resp := client.DeleteRecommendationTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteRecommendationTemplateRequest method.
-//    req, resp := client.DeleteRecommendationTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteRecommendationTemplate
 func (c *ResilienceHub) DeleteRecommendationTemplateRequest(input *DeleteRecommendationTemplateInput) (req *request.Request, output *DeleteRecommendationTemplateOutput) {
@@ -682,23 +681,24 @@ func (c *ResilienceHub) DeleteRecommendationTemplateRequest(input *DeleteRecomme
 // API operation DeleteRecommendationTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteRecommendationTemplate
 func (c *ResilienceHub) DeleteRecommendationTemplate(input *DeleteRecommendationTemplateInput) (*DeleteRecommendationTemplateOutput, error) {
@@ -738,14 +738,13 @@ const opDeleteResiliencyPolicy = "DeleteResiliencyPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResiliencyPolicyRequest method.
+//	req, resp := client.DeleteResiliencyPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResiliencyPolicyRequest method.
-//    req, resp := client.DeleteResiliencyPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteResiliencyPolicy
 func (c *ResilienceHub) DeleteResiliencyPolicyRequest(input *DeleteResiliencyPolicyInput) (req *request.Request, output *DeleteResiliencyPolicyOutput) {
@@ -776,29 +775,30 @@ func (c *ResilienceHub) DeleteResiliencyPolicyRequest(input *DeleteResiliencyPol
 // API operation DeleteResiliencyPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DeleteResiliencyPolicy
 func (c *ResilienceHub) DeleteResiliencyPolicy(input *DeleteResiliencyPolicyInput) (*DeleteResiliencyPolicyOutput, error) {
@@ -838,14 +838,13 @@ const opDescribeApp = "DescribeApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppRequest method.
+//	req, resp := client.DescribeAppRequest(params)
 //
-//    // Example sending a request using the DescribeAppRequest method.
-//    req, resp := client.DescribeAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeApp
 func (c *ResilienceHub) DescribeAppRequest(input *DescribeAppInput) (req *request.Request, output *DescribeAppOutput) {
@@ -876,23 +875,24 @@ func (c *ResilienceHub) DescribeAppRequest(input *DescribeAppInput) (req *reques
 // API operation DescribeApp for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeApp
 func (c *ResilienceHub) DescribeApp(input *DescribeAppInput) (*DescribeAppOutput, error) {
@@ -932,14 +932,13 @@ const opDescribeAppAssessment = "DescribeAppAssessment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppAssessmentRequest method.
+//	req, resp := client.DescribeAppAssessmentRequest(params)
 //
-//    // Example sending a request using the DescribeAppAssessmentRequest method.
-//    req, resp := client.DescribeAppAssessmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppAssessment
 func (c *ResilienceHub) DescribeAppAssessmentRequest(input *DescribeAppAssessmentInput) (req *request.Request, output *DescribeAppAssessmentOutput) {
@@ -970,23 +969,24 @@ func (c *ResilienceHub) DescribeAppAssessmentRequest(input *DescribeAppAssessmen
 // API operation DescribeAppAssessment for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppAssessment
 func (c *ResilienceHub) DescribeAppAssessment(input *DescribeAppAssessmentInput) (*DescribeAppAssessmentOutput, error) {
@@ -1026,14 +1026,13 @@ const opDescribeAppVersionResourcesResolutionStatus = "DescribeAppVersionResourc
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppVersionResourcesResolutionStatusRequest method.
+//	req, resp := client.DescribeAppVersionResourcesResolutionStatusRequest(params)
 //
-//    // Example sending a request using the DescribeAppVersionResourcesResolutionStatusRequest method.
-//    req, resp := client.DescribeAppVersionResourcesResolutionStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppVersionResourcesResolutionStatus
 func (c *ResilienceHub) DescribeAppVersionResourcesResolutionStatusRequest(input *DescribeAppVersionResourcesResolutionStatusInput) (req *request.Request, output *DescribeAppVersionResourcesResolutionStatusOutput) {
@@ -1066,23 +1065,24 @@ func (c *ResilienceHub) DescribeAppVersionResourcesResolutionStatusRequest(input
 // API operation DescribeAppVersionResourcesResolutionStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppVersionResourcesResolutionStatus
 func (c *ResilienceHub) DescribeAppVersionResourcesResolutionStatus(input *DescribeAppVersionResourcesResolutionStatusInput) (*DescribeAppVersionResourcesResolutionStatusOutput, error) {
@@ -1122,14 +1122,13 @@ const opDescribeAppVersionTemplate = "DescribeAppVersionTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppVersionTemplateRequest method.
+//	req, resp := client.DescribeAppVersionTemplateRequest(params)
 //
-//    // Example sending a request using the DescribeAppVersionTemplateRequest method.
-//    req, resp := client.DescribeAppVersionTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppVersionTemplate
 func (c *ResilienceHub) DescribeAppVersionTemplateRequest(input *DescribeAppVersionTemplateInput) (req *request.Request, output *DescribeAppVersionTemplateOutput) {
@@ -1150,7 +1149,7 @@ func (c *ResilienceHub) DescribeAppVersionTemplateRequest(input *DescribeAppVers
 
 // DescribeAppVersionTemplate API operation for AWS Resilience Hub.
 //
-// Describes details about an AWS Resilience Hub
+// # Describes details about an AWS Resilience Hub
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1160,23 +1159,24 @@ func (c *ResilienceHub) DescribeAppVersionTemplateRequest(input *DescribeAppVers
 // API operation DescribeAppVersionTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeAppVersionTemplate
 func (c *ResilienceHub) DescribeAppVersionTemplate(input *DescribeAppVersionTemplateInput) (*DescribeAppVersionTemplateOutput, error) {
@@ -1216,14 +1216,13 @@ const opDescribeDraftAppVersionResourcesImportStatus = "DescribeDraftAppVersionR
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDraftAppVersionResourcesImportStatusRequest method.
+//	req, resp := client.DescribeDraftAppVersionResourcesImportStatusRequest(params)
 //
-//    // Example sending a request using the DescribeDraftAppVersionResourcesImportStatusRequest method.
-//    req, resp := client.DescribeDraftAppVersionResourcesImportStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeDraftAppVersionResourcesImportStatus
 func (c *ResilienceHub) DescribeDraftAppVersionResourcesImportStatusRequest(input *DescribeDraftAppVersionResourcesImportStatusInput) (req *request.Request, output *DescribeDraftAppVersionResourcesImportStatusOutput) {
@@ -1254,23 +1253,24 @@ func (c *ResilienceHub) DescribeDraftAppVersionResourcesImportStatusRequest(inpu
 // API operation DescribeDraftAppVersionResourcesImportStatus for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeDraftAppVersionResourcesImportStatus
 func (c *ResilienceHub) DescribeDraftAppVersionResourcesImportStatus(input *DescribeDraftAppVersionResourcesImportStatusInput) (*DescribeDraftAppVersionResourcesImportStatusOutput, error) {
@@ -1310,14 +1310,13 @@ const opDescribeResiliencyPolicy = "DescribeResiliencyPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResiliencyPolicyRequest method.
+//	req, resp := client.DescribeResiliencyPolicyRequest(params)
 //
-//    // Example sending a request using the DescribeResiliencyPolicyRequest method.
-//    req, resp := client.DescribeResiliencyPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeResiliencyPolicy
 func (c *ResilienceHub) DescribeResiliencyPolicyRequest(input *DescribeResiliencyPolicyInput) (req *request.Request, output *DescribeResiliencyPolicyOutput) {
@@ -1350,23 +1349,24 @@ func (c *ResilienceHub) DescribeResiliencyPolicyRequest(input *DescribeResilienc
 // API operation DescribeResiliencyPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/DescribeResiliencyPolicy
 func (c *ResilienceHub) DescribeResiliencyPolicy(input *DescribeResiliencyPolicyInput) (*DescribeResiliencyPolicyOutput, error) {
@@ -1406,14 +1406,13 @@ const opImportResourcesToDraftAppVersion = "ImportResourcesToDraftAppVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportResourcesToDraftAppVersionRequest method.
+//	req, resp := client.ImportResourcesToDraftAppVersionRequest(params)
 //
-//    // Example sending a request using the ImportResourcesToDraftAppVersionRequest method.
-//    req, resp := client.ImportResourcesToDraftAppVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ImportResourcesToDraftAppVersion
 func (c *ResilienceHub) ImportResourcesToDraftAppVersionRequest(input *ImportResourcesToDraftAppVersionInput) (req *request.Request, output *ImportResourcesToDraftAppVersionOutput) {
@@ -1445,29 +1444,30 @@ func (c *ResilienceHub) ImportResourcesToDraftAppVersionRequest(input *ImportRes
 // API operation ImportResourcesToDraftAppVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ImportResourcesToDraftAppVersion
 func (c *ResilienceHub) ImportResourcesToDraftAppVersion(input *ImportResourcesToDraftAppVersionInput) (*ImportResourcesToDraftAppVersionOutput, error) {
@@ -1507,14 +1507,13 @@ const opListAlarmRecommendations = "ListAlarmRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlarmRecommendationsRequest method.
+//	req, resp := client.ListAlarmRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListAlarmRecommendationsRequest method.
-//    req, resp := client.ListAlarmRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAlarmRecommendations
 func (c *ResilienceHub) ListAlarmRecommendationsRequest(input *ListAlarmRecommendationsInput) (req *request.Request, output *ListAlarmRecommendationsOutput) {
@@ -1551,23 +1550,24 @@ func (c *ResilienceHub) ListAlarmRecommendationsRequest(input *ListAlarmRecommen
 // API operation ListAlarmRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAlarmRecommendations
 func (c *ResilienceHub) ListAlarmRecommendations(input *ListAlarmRecommendationsInput) (*ListAlarmRecommendationsOutput, error) {
@@ -1599,15 +1599,14 @@ func (c *ResilienceHub) ListAlarmRecommendationsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAlarmRecommendations operation.
-//    pageNum := 0
-//    err := client.ListAlarmRecommendationsPages(params,
-//        func(page *resiliencehub.ListAlarmRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAlarmRecommendations operation.
+//	pageNum := 0
+//	err := client.ListAlarmRecommendationsPages(params,
+//	    func(page *resiliencehub.ListAlarmRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAlarmRecommendationsPages(input *ListAlarmRecommendationsInput, fn func(*ListAlarmRecommendationsOutput, bool) bool) error {
 	return c.ListAlarmRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1659,14 +1658,13 @@ const opListAppAssessments = "ListAppAssessments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppAssessmentsRequest method.
+//	req, resp := client.ListAppAssessmentsRequest(params)
 //
-//    // Example sending a request using the ListAppAssessmentsRequest method.
-//    req, resp := client.ListAppAssessmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppAssessments
 func (c *ResilienceHub) ListAppAssessmentsRequest(input *ListAppAssessmentsInput) (req *request.Request, output *ListAppAssessmentsOutput) {
@@ -1704,23 +1702,24 @@ func (c *ResilienceHub) ListAppAssessmentsRequest(input *ListAppAssessmentsInput
 // API operation ListAppAssessments for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppAssessments
 func (c *ResilienceHub) ListAppAssessments(input *ListAppAssessmentsInput) (*ListAppAssessmentsOutput, error) {
@@ -1752,15 +1751,14 @@ func (c *ResilienceHub) ListAppAssessmentsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppAssessments operation.
-//    pageNum := 0
-//    err := client.ListAppAssessmentsPages(params,
-//        func(page *resiliencehub.ListAppAssessmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppAssessments operation.
+//	pageNum := 0
+//	err := client.ListAppAssessmentsPages(params,
+//	    func(page *resiliencehub.ListAppAssessmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppAssessmentsPages(input *ListAppAssessmentsInput, fn func(*ListAppAssessmentsOutput, bool) bool) error {
 	return c.ListAppAssessmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1812,14 +1810,13 @@ const opListAppComponentCompliances = "ListAppComponentCompliances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppComponentCompliancesRequest method.
+//	req, resp := client.ListAppComponentCompliancesRequest(params)
 //
-//    // Example sending a request using the ListAppComponentCompliancesRequest method.
-//    req, resp := client.ListAppComponentCompliancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppComponentCompliances
 func (c *ResilienceHub) ListAppComponentCompliancesRequest(input *ListAppComponentCompliancesInput) (req *request.Request, output *ListAppComponentCompliancesOutput) {
@@ -1856,23 +1853,24 @@ func (c *ResilienceHub) ListAppComponentCompliancesRequest(input *ListAppCompone
 // API operation ListAppComponentCompliances for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppComponentCompliances
 func (c *ResilienceHub) ListAppComponentCompliances(input *ListAppComponentCompliancesInput) (*ListAppComponentCompliancesOutput, error) {
@@ -1904,15 +1902,14 @@ func (c *ResilienceHub) ListAppComponentCompliancesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppComponentCompliances operation.
-//    pageNum := 0
-//    err := client.ListAppComponentCompliancesPages(params,
-//        func(page *resiliencehub.ListAppComponentCompliancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppComponentCompliances operation.
+//	pageNum := 0
+//	err := client.ListAppComponentCompliancesPages(params,
+//	    func(page *resiliencehub.ListAppComponentCompliancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppComponentCompliancesPages(input *ListAppComponentCompliancesInput, fn func(*ListAppComponentCompliancesOutput, bool) bool) error {
 	return c.ListAppComponentCompliancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1964,14 +1961,13 @@ const opListAppComponentRecommendations = "ListAppComponentRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppComponentRecommendationsRequest method.
+//	req, resp := client.ListAppComponentRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListAppComponentRecommendationsRequest method.
-//    req, resp := client.ListAppComponentRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppComponentRecommendations
 func (c *ResilienceHub) ListAppComponentRecommendationsRequest(input *ListAppComponentRecommendationsInput) (req *request.Request, output *ListAppComponentRecommendationsOutput) {
@@ -2008,23 +2004,24 @@ func (c *ResilienceHub) ListAppComponentRecommendationsRequest(input *ListAppCom
 // API operation ListAppComponentRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppComponentRecommendations
 func (c *ResilienceHub) ListAppComponentRecommendations(input *ListAppComponentRecommendationsInput) (*ListAppComponentRecommendationsOutput, error) {
@@ -2056,15 +2053,14 @@ func (c *ResilienceHub) ListAppComponentRecommendationsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppComponentRecommendations operation.
-//    pageNum := 0
-//    err := client.ListAppComponentRecommendationsPages(params,
-//        func(page *resiliencehub.ListAppComponentRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppComponentRecommendations operation.
+//	pageNum := 0
+//	err := client.ListAppComponentRecommendationsPages(params,
+//	    func(page *resiliencehub.ListAppComponentRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppComponentRecommendationsPages(input *ListAppComponentRecommendationsInput, fn func(*ListAppComponentRecommendationsOutput, bool) bool) error {
 	return c.ListAppComponentRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2116,14 +2112,13 @@ const opListAppVersionResourceMappings = "ListAppVersionResourceMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppVersionResourceMappingsRequest method.
+//	req, resp := client.ListAppVersionResourceMappingsRequest(params)
 //
-//    // Example sending a request using the ListAppVersionResourceMappingsRequest method.
-//    req, resp := client.ListAppVersionResourceMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersionResourceMappings
 func (c *ResilienceHub) ListAppVersionResourceMappingsRequest(input *ListAppVersionResourceMappingsInput) (req *request.Request, output *ListAppVersionResourceMappingsOutput) {
@@ -2162,23 +2157,24 @@ func (c *ResilienceHub) ListAppVersionResourceMappingsRequest(input *ListAppVers
 // API operation ListAppVersionResourceMappings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersionResourceMappings
 func (c *ResilienceHub) ListAppVersionResourceMappings(input *ListAppVersionResourceMappingsInput) (*ListAppVersionResourceMappingsOutput, error) {
@@ -2210,15 +2206,14 @@ func (c *ResilienceHub) ListAppVersionResourceMappingsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppVersionResourceMappings operation.
-//    pageNum := 0
-//    err := client.ListAppVersionResourceMappingsPages(params,
-//        func(page *resiliencehub.ListAppVersionResourceMappingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppVersionResourceMappings operation.
+//	pageNum := 0
+//	err := client.ListAppVersionResourceMappingsPages(params,
+//	    func(page *resiliencehub.ListAppVersionResourceMappingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppVersionResourceMappingsPages(input *ListAppVersionResourceMappingsInput, fn func(*ListAppVersionResourceMappingsOutput, bool) bool) error {
 	return c.ListAppVersionResourceMappingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2270,14 +2265,13 @@ const opListAppVersionResources = "ListAppVersionResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppVersionResourcesRequest method.
+//	req, resp := client.ListAppVersionResourcesRequest(params)
 //
-//    // Example sending a request using the ListAppVersionResourcesRequest method.
-//    req, resp := client.ListAppVersionResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersionResources
 func (c *ResilienceHub) ListAppVersionResourcesRequest(input *ListAppVersionResourcesInput) (req *request.Request, output *ListAppVersionResourcesOutput) {
@@ -2314,29 +2308,30 @@ func (c *ResilienceHub) ListAppVersionResourcesRequest(input *ListAppVersionReso
 // API operation ListAppVersionResources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersionResources
 func (c *ResilienceHub) ListAppVersionResources(input *ListAppVersionResourcesInput) (*ListAppVersionResourcesOutput, error) {
@@ -2368,15 +2363,14 @@ func (c *ResilienceHub) ListAppVersionResourcesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppVersionResources operation.
-//    pageNum := 0
-//    err := client.ListAppVersionResourcesPages(params,
-//        func(page *resiliencehub.ListAppVersionResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppVersionResources operation.
+//	pageNum := 0
+//	err := client.ListAppVersionResourcesPages(params,
+//	    func(page *resiliencehub.ListAppVersionResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppVersionResourcesPages(input *ListAppVersionResourcesInput, fn func(*ListAppVersionResourcesOutput, bool) bool) error {
 	return c.ListAppVersionResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2428,14 +2422,13 @@ const opListAppVersions = "ListAppVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppVersionsRequest method.
+//	req, resp := client.ListAppVersionsRequest(params)
 //
-//    // Example sending a request using the ListAppVersionsRequest method.
-//    req, resp := client.ListAppVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersions
 func (c *ResilienceHub) ListAppVersionsRequest(input *ListAppVersionsInput) (req *request.Request, output *ListAppVersionsOutput) {
@@ -2472,20 +2465,21 @@ func (c *ResilienceHub) ListAppVersionsRequest(input *ListAppVersionsInput) (req
 // API operation ListAppVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListAppVersions
 func (c *ResilienceHub) ListAppVersions(input *ListAppVersionsInput) (*ListAppVersionsOutput, error) {
@@ -2517,15 +2511,14 @@ func (c *ResilienceHub) ListAppVersionsWithContext(ctx aws.Context, input *ListA
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppVersions operation.
-//    pageNum := 0
-//    err := client.ListAppVersionsPages(params,
-//        func(page *resiliencehub.ListAppVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppVersions operation.
+//	pageNum := 0
+//	err := client.ListAppVersionsPages(params,
+//	    func(page *resiliencehub.ListAppVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppVersionsPages(input *ListAppVersionsInput, fn func(*ListAppVersionsOutput, bool) bool) error {
 	return c.ListAppVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2577,14 +2570,13 @@ const opListApps = "ListApps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppsRequest method.
+//	req, resp := client.ListAppsRequest(params)
 //
-//    // Example sending a request using the ListAppsRequest method.
-//    req, resp := client.ListAppsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListApps
 func (c *ResilienceHub) ListAppsRequest(input *ListAppsInput) (req *request.Request, output *ListAppsOutput) {
@@ -2621,20 +2613,21 @@ func (c *ResilienceHub) ListAppsRequest(input *ListAppsInput) (req *request.Requ
 // API operation ListApps for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListApps
 func (c *ResilienceHub) ListApps(input *ListAppsInput) (*ListAppsOutput, error) {
@@ -2666,15 +2659,14 @@ func (c *ResilienceHub) ListAppsWithContext(ctx aws.Context, input *ListAppsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListApps operation.
-//    pageNum := 0
-//    err := client.ListAppsPages(params,
-//        func(page *resiliencehub.ListAppsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListApps operation.
+//	pageNum := 0
+//	err := client.ListAppsPages(params,
+//	    func(page *resiliencehub.ListAppsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListAppsPages(input *ListAppsInput, fn func(*ListAppsOutput, bool) bool) error {
 	return c.ListAppsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2726,14 +2718,13 @@ const opListRecommendationTemplates = "ListRecommendationTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecommendationTemplatesRequest method.
+//	req, resp := client.ListRecommendationTemplatesRequest(params)
 //
-//    // Example sending a request using the ListRecommendationTemplatesRequest method.
-//    req, resp := client.ListRecommendationTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListRecommendationTemplates
 func (c *ResilienceHub) ListRecommendationTemplatesRequest(input *ListRecommendationTemplatesInput) (req *request.Request, output *ListRecommendationTemplatesOutput) {
@@ -2770,20 +2761,21 @@ func (c *ResilienceHub) ListRecommendationTemplatesRequest(input *ListRecommenda
 // API operation ListRecommendationTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListRecommendationTemplates
 func (c *ResilienceHub) ListRecommendationTemplates(input *ListRecommendationTemplatesInput) (*ListRecommendationTemplatesOutput, error) {
@@ -2815,15 +2807,14 @@ func (c *ResilienceHub) ListRecommendationTemplatesWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecommendationTemplates operation.
-//    pageNum := 0
-//    err := client.ListRecommendationTemplatesPages(params,
-//        func(page *resiliencehub.ListRecommendationTemplatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecommendationTemplates operation.
+//	pageNum := 0
+//	err := client.ListRecommendationTemplatesPages(params,
+//	    func(page *resiliencehub.ListRecommendationTemplatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListRecommendationTemplatesPages(input *ListRecommendationTemplatesInput, fn func(*ListRecommendationTemplatesOutput, bool) bool) error {
 	return c.ListRecommendationTemplatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2875,14 +2866,13 @@ const opListResiliencyPolicies = "ListResiliencyPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResiliencyPoliciesRequest method.
+//	req, resp := client.ListResiliencyPoliciesRequest(params)
 //
-//    // Example sending a request using the ListResiliencyPoliciesRequest method.
-//    req, resp := client.ListResiliencyPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListResiliencyPolicies
 func (c *ResilienceHub) ListResiliencyPoliciesRequest(input *ListResiliencyPoliciesInput) (req *request.Request, output *ListResiliencyPoliciesOutput) {
@@ -2919,23 +2909,24 @@ func (c *ResilienceHub) ListResiliencyPoliciesRequest(input *ListResiliencyPolic
 // API operation ListResiliencyPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListResiliencyPolicies
 func (c *ResilienceHub) ListResiliencyPolicies(input *ListResiliencyPoliciesInput) (*ListResiliencyPoliciesOutput, error) {
@@ -2967,15 +2958,14 @@ func (c *ResilienceHub) ListResiliencyPoliciesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResiliencyPolicies operation.
-//    pageNum := 0
-//    err := client.ListResiliencyPoliciesPages(params,
-//        func(page *resiliencehub.ListResiliencyPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResiliencyPolicies operation.
+//	pageNum := 0
+//	err := client.ListResiliencyPoliciesPages(params,
+//	    func(page *resiliencehub.ListResiliencyPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListResiliencyPoliciesPages(input *ListResiliencyPoliciesInput, fn func(*ListResiliencyPoliciesOutput, bool) bool) error {
 	return c.ListResiliencyPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3027,14 +3017,13 @@ const opListSopRecommendations = "ListSopRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSopRecommendationsRequest method.
+//	req, resp := client.ListSopRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListSopRecommendationsRequest method.
-//    req, resp := client.ListSopRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListSopRecommendations
 func (c *ResilienceHub) ListSopRecommendationsRequest(input *ListSopRecommendationsInput) (req *request.Request, output *ListSopRecommendationsOutput) {
@@ -3072,29 +3061,30 @@ func (c *ResilienceHub) ListSopRecommendationsRequest(input *ListSopRecommendati
 // API operation ListSopRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListSopRecommendations
 func (c *ResilienceHub) ListSopRecommendations(input *ListSopRecommendationsInput) (*ListSopRecommendationsOutput, error) {
@@ -3126,15 +3116,14 @@ func (c *ResilienceHub) ListSopRecommendationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSopRecommendations operation.
-//    pageNum := 0
-//    err := client.ListSopRecommendationsPages(params,
-//        func(page *resiliencehub.ListSopRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSopRecommendations operation.
+//	pageNum := 0
+//	err := client.ListSopRecommendationsPages(params,
+//	    func(page *resiliencehub.ListSopRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListSopRecommendationsPages(input *ListSopRecommendationsInput, fn func(*ListSopRecommendationsOutput, bool) bool) error {
 	return c.ListSopRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3186,14 +3175,13 @@ const opListSuggestedResiliencyPolicies = "ListSuggestedResiliencyPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSuggestedResiliencyPoliciesRequest method.
+//	req, resp := client.ListSuggestedResiliencyPoliciesRequest(params)
 //
-//    // Example sending a request using the ListSuggestedResiliencyPoliciesRequest method.
-//    req, resp := client.ListSuggestedResiliencyPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListSuggestedResiliencyPolicies
 func (c *ResilienceHub) ListSuggestedResiliencyPoliciesRequest(input *ListSuggestedResiliencyPoliciesInput) (req *request.Request, output *ListSuggestedResiliencyPoliciesOutput) {
@@ -3230,23 +3218,24 @@ func (c *ResilienceHub) ListSuggestedResiliencyPoliciesRequest(input *ListSugges
 // API operation ListSuggestedResiliencyPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListSuggestedResiliencyPolicies
 func (c *ResilienceHub) ListSuggestedResiliencyPolicies(input *ListSuggestedResiliencyPoliciesInput) (*ListSuggestedResiliencyPoliciesOutput, error) {
@@ -3278,15 +3267,14 @@ func (c *ResilienceHub) ListSuggestedResiliencyPoliciesWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSuggestedResiliencyPolicies operation.
-//    pageNum := 0
-//    err := client.ListSuggestedResiliencyPoliciesPages(params,
-//        func(page *resiliencehub.ListSuggestedResiliencyPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSuggestedResiliencyPolicies operation.
+//	pageNum := 0
+//	err := client.ListSuggestedResiliencyPoliciesPages(params,
+//	    func(page *resiliencehub.ListSuggestedResiliencyPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListSuggestedResiliencyPoliciesPages(input *ListSuggestedResiliencyPoliciesInput, fn func(*ListSuggestedResiliencyPoliciesOutput, bool) bool) error {
 	return c.ListSuggestedResiliencyPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3338,14 +3326,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListTagsForResource
 func (c *ResilienceHub) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3376,23 +3363,24 @@ func (c *ResilienceHub) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListTagsForResource
 func (c *ResilienceHub) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3432,14 +3420,13 @@ const opListTestRecommendations = "ListTestRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTestRecommendationsRequest method.
+//	req, resp := client.ListTestRecommendationsRequest(params)
 //
-//    // Example sending a request using the ListTestRecommendationsRequest method.
-//    req, resp := client.ListTestRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListTestRecommendations
 func (c *ResilienceHub) ListTestRecommendationsRequest(input *ListTestRecommendationsInput) (req *request.Request, output *ListTestRecommendationsOutput) {
@@ -3476,29 +3463,30 @@ func (c *ResilienceHub) ListTestRecommendationsRequest(input *ListTestRecommenda
 // API operation ListTestRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListTestRecommendations
 func (c *ResilienceHub) ListTestRecommendations(input *ListTestRecommendationsInput) (*ListTestRecommendationsOutput, error) {
@@ -3530,15 +3518,14 @@ func (c *ResilienceHub) ListTestRecommendationsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTestRecommendations operation.
-//    pageNum := 0
-//    err := client.ListTestRecommendationsPages(params,
-//        func(page *resiliencehub.ListTestRecommendationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTestRecommendations operation.
+//	pageNum := 0
+//	err := client.ListTestRecommendationsPages(params,
+//	    func(page *resiliencehub.ListTestRecommendationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListTestRecommendationsPages(input *ListTestRecommendationsInput, fn func(*ListTestRecommendationsOutput, bool) bool) error {
 	return c.ListTestRecommendationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3590,14 +3577,13 @@ const opListUnsupportedAppVersionResources = "ListUnsupportedAppVersionResources
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUnsupportedAppVersionResourcesRequest method.
+//	req, resp := client.ListUnsupportedAppVersionResourcesRequest(params)
 //
-//    // Example sending a request using the ListUnsupportedAppVersionResourcesRequest method.
-//    req, resp := client.ListUnsupportedAppVersionResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListUnsupportedAppVersionResources
 func (c *ResilienceHub) ListUnsupportedAppVersionResourcesRequest(input *ListUnsupportedAppVersionResourcesInput) (req *request.Request, output *ListUnsupportedAppVersionResourcesOutput) {
@@ -3636,29 +3622,30 @@ func (c *ResilienceHub) ListUnsupportedAppVersionResourcesRequest(input *ListUns
 // API operation ListUnsupportedAppVersionResources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ListUnsupportedAppVersionResources
 func (c *ResilienceHub) ListUnsupportedAppVersionResources(input *ListUnsupportedAppVersionResourcesInput) (*ListUnsupportedAppVersionResourcesOutput, error) {
@@ -3690,15 +3677,14 @@ func (c *ResilienceHub) ListUnsupportedAppVersionResourcesWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUnsupportedAppVersionResources operation.
-//    pageNum := 0
-//    err := client.ListUnsupportedAppVersionResourcesPages(params,
-//        func(page *resiliencehub.ListUnsupportedAppVersionResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUnsupportedAppVersionResources operation.
+//	pageNum := 0
+//	err := client.ListUnsupportedAppVersionResourcesPages(params,
+//	    func(page *resiliencehub.ListUnsupportedAppVersionResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ResilienceHub) ListUnsupportedAppVersionResourcesPages(input *ListUnsupportedAppVersionResourcesInput, fn func(*ListUnsupportedAppVersionResourcesOutput, bool) bool) error {
 	return c.ListUnsupportedAppVersionResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3750,14 +3736,13 @@ const opPublishAppVersion = "PublishAppVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishAppVersionRequest method.
+//	req, resp := client.PublishAppVersionRequest(params)
 //
-//    // Example sending a request using the PublishAppVersionRequest method.
-//    req, resp := client.PublishAppVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/PublishAppVersion
 func (c *ResilienceHub) PublishAppVersionRequest(input *PublishAppVersionInput) (req *request.Request, output *PublishAppVersionOutput) {
@@ -3788,29 +3773,30 @@ func (c *ResilienceHub) PublishAppVersionRequest(input *PublishAppVersionInput) 
 // API operation PublishAppVersion for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/PublishAppVersion
 func (c *ResilienceHub) PublishAppVersion(input *PublishAppVersionInput) (*PublishAppVersionOutput, error) {
@@ -3850,14 +3836,13 @@ const opPutDraftAppVersionTemplate = "PutDraftAppVersionTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutDraftAppVersionTemplateRequest method.
+//	req, resp := client.PutDraftAppVersionTemplateRequest(params)
 //
-//    // Example sending a request using the PutDraftAppVersionTemplateRequest method.
-//    req, resp := client.PutDraftAppVersionTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/PutDraftAppVersionTemplate
 func (c *ResilienceHub) PutDraftAppVersionTemplateRequest(input *PutDraftAppVersionTemplateInput) (req *request.Request, output *PutDraftAppVersionTemplateOutput) {
@@ -3889,29 +3874,30 @@ func (c *ResilienceHub) PutDraftAppVersionTemplateRequest(input *PutDraftAppVers
 // API operation PutDraftAppVersionTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/PutDraftAppVersionTemplate
 func (c *ResilienceHub) PutDraftAppVersionTemplate(input *PutDraftAppVersionTemplateInput) (*PutDraftAppVersionTemplateOutput, error) {
@@ -3951,14 +3937,13 @@ const opRemoveDraftAppVersionResourceMappings = "RemoveDraftAppVersionResourceMa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveDraftAppVersionResourceMappingsRequest method.
+//	req, resp := client.RemoveDraftAppVersionResourceMappingsRequest(params)
 //
-//    // Example sending a request using the RemoveDraftAppVersionResourceMappingsRequest method.
-//    req, resp := client.RemoveDraftAppVersionResourceMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/RemoveDraftAppVersionResourceMappings
 func (c *ResilienceHub) RemoveDraftAppVersionResourceMappingsRequest(input *RemoveDraftAppVersionResourceMappingsInput) (req *request.Request, output *RemoveDraftAppVersionResourceMappingsOutput) {
@@ -3989,29 +3974,30 @@ func (c *ResilienceHub) RemoveDraftAppVersionResourceMappingsRequest(input *Remo
 // API operation RemoveDraftAppVersionResourceMappings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/RemoveDraftAppVersionResourceMappings
 func (c *ResilienceHub) RemoveDraftAppVersionResourceMappings(input *RemoveDraftAppVersionResourceMappingsInput) (*RemoveDraftAppVersionResourceMappingsOutput, error) {
@@ -4051,14 +4037,13 @@ const opResolveAppVersionResources = "ResolveAppVersionResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResolveAppVersionResourcesRequest method.
+//	req, resp := client.ResolveAppVersionResourcesRequest(params)
 //
-//    // Example sending a request using the ResolveAppVersionResourcesRequest method.
-//    req, resp := client.ResolveAppVersionResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ResolveAppVersionResources
 func (c *ResilienceHub) ResolveAppVersionResourcesRequest(input *ResolveAppVersionResourcesInput) (req *request.Request, output *ResolveAppVersionResourcesOutput) {
@@ -4089,29 +4074,30 @@ func (c *ResilienceHub) ResolveAppVersionResourcesRequest(input *ResolveAppVersi
 // API operation ResolveAppVersionResources for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/ResolveAppVersionResources
 func (c *ResilienceHub) ResolveAppVersionResources(input *ResolveAppVersionResourcesInput) (*ResolveAppVersionResourcesOutput, error) {
@@ -4151,14 +4137,13 @@ const opStartAppAssessment = "StartAppAssessment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartAppAssessmentRequest method.
+//	req, resp := client.StartAppAssessmentRequest(params)
 //
-//    // Example sending a request using the StartAppAssessmentRequest method.
-//    req, resp := client.StartAppAssessmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/StartAppAssessment
 func (c *ResilienceHub) StartAppAssessmentRequest(input *StartAppAssessmentInput) (req *request.Request, output *StartAppAssessmentOutput) {
@@ -4189,34 +4174,35 @@ func (c *ResilienceHub) StartAppAssessmentRequest(input *StartAppAssessmentInput
 // API operation StartAppAssessment for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ServiceQuotaExceededException
-//   You have exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use Service Quotas to request a service
-//   quota increase.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use Service Quotas to request a service
+//     quota increase.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/StartAppAssessment
 func (c *ResilienceHub) StartAppAssessment(input *StartAppAssessmentInput) (*StartAppAssessmentOutput, error) {
@@ -4256,14 +4242,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/TagResource
 func (c *ResilienceHub) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4295,23 +4280,24 @@ func (c *ResilienceHub) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/TagResource
 func (c *ResilienceHub) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4351,14 +4337,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UntagResource
 func (c *ResilienceHub) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4390,23 +4375,24 @@ func (c *ResilienceHub) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UntagResource
 func (c *ResilienceHub) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4446,14 +4432,13 @@ const opUpdateApp = "UpdateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppRequest method.
+//	req, resp := client.UpdateAppRequest(params)
 //
-//    // Example sending a request using the UpdateAppRequest method.
-//    req, resp := client.UpdateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UpdateApp
 func (c *ResilienceHub) UpdateAppRequest(input *UpdateAppInput) (req *request.Request, output *UpdateAppOutput) {
@@ -4484,29 +4469,30 @@ func (c *ResilienceHub) UpdateAppRequest(input *UpdateAppInput) (req *request.Re
 // API operation UpdateApp for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UpdateApp
 func (c *ResilienceHub) UpdateApp(input *UpdateAppInput) (*UpdateAppOutput, error) {
@@ -4546,14 +4532,13 @@ const opUpdateResiliencyPolicy = "UpdateResiliencyPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResiliencyPolicyRequest method.
+//	req, resp := client.UpdateResiliencyPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateResiliencyPolicyRequest method.
-//    req, resp := client.UpdateResiliencyPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UpdateResiliencyPolicy
 func (c *ResilienceHub) UpdateResiliencyPolicyRequest(input *UpdateResiliencyPolicyInput) (req *request.Request, output *UpdateResiliencyPolicyOutput) {
@@ -4584,29 +4569,30 @@ func (c *ResilienceHub) UpdateResiliencyPolicyRequest(input *UpdateResiliencyPol
 // API operation UpdateResiliencyPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   This exception occurs when there is an internal failure in the AWS Resilience
-//   Hub service.
 //
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the AWS Resilience
+//     Hub service.
 //
-//   * ConflictException
-//   Occurs when a conflict with a previous successful write is detected. This
-//   generally occurs when the previous write did not have time to propagate to
-//   the host serving the current request. A retry (with appropriate backoff logic)
-//   is the recommended response to this exception.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ThrottlingException
-//   The limit on the number of requests per second was exceeded.
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
 //
-//   * ValidationException
-//   Indicates that a request was not valid.
+//   - ThrottlingException
+//     The limit on the number of requests per second was exceeded.
 //
-//   * AccessDeniedException
-//   You don't have permissions to perform the requested operation. The user or
-//   role that is making the request must have at least one IAM permissions policy
-//   attached that grants the required permissions.
+//   - ValidationException
+//     Indicates that a request was not valid.
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/resiliencehub-2020-04-30/UpdateResiliencyPolicy
 func (c *ResilienceHub) UpdateResiliencyPolicy(input *UpdateResiliencyPolicyInput) (*UpdateResiliencyPolicyOutput, error) {

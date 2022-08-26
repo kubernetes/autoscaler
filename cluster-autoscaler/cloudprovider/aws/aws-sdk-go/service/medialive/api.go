@@ -30,14 +30,13 @@ const opAcceptInputDeviceTransfer = "AcceptInputDeviceTransfer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptInputDeviceTransferRequest method.
+//	req, resp := client.AcceptInputDeviceTransferRequest(params)
 //
-//    // Example sending a request using the AcceptInputDeviceTransferRequest method.
-//    req, resp := client.AcceptInputDeviceTransferRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/AcceptInputDeviceTransfer
 func (c *MediaLive) AcceptInputDeviceTransferRequest(input *AcceptInputDeviceTransferInput) (req *request.Request, output *AcceptInputDeviceTransferOutput) {
@@ -70,23 +69,24 @@ func (c *MediaLive) AcceptInputDeviceTransferRequest(input *AcceptInputDeviceTra
 // API operation AcceptInputDeviceTransfer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/AcceptInputDeviceTransfer
 func (c *MediaLive) AcceptInputDeviceTransfer(input *AcceptInputDeviceTransferInput) (*AcceptInputDeviceTransferOutput, error) {
@@ -126,14 +126,13 @@ const opBatchDelete = "BatchDelete"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDeleteRequest method.
+//	req, resp := client.BatchDeleteRequest(params)
 //
-//    // Example sending a request using the BatchDeleteRequest method.
-//    req, resp := client.BatchDeleteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchDelete
 func (c *MediaLive) BatchDeleteRequest(input *BatchDeleteInput) (req *request.Request, output *BatchDeleteOutput) {
@@ -164,21 +163,22 @@ func (c *MediaLive) BatchDeleteRequest(input *BatchDeleteInput) (req *request.Re
 // API operation BatchDelete for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchDelete
 func (c *MediaLive) BatchDelete(input *BatchDeleteInput) (*BatchDeleteOutput, error) {
@@ -218,14 +218,13 @@ const opBatchStart = "BatchStart"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchStartRequest method.
+//	req, resp := client.BatchStartRequest(params)
 //
-//    // Example sending a request using the BatchStartRequest method.
-//    req, resp := client.BatchStartRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchStart
 func (c *MediaLive) BatchStartRequest(input *BatchStartInput) (req *request.Request, output *BatchStartOutput) {
@@ -246,7 +245,7 @@ func (c *MediaLive) BatchStartRequest(input *BatchStartInput) (req *request.Requ
 
 // BatchStart API operation for AWS Elemental MediaLive.
 //
-// Starts existing resources
+// # Starts existing resources
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -256,21 +255,22 @@ func (c *MediaLive) BatchStartRequest(input *BatchStartInput) (req *request.Requ
 // API operation BatchStart for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchStart
 func (c *MediaLive) BatchStart(input *BatchStartInput) (*BatchStartOutput, error) {
@@ -310,14 +310,13 @@ const opBatchStop = "BatchStop"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchStopRequest method.
+//	req, resp := client.BatchStopRequest(params)
 //
-//    // Example sending a request using the BatchStopRequest method.
-//    req, resp := client.BatchStopRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchStop
 func (c *MediaLive) BatchStopRequest(input *BatchStopInput) (req *request.Request, output *BatchStopOutput) {
@@ -338,7 +337,7 @@ func (c *MediaLive) BatchStopRequest(input *BatchStopInput) (req *request.Reques
 
 // BatchStop API operation for AWS Elemental MediaLive.
 //
-// Stops running resources
+// # Stops running resources
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -348,21 +347,22 @@ func (c *MediaLive) BatchStopRequest(input *BatchStopInput) (req *request.Reques
 // API operation BatchStop for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchStop
 func (c *MediaLive) BatchStop(input *BatchStopInput) (*BatchStopOutput, error) {
@@ -402,14 +402,13 @@ const opBatchUpdateSchedule = "BatchUpdateSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchUpdateScheduleRequest method.
+//	req, resp := client.BatchUpdateScheduleRequest(params)
 //
-//    // Example sending a request using the BatchUpdateScheduleRequest method.
-//    req, resp := client.BatchUpdateScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchUpdateSchedule
 func (c *MediaLive) BatchUpdateScheduleRequest(input *BatchUpdateScheduleInput) (req *request.Request, output *BatchUpdateScheduleOutput) {
@@ -430,7 +429,7 @@ func (c *MediaLive) BatchUpdateScheduleRequest(input *BatchUpdateScheduleInput) 
 
 // BatchUpdateSchedule API operation for AWS Elemental MediaLive.
 //
-// Update a channel schedule
+// # Update a channel schedule
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -440,21 +439,22 @@ func (c *MediaLive) BatchUpdateScheduleRequest(input *BatchUpdateScheduleInput) 
 // API operation BatchUpdateSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/BatchUpdateSchedule
 func (c *MediaLive) BatchUpdateSchedule(input *BatchUpdateScheduleInput) (*BatchUpdateScheduleOutput, error) {
@@ -494,14 +494,13 @@ const opCancelInputDeviceTransfer = "CancelInputDeviceTransfer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelInputDeviceTransferRequest method.
+//	req, resp := client.CancelInputDeviceTransferRequest(params)
 //
-//    // Example sending a request using the CancelInputDeviceTransferRequest method.
-//    req, resp := client.CancelInputDeviceTransferRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CancelInputDeviceTransfer
 func (c *MediaLive) CancelInputDeviceTransferRequest(input *CancelInputDeviceTransferInput) (req *request.Request, output *CancelInputDeviceTransferOutput) {
@@ -533,23 +532,24 @@ func (c *MediaLive) CancelInputDeviceTransferRequest(input *CancelInputDeviceTra
 // API operation CancelInputDeviceTransfer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CancelInputDeviceTransfer
 func (c *MediaLive) CancelInputDeviceTransfer(input *CancelInputDeviceTransferInput) (*CancelInputDeviceTransferOutput, error) {
@@ -589,14 +589,13 @@ const opClaimDevice = "ClaimDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ClaimDeviceRequest method.
+//	req, resp := client.ClaimDeviceRequest(params)
 //
-//    // Example sending a request using the ClaimDeviceRequest method.
-//    req, resp := client.ClaimDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ClaimDevice
 func (c *MediaLive) ClaimDeviceRequest(input *ClaimDeviceInput) (req *request.Request, output *ClaimDeviceOutput) {
@@ -629,21 +628,22 @@ func (c *MediaLive) ClaimDeviceRequest(input *ClaimDeviceInput) (req *request.Re
 // API operation ClaimDevice for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ClaimDevice
 func (c *MediaLive) ClaimDevice(input *ClaimDeviceInput) (*ClaimDeviceOutput, error) {
@@ -683,14 +683,13 @@ const opCreateChannel = "CreateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelRequest method.
+//	req, resp := client.CreateChannelRequest(params)
 //
-//    // Example sending a request using the CreateChannelRequest method.
-//    req, resp := client.CreateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateChannel
 func (c *MediaLive) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
@@ -711,7 +710,7 @@ func (c *MediaLive) CreateChannelRequest(input *CreateChannelInput) (req *reques
 
 // CreateChannel API operation for AWS Elemental MediaLive.
 //
-// Creates a new channel
+// # Creates a new channel
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -721,21 +720,22 @@ func (c *MediaLive) CreateChannelRequest(input *CreateChannelInput) (req *reques
 // API operation CreateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateChannel
 func (c *MediaLive) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, error) {
@@ -775,14 +775,13 @@ const opCreateInput = "CreateInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInputRequest method.
+//	req, resp := client.CreateInputRequest(params)
 //
-//    // Example sending a request using the CreateInputRequest method.
-//    req, resp := client.CreateInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateInput
 func (c *MediaLive) CreateInputRequest(input *CreateInputInput) (req *request.Request, output *CreateInputOutput) {
@@ -803,7 +802,7 @@ func (c *MediaLive) CreateInputRequest(input *CreateInputInput) (req *request.Re
 
 // CreateInput API operation for AWS Elemental MediaLive.
 //
-// Create an input
+// # Create an input
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -813,17 +812,18 @@ func (c *MediaLive) CreateInputRequest(input *CreateInputInput) (req *request.Re
 // API operation CreateInput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateInput
 func (c *MediaLive) CreateInput(input *CreateInputInput) (*CreateInputOutput, error) {
@@ -863,14 +863,13 @@ const opCreateInputSecurityGroup = "CreateInputSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInputSecurityGroupRequest method.
+//	req, resp := client.CreateInputSecurityGroupRequest(params)
 //
-//    // Example sending a request using the CreateInputSecurityGroupRequest method.
-//    req, resp := client.CreateInputSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateInputSecurityGroup
 func (c *MediaLive) CreateInputSecurityGroupRequest(input *CreateInputSecurityGroupInput) (req *request.Request, output *CreateInputSecurityGroupOutput) {
@@ -891,7 +890,7 @@ func (c *MediaLive) CreateInputSecurityGroupRequest(input *CreateInputSecurityGr
 
 // CreateInputSecurityGroup API operation for AWS Elemental MediaLive.
 //
-// Creates a Input Security Group
+// # Creates a Input Security Group
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -901,17 +900,18 @@ func (c *MediaLive) CreateInputSecurityGroupRequest(input *CreateInputSecurityGr
 // API operation CreateInputSecurityGroup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateInputSecurityGroup
 func (c *MediaLive) CreateInputSecurityGroup(input *CreateInputSecurityGroupInput) (*CreateInputSecurityGroupOutput, error) {
@@ -951,14 +951,13 @@ const opCreateMultiplex = "CreateMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMultiplexRequest method.
+//	req, resp := client.CreateMultiplexRequest(params)
 //
-//    // Example sending a request using the CreateMultiplexRequest method.
-//    req, resp := client.CreateMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateMultiplex
 func (c *MediaLive) CreateMultiplexRequest(input *CreateMultiplexInput) (req *request.Request, output *CreateMultiplexOutput) {
@@ -989,21 +988,22 @@ func (c *MediaLive) CreateMultiplexRequest(input *CreateMultiplexInput) (req *re
 // API operation CreateMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateMultiplex
 func (c *MediaLive) CreateMultiplex(input *CreateMultiplexInput) (*CreateMultiplexOutput, error) {
@@ -1043,14 +1043,13 @@ const opCreateMultiplexProgram = "CreateMultiplexProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMultiplexProgramRequest method.
+//	req, resp := client.CreateMultiplexProgramRequest(params)
 //
-//    // Example sending a request using the CreateMultiplexProgramRequest method.
-//    req, resp := client.CreateMultiplexProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateMultiplexProgram
 func (c *MediaLive) CreateMultiplexProgramRequest(input *CreateMultiplexProgramInput) (req *request.Request, output *CreateMultiplexProgramOutput) {
@@ -1081,21 +1080,22 @@ func (c *MediaLive) CreateMultiplexProgramRequest(input *CreateMultiplexProgramI
 // API operation CreateMultiplexProgram for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateMultiplexProgram
 func (c *MediaLive) CreateMultiplexProgram(input *CreateMultiplexProgramInput) (*CreateMultiplexProgramOutput, error) {
@@ -1135,14 +1135,13 @@ const opCreatePartnerInput = "CreatePartnerInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePartnerInputRequest method.
+//	req, resp := client.CreatePartnerInputRequest(params)
 //
-//    // Example sending a request using the CreatePartnerInputRequest method.
-//    req, resp := client.CreatePartnerInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreatePartnerInput
 func (c *MediaLive) CreatePartnerInputRequest(input *CreatePartnerInputInput) (req *request.Request, output *CreatePartnerInputOutput) {
@@ -1163,7 +1162,7 @@ func (c *MediaLive) CreatePartnerInputRequest(input *CreatePartnerInputInput) (r
 
 // CreatePartnerInput API operation for AWS Elemental MediaLive.
 //
-// Create a partner input
+// # Create a partner input
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1173,17 +1172,18 @@ func (c *MediaLive) CreatePartnerInputRequest(input *CreatePartnerInputInput) (r
 // API operation CreatePartnerInput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreatePartnerInput
 func (c *MediaLive) CreatePartnerInput(input *CreatePartnerInputInput) (*CreatePartnerInputOutput, error) {
@@ -1223,14 +1223,13 @@ const opCreateTags = "CreateTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTagsRequest method.
+//	req, resp := client.CreateTagsRequest(params)
 //
-//    // Example sending a request using the CreateTagsRequest method.
-//    req, resp := client.CreateTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateTags
 func (c *MediaLive) CreateTagsRequest(input *CreateTagsInput) (req *request.Request, output *CreateTagsOutput) {
@@ -1252,7 +1251,7 @@ func (c *MediaLive) CreateTagsRequest(input *CreateTagsInput) (req *request.Requ
 
 // CreateTags API operation for AWS Elemental MediaLive.
 //
-// Create tags for a resource
+// # Create tags for a resource
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1262,13 +1261,14 @@ func (c *MediaLive) CreateTagsRequest(input *CreateTagsInput) (req *request.Requ
 // API operation CreateTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/CreateTags
 func (c *MediaLive) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
@@ -1308,14 +1308,13 @@ const opDeleteChannel = "DeleteChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelRequest method.
+//	req, resp := client.DeleteChannelRequest(params)
 //
-//    // Example sending a request using the DeleteChannelRequest method.
-//    req, resp := client.DeleteChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteChannel
 func (c *MediaLive) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
@@ -1346,21 +1345,22 @@ func (c *MediaLive) DeleteChannelRequest(input *DeleteChannelInput) (req *reques
 // API operation DeleteChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteChannel
 func (c *MediaLive) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, error) {
@@ -1400,14 +1400,13 @@ const opDeleteInput = "DeleteInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInputRequest method.
+//	req, resp := client.DeleteInputRequest(params)
 //
-//    // Example sending a request using the DeleteInputRequest method.
-//    req, resp := client.DeleteInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteInput
 func (c *MediaLive) DeleteInputRequest(input *DeleteInputInput) (req *request.Request, output *DeleteInputOutput) {
@@ -1429,7 +1428,7 @@ func (c *MediaLive) DeleteInputRequest(input *DeleteInputInput) (req *request.Re
 
 // DeleteInput API operation for AWS Elemental MediaLive.
 //
-// Deletes the input end point
+// # Deletes the input end point
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1439,21 +1438,22 @@ func (c *MediaLive) DeleteInputRequest(input *DeleteInputInput) (req *request.Re
 // API operation DeleteInput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteInput
 func (c *MediaLive) DeleteInput(input *DeleteInputInput) (*DeleteInputOutput, error) {
@@ -1493,14 +1493,13 @@ const opDeleteInputSecurityGroup = "DeleteInputSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInputSecurityGroupRequest method.
+//	req, resp := client.DeleteInputSecurityGroupRequest(params)
 //
-//    // Example sending a request using the DeleteInputSecurityGroupRequest method.
-//    req, resp := client.DeleteInputSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteInputSecurityGroup
 func (c *MediaLive) DeleteInputSecurityGroupRequest(input *DeleteInputSecurityGroupInput) (req *request.Request, output *DeleteInputSecurityGroupOutput) {
@@ -1522,7 +1521,7 @@ func (c *MediaLive) DeleteInputSecurityGroupRequest(input *DeleteInputSecurityGr
 
 // DeleteInputSecurityGroup API operation for AWS Elemental MediaLive.
 //
-// Deletes an Input Security Group
+// # Deletes an Input Security Group
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1532,19 +1531,20 @@ func (c *MediaLive) DeleteInputSecurityGroupRequest(input *DeleteInputSecurityGr
 // API operation DeleteInputSecurityGroup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteInputSecurityGroup
 func (c *MediaLive) DeleteInputSecurityGroup(input *DeleteInputSecurityGroupInput) (*DeleteInputSecurityGroupOutput, error) {
@@ -1584,14 +1584,13 @@ const opDeleteMultiplex = "DeleteMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMultiplexRequest method.
+//	req, resp := client.DeleteMultiplexRequest(params)
 //
-//    // Example sending a request using the DeleteMultiplexRequest method.
-//    req, resp := client.DeleteMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteMultiplex
 func (c *MediaLive) DeleteMultiplexRequest(input *DeleteMultiplexInput) (req *request.Request, output *DeleteMultiplexOutput) {
@@ -1622,21 +1621,22 @@ func (c *MediaLive) DeleteMultiplexRequest(input *DeleteMultiplexInput) (req *re
 // API operation DeleteMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteMultiplex
 func (c *MediaLive) DeleteMultiplex(input *DeleteMultiplexInput) (*DeleteMultiplexOutput, error) {
@@ -1676,14 +1676,13 @@ const opDeleteMultiplexProgram = "DeleteMultiplexProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMultiplexProgramRequest method.
+//	req, resp := client.DeleteMultiplexProgramRequest(params)
 //
-//    // Example sending a request using the DeleteMultiplexProgramRequest method.
-//    req, resp := client.DeleteMultiplexProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteMultiplexProgram
 func (c *MediaLive) DeleteMultiplexProgramRequest(input *DeleteMultiplexProgramInput) (req *request.Request, output *DeleteMultiplexProgramOutput) {
@@ -1714,21 +1713,22 @@ func (c *MediaLive) DeleteMultiplexProgramRequest(input *DeleteMultiplexProgramI
 // API operation DeleteMultiplexProgram for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteMultiplexProgram
 func (c *MediaLive) DeleteMultiplexProgram(input *DeleteMultiplexProgramInput) (*DeleteMultiplexProgramOutput, error) {
@@ -1768,14 +1768,13 @@ const opDeleteReservation = "DeleteReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReservationRequest method.
+//	req, resp := client.DeleteReservationRequest(params)
 //
-//    // Example sending a request using the DeleteReservationRequest method.
-//    req, resp := client.DeleteReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteReservation
 func (c *MediaLive) DeleteReservationRequest(input *DeleteReservationInput) (req *request.Request, output *DeleteReservationOutput) {
@@ -1806,21 +1805,22 @@ func (c *MediaLive) DeleteReservationRequest(input *DeleteReservationInput) (req
 // API operation DeleteReservation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteReservation
 func (c *MediaLive) DeleteReservation(input *DeleteReservationInput) (*DeleteReservationOutput, error) {
@@ -1860,14 +1860,13 @@ const opDeleteSchedule = "DeleteSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScheduleRequest method.
+//	req, resp := client.DeleteScheduleRequest(params)
 //
-//    // Example sending a request using the DeleteScheduleRequest method.
-//    req, resp := client.DeleteScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteSchedule
 func (c *MediaLive) DeleteScheduleRequest(input *DeleteScheduleInput) (req *request.Request, output *DeleteScheduleOutput) {
@@ -1899,19 +1898,20 @@ func (c *MediaLive) DeleteScheduleRequest(input *DeleteScheduleInput) (req *requ
 // API operation DeleteSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteSchedule
 func (c *MediaLive) DeleteSchedule(input *DeleteScheduleInput) (*DeleteScheduleOutput, error) {
@@ -1951,14 +1951,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteTags
 func (c *MediaLive) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
@@ -1980,7 +1979,7 @@ func (c *MediaLive) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Requ
 
 // DeleteTags API operation for AWS Elemental MediaLive.
 //
-// Removes tags for a resource
+// # Removes tags for a resource
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1990,13 +1989,14 @@ func (c *MediaLive) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Requ
 // API operation DeleteTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DeleteTags
 func (c *MediaLive) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
@@ -2036,14 +2036,13 @@ const opDescribeChannel = "DescribeChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelRequest method.
+//	req, resp := client.DescribeChannelRequest(params)
 //
-//    // Example sending a request using the DescribeChannelRequest method.
-//    req, resp := client.DescribeChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeChannel
 func (c *MediaLive) DescribeChannelRequest(input *DescribeChannelInput) (req *request.Request, output *DescribeChannelOutput) {
@@ -2064,7 +2063,7 @@ func (c *MediaLive) DescribeChannelRequest(input *DescribeChannelInput) (req *re
 
 // DescribeChannel API operation for AWS Elemental MediaLive.
 //
-// Gets details about a channel
+// # Gets details about a channel
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2074,19 +2073,20 @@ func (c *MediaLive) DescribeChannelRequest(input *DescribeChannelInput) (req *re
 // API operation DescribeChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeChannel
 func (c *MediaLive) DescribeChannel(input *DescribeChannelInput) (*DescribeChannelOutput, error) {
@@ -2126,14 +2126,13 @@ const opDescribeInput = "DescribeInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInputRequest method.
+//	req, resp := client.DescribeInputRequest(params)
 //
-//    // Example sending a request using the DescribeInputRequest method.
-//    req, resp := client.DescribeInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInput
 func (c *MediaLive) DescribeInputRequest(input *DescribeInputInput) (req *request.Request, output *DescribeInputOutput) {
@@ -2154,7 +2153,7 @@ func (c *MediaLive) DescribeInputRequest(input *DescribeInputInput) (req *reques
 
 // DescribeInput API operation for AWS Elemental MediaLive.
 //
-// Produces details about an input
+// # Produces details about an input
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2164,19 +2163,20 @@ func (c *MediaLive) DescribeInputRequest(input *DescribeInputInput) (req *reques
 // API operation DescribeInput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInput
 func (c *MediaLive) DescribeInput(input *DescribeInputInput) (*DescribeInputOutput, error) {
@@ -2216,14 +2216,13 @@ const opDescribeInputDevice = "DescribeInputDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInputDeviceRequest method.
+//	req, resp := client.DescribeInputDeviceRequest(params)
 //
-//    // Example sending a request using the DescribeInputDeviceRequest method.
-//    req, resp := client.DescribeInputDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputDevice
 func (c *MediaLive) DescribeInputDeviceRequest(input *DescribeInputDeviceInput) (req *request.Request, output *DescribeInputDeviceOutput) {
@@ -2244,7 +2243,7 @@ func (c *MediaLive) DescribeInputDeviceRequest(input *DescribeInputDeviceInput) 
 
 // DescribeInputDevice API operation for AWS Elemental MediaLive.
 //
-// Gets the details for the input device
+// # Gets the details for the input device
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2254,19 +2253,20 @@ func (c *MediaLive) DescribeInputDeviceRequest(input *DescribeInputDeviceInput) 
 // API operation DescribeInputDevice for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputDevice
 func (c *MediaLive) DescribeInputDevice(input *DescribeInputDeviceInput) (*DescribeInputDeviceOutput, error) {
@@ -2306,14 +2306,13 @@ const opDescribeInputDeviceThumbnail = "DescribeInputDeviceThumbnail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInputDeviceThumbnailRequest method.
+//	req, resp := client.DescribeInputDeviceThumbnailRequest(params)
 //
-//    // Example sending a request using the DescribeInputDeviceThumbnailRequest method.
-//    req, resp := client.DescribeInputDeviceThumbnailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputDeviceThumbnail
 func (c *MediaLive) DescribeInputDeviceThumbnailRequest(input *DescribeInputDeviceThumbnailInput) (req *request.Request, output *DescribeInputDeviceThumbnailOutput) {
@@ -2344,19 +2343,20 @@ func (c *MediaLive) DescribeInputDeviceThumbnailRequest(input *DescribeInputDevi
 // API operation DescribeInputDeviceThumbnail for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputDeviceThumbnail
 func (c *MediaLive) DescribeInputDeviceThumbnail(input *DescribeInputDeviceThumbnailInput) (*DescribeInputDeviceThumbnailOutput, error) {
@@ -2396,14 +2396,13 @@ const opDescribeInputSecurityGroup = "DescribeInputSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInputSecurityGroupRequest method.
+//	req, resp := client.DescribeInputSecurityGroupRequest(params)
 //
-//    // Example sending a request using the DescribeInputSecurityGroupRequest method.
-//    req, resp := client.DescribeInputSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputSecurityGroup
 func (c *MediaLive) DescribeInputSecurityGroupRequest(input *DescribeInputSecurityGroupInput) (req *request.Request, output *DescribeInputSecurityGroupOutput) {
@@ -2424,7 +2423,7 @@ func (c *MediaLive) DescribeInputSecurityGroupRequest(input *DescribeInputSecuri
 
 // DescribeInputSecurityGroup API operation for AWS Elemental MediaLive.
 //
-// Produces a summary of an Input Security Group
+// # Produces a summary of an Input Security Group
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2434,19 +2433,20 @@ func (c *MediaLive) DescribeInputSecurityGroupRequest(input *DescribeInputSecuri
 // API operation DescribeInputSecurityGroup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeInputSecurityGroup
 func (c *MediaLive) DescribeInputSecurityGroup(input *DescribeInputSecurityGroupInput) (*DescribeInputSecurityGroupOutput, error) {
@@ -2486,14 +2486,13 @@ const opDescribeMultiplex = "DescribeMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMultiplexRequest method.
+//	req, resp := client.DescribeMultiplexRequest(params)
 //
-//    // Example sending a request using the DescribeMultiplexRequest method.
-//    req, resp := client.DescribeMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeMultiplex
 func (c *MediaLive) DescribeMultiplexRequest(input *DescribeMultiplexInput) (req *request.Request, output *DescribeMultiplexOutput) {
@@ -2524,19 +2523,20 @@ func (c *MediaLive) DescribeMultiplexRequest(input *DescribeMultiplexInput) (req
 // API operation DescribeMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeMultiplex
 func (c *MediaLive) DescribeMultiplex(input *DescribeMultiplexInput) (*DescribeMultiplexOutput, error) {
@@ -2576,14 +2576,13 @@ const opDescribeMultiplexProgram = "DescribeMultiplexProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMultiplexProgramRequest method.
+//	req, resp := client.DescribeMultiplexProgramRequest(params)
 //
-//    // Example sending a request using the DescribeMultiplexProgramRequest method.
-//    req, resp := client.DescribeMultiplexProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeMultiplexProgram
 func (c *MediaLive) DescribeMultiplexProgramRequest(input *DescribeMultiplexProgramInput) (req *request.Request, output *DescribeMultiplexProgramOutput) {
@@ -2614,19 +2613,20 @@ func (c *MediaLive) DescribeMultiplexProgramRequest(input *DescribeMultiplexProg
 // API operation DescribeMultiplexProgram for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeMultiplexProgram
 func (c *MediaLive) DescribeMultiplexProgram(input *DescribeMultiplexProgramInput) (*DescribeMultiplexProgramOutput, error) {
@@ -2666,14 +2666,13 @@ const opDescribeOffering = "DescribeOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOfferingRequest method.
+//	req, resp := client.DescribeOfferingRequest(params)
 //
-//    // Example sending a request using the DescribeOfferingRequest method.
-//    req, resp := client.DescribeOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeOffering
 func (c *MediaLive) DescribeOfferingRequest(input *DescribeOfferingInput) (req *request.Request, output *DescribeOfferingOutput) {
@@ -2704,19 +2703,20 @@ func (c *MediaLive) DescribeOfferingRequest(input *DescribeOfferingInput) (req *
 // API operation DescribeOffering for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeOffering
 func (c *MediaLive) DescribeOffering(input *DescribeOfferingInput) (*DescribeOfferingOutput, error) {
@@ -2756,14 +2756,13 @@ const opDescribeReservation = "DescribeReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservationRequest method.
+//	req, resp := client.DescribeReservationRequest(params)
 //
-//    // Example sending a request using the DescribeReservationRequest method.
-//    req, resp := client.DescribeReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeReservation
 func (c *MediaLive) DescribeReservationRequest(input *DescribeReservationInput) (req *request.Request, output *DescribeReservationOutput) {
@@ -2794,19 +2793,20 @@ func (c *MediaLive) DescribeReservationRequest(input *DescribeReservationInput) 
 // API operation DescribeReservation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeReservation
 func (c *MediaLive) DescribeReservation(input *DescribeReservationInput) (*DescribeReservationOutput, error) {
@@ -2846,14 +2846,13 @@ const opDescribeSchedule = "DescribeSchedule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScheduleRequest method.
+//	req, resp := client.DescribeScheduleRequest(params)
 //
-//    // Example sending a request using the DescribeScheduleRequest method.
-//    req, resp := client.DescribeScheduleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeSchedule
 func (c *MediaLive) DescribeScheduleRequest(input *DescribeScheduleInput) (req *request.Request, output *DescribeScheduleOutput) {
@@ -2880,7 +2879,7 @@ func (c *MediaLive) DescribeScheduleRequest(input *DescribeScheduleInput) (req *
 
 // DescribeSchedule API operation for AWS Elemental MediaLive.
 //
-// Get a channel schedule
+// # Get a channel schedule
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2890,19 +2889,20 @@ func (c *MediaLive) DescribeScheduleRequest(input *DescribeScheduleInput) (req *
 // API operation DescribeSchedule for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/DescribeSchedule
 func (c *MediaLive) DescribeSchedule(input *DescribeScheduleInput) (*DescribeScheduleOutput, error) {
@@ -2934,15 +2934,14 @@ func (c *MediaLive) DescribeScheduleWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSchedule operation.
-//    pageNum := 0
-//    err := client.DescribeSchedulePages(params,
-//        func(page *medialive.DescribeScheduleOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSchedule operation.
+//	pageNum := 0
+//	err := client.DescribeSchedulePages(params,
+//	    func(page *medialive.DescribeScheduleOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) DescribeSchedulePages(input *DescribeScheduleInput, fn func(*DescribeScheduleOutput, bool) bool) error {
 	return c.DescribeSchedulePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2994,14 +2993,13 @@ const opListChannels = "ListChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsRequest method.
+//	req, resp := client.ListChannelsRequest(params)
 //
-//    // Example sending a request using the ListChannelsRequest method.
-//    req, resp := client.ListChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListChannels
 func (c *MediaLive) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
@@ -3028,7 +3026,7 @@ func (c *MediaLive) ListChannelsRequest(input *ListChannelsInput) (req *request.
 
 // ListChannels API operation for AWS Elemental MediaLive.
 //
-// Produces list of channels that have been created
+// # Produces list of channels that have been created
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3038,17 +3036,18 @@ func (c *MediaLive) ListChannelsRequest(input *ListChannelsInput) (req *request.
 // API operation ListChannels for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListChannels
 func (c *MediaLive) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, error) {
@@ -3080,15 +3079,14 @@ func (c *MediaLive) ListChannelsWithContext(ctx aws.Context, input *ListChannels
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannels operation.
-//    pageNum := 0
-//    err := client.ListChannelsPages(params,
-//        func(page *medialive.ListChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannels operation.
+//	pageNum := 0
+//	err := client.ListChannelsPages(params,
+//	    func(page *medialive.ListChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3140,14 +3138,13 @@ const opListInputDeviceTransfers = "ListInputDeviceTransfers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputDeviceTransfersRequest method.
+//	req, resp := client.ListInputDeviceTransfersRequest(params)
 //
-//    // Example sending a request using the ListInputDeviceTransfersRequest method.
-//    req, resp := client.ListInputDeviceTransfersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputDeviceTransfers
 func (c *MediaLive) ListInputDeviceTransfersRequest(input *ListInputDeviceTransfersInput) (req *request.Request, output *ListInputDeviceTransfersOutput) {
@@ -3186,19 +3183,20 @@ func (c *MediaLive) ListInputDeviceTransfersRequest(input *ListInputDeviceTransf
 // API operation ListInputDeviceTransfers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputDeviceTransfers
 func (c *MediaLive) ListInputDeviceTransfers(input *ListInputDeviceTransfersInput) (*ListInputDeviceTransfersOutput, error) {
@@ -3230,15 +3228,14 @@ func (c *MediaLive) ListInputDeviceTransfersWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInputDeviceTransfers operation.
-//    pageNum := 0
-//    err := client.ListInputDeviceTransfersPages(params,
-//        func(page *medialive.ListInputDeviceTransfersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInputDeviceTransfers operation.
+//	pageNum := 0
+//	err := client.ListInputDeviceTransfersPages(params,
+//	    func(page *medialive.ListInputDeviceTransfersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListInputDeviceTransfersPages(input *ListInputDeviceTransfersInput, fn func(*ListInputDeviceTransfersOutput, bool) bool) error {
 	return c.ListInputDeviceTransfersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3290,14 +3287,13 @@ const opListInputDevices = "ListInputDevices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputDevicesRequest method.
+//	req, resp := client.ListInputDevicesRequest(params)
 //
-//    // Example sending a request using the ListInputDevicesRequest method.
-//    req, resp := client.ListInputDevicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputDevices
 func (c *MediaLive) ListInputDevicesRequest(input *ListInputDevicesInput) (req *request.Request, output *ListInputDevicesOutput) {
@@ -3324,7 +3320,7 @@ func (c *MediaLive) ListInputDevicesRequest(input *ListInputDevicesInput) (req *
 
 // ListInputDevices API operation for AWS Elemental MediaLive.
 //
-// List input devices
+// # List input devices
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3334,17 +3330,18 @@ func (c *MediaLive) ListInputDevicesRequest(input *ListInputDevicesInput) (req *
 // API operation ListInputDevices for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputDevices
 func (c *MediaLive) ListInputDevices(input *ListInputDevicesInput) (*ListInputDevicesOutput, error) {
@@ -3376,15 +3373,14 @@ func (c *MediaLive) ListInputDevicesWithContext(ctx aws.Context, input *ListInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInputDevices operation.
-//    pageNum := 0
-//    err := client.ListInputDevicesPages(params,
-//        func(page *medialive.ListInputDevicesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInputDevices operation.
+//	pageNum := 0
+//	err := client.ListInputDevicesPages(params,
+//	    func(page *medialive.ListInputDevicesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListInputDevicesPages(input *ListInputDevicesInput, fn func(*ListInputDevicesOutput, bool) bool) error {
 	return c.ListInputDevicesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3436,14 +3432,13 @@ const opListInputSecurityGroups = "ListInputSecurityGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputSecurityGroupsRequest method.
+//	req, resp := client.ListInputSecurityGroupsRequest(params)
 //
-//    // Example sending a request using the ListInputSecurityGroupsRequest method.
-//    req, resp := client.ListInputSecurityGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputSecurityGroups
 func (c *MediaLive) ListInputSecurityGroupsRequest(input *ListInputSecurityGroupsInput) (req *request.Request, output *ListInputSecurityGroupsOutput) {
@@ -3470,7 +3465,7 @@ func (c *MediaLive) ListInputSecurityGroupsRequest(input *ListInputSecurityGroup
 
 // ListInputSecurityGroups API operation for AWS Elemental MediaLive.
 //
-// Produces a list of Input Security Groups for an account
+// # Produces a list of Input Security Groups for an account
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3480,17 +3475,18 @@ func (c *MediaLive) ListInputSecurityGroupsRequest(input *ListInputSecurityGroup
 // API operation ListInputSecurityGroups for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputSecurityGroups
 func (c *MediaLive) ListInputSecurityGroups(input *ListInputSecurityGroupsInput) (*ListInputSecurityGroupsOutput, error) {
@@ -3522,15 +3518,14 @@ func (c *MediaLive) ListInputSecurityGroupsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInputSecurityGroups operation.
-//    pageNum := 0
-//    err := client.ListInputSecurityGroupsPages(params,
-//        func(page *medialive.ListInputSecurityGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInputSecurityGroups operation.
+//	pageNum := 0
+//	err := client.ListInputSecurityGroupsPages(params,
+//	    func(page *medialive.ListInputSecurityGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListInputSecurityGroupsPages(input *ListInputSecurityGroupsInput, fn func(*ListInputSecurityGroupsOutput, bool) bool) error {
 	return c.ListInputSecurityGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3582,14 +3577,13 @@ const opListInputs = "ListInputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputsRequest method.
+//	req, resp := client.ListInputsRequest(params)
 //
-//    // Example sending a request using the ListInputsRequest method.
-//    req, resp := client.ListInputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputs
 func (c *MediaLive) ListInputsRequest(input *ListInputsInput) (req *request.Request, output *ListInputsOutput) {
@@ -3616,7 +3610,7 @@ func (c *MediaLive) ListInputsRequest(input *ListInputsInput) (req *request.Requ
 
 // ListInputs API operation for AWS Elemental MediaLive.
 //
-// Produces list of inputs that have been created
+// # Produces list of inputs that have been created
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3626,17 +3620,18 @@ func (c *MediaLive) ListInputsRequest(input *ListInputsInput) (req *request.Requ
 // API operation ListInputs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListInputs
 func (c *MediaLive) ListInputs(input *ListInputsInput) (*ListInputsOutput, error) {
@@ -3668,15 +3663,14 @@ func (c *MediaLive) ListInputsWithContext(ctx aws.Context, input *ListInputsInpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInputs operation.
-//    pageNum := 0
-//    err := client.ListInputsPages(params,
-//        func(page *medialive.ListInputsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInputs operation.
+//	pageNum := 0
+//	err := client.ListInputsPages(params,
+//	    func(page *medialive.ListInputsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListInputsPages(input *ListInputsInput, fn func(*ListInputsOutput, bool) bool) error {
 	return c.ListInputsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3728,14 +3722,13 @@ const opListMultiplexPrograms = "ListMultiplexPrograms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMultiplexProgramsRequest method.
+//	req, resp := client.ListMultiplexProgramsRequest(params)
 //
-//    // Example sending a request using the ListMultiplexProgramsRequest method.
-//    req, resp := client.ListMultiplexProgramsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListMultiplexPrograms
 func (c *MediaLive) ListMultiplexProgramsRequest(input *ListMultiplexProgramsInput) (req *request.Request, output *ListMultiplexProgramsOutput) {
@@ -3772,19 +3765,20 @@ func (c *MediaLive) ListMultiplexProgramsRequest(input *ListMultiplexProgramsInp
 // API operation ListMultiplexPrograms for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListMultiplexPrograms
 func (c *MediaLive) ListMultiplexPrograms(input *ListMultiplexProgramsInput) (*ListMultiplexProgramsOutput, error) {
@@ -3816,15 +3810,14 @@ func (c *MediaLive) ListMultiplexProgramsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMultiplexPrograms operation.
-//    pageNum := 0
-//    err := client.ListMultiplexProgramsPages(params,
-//        func(page *medialive.ListMultiplexProgramsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMultiplexPrograms operation.
+//	pageNum := 0
+//	err := client.ListMultiplexProgramsPages(params,
+//	    func(page *medialive.ListMultiplexProgramsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListMultiplexProgramsPages(input *ListMultiplexProgramsInput, fn func(*ListMultiplexProgramsOutput, bool) bool) error {
 	return c.ListMultiplexProgramsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3876,14 +3869,13 @@ const opListMultiplexes = "ListMultiplexes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMultiplexesRequest method.
+//	req, resp := client.ListMultiplexesRequest(params)
 //
-//    // Example sending a request using the ListMultiplexesRequest method.
-//    req, resp := client.ListMultiplexesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListMultiplexes
 func (c *MediaLive) ListMultiplexesRequest(input *ListMultiplexesInput) (req *request.Request, output *ListMultiplexesOutput) {
@@ -3920,17 +3912,18 @@ func (c *MediaLive) ListMultiplexesRequest(input *ListMultiplexesInput) (req *re
 // API operation ListMultiplexes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListMultiplexes
 func (c *MediaLive) ListMultiplexes(input *ListMultiplexesInput) (*ListMultiplexesOutput, error) {
@@ -3962,15 +3955,14 @@ func (c *MediaLive) ListMultiplexesWithContext(ctx aws.Context, input *ListMulti
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMultiplexes operation.
-//    pageNum := 0
-//    err := client.ListMultiplexesPages(params,
-//        func(page *medialive.ListMultiplexesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMultiplexes operation.
+//	pageNum := 0
+//	err := client.ListMultiplexesPages(params,
+//	    func(page *medialive.ListMultiplexesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListMultiplexesPages(input *ListMultiplexesInput, fn func(*ListMultiplexesOutput, bool) bool) error {
 	return c.ListMultiplexesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4022,14 +4014,13 @@ const opListOfferings = "ListOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOfferingsRequest method.
+//	req, resp := client.ListOfferingsRequest(params)
 //
-//    // Example sending a request using the ListOfferingsRequest method.
-//    req, resp := client.ListOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListOfferings
 func (c *MediaLive) ListOfferingsRequest(input *ListOfferingsInput) (req *request.Request, output *ListOfferingsOutput) {
@@ -4066,17 +4057,18 @@ func (c *MediaLive) ListOfferingsRequest(input *ListOfferingsInput) (req *reques
 // API operation ListOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListOfferings
 func (c *MediaLive) ListOfferings(input *ListOfferingsInput) (*ListOfferingsOutput, error) {
@@ -4108,15 +4100,14 @@ func (c *MediaLive) ListOfferingsWithContext(ctx aws.Context, input *ListOfferin
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOfferings operation.
-//    pageNum := 0
-//    err := client.ListOfferingsPages(params,
-//        func(page *medialive.ListOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOfferings operation.
+//	pageNum := 0
+//	err := client.ListOfferingsPages(params,
+//	    func(page *medialive.ListOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListOfferingsPages(input *ListOfferingsInput, fn func(*ListOfferingsOutput, bool) bool) error {
 	return c.ListOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4168,14 +4159,13 @@ const opListReservations = "ListReservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReservationsRequest method.
+//	req, resp := client.ListReservationsRequest(params)
 //
-//    // Example sending a request using the ListReservationsRequest method.
-//    req, resp := client.ListReservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListReservations
 func (c *MediaLive) ListReservationsRequest(input *ListReservationsInput) (req *request.Request, output *ListReservationsOutput) {
@@ -4212,17 +4202,18 @@ func (c *MediaLive) ListReservationsRequest(input *ListReservationsInput) (req *
 // API operation ListReservations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListReservations
 func (c *MediaLive) ListReservations(input *ListReservationsInput) (*ListReservationsOutput, error) {
@@ -4254,15 +4245,14 @@ func (c *MediaLive) ListReservationsWithContext(ctx aws.Context, input *ListRese
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReservations operation.
-//    pageNum := 0
-//    err := client.ListReservationsPages(params,
-//        func(page *medialive.ListReservationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReservations operation.
+//	pageNum := 0
+//	err := client.ListReservationsPages(params,
+//	    func(page *medialive.ListReservationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaLive) ListReservationsPages(input *ListReservationsInput, fn func(*ListReservationsOutput, bool) bool) error {
 	return c.ListReservationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4314,14 +4304,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListTagsForResource
 func (c *MediaLive) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4342,7 +4331,7 @@ func (c *MediaLive) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 
 // ListTagsForResource API operation for AWS Elemental MediaLive.
 //
-// Produces list of tags that have been created for a resource
+// # Produces list of tags that have been created for a resource
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4352,13 +4341,14 @@ func (c *MediaLive) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
 //
-//   * BadRequestException
+//   - NotFoundException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
+//
+//   - ForbiddenException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/ListTagsForResource
 func (c *MediaLive) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4398,14 +4388,13 @@ const opPurchaseOffering = "PurchaseOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseOfferingRequest method.
+//	req, resp := client.PurchaseOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseOfferingRequest method.
-//    req, resp := client.PurchaseOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/PurchaseOffering
 func (c *MediaLive) PurchaseOfferingRequest(input *PurchaseOfferingInput) (req *request.Request, output *PurchaseOfferingOutput) {
@@ -4436,21 +4425,22 @@ func (c *MediaLive) PurchaseOfferingRequest(input *PurchaseOfferingInput) (req *
 // API operation PurchaseOffering for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/PurchaseOffering
 func (c *MediaLive) PurchaseOffering(input *PurchaseOfferingInput) (*PurchaseOfferingOutput, error) {
@@ -4490,14 +4480,13 @@ const opRejectInputDeviceTransfer = "RejectInputDeviceTransfer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectInputDeviceTransferRequest method.
+//	req, resp := client.RejectInputDeviceTransferRequest(params)
 //
-//    // Example sending a request using the RejectInputDeviceTransferRequest method.
-//    req, resp := client.RejectInputDeviceTransferRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/RejectInputDeviceTransfer
 func (c *MediaLive) RejectInputDeviceTransferRequest(input *RejectInputDeviceTransferInput) (req *request.Request, output *RejectInputDeviceTransferOutput) {
@@ -4529,23 +4518,24 @@ func (c *MediaLive) RejectInputDeviceTransferRequest(input *RejectInputDeviceTra
 // API operation RejectInputDeviceTransfer for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/RejectInputDeviceTransfer
 func (c *MediaLive) RejectInputDeviceTransfer(input *RejectInputDeviceTransferInput) (*RejectInputDeviceTransferOutput, error) {
@@ -4585,14 +4575,13 @@ const opStartChannel = "StartChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartChannelRequest method.
+//	req, resp := client.StartChannelRequest(params)
 //
-//    // Example sending a request using the StartChannelRequest method.
-//    req, resp := client.StartChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StartChannel
 func (c *MediaLive) StartChannelRequest(input *StartChannelInput) (req *request.Request, output *StartChannelOutput) {
@@ -4613,7 +4602,7 @@ func (c *MediaLive) StartChannelRequest(input *StartChannelInput) (req *request.
 
 // StartChannel API operation for AWS Elemental MediaLive.
 //
-// Starts an existing channel
+// # Starts an existing channel
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4623,21 +4612,22 @@ func (c *MediaLive) StartChannelRequest(input *StartChannelInput) (req *request.
 // API operation StartChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StartChannel
 func (c *MediaLive) StartChannel(input *StartChannelInput) (*StartChannelOutput, error) {
@@ -4677,14 +4667,13 @@ const opStartMultiplex = "StartMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMultiplexRequest method.
+//	req, resp := client.StartMultiplexRequest(params)
 //
-//    // Example sending a request using the StartMultiplexRequest method.
-//    req, resp := client.StartMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StartMultiplex
 func (c *MediaLive) StartMultiplexRequest(input *StartMultiplexInput) (req *request.Request, output *StartMultiplexOutput) {
@@ -4716,21 +4705,22 @@ func (c *MediaLive) StartMultiplexRequest(input *StartMultiplexInput) (req *requ
 // API operation StartMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StartMultiplex
 func (c *MediaLive) StartMultiplex(input *StartMultiplexInput) (*StartMultiplexOutput, error) {
@@ -4770,14 +4760,13 @@ const opStopChannel = "StopChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopChannelRequest method.
+//	req, resp := client.StopChannelRequest(params)
 //
-//    // Example sending a request using the StopChannelRequest method.
-//    req, resp := client.StopChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StopChannel
 func (c *MediaLive) StopChannelRequest(input *StopChannelInput) (req *request.Request, output *StopChannelOutput) {
@@ -4798,7 +4787,7 @@ func (c *MediaLive) StopChannelRequest(input *StopChannelInput) (req *request.Re
 
 // StopChannel API operation for AWS Elemental MediaLive.
 //
-// Stops a running channel
+// # Stops a running channel
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4808,21 +4797,22 @@ func (c *MediaLive) StopChannelRequest(input *StopChannelInput) (req *request.Re
 // API operation StopChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StopChannel
 func (c *MediaLive) StopChannel(input *StopChannelInput) (*StopChannelOutput, error) {
@@ -4862,14 +4852,13 @@ const opStopMultiplex = "StopMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopMultiplexRequest method.
+//	req, resp := client.StopMultiplexRequest(params)
 //
-//    // Example sending a request using the StopMultiplexRequest method.
-//    req, resp := client.StopMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StopMultiplex
 func (c *MediaLive) StopMultiplexRequest(input *StopMultiplexInput) (req *request.Request, output *StopMultiplexOutput) {
@@ -4901,21 +4890,22 @@ func (c *MediaLive) StopMultiplexRequest(input *StopMultiplexInput) (req *reques
 // API operation StopMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/StopMultiplex
 func (c *MediaLive) StopMultiplex(input *StopMultiplexInput) (*StopMultiplexOutput, error) {
@@ -4955,14 +4945,13 @@ const opTransferInputDevice = "TransferInputDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TransferInputDeviceRequest method.
+//	req, resp := client.TransferInputDeviceRequest(params)
 //
-//    // Example sending a request using the TransferInputDeviceRequest method.
-//    req, resp := client.TransferInputDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/TransferInputDevice
 func (c *MediaLive) TransferInputDeviceRequest(input *TransferInputDeviceInput) (req *request.Request, output *TransferInputDeviceOutput) {
@@ -4995,23 +4984,24 @@ func (c *MediaLive) TransferInputDeviceRequest(input *TransferInputDeviceInput) 
 // API operation TransferInputDevice for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/TransferInputDevice
 func (c *MediaLive) TransferInputDevice(input *TransferInputDeviceInput) (*TransferInputDeviceOutput, error) {
@@ -5051,14 +5041,13 @@ const opUpdateChannel = "UpdateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelRequest method.
+//	req, resp := client.UpdateChannelRequest(params)
 //
-//    // Example sending a request using the UpdateChannelRequest method.
-//    req, resp := client.UpdateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateChannel
 func (c *MediaLive) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
@@ -5089,19 +5078,20 @@ func (c *MediaLive) UpdateChannelRequest(input *UpdateChannelInput) (req *reques
 // API operation UpdateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * GatewayTimeoutException
+//   - BadGatewayException
 //
-//   * ConflictException
+//   - GatewayTimeoutException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateChannel
 func (c *MediaLive) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, error) {
@@ -5141,14 +5131,13 @@ const opUpdateChannelClass = "UpdateChannelClass"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelClassRequest method.
+//	req, resp := client.UpdateChannelClassRequest(params)
 //
-//    // Example sending a request using the UpdateChannelClassRequest method.
-//    req, resp := client.UpdateChannelClassRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateChannelClass
 func (c *MediaLive) UpdateChannelClassRequest(input *UpdateChannelClassInput) (req *request.Request, output *UpdateChannelClassOutput) {
@@ -5179,23 +5168,24 @@ func (c *MediaLive) UpdateChannelClassRequest(input *UpdateChannelClassInput) (r
 // API operation UpdateChannelClass for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateChannelClass
 func (c *MediaLive) UpdateChannelClass(input *UpdateChannelClassInput) (*UpdateChannelClassOutput, error) {
@@ -5235,14 +5225,13 @@ const opUpdateInput = "UpdateInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInputRequest method.
+//	req, resp := client.UpdateInputRequest(params)
 //
-//    // Example sending a request using the UpdateInputRequest method.
-//    req, resp := client.UpdateInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInput
 func (c *MediaLive) UpdateInputRequest(input *UpdateInputInput) (req *request.Request, output *UpdateInputOutput) {
@@ -5273,19 +5262,20 @@ func (c *MediaLive) UpdateInputRequest(input *UpdateInputInput) (req *request.Re
 // API operation UpdateInput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * ConflictException
+//   - GatewayTimeoutException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInput
 func (c *MediaLive) UpdateInput(input *UpdateInputInput) (*UpdateInputOutput, error) {
@@ -5325,14 +5315,13 @@ const opUpdateInputDevice = "UpdateInputDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInputDeviceRequest method.
+//	req, resp := client.UpdateInputDeviceRequest(params)
 //
-//    // Example sending a request using the UpdateInputDeviceRequest method.
-//    req, resp := client.UpdateInputDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInputDevice
 func (c *MediaLive) UpdateInputDeviceRequest(input *UpdateInputDeviceInput) (req *request.Request, output *UpdateInputDeviceOutput) {
@@ -5363,21 +5352,22 @@ func (c *MediaLive) UpdateInputDeviceRequest(input *UpdateInputDeviceInput) (req
 // API operation UpdateInputDevice for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInputDevice
 func (c *MediaLive) UpdateInputDevice(input *UpdateInputDeviceInput) (*UpdateInputDeviceOutput, error) {
@@ -5417,14 +5407,13 @@ const opUpdateInputSecurityGroup = "UpdateInputSecurityGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInputSecurityGroupRequest method.
+//	req, resp := client.UpdateInputSecurityGroupRequest(params)
 //
-//    // Example sending a request using the UpdateInputSecurityGroupRequest method.
-//    req, resp := client.UpdateInputSecurityGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInputSecurityGroup
 func (c *MediaLive) UpdateInputSecurityGroupRequest(input *UpdateInputSecurityGroupInput) (req *request.Request, output *UpdateInputSecurityGroupOutput) {
@@ -5455,19 +5444,20 @@ func (c *MediaLive) UpdateInputSecurityGroupRequest(input *UpdateInputSecurityGr
 // API operation UpdateInputSecurityGroup for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * ConflictException
+//   - GatewayTimeoutException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateInputSecurityGroup
 func (c *MediaLive) UpdateInputSecurityGroup(input *UpdateInputSecurityGroupInput) (*UpdateInputSecurityGroupOutput, error) {
@@ -5507,14 +5497,13 @@ const opUpdateMultiplex = "UpdateMultiplex"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMultiplexRequest method.
+//	req, resp := client.UpdateMultiplexRequest(params)
 //
-//    // Example sending a request using the UpdateMultiplexRequest method.
-//    req, resp := client.UpdateMultiplexRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateMultiplex
 func (c *MediaLive) UpdateMultiplexRequest(input *UpdateMultiplexInput) (req *request.Request, output *UpdateMultiplexOutput) {
@@ -5545,21 +5534,22 @@ func (c *MediaLive) UpdateMultiplexRequest(input *UpdateMultiplexInput) (req *re
 // API operation UpdateMultiplex for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * ConflictException
+//   - GatewayTimeoutException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateMultiplex
 func (c *MediaLive) UpdateMultiplex(input *UpdateMultiplexInput) (*UpdateMultiplexOutput, error) {
@@ -5599,14 +5589,13 @@ const opUpdateMultiplexProgram = "UpdateMultiplexProgram"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMultiplexProgramRequest method.
+//	req, resp := client.UpdateMultiplexProgramRequest(params)
 //
-//    // Example sending a request using the UpdateMultiplexProgramRequest method.
-//    req, resp := client.UpdateMultiplexProgramRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateMultiplexProgram
 func (c *MediaLive) UpdateMultiplexProgramRequest(input *UpdateMultiplexProgramInput) (req *request.Request, output *UpdateMultiplexProgramOutput) {
@@ -5637,21 +5626,22 @@ func (c *MediaLive) UpdateMultiplexProgramRequest(input *UpdateMultiplexProgramI
 // API operation UpdateMultiplexProgram for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * UnprocessableEntityException
+//   - BadRequestException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * ConflictException
+//   - GatewayTimeoutException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateMultiplexProgram
 func (c *MediaLive) UpdateMultiplexProgram(input *UpdateMultiplexProgramInput) (*UpdateMultiplexProgramOutput, error) {
@@ -5691,14 +5681,13 @@ const opUpdateReservation = "UpdateReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReservationRequest method.
+//	req, resp := client.UpdateReservationRequest(params)
 //
-//    // Example sending a request using the UpdateReservationRequest method.
-//    req, resp := client.UpdateReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateReservation
 func (c *MediaLive) UpdateReservationRequest(input *UpdateReservationInput) (req *request.Request, output *UpdateReservationOutput) {
@@ -5729,21 +5718,22 @@ func (c *MediaLive) UpdateReservationRequest(input *UpdateReservationInput) (req
 // API operation UpdateReservation for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
 //
-//   * InternalServerErrorException
+//   - BadRequestException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * BadGatewayException
+//   - ForbiddenException
 //
-//   * NotFoundException
+//   - BadGatewayException
 //
-//   * GatewayTimeoutException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - GatewayTimeoutException
 //
-//   * ConflictException
+//   - TooManyRequestsException
+//
+//   - ConflictException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/medialive-2017-10-14/UpdateReservation
 func (c *MediaLive) UpdateReservation(input *UpdateReservationInput) (*UpdateReservationOutput, error) {

@@ -29,14 +29,13 @@ const opCreateChatToken = "CreateChatToken"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChatTokenRequest method.
+//	req, resp := client.CreateChatTokenRequest(params)
 //
-//    // Example sending a request using the CreateChatTokenRequest method.
-//    req, resp := client.CreateChatTokenRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateChatToken
 func (c *Ivschat) CreateChatTokenRequest(input *CreateChatTokenInput) (req *request.Request, output *CreateChatTokenOutput) {
@@ -72,13 +71,14 @@ func (c *Ivschat) CreateChatTokenRequest(input *CreateChatTokenInput) (req *requ
 // API operation CreateChatToken for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - PendingVerification
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateChatToken
 func (c *Ivschat) CreateChatToken(input *CreateChatTokenInput) (*CreateChatTokenOutput, error) {
@@ -118,14 +118,13 @@ const opCreateRoom = "CreateRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRoomRequest method.
+//	req, resp := client.CreateRoomRequest(params)
 //
-//    // Example sending a request using the CreateRoomRequest method.
-//    req, resp := client.CreateRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateRoom
 func (c *Ivschat) CreateRoomRequest(input *CreateRoomInput) (req *request.Request, output *CreateRoomOutput) {
@@ -156,17 +155,18 @@ func (c *Ivschat) CreateRoomRequest(input *CreateRoomInput) (req *request.Reques
 // API operation CreateRoom for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
 //
-//   * AccessDeniedException
+//   - ConflictException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ServiceQuotaExceededException
+//   - ResourceNotFoundException
 //
-//   * PendingVerification
+//   - ServiceQuotaExceededException
 //
-//   * ValidationException
+//   - PendingVerification
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateRoom
 func (c *Ivschat) CreateRoom(input *CreateRoomInput) (*CreateRoomOutput, error) {
@@ -206,14 +206,13 @@ const opDeleteMessage = "DeleteMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMessageRequest method.
+//	req, resp := client.DeleteMessageRequest(params)
 //
-//    // Example sending a request using the DeleteMessageRequest method.
-//    req, resp := client.DeleteMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteMessage
 func (c *Ivschat) DeleteMessageRequest(input *DeleteMessageInput) (req *request.Request, output *DeleteMessageOutput) {
@@ -248,13 +247,14 @@ func (c *Ivschat) DeleteMessageRequest(input *DeleteMessageInput) (req *request.
 // API operation DeleteMessage for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * AccessDeniedException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteMessage
 func (c *Ivschat) DeleteMessage(input *DeleteMessageInput) (*DeleteMessageOutput, error) {
@@ -294,14 +294,13 @@ const opDeleteRoom = "DeleteRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRoomRequest method.
+//	req, resp := client.DeleteRoomRequest(params)
 //
-//    // Example sending a request using the DeleteRoomRequest method.
-//    req, resp := client.DeleteRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteRoom
 func (c *Ivschat) DeleteRoomRequest(input *DeleteRoomInput) (req *request.Request, output *DeleteRoomOutput) {
@@ -333,13 +332,14 @@ func (c *Ivschat) DeleteRoomRequest(input *DeleteRoomInput) (req *request.Reques
 // API operation DeleteRoom for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - PendingVerification
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteRoom
 func (c *Ivschat) DeleteRoom(input *DeleteRoomInput) (*DeleteRoomOutput, error) {
@@ -379,14 +379,13 @@ const opDisconnectUser = "DisconnectUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisconnectUserRequest method.
+//	req, resp := client.DisconnectUserRequest(params)
 //
-//    // Example sending a request using the DisconnectUserRequest method.
-//    req, resp := client.DisconnectUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DisconnectUser
 func (c *Ivschat) DisconnectUserRequest(input *DisconnectUserInput) (req *request.Request, output *DisconnectUserOutput) {
@@ -420,13 +419,14 @@ func (c *Ivschat) DisconnectUserRequest(input *DisconnectUserInput) (req *reques
 // API operation DisconnectUser for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * AccessDeniedException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DisconnectUser
 func (c *Ivschat) DisconnectUser(input *DisconnectUserInput) (*DisconnectUserOutput, error) {
@@ -466,14 +466,13 @@ const opGetRoom = "GetRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoomRequest method.
+//	req, resp := client.GetRoomRequest(params)
 //
-//    // Example sending a request using the GetRoomRequest method.
-//    req, resp := client.GetRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/GetRoom
 func (c *Ivschat) GetRoomRequest(input *GetRoomInput) (req *request.Request, output *GetRoomOutput) {
@@ -504,11 +503,12 @@ func (c *Ivschat) GetRoomRequest(input *GetRoomInput) (req *request.Request, out
 // API operation GetRoom for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/GetRoom
 func (c *Ivschat) GetRoom(input *GetRoomInput) (*GetRoomOutput, error) {
@@ -548,14 +548,13 @@ const opListRooms = "ListRooms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRoomsRequest method.
+//	req, resp := client.ListRoomsRequest(params)
 //
-//    // Example sending a request using the ListRoomsRequest method.
-//    req, resp := client.ListRoomsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListRooms
 func (c *Ivschat) ListRoomsRequest(input *ListRoomsInput) (req *request.Request, output *ListRoomsOutput) {
@@ -593,11 +592,12 @@ func (c *Ivschat) ListRoomsRequest(input *ListRoomsInput) (req *request.Request,
 // API operation ListRooms for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListRooms
 func (c *Ivschat) ListRooms(input *ListRoomsInput) (*ListRoomsOutput, error) {
@@ -629,15 +629,14 @@ func (c *Ivschat) ListRoomsWithContext(ctx aws.Context, input *ListRoomsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRooms operation.
-//    pageNum := 0
-//    err := client.ListRoomsPages(params,
-//        func(page *ivschat.ListRoomsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRooms operation.
+//	pageNum := 0
+//	err := client.ListRoomsPages(params,
+//	    func(page *ivschat.ListRoomsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Ivschat) ListRoomsPages(input *ListRoomsInput, fn func(*ListRoomsOutput, bool) bool) error {
 	return c.ListRoomsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -689,14 +688,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListTagsForResource
 func (c *Ivschat) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -727,11 +725,12 @@ func (c *Ivschat) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListTagsForResource
 func (c *Ivschat) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -771,14 +770,13 @@ const opSendEvent = "SendEvent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendEventRequest method.
+//	req, resp := client.SendEventRequest(params)
 //
-//    // Example sending a request using the SendEventRequest method.
-//    req, resp := client.SendEventRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/SendEvent
 func (c *Ivschat) SendEventRequest(input *SendEventInput) (req *request.Request, output *SendEventOutput) {
@@ -811,13 +809,14 @@ func (c *Ivschat) SendEventRequest(input *SendEventInput) (req *request.Request,
 // API operation SendEvent for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * AccessDeniedException
+//   - ThrottlingException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/SendEvent
 func (c *Ivschat) SendEvent(input *SendEventInput) (*SendEventOutput, error) {
@@ -857,14 +856,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/TagResource
 func (c *Ivschat) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -896,11 +894,12 @@ func (c *Ivschat) TagResourceRequest(input *TagResourceInput) (req *request.Requ
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/TagResource
 func (c *Ivschat) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -940,14 +939,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UntagResource
 func (c *Ivschat) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -979,11 +977,12 @@ func (c *Ivschat) UntagResourceRequest(input *UntagResourceInput) (req *request.
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - InternalServerException
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UntagResource
 func (c *Ivschat) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1023,14 +1022,13 @@ const opUpdateRoom = "UpdateRoom"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRoomRequest method.
+//	req, resp := client.UpdateRoomRequest(params)
 //
-//    // Example sending a request using the UpdateRoomRequest method.
-//    req, resp := client.UpdateRoomRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UpdateRoom
 func (c *Ivschat) UpdateRoomRequest(input *UpdateRoomInput) (req *request.Request, output *UpdateRoomOutput) {
@@ -1061,13 +1059,14 @@ func (c *Ivschat) UpdateRoomRequest(input *UpdateRoomInput) (req *request.Reques
 // API operation UpdateRoom for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
 //
-//   * ResourceNotFoundException
+//   - AccessDeniedException
 //
-//   * PendingVerification
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - PendingVerification
+//
+//   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UpdateRoom
 func (c *Ivschat) UpdateRoom(input *UpdateRoomInput) (*UpdateRoomOutput, error) {

@@ -11,7 +11,7 @@ import (
 
 // StartInstancePoolRequest wrapper for the StartInstancePool operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/StartInstancePool.go.html to see an example of how to use StartInstancePoolRequest.
 type StartInstancePoolRequest struct {

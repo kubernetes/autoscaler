@@ -139,8 +139,9 @@ func defaultRegionBreaker() *circuitBreaker {
 }
 
 // currentState return the current state.
-//  if in StateClosed and now is over expiry time, it will turn to a new generation.
-//  if in StateOpen and now is over expiry time, it will turn to StateHalfOpen
+//
+//	if in StateClosed and now is over expiry time, it will turn to a new generation.
+//	if in StateOpen and now is over expiry time, it will turn to StateHalfOpen
 func (s *circuitBreaker) currentState(now time.Time) (state, uint64) {
 	switch s.state {
 	case StateClosed:

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a GameSparks client from just a session.
-//     svc := gamesparks.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a GameSparks client with additional configuration
-//     svc := gamesparks.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a GameSparks client from just a session.
+//	svc := gamesparks.New(mySession)
+//
+//	// Create a GameSparks client with additional configuration
+//	svc := gamesparks.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *GameSparks {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

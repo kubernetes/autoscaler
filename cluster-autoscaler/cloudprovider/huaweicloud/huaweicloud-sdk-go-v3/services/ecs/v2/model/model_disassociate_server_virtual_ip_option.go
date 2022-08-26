@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type DisassociateServerVirtualIpOption struct {
 	// 云服务器添加网卡的信息。  约束：解绑虚拟IP时，subnet_id为空字符串
 

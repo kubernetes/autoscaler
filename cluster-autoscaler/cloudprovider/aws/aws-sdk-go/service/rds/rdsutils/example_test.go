@@ -23,6 +23,7 @@ import (
 // https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
 //
 // Usage:
+//
 //	./main -user "iamuser" -dbname "foo" -region "us-west-2" -rolearn "arn" -endpoint "dbendpoint" -port 3306
 func ExampleConnectionStringBuilder() {
 	userPtr := flag.String("user", "", "user of the credentials")

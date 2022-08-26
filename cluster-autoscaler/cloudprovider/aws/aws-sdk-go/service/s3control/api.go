@@ -31,14 +31,13 @@ const opCreateAccessPoint = "CreateAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessPointRequest method.
+//	req, resp := client.CreateAccessPointRequest(params)
 //
-//    // Example sending a request using the CreateAccessPointRequest method.
-//    req, resp := client.CreateAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessPoint
 func (c *S3Control) CreateAccessPointRequest(input *CreateAccessPointInput) (req *request.Request, output *CreateAccessPointOutput) {
@@ -84,11 +83,11 @@ func (c *S3Control) CreateAccessPointRequest(input *CreateAccessPointInput) (req
 //
 // The following actions are related to CreateAccessPoint:
 //
-//    * GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
+//   - GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
 //
-//    * DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
+//   - DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
 //
-//    * ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
+//   - ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -134,14 +133,13 @@ const opCreateAccessPointForObjectLambda = "CreateAccessPointForObjectLambda"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessPointForObjectLambdaRequest method.
+//	req, resp := client.CreateAccessPointForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the CreateAccessPointForObjectLambdaRequest method.
-//    req, resp := client.CreateAccessPointForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessPointForObjectLambda
 func (c *S3Control) CreateAccessPointForObjectLambdaRequest(input *CreateAccessPointForObjectLambdaInput) (req *request.Request, output *CreateAccessPointForObjectLambdaOutput) {
@@ -170,11 +168,11 @@ func (c *S3Control) CreateAccessPointForObjectLambdaRequest(input *CreateAccessP
 //
 // The following actions are related to CreateAccessPointForObjectLambda:
 //
-//    * DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
+//   - DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
 //
-//    * GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
+//   - GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
 //
-//    * ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
+//   - ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -220,14 +218,13 @@ const opCreateBucket = "CreateBucket"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBucketRequest method.
+//	req, resp := client.CreateBucketRequest(params)
 //
-//    // Example sending a request using the CreateBucketRequest method.
-//    req, resp := client.CreateBucketRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateBucket
 func (c *S3Control) CreateBucketRequest(input *CreateBucketInput) (req *request.Request, output *CreateBucketOutput) {
@@ -252,7 +249,6 @@ func (c *S3Control) CreateBucketRequest(input *CreateBucketInput) (req *request.
 
 // CreateBucket API operation for AWS S3 Control.
 //
-//
 // This action creates an Amazon S3 on Outposts bucket. To create an S3 bucket,
 // see Create Bucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html)
 // in the Amazon S3 API Reference.
@@ -267,9 +263,9 @@ func (c *S3Control) CreateBucketRequest(input *CreateBucketInput) (req *request.
 //
 // S3 on Outposts buckets support:
 //
-//    * Tags
+//   - Tags
 //
-//    * LifecycleConfigurations for deleting expired objects
+//   - LifecycleConfigurations for deleting expired objects
 //
 // For a complete list of restrictions and Amazon S3 feature limitations on
 // S3 on Outposts, see Amazon S3 on Outposts Restrictions and Limitations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OnOutpostsRestrictionsLimitations.html).
@@ -281,15 +277,15 @@ func (c *S3Control) CreateBucketRequest(input *CreateBucketInput) (req *request.
 //
 // The following actions are related to CreateBucket for Amazon S3 on Outposts:
 //
-//    * PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
+//   - PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
 //
-//    * GetBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html)
+//   - GetBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html)
 //
-//    * DeleteBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html)
+//   - DeleteBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html)
 //
-//    * CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
+//   - CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
 //
-//    * PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
+//   - PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -299,13 +295,14 @@ func (c *S3Control) CreateBucketRequest(input *CreateBucketInput) (req *request.
 // API operation CreateBucket for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBucketAlreadyExists "BucketAlreadyExists"
-//   The requested Outposts bucket name is not available. The bucket namespace
-//   is shared by all users of the Outposts in this Region. Select a different
-//   name and try again.
 //
-//   * ErrCodeBucketAlreadyOwnedByYou "BucketAlreadyOwnedByYou"
-//   The Outposts bucket you tried to create already exists, and you own it.
+//   - ErrCodeBucketAlreadyExists "BucketAlreadyExists"
+//     The requested Outposts bucket name is not available. The bucket namespace
+//     is shared by all users of the Outposts in this Region. Select a different
+//     name and try again.
+//
+//   - ErrCodeBucketAlreadyOwnedByYou "BucketAlreadyOwnedByYou"
+//     The Outposts bucket you tried to create already exists, and you own it.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateBucket
 func (c *S3Control) CreateBucket(input *CreateBucketInput) (*CreateBucketOutput, error) {
@@ -345,14 +342,13 @@ const opCreateJob = "CreateJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJobRequest method.
+//	req, resp := client.CreateJobRequest(params)
 //
-//    // Example sending a request using the CreateJobRequest method.
-//    req, resp := client.CreateJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateJob
 func (c *S3Control) CreateJobRequest(input *CreateJobInput) (req *request.Request, output *CreateJobOutput) {
@@ -384,15 +380,15 @@ func (c *S3Control) CreateJobRequest(input *CreateJobInput) (req *request.Reques
 //
 // Related actions include:
 //
-//    * DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
+//   - DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
 //
-//    * ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
+//   - ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
 //
-//    * UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
+//   - UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
 //
-//    * UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
+//   - UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
 //
-//    * JobOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_JobOperation.html)
+//   - JobOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_JobOperation.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -402,13 +398,14 @@ func (c *S3Control) CreateJobRequest(input *CreateJobInput) (req *request.Reques
 // API operation CreateJob for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeBadRequestException "BadRequestException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeIdempotencyException "IdempotencyException"
+//   - ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeInternalServiceException "InternalServiceException"
+//   - ErrCodeIdempotencyException "IdempotencyException"
+//
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateJob
 func (c *S3Control) CreateJob(input *CreateJobInput) (*CreateJobOutput, error) {
@@ -448,14 +445,13 @@ const opCreateMultiRegionAccessPoint = "CreateMultiRegionAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMultiRegionAccessPointRequest method.
+//	req, resp := client.CreateMultiRegionAccessPointRequest(params)
 //
-//    // Example sending a request using the CreateMultiRegionAccessPointRequest method.
-//    req, resp := client.CreateMultiRegionAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateMultiRegionAccessPoint
 func (c *S3Control) CreateMultiRegionAccessPointRequest(input *CreateMultiRegionAccessPointInput) (req *request.Request, output *CreateMultiRegionAccessPointOutput) {
@@ -498,13 +494,13 @@ func (c *S3Control) CreateMultiRegionAccessPointRequest(input *CreateMultiRegion
 //
 // The following actions are related to CreateMultiRegionAccessPoint:
 //
-//    * DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
+//   - DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
 //
-//    * DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
+//   - DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
 //
-//    * GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
+//   - GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
 //
-//    * ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
+//   - ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -550,14 +546,13 @@ const opDeleteAccessPoint = "DeleteAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessPointRequest method.
+//	req, resp := client.DeleteAccessPointRequest(params)
 //
-//    // Example sending a request using the DeleteAccessPointRequest method.
-//    req, resp := client.DeleteAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessPoint
 func (c *S3Control) DeleteAccessPointRequest(input *DeleteAccessPointInput) (req *request.Request, output *DeleteAccessPointOutput) {
@@ -596,11 +591,11 @@ func (c *S3Control) DeleteAccessPointRequest(input *DeleteAccessPointInput) (req
 //
 // The following actions are related to DeleteAccessPoint:
 //
-//    * CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
+//   - CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
 //
-//    * GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
+//   - GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
 //
-//    * ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
+//   - ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -646,14 +641,13 @@ const opDeleteAccessPointForObjectLambda = "DeleteAccessPointForObjectLambda"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessPointForObjectLambdaRequest method.
+//	req, resp := client.DeleteAccessPointForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the DeleteAccessPointForObjectLambdaRequest method.
-//    req, resp := client.DeleteAccessPointForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessPointForObjectLambda
 func (c *S3Control) DeleteAccessPointForObjectLambdaRequest(input *DeleteAccessPointForObjectLambdaInput) (req *request.Request, output *DeleteAccessPointForObjectLambdaOutput) {
@@ -681,11 +675,11 @@ func (c *S3Control) DeleteAccessPointForObjectLambdaRequest(input *DeleteAccessP
 //
 // The following actions are related to DeleteAccessPointForObjectLambda:
 //
-//    * CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
+//   - CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
 //
-//    * GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
+//   - GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
 //
-//    * ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
+//   - ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -731,14 +725,13 @@ const opDeleteAccessPointPolicy = "DeleteAccessPointPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessPointPolicyRequest method.
+//	req, resp := client.DeleteAccessPointPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteAccessPointPolicyRequest method.
-//    req, resp := client.DeleteAccessPointPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessPointPolicy
 func (c *S3Control) DeleteAccessPointPolicyRequest(input *DeleteAccessPointPolicyInput) (req *request.Request, output *DeleteAccessPointPolicyOutput) {
@@ -777,9 +770,9 @@ func (c *S3Control) DeleteAccessPointPolicyRequest(input *DeleteAccessPointPolic
 //
 // The following actions are related to DeleteAccessPointPolicy:
 //
-//    * PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
+//   - PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
 //
-//    * GetAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicy.html)
+//   - GetAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -825,14 +818,13 @@ const opDeleteAccessPointPolicyForObjectLambda = "DeleteAccessPointPolicyForObje
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessPointPolicyForObjectLambdaRequest method.
+//	req, resp := client.DeleteAccessPointPolicyForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the DeleteAccessPointPolicyForObjectLambdaRequest method.
-//    req, resp := client.DeleteAccessPointPolicyForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessPointPolicyForObjectLambda
 func (c *S3Control) DeleteAccessPointPolicyForObjectLambdaRequest(input *DeleteAccessPointPolicyForObjectLambdaInput) (req *request.Request, output *DeleteAccessPointPolicyForObjectLambdaOutput) {
@@ -860,9 +852,9 @@ func (c *S3Control) DeleteAccessPointPolicyForObjectLambdaRequest(input *DeleteA
 //
 // The following actions are related to DeleteAccessPointPolicyForObjectLambda:
 //
-//    * GetAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicyForObjectLambda.html)
+//   - GetAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicyForObjectLambda.html)
 //
-//    * PutAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicyForObjectLambda.html)
+//   - PutAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicyForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -908,14 +900,13 @@ const opDeleteBucket = "DeleteBucket"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBucketRequest method.
+//	req, resp := client.DeleteBucketRequest(params)
 //
-//    // Example sending a request using the DeleteBucketRequest method.
-//    req, resp := client.DeleteBucketRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucket
 func (c *S3Control) DeleteBucketRequest(input *DeleteBucketInput) (req *request.Request, output *DeleteBucketOutput) {
@@ -942,7 +933,6 @@ func (c *S3Control) DeleteBucketRequest(input *DeleteBucketInput) (req *request.
 
 // DeleteBucket API operation for AWS S3 Control.
 //
-//
 // This action deletes an Amazon S3 on Outposts bucket. To delete an S3 bucket,
 // see DeleteBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html)
 // in the Amazon S3 API Reference.
@@ -963,11 +953,11 @@ func (c *S3Control) DeleteBucketRequest(input *DeleteBucketInput) (req *request.
 //
 // Related Resources
 //
-//    * CreateBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html)
+//   - CreateBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html)
 //
-//    * GetBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html)
+//   - GetBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html)
 //
-//    * DeleteObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html)
+//   - DeleteObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1013,14 +1003,13 @@ const opDeleteBucketLifecycleConfiguration = "DeleteBucketLifecycleConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBucketLifecycleConfigurationRequest method.
+//	req, resp := client.DeleteBucketLifecycleConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteBucketLifecycleConfigurationRequest method.
-//    req, resp := client.DeleteBucketLifecycleConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucketLifecycleConfiguration
 func (c *S3Control) DeleteBucketLifecycleConfigurationRequest(input *DeleteBucketLifecycleConfigurationInput) (req *request.Request, output *DeleteBucketLifecycleConfigurationOutput) {
@@ -1046,7 +1035,6 @@ func (c *S3Control) DeleteBucketLifecycleConfigurationRequest(input *DeleteBucke
 }
 
 // DeleteBucketLifecycleConfiguration API operation for AWS S3 Control.
-//
 //
 // This action deletes an Amazon S3 on Outposts bucket's lifecycle configuration.
 // To delete an S3 bucket's lifecycle configuration, see DeleteBucketLifecycle
@@ -1078,9 +1066,9 @@ func (c *S3Control) DeleteBucketLifecycleConfigurationRequest(input *DeleteBucke
 //
 // Related actions include:
 //
-//    * PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
+//   - PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
 //
-//    * GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
+//   - GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1126,14 +1114,13 @@ const opDeleteBucketPolicy = "DeleteBucketPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBucketPolicyRequest method.
+//	req, resp := client.DeleteBucketPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteBucketPolicyRequest method.
-//    req, resp := client.DeleteBucketPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucketPolicy
 func (c *S3Control) DeleteBucketPolicyRequest(input *DeleteBucketPolicyInput) (req *request.Request, output *DeleteBucketPolicyOutput) {
@@ -1159,7 +1146,6 @@ func (c *S3Control) DeleteBucketPolicyRequest(input *DeleteBucketPolicyInput) (r
 }
 
 // DeleteBucketPolicy API operation for AWS S3 Control.
-//
 //
 // This action deletes an Amazon S3 on Outposts bucket policy. To delete an
 // S3 bucket policy, see DeleteBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketPolicy.html)
@@ -1196,9 +1182,9 @@ func (c *S3Control) DeleteBucketPolicyRequest(input *DeleteBucketPolicyInput) (r
 //
 // The following actions are related to DeleteBucketPolicy:
 //
-//    * GetBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html)
+//   - GetBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html)
 //
-//    * PutBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html)
+//   - PutBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1244,14 +1230,13 @@ const opDeleteBucketTagging = "DeleteBucketTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBucketTaggingRequest method.
+//	req, resp := client.DeleteBucketTaggingRequest(params)
 //
-//    // Example sending a request using the DeleteBucketTaggingRequest method.
-//    req, resp := client.DeleteBucketTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucketTagging
 func (c *S3Control) DeleteBucketTaggingRequest(input *DeleteBucketTaggingInput) (req *request.Request, output *DeleteBucketTaggingOutput) {
@@ -1278,7 +1263,6 @@ func (c *S3Control) DeleteBucketTaggingRequest(input *DeleteBucketTaggingInput) 
 
 // DeleteBucketTagging API operation for AWS S3 Control.
 //
-//
 // This action deletes an Amazon S3 on Outposts bucket's tags. To delete an
 // S3 bucket tags, see DeleteBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketTagging.html)
 // in the Amazon S3 API Reference.
@@ -1301,9 +1285,9 @@ func (c *S3Control) DeleteBucketTaggingRequest(input *DeleteBucketTaggingInput) 
 //
 // The following actions are related to DeleteBucketTagging:
 //
-//    * GetBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html)
+//   - GetBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html)
 //
-//    * PutBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html)
+//   - PutBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1349,14 +1333,13 @@ const opDeleteJobTagging = "DeleteJobTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJobTaggingRequest method.
+//	req, resp := client.DeleteJobTaggingRequest(params)
 //
-//    // Example sending a request using the DeleteJobTaggingRequest method.
-//    req, resp := client.DeleteJobTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteJobTagging
 func (c *S3Control) DeleteJobTaggingRequest(input *DeleteJobTaggingInput) (req *request.Request, output *DeleteJobTaggingOutput) {
@@ -1388,11 +1371,11 @@ func (c *S3Control) DeleteJobTaggingRequest(input *DeleteJobTaggingInput) (req *
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * GetJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetJobTagging.html)
+//   - GetJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetJobTagging.html)
 //
-//    * PutJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutJobTagging.html)
+//   - PutJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutJobTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1402,11 +1385,12 @@ func (c *S3Control) DeleteJobTaggingRequest(input *DeleteJobTaggingInput) (req *
 // API operation DeleteJobTagging for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+//   - ErrCodeNotFoundException "NotFoundException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteJobTagging
 func (c *S3Control) DeleteJobTagging(input *DeleteJobTaggingInput) (*DeleteJobTaggingOutput, error) {
@@ -1446,14 +1430,13 @@ const opDeleteMultiRegionAccessPoint = "DeleteMultiRegionAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMultiRegionAccessPointRequest method.
+//	req, resp := client.DeleteMultiRegionAccessPointRequest(params)
 //
-//    // Example sending a request using the DeleteMultiRegionAccessPointRequest method.
-//    req, resp := client.DeleteMultiRegionAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteMultiRegionAccessPoint
 func (c *S3Control) DeleteMultiRegionAccessPointRequest(input *DeleteMultiRegionAccessPointInput) (req *request.Request, output *DeleteMultiRegionAccessPointOutput) {
@@ -1495,13 +1478,13 @@ func (c *S3Control) DeleteMultiRegionAccessPointRequest(input *DeleteMultiRegion
 //
 // The following actions are related to DeleteMultiRegionAccessPoint:
 //
-//    * CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
+//   - CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
 //
-//    * DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
+//   - DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
 //
-//    * GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
+//   - GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
 //
-//    * ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
+//   - ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1547,14 +1530,13 @@ const opDeletePublicAccessBlock = "DeletePublicAccessBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePublicAccessBlockRequest method.
+//	req, resp := client.DeletePublicAccessBlockRequest(params)
 //
-//    // Example sending a request using the DeletePublicAccessBlockRequest method.
-//    req, resp := client.DeletePublicAccessBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeletePublicAccessBlock
 func (c *S3Control) DeletePublicAccessBlockRequest(input *DeletePublicAccessBlockInput) (req *request.Request, output *DeletePublicAccessBlockOutput) {
@@ -1583,9 +1565,9 @@ func (c *S3Control) DeletePublicAccessBlockRequest(input *DeletePublicAccessBloc
 //
 // Related actions include:
 //
-//    * GetPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetPublicAccessBlock.html)
+//   - GetPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetPublicAccessBlock.html)
 //
-//    * PutPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutPublicAccessBlock.html)
+//   - PutPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutPublicAccessBlock.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1631,14 +1613,13 @@ const opDeleteStorageLensConfiguration = "DeleteStorageLensConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStorageLensConfigurationRequest method.
+//	req, resp := client.DeleteStorageLensConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteStorageLensConfigurationRequest method.
-//    req, resp := client.DeleteStorageLensConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteStorageLensConfiguration
 func (c *S3Control) DeleteStorageLensConfigurationRequest(input *DeleteStorageLensConfigurationInput) (req *request.Request, output *DeleteStorageLensConfigurationOutput) {
@@ -1716,14 +1697,13 @@ const opDeleteStorageLensConfigurationTagging = "DeleteStorageLensConfigurationT
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStorageLensConfigurationTaggingRequest method.
+//	req, resp := client.DeleteStorageLensConfigurationTaggingRequest(params)
 //
-//    // Example sending a request using the DeleteStorageLensConfigurationTaggingRequest method.
-//    req, resp := client.DeleteStorageLensConfigurationTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteStorageLensConfigurationTagging
 func (c *S3Control) DeleteStorageLensConfigurationTaggingRequest(input *DeleteStorageLensConfigurationTaggingInput) (req *request.Request, output *DeleteStorageLensConfigurationTaggingOutput) {
@@ -1801,14 +1781,13 @@ const opDescribeJob = "DescribeJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeJobRequest method.
+//	req, resp := client.DescribeJobRequest(params)
 //
-//    // Example sending a request using the DescribeJobRequest method.
-//    req, resp := client.DescribeJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DescribeJob
 func (c *S3Control) DescribeJobRequest(input *DescribeJobInput) (req *request.Request, output *DescribeJobOutput) {
@@ -1837,13 +1816,13 @@ func (c *S3Control) DescribeJobRequest(input *DescribeJobInput) (req *request.Re
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
+//   - ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
 //
-//    * UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
+//   - UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
 //
-//    * UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
+//   - UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1853,13 +1832,14 @@ func (c *S3Control) DescribeJobRequest(input *DescribeJobInput) (req *request.Re
 // API operation DescribeJob for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeInternalServiceException "InternalServiceException"
+//   - ErrCodeNotFoundException "NotFoundException"
+//
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DescribeJob
 func (c *S3Control) DescribeJob(input *DescribeJobInput) (*DescribeJobOutput, error) {
@@ -1899,14 +1879,13 @@ const opDescribeMultiRegionAccessPointOperation = "DescribeMultiRegionAccessPoin
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMultiRegionAccessPointOperationRequest method.
+//	req, resp := client.DescribeMultiRegionAccessPointOperationRequest(params)
 //
-//    // Example sending a request using the DescribeMultiRegionAccessPointOperationRequest method.
-//    req, resp := client.DescribeMultiRegionAccessPointOperationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DescribeMultiRegionAccessPointOperation
 func (c *S3Control) DescribeMultiRegionAccessPointOperationRequest(input *DescribeMultiRegionAccessPointOperationInput) (req *request.Request, output *DescribeMultiRegionAccessPointOperationOutput) {
@@ -1941,13 +1920,13 @@ func (c *S3Control) DescribeMultiRegionAccessPointOperationRequest(input *Descri
 //
 // The following actions are related to GetMultiRegionAccessPoint:
 //
-//    * CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
+//   - CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
 //
-//    * DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
+//   - DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
 //
-//    * GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
+//   - GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
 //
-//    * ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
+//   - ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1993,14 +1972,13 @@ const opGetAccessPoint = "GetAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointRequest method.
+//	req, resp := client.GetAccessPointRequest(params)
 //
-//    // Example sending a request using the GetAccessPointRequest method.
-//    req, resp := client.GetAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPoint
 func (c *S3Control) GetAccessPointRequest(input *GetAccessPointInput) (req *request.Request, output *GetAccessPointOutput) {
@@ -2038,11 +2016,11 @@ func (c *S3Control) GetAccessPointRequest(input *GetAccessPointInput) (req *requ
 //
 // The following actions are related to GetAccessPoint:
 //
-//    * CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
+//   - CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
 //
-//    * DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
+//   - DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
 //
-//    * ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
+//   - ListAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2088,14 +2066,13 @@ const opGetAccessPointConfigurationForObjectLambda = "GetAccessPointConfiguratio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointConfigurationForObjectLambdaRequest method.
+//	req, resp := client.GetAccessPointConfigurationForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the GetAccessPointConfigurationForObjectLambdaRequest method.
-//    req, resp := client.GetAccessPointConfigurationForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointConfigurationForObjectLambda
 func (c *S3Control) GetAccessPointConfigurationForObjectLambdaRequest(input *GetAccessPointConfigurationForObjectLambdaInput) (req *request.Request, output *GetAccessPointConfigurationForObjectLambdaOutput) {
@@ -2122,7 +2099,7 @@ func (c *S3Control) GetAccessPointConfigurationForObjectLambdaRequest(input *Get
 //
 // The following actions are related to GetAccessPointConfigurationForObjectLambda:
 //
-//    * PutAccessPointConfigurationForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointConfigurationForObjectLambda.html)
+//   - PutAccessPointConfigurationForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointConfigurationForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2168,14 +2145,13 @@ const opGetAccessPointForObjectLambda = "GetAccessPointForObjectLambda"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointForObjectLambdaRequest method.
+//	req, resp := client.GetAccessPointForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the GetAccessPointForObjectLambdaRequest method.
-//    req, resp := client.GetAccessPointForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointForObjectLambda
 func (c *S3Control) GetAccessPointForObjectLambdaRequest(input *GetAccessPointForObjectLambdaInput) (req *request.Request, output *GetAccessPointForObjectLambdaOutput) {
@@ -2203,11 +2179,11 @@ func (c *S3Control) GetAccessPointForObjectLambdaRequest(input *GetAccessPointFo
 //
 // The following actions are related to GetAccessPointForObjectLambda:
 //
-//    * CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
+//   - CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
 //
-//    * DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
+//   - DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
 //
-//    * ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
+//   - ListAccessPointsForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListAccessPointsForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2253,14 +2229,13 @@ const opGetAccessPointPolicy = "GetAccessPointPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointPolicyRequest method.
+//	req, resp := client.GetAccessPointPolicyRequest(params)
 //
-//    // Example sending a request using the GetAccessPointPolicyRequest method.
-//    req, resp := client.GetAccessPointPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointPolicy
 func (c *S3Control) GetAccessPointPolicyRequest(input *GetAccessPointPolicyInput) (req *request.Request, output *GetAccessPointPolicyOutput) {
@@ -2290,9 +2265,9 @@ func (c *S3Control) GetAccessPointPolicyRequest(input *GetAccessPointPolicyInput
 //
 // The following actions are related to GetAccessPointPolicy:
 //
-//    * PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
+//   - PutAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html)
 //
-//    * DeleteAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html)
+//   - DeleteAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2338,14 +2313,13 @@ const opGetAccessPointPolicyForObjectLambda = "GetAccessPointPolicyForObjectLamb
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointPolicyForObjectLambdaRequest method.
+//	req, resp := client.GetAccessPointPolicyForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the GetAccessPointPolicyForObjectLambdaRequest method.
-//    req, resp := client.GetAccessPointPolicyForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointPolicyForObjectLambda
 func (c *S3Control) GetAccessPointPolicyForObjectLambdaRequest(input *GetAccessPointPolicyForObjectLambdaInput) (req *request.Request, output *GetAccessPointPolicyForObjectLambdaOutput) {
@@ -2372,9 +2346,9 @@ func (c *S3Control) GetAccessPointPolicyForObjectLambdaRequest(input *GetAccessP
 //
 // The following actions are related to GetAccessPointPolicyForObjectLambda:
 //
-//    * DeleteAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicyForObjectLambda.html)
+//   - DeleteAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicyForObjectLambda.html)
 //
-//    * PutAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicyForObjectLambda.html)
+//   - PutAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicyForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2420,14 +2394,13 @@ const opGetAccessPointPolicyStatus = "GetAccessPointPolicyStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointPolicyStatusRequest method.
+//	req, resp := client.GetAccessPointPolicyStatusRequest(params)
 //
-//    // Example sending a request using the GetAccessPointPolicyStatusRequest method.
-//    req, resp := client.GetAccessPointPolicyStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointPolicyStatus
 func (c *S3Control) GetAccessPointPolicyStatusRequest(input *GetAccessPointPolicyStatusInput) (req *request.Request, output *GetAccessPointPolicyStatusOutput) {
@@ -2499,14 +2472,13 @@ const opGetAccessPointPolicyStatusForObjectLambda = "GetAccessPointPolicyStatusF
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPointPolicyStatusForObjectLambdaRequest method.
+//	req, resp := client.GetAccessPointPolicyStatusForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the GetAccessPointPolicyStatusForObjectLambdaRequest method.
-//    req, resp := client.GetAccessPointPolicyStatusForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessPointPolicyStatusForObjectLambda
 func (c *S3Control) GetAccessPointPolicyStatusForObjectLambdaRequest(input *GetAccessPointPolicyStatusForObjectLambdaInput) (req *request.Request, output *GetAccessPointPolicyStatusForObjectLambdaOutput) {
@@ -2576,14 +2548,13 @@ const opGetBucket = "GetBucket"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBucketRequest method.
+//	req, resp := client.GetBucketRequest(params)
 //
-//    // Example sending a request using the GetBucketRequest method.
-//    req, resp := client.GetBucketRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucket
 func (c *S3Control) GetBucketRequest(input *GetBucketInput) (req *request.Request, output *GetBucketOutput) {
@@ -2634,11 +2605,11 @@ func (c *S3Control) GetBucketRequest(input *GetBucketInput) (req *request.Reques
 // point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html#API_control_GetBucket_Examples)
 // section.
 //
-//    * PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
+//   - PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
 //
-//    * CreateBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html)
+//   - CreateBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateBucket.html)
 //
-//    * DeleteBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html)
+//   - DeleteBucket (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2684,14 +2655,13 @@ const opGetBucketLifecycleConfiguration = "GetBucketLifecycleConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBucketLifecycleConfigurationRequest method.
+//	req, resp := client.GetBucketLifecycleConfigurationRequest(params)
 //
-//    // Example sending a request using the GetBucketLifecycleConfigurationRequest method.
-//    req, resp := client.GetBucketLifecycleConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketLifecycleConfiguration
 func (c *S3Control) GetBucketLifecycleConfigurationRequest(input *GetBucketLifecycleConfigurationInput) (req *request.Request, output *GetBucketLifecycleConfigurationOutput) {
@@ -2716,7 +2686,6 @@ func (c *S3Control) GetBucketLifecycleConfigurationRequest(input *GetBucketLifec
 }
 
 // GetBucketLifecycleConfiguration API operation for AWS S3 Control.
-//
 //
 // This action gets an Amazon S3 on Outposts bucket's lifecycle configuration.
 // To get an S3 bucket's lifecycle configuration, see GetBucketLifecycleConfiguration
@@ -2745,15 +2714,15 @@ func (c *S3Control) GetBucketLifecycleConfigurationRequest(input *GetBucketLifec
 //
 // GetBucketLifecycleConfiguration has the following special error:
 //
-//    * Error code: NoSuchLifecycleConfiguration Description: The lifecycle
-//    configuration does not exist. HTTP Status Code: 404 Not Found SOAP Fault
-//    Code Prefix: Client
+//   - Error code: NoSuchLifecycleConfiguration Description: The lifecycle
+//     configuration does not exist. HTTP Status Code: 404 Not Found SOAP Fault
+//     Code Prefix: Client
 //
 // The following actions are related to GetBucketLifecycleConfiguration:
 //
-//    * PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
+//   - PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
 //
-//    * DeleteBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html)
+//   - DeleteBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2799,14 +2768,13 @@ const opGetBucketPolicy = "GetBucketPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBucketPolicyRequest method.
+//	req, resp := client.GetBucketPolicyRequest(params)
 //
-//    // Example sending a request using the GetBucketPolicyRequest method.
-//    req, resp := client.GetBucketPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketPolicy
 func (c *S3Control) GetBucketPolicyRequest(input *GetBucketPolicyInput) (req *request.Request, output *GetBucketPolicyOutput) {
@@ -2831,7 +2799,6 @@ func (c *S3Control) GetBucketPolicyRequest(input *GetBucketPolicyInput) (req *re
 }
 
 // GetBucketPolicy API operation for AWS S3 Control.
-//
 //
 // This action gets a bucket policy for an Amazon S3 on Outposts bucket. To
 // get a policy for an S3 bucket, see GetBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketPolicy.html)
@@ -2868,11 +2835,11 @@ func (c *S3Control) GetBucketPolicyRequest(input *GetBucketPolicyInput) (req *re
 //
 // The following actions are related to GetBucketPolicy:
 //
-//    * GetObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
+//   - GetObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
 //
-//    * PutBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html)
+//   - PutBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html)
 //
-//    * DeleteBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html)
+//   - DeleteBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2918,14 +2885,13 @@ const opGetBucketTagging = "GetBucketTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBucketTaggingRequest method.
+//	req, resp := client.GetBucketTaggingRequest(params)
 //
-//    // Example sending a request using the GetBucketTaggingRequest method.
-//    req, resp := client.GetBucketTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketTagging
 func (c *S3Control) GetBucketTaggingRequest(input *GetBucketTaggingInput) (req *request.Request, output *GetBucketTaggingOutput) {
@@ -2951,7 +2917,6 @@ func (c *S3Control) GetBucketTaggingRequest(input *GetBucketTaggingInput) (req *
 
 // GetBucketTagging API operation for AWS S3 Control.
 //
-//
 // This action gets an Amazon S3 on Outposts bucket's tags. To get an S3 bucket
 // tags, see GetBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketTagging.html)
 // in the Amazon S3 API Reference.
@@ -2966,8 +2931,8 @@ func (c *S3Control) GetBucketTaggingRequest(input *GetBucketTaggingInput) (req *
 //
 // GetBucketTagging has the following special error:
 //
-//    * Error code: NoSuchTagSetError Description: There is no tag set associated
-//    with the bucket.
+//   - Error code: NoSuchTagSetError Description: There is no tag set associated
+//     with the bucket.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
 // parameter of x-amz-outpost-id to be passed with the request and an S3 on
@@ -2979,9 +2944,9 @@ func (c *S3Control) GetBucketTaggingRequest(input *GetBucketTaggingInput) (req *
 //
 // The following actions are related to GetBucketTagging:
 //
-//    * PutBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html)
+//   - PutBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html)
 //
-//    * DeleteBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html)
+//   - DeleteBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3027,14 +2992,13 @@ const opGetJobTagging = "GetJobTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJobTaggingRequest method.
+//	req, resp := client.GetJobTaggingRequest(params)
 //
-//    // Example sending a request using the GetJobTaggingRequest method.
-//    req, resp := client.GetJobTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetJobTagging
 func (c *S3Control) GetJobTaggingRequest(input *GetJobTaggingInput) (req *request.Request, output *GetJobTaggingOutput) {
@@ -3064,11 +3028,11 @@ func (c *S3Control) GetJobTaggingRequest(input *GetJobTaggingInput) (req *reques
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * PutJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutJobTagging.html)
+//   - PutJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutJobTagging.html)
 //
-//    * DeleteJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
+//   - DeleteJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3078,11 +3042,12 @@ func (c *S3Control) GetJobTaggingRequest(input *GetJobTaggingInput) (req *reques
 // API operation GetJobTagging for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
+//
+//   - ErrCodeNotFoundException "NotFoundException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetJobTagging
 func (c *S3Control) GetJobTagging(input *GetJobTaggingInput) (*GetJobTaggingOutput, error) {
@@ -3122,14 +3087,13 @@ const opGetMultiRegionAccessPoint = "GetMultiRegionAccessPoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMultiRegionAccessPointRequest method.
+//	req, resp := client.GetMultiRegionAccessPointRequest(params)
 //
-//    // Example sending a request using the GetMultiRegionAccessPointRequest method.
-//    req, resp := client.GetMultiRegionAccessPointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetMultiRegionAccessPoint
 func (c *S3Control) GetMultiRegionAccessPointRequest(input *GetMultiRegionAccessPointInput) (req *request.Request, output *GetMultiRegionAccessPointOutput) {
@@ -3166,13 +3130,13 @@ func (c *S3Control) GetMultiRegionAccessPointRequest(input *GetMultiRegionAccess
 //
 // The following actions are related to GetMultiRegionAccessPoint:
 //
-//    * CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
+//   - CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
 //
-//    * DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
+//   - DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
 //
-//    * DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
+//   - DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
 //
-//    * ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
+//   - ListMultiRegionAccessPoints (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListMultiRegionAccessPoints.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3218,14 +3182,13 @@ const opGetMultiRegionAccessPointPolicy = "GetMultiRegionAccessPointPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMultiRegionAccessPointPolicyRequest method.
+//	req, resp := client.GetMultiRegionAccessPointPolicyRequest(params)
 //
-//    // Example sending a request using the GetMultiRegionAccessPointPolicyRequest method.
-//    req, resp := client.GetMultiRegionAccessPointPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetMultiRegionAccessPointPolicy
 func (c *S3Control) GetMultiRegionAccessPointPolicyRequest(input *GetMultiRegionAccessPointPolicyInput) (req *request.Request, output *GetMultiRegionAccessPointPolicyOutput) {
@@ -3261,9 +3224,9 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyRequest(input *GetMultiRegion
 //
 // The following actions are related to GetMultiRegionAccessPointPolicy:
 //
-//    * GetMultiRegionAccessPointPolicyStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicyStatus.html)
+//   - GetMultiRegionAccessPointPolicyStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicyStatus.html)
 //
-//    * PutMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutMultiRegionAccessPointPolicy.html)
+//   - PutMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutMultiRegionAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3309,14 +3272,13 @@ const opGetMultiRegionAccessPointPolicyStatus = "GetMultiRegionAccessPointPolicy
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMultiRegionAccessPointPolicyStatusRequest method.
+//	req, resp := client.GetMultiRegionAccessPointPolicyStatusRequest(params)
 //
-//    // Example sending a request using the GetMultiRegionAccessPointPolicyStatusRequest method.
-//    req, resp := client.GetMultiRegionAccessPointPolicyStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetMultiRegionAccessPointPolicyStatus
 func (c *S3Control) GetMultiRegionAccessPointPolicyStatusRequest(input *GetMultiRegionAccessPointPolicyStatusInput) (req *request.Request, output *GetMultiRegionAccessPointPolicyStatusOutput) {
@@ -3353,9 +3315,9 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyStatusRequest(input *GetMulti
 //
 // The following actions are related to GetMultiRegionAccessPointPolicyStatus:
 //
-//    * GetMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicy.html)
+//   - GetMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicy.html)
 //
-//    * PutMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutMultiRegionAccessPointPolicy.html)
+//   - PutMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutMultiRegionAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3401,14 +3363,13 @@ const opGetPublicAccessBlock = "GetPublicAccessBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPublicAccessBlockRequest method.
+//	req, resp := client.GetPublicAccessBlockRequest(params)
 //
-//    // Example sending a request using the GetPublicAccessBlockRequest method.
-//    req, resp := client.GetPublicAccessBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetPublicAccessBlock
 func (c *S3Control) GetPublicAccessBlockRequest(input *GetPublicAccessBlockInput) (req *request.Request, output *GetPublicAccessBlockOutput) {
@@ -3436,9 +3397,9 @@ func (c *S3Control) GetPublicAccessBlockRequest(input *GetPublicAccessBlockInput
 //
 // Related actions include:
 //
-//    * DeletePublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeletePublicAccessBlock.html)
+//   - DeletePublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeletePublicAccessBlock.html)
 //
-//    * PutPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutPublicAccessBlock.html)
+//   - PutPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutPublicAccessBlock.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3448,9 +3409,9 @@ func (c *S3Control) GetPublicAccessBlockRequest(input *GetPublicAccessBlockInput
 // API operation GetPublicAccessBlock for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchPublicAccessBlockConfiguration "NoSuchPublicAccessBlockConfiguration"
-//   Amazon S3 throws this exception if you make a GetPublicAccessBlock request
-//   against an account that doesn't have a PublicAccessBlockConfiguration set.
+//   - ErrCodeNoSuchPublicAccessBlockConfiguration "NoSuchPublicAccessBlockConfiguration"
+//     Amazon S3 throws this exception if you make a GetPublicAccessBlock request
+//     against an account that doesn't have a PublicAccessBlockConfiguration set.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetPublicAccessBlock
 func (c *S3Control) GetPublicAccessBlock(input *GetPublicAccessBlockInput) (*GetPublicAccessBlockOutput, error) {
@@ -3490,14 +3451,13 @@ const opGetStorageLensConfiguration = "GetStorageLensConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStorageLensConfigurationRequest method.
+//	req, resp := client.GetStorageLensConfigurationRequest(params)
 //
-//    // Example sending a request using the GetStorageLensConfigurationRequest method.
-//    req, resp := client.GetStorageLensConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetStorageLensConfiguration
 func (c *S3Control) GetStorageLensConfigurationRequest(input *GetStorageLensConfigurationInput) (req *request.Request, output *GetStorageLensConfigurationOutput) {
@@ -3573,14 +3533,13 @@ const opGetStorageLensConfigurationTagging = "GetStorageLensConfigurationTagging
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStorageLensConfigurationTaggingRequest method.
+//	req, resp := client.GetStorageLensConfigurationTaggingRequest(params)
 //
-//    // Example sending a request using the GetStorageLensConfigurationTaggingRequest method.
-//    req, resp := client.GetStorageLensConfigurationTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetStorageLensConfigurationTagging
 func (c *S3Control) GetStorageLensConfigurationTaggingRequest(input *GetStorageLensConfigurationTaggingInput) (req *request.Request, output *GetStorageLensConfigurationTaggingOutput) {
@@ -3657,14 +3616,13 @@ const opListAccessPoints = "ListAccessPoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessPointsRequest method.
+//	req, resp := client.ListAccessPointsRequest(params)
 //
-//    // Example sending a request using the ListAccessPointsRequest method.
-//    req, resp := client.ListAccessPointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessPoints
 func (c *S3Control) ListAccessPointsRequest(input *ListAccessPointsInput) (req *request.Request, output *ListAccessPointsOutput) {
@@ -3712,11 +3670,11 @@ func (c *S3Control) ListAccessPointsRequest(input *ListAccessPointsInput) (req *
 //
 // The following actions are related to ListAccessPoints:
 //
-//    * CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
+//   - CreateAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html)
 //
-//    * DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
+//   - DeleteAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html)
 //
-//    * GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
+//   - GetAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3754,15 +3712,14 @@ func (c *S3Control) ListAccessPointsWithContext(ctx aws.Context, input *ListAcce
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessPoints operation.
-//    pageNum := 0
-//    err := client.ListAccessPointsPages(params,
-//        func(page *s3control.ListAccessPointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessPoints operation.
+//	pageNum := 0
+//	err := client.ListAccessPointsPages(params,
+//	    func(page *s3control.ListAccessPointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListAccessPointsPages(input *ListAccessPointsInput, fn func(*ListAccessPointsOutput, bool) bool) error {
 	return c.ListAccessPointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3814,14 +3771,13 @@ const opListAccessPointsForObjectLambda = "ListAccessPointsForObjectLambda"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessPointsForObjectLambdaRequest method.
+//	req, resp := client.ListAccessPointsForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the ListAccessPointsForObjectLambdaRequest method.
-//    req, resp := client.ListAccessPointsForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessPointsForObjectLambda
 func (c *S3Control) ListAccessPointsForObjectLambdaRequest(input *ListAccessPointsForObjectLambdaInput) (req *request.Request, output *ListAccessPointsForObjectLambdaOutput) {
@@ -3857,11 +3813,11 @@ func (c *S3Control) ListAccessPointsForObjectLambdaRequest(input *ListAccessPoin
 //
 // The following actions are related to ListAccessPointsForObjectLambda:
 //
-//    * CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
+//   - CreateAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPointForObjectLambda.html)
 //
-//    * DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
+//   - DeleteAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointForObjectLambda.html)
 //
-//    * GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
+//   - GetAccessPointForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3899,15 +3855,14 @@ func (c *S3Control) ListAccessPointsForObjectLambdaWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessPointsForObjectLambda operation.
-//    pageNum := 0
-//    err := client.ListAccessPointsForObjectLambdaPages(params,
-//        func(page *s3control.ListAccessPointsForObjectLambdaOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessPointsForObjectLambda operation.
+//	pageNum := 0
+//	err := client.ListAccessPointsForObjectLambdaPages(params,
+//	    func(page *s3control.ListAccessPointsForObjectLambdaOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListAccessPointsForObjectLambdaPages(input *ListAccessPointsForObjectLambdaInput, fn func(*ListAccessPointsForObjectLambdaOutput, bool) bool) error {
 	return c.ListAccessPointsForObjectLambdaPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3959,14 +3914,13 @@ const opListJobs = "ListJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJobsRequest method.
+//	req, resp := client.ListJobsRequest(params)
 //
-//    // Example sending a request using the ListJobsRequest method.
-//    req, resp := client.ListJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListJobs
 func (c *S3Control) ListJobsRequest(input *ListJobsInput) (req *request.Request, output *ListJobsOutput) {
@@ -4002,13 +3956,13 @@ func (c *S3Control) ListJobsRequest(input *ListJobsInput) (req *request.Request,
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
+//   - DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
 //
-//    * UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
+//   - UpdateJobPriority (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobPriority.html)
 //
-//    * UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
+//   - UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4018,11 +3972,12 @@ func (c *S3Control) ListJobsRequest(input *ListJobsInput) (req *request.Request,
 // API operation ListJobs for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidRequestException "InvalidRequestException"
 //
-//   * ErrCodeInternalServiceException "InternalServiceException"
+//   - ErrCodeInvalidRequestException "InvalidRequestException"
 //
-//   * ErrCodeInvalidNextTokenException "InvalidNextTokenException"
+//   - ErrCodeInternalServiceException "InternalServiceException"
+//
+//   - ErrCodeInvalidNextTokenException "InvalidNextTokenException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListJobs
 func (c *S3Control) ListJobs(input *ListJobsInput) (*ListJobsOutput, error) {
@@ -4054,15 +4009,14 @@ func (c *S3Control) ListJobsWithContext(ctx aws.Context, input *ListJobsInput, o
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListJobs operation.
-//    pageNum := 0
-//    err := client.ListJobsPages(params,
-//        func(page *s3control.ListJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListJobs operation.
+//	pageNum := 0
+//	err := client.ListJobsPages(params,
+//	    func(page *s3control.ListJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListJobsPages(input *ListJobsInput, fn func(*ListJobsOutput, bool) bool) error {
 	return c.ListJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4114,14 +4068,13 @@ const opListMultiRegionAccessPoints = "ListMultiRegionAccessPoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMultiRegionAccessPointsRequest method.
+//	req, resp := client.ListMultiRegionAccessPointsRequest(params)
 //
-//    // Example sending a request using the ListMultiRegionAccessPointsRequest method.
-//    req, resp := client.ListMultiRegionAccessPointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListMultiRegionAccessPoints
 func (c *S3Control) ListMultiRegionAccessPointsRequest(input *ListMultiRegionAccessPointsInput) (req *request.Request, output *ListMultiRegionAccessPointsOutput) {
@@ -4166,13 +4119,13 @@ func (c *S3Control) ListMultiRegionAccessPointsRequest(input *ListMultiRegionAcc
 //
 // The following actions are related to ListMultiRegionAccessPoint:
 //
-//    * CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
+//   - CreateMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateMultiRegionAccessPoint.html)
 //
-//    * DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
+//   - DeleteMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteMultiRegionAccessPoint.html)
 //
-//    * DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
+//   - DescribeMultiRegionAccessPointOperation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeMultiRegionAccessPointOperation.html)
 //
-//    * GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
+//   - GetMultiRegionAccessPoint (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPoint.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4210,15 +4163,14 @@ func (c *S3Control) ListMultiRegionAccessPointsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMultiRegionAccessPoints operation.
-//    pageNum := 0
-//    err := client.ListMultiRegionAccessPointsPages(params,
-//        func(page *s3control.ListMultiRegionAccessPointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMultiRegionAccessPoints operation.
+//	pageNum := 0
+//	err := client.ListMultiRegionAccessPointsPages(params,
+//	    func(page *s3control.ListMultiRegionAccessPointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListMultiRegionAccessPointsPages(input *ListMultiRegionAccessPointsInput, fn func(*ListMultiRegionAccessPointsOutput, bool) bool) error {
 	return c.ListMultiRegionAccessPointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4270,14 +4222,13 @@ const opListRegionalBuckets = "ListRegionalBuckets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRegionalBucketsRequest method.
+//	req, resp := client.ListRegionalBucketsRequest(params)
 //
-//    // Example sending a request using the ListRegionalBucketsRequest method.
-//    req, resp := client.ListRegionalBucketsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListRegionalBuckets
 func (c *S3Control) ListRegionalBucketsRequest(input *ListRegionalBucketsInput) (req *request.Request, output *ListRegionalBucketsOutput) {
@@ -4352,15 +4303,14 @@ func (c *S3Control) ListRegionalBucketsWithContext(ctx aws.Context, input *ListR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRegionalBuckets operation.
-//    pageNum := 0
-//    err := client.ListRegionalBucketsPages(params,
-//        func(page *s3control.ListRegionalBucketsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRegionalBuckets operation.
+//	pageNum := 0
+//	err := client.ListRegionalBucketsPages(params,
+//	    func(page *s3control.ListRegionalBucketsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListRegionalBucketsPages(input *ListRegionalBucketsInput, fn func(*ListRegionalBucketsOutput, bool) bool) error {
 	return c.ListRegionalBucketsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4412,14 +4362,13 @@ const opListStorageLensConfigurations = "ListStorageLensConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStorageLensConfigurationsRequest method.
+//	req, resp := client.ListStorageLensConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListStorageLensConfigurationsRequest method.
-//    req, resp := client.ListStorageLensConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListStorageLensConfigurations
 func (c *S3Control) ListStorageLensConfigurationsRequest(input *ListStorageLensConfigurationsInput) (req *request.Request, output *ListStorageLensConfigurationsOutput) {
@@ -4494,15 +4443,14 @@ func (c *S3Control) ListStorageLensConfigurationsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStorageLensConfigurations operation.
-//    pageNum := 0
-//    err := client.ListStorageLensConfigurationsPages(params,
-//        func(page *s3control.ListStorageLensConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStorageLensConfigurations operation.
+//	pageNum := 0
+//	err := client.ListStorageLensConfigurationsPages(params,
+//	    func(page *s3control.ListStorageLensConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *S3Control) ListStorageLensConfigurationsPages(input *ListStorageLensConfigurationsInput, fn func(*ListStorageLensConfigurationsOutput, bool) bool) error {
 	return c.ListStorageLensConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4554,14 +4502,13 @@ const opPutAccessPointConfigurationForObjectLambda = "PutAccessPointConfiguratio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccessPointConfigurationForObjectLambdaRequest method.
+//	req, resp := client.PutAccessPointConfigurationForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the PutAccessPointConfigurationForObjectLambdaRequest method.
-//    req, resp := client.PutAccessPointConfigurationForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutAccessPointConfigurationForObjectLambda
 func (c *S3Control) PutAccessPointConfigurationForObjectLambdaRequest(input *PutAccessPointConfigurationForObjectLambdaInput) (req *request.Request, output *PutAccessPointConfigurationForObjectLambdaOutput) {
@@ -4589,7 +4536,7 @@ func (c *S3Control) PutAccessPointConfigurationForObjectLambdaRequest(input *Put
 //
 // The following actions are related to PutAccessPointConfigurationForObjectLambda:
 //
-//    * GetAccessPointConfigurationForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointConfigurationForObjectLambda.html)
+//   - GetAccessPointConfigurationForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointConfigurationForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4635,14 +4582,13 @@ const opPutAccessPointPolicy = "PutAccessPointPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccessPointPolicyRequest method.
+//	req, resp := client.PutAccessPointPolicyRequest(params)
 //
-//    // Example sending a request using the PutAccessPointPolicyRequest method.
-//    req, resp := client.PutAccessPointPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutAccessPointPolicy
 func (c *S3Control) PutAccessPointPolicyRequest(input *PutAccessPointPolicyInput) (req *request.Request, output *PutAccessPointPolicyOutput) {
@@ -4683,9 +4629,9 @@ func (c *S3Control) PutAccessPointPolicyRequest(input *PutAccessPointPolicyInput
 //
 // The following actions are related to PutAccessPointPolicy:
 //
-//    * GetAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicy.html)
+//   - GetAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicy.html)
 //
-//    * DeleteAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html)
+//   - DeleteAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4731,14 +4677,13 @@ const opPutAccessPointPolicyForObjectLambda = "PutAccessPointPolicyForObjectLamb
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccessPointPolicyForObjectLambdaRequest method.
+//	req, resp := client.PutAccessPointPolicyForObjectLambdaRequest(params)
 //
-//    // Example sending a request using the PutAccessPointPolicyForObjectLambdaRequest method.
-//    req, resp := client.PutAccessPointPolicyForObjectLambdaRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutAccessPointPolicyForObjectLambda
 func (c *S3Control) PutAccessPointPolicyForObjectLambdaRequest(input *PutAccessPointPolicyForObjectLambdaInput) (req *request.Request, output *PutAccessPointPolicyForObjectLambdaOutput) {
@@ -4768,9 +4713,9 @@ func (c *S3Control) PutAccessPointPolicyForObjectLambdaRequest(input *PutAccessP
 //
 // The following actions are related to PutAccessPointPolicyForObjectLambda:
 //
-//    * DeleteAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicyForObjectLambda.html)
+//   - DeleteAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicyForObjectLambda.html)
 //
-//    * GetAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicyForObjectLambda.html)
+//   - GetAccessPointPolicyForObjectLambda (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPointPolicyForObjectLambda.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4816,14 +4761,13 @@ const opPutBucketLifecycleConfiguration = "PutBucketLifecycleConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBucketLifecycleConfigurationRequest method.
+//	req, resp := client.PutBucketLifecycleConfigurationRequest(params)
 //
-//    // Example sending a request using the PutBucketLifecycleConfigurationRequest method.
-//    req, resp := client.PutBucketLifecycleConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketLifecycleConfiguration
 func (c *S3Control) PutBucketLifecycleConfigurationRequest(input *PutBucketLifecycleConfigurationInput) (req *request.Request, output *PutBucketLifecycleConfigurationOutput) {
@@ -4854,7 +4798,6 @@ func (c *S3Control) PutBucketLifecycleConfigurationRequest(input *PutBucketLifec
 
 // PutBucketLifecycleConfiguration API operation for AWS S3 Control.
 //
-//
 // This action puts a lifecycle configuration to an Amazon S3 on Outposts bucket.
 // To put a lifecycle configuration to an S3 bucket, see PutBucketLifecycleConfiguration
 // (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketLifecycleConfiguration.html)
@@ -4875,9 +4818,9 @@ func (c *S3Control) PutBucketLifecycleConfigurationRequest(input *PutBucketLifec
 //
 // The following actions are related to PutBucketLifecycleConfiguration:
 //
-//    * GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
+//   - GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
 //
-//    * DeleteBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html)
+//   - DeleteBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4923,14 +4866,13 @@ const opPutBucketPolicy = "PutBucketPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBucketPolicyRequest method.
+//	req, resp := client.PutBucketPolicyRequest(params)
 //
-//    // Example sending a request using the PutBucketPolicyRequest method.
-//    req, resp := client.PutBucketPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketPolicy
 func (c *S3Control) PutBucketPolicyRequest(input *PutBucketPolicyInput) (req *request.Request, output *PutBucketPolicyOutput) {
@@ -4960,7 +4902,6 @@ func (c *S3Control) PutBucketPolicyRequest(input *PutBucketPolicyInput) (req *re
 }
 
 // PutBucketPolicy API operation for AWS S3 Control.
-//
 //
 // This action puts a bucket policy to an Amazon S3 on Outposts bucket. To put
 // a policy on an S3 bucket, see PutBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketPolicy.html)
@@ -4997,9 +4938,9 @@ func (c *S3Control) PutBucketPolicyRequest(input *PutBucketPolicyInput) (req *re
 //
 // The following actions are related to PutBucketPolicy:
 //
-//    * GetBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html)
+//   - GetBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html)
 //
-//    * DeleteBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html)
+//   - DeleteBucketPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5045,14 +4986,13 @@ const opPutBucketTagging = "PutBucketTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutBucketTaggingRequest method.
+//	req, resp := client.PutBucketTaggingRequest(params)
 //
-//    // Example sending a request using the PutBucketTaggingRequest method.
-//    req, resp := client.PutBucketTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketTagging
 func (c *S3Control) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *request.Request, output *PutBucketTaggingOutput) {
@@ -5083,7 +5023,6 @@ func (c *S3Control) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *
 
 // PutBucketTagging API operation for AWS S3 Control.
 //
-//
 // This action puts tags on an Amazon S3 on Outposts bucket. To put tags on
 // an S3 bucket, see PutBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketTagging.html)
 // in the Amazon S3 API Reference.
@@ -5113,20 +5052,20 @@ func (c *S3Control) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *
 //
 // PutBucketTagging has the following special errors:
 //
-//    * Error code: InvalidTagError Description: The tag provided was not a
-//    valid tag. This error can occur if the tag did not pass input validation.
-//    For information about tag restrictions, see User-Defined Tag Restrictions
-//    (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
-//    and Amazon Web Services-Generated Cost Allocation Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/aws-tag-restrictions.html).
+//   - Error code: InvalidTagError Description: The tag provided was not a
+//     valid tag. This error can occur if the tag did not pass input validation.
+//     For information about tag restrictions, see User-Defined Tag Restrictions
+//     (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
+//     and Amazon Web Services-Generated Cost Allocation Tag Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/aws-tag-restrictions.html).
 //
-//    * Error code: MalformedXMLError Description: The XML provided does not
-//    match the schema.
+//   - Error code: MalformedXMLError Description: The XML provided does not
+//     match the schema.
 //
-//    * Error code: OperationAbortedError Description: A conflicting conditional
-//    action is currently in progress against this resource. Try again.
+//   - Error code: OperationAbortedError Description: A conflicting conditional
+//     action is currently in progress against this resource. Try again.
 //
-//    * Error code: InternalError Description: The service was unable to apply
-//    the provided tag to the bucket.
+//   - Error code: InternalError Description: The service was unable to apply
+//     the provided tag to the bucket.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
 // parameter of x-amz-outpost-id to be passed with the request and an S3 on
@@ -5138,9 +5077,9 @@ func (c *S3Control) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *
 //
 // The following actions are related to PutBucketTagging:
 //
-//    * GetBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html)
+//   - GetBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html)
 //
-//    * DeleteBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html)
+//   - DeleteBucketTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5186,14 +5125,13 @@ const opPutJobTagging = "PutJobTagging"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutJobTaggingRequest method.
+//	req, resp := client.PutJobTaggingRequest(params)
 //
-//    // Example sending a request using the PutJobTaggingRequest method.
-//    req, resp := client.PutJobTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutJobTagging
 func (c *S3Control) PutJobTaggingRequest(input *PutJobTaggingInput) (req *request.Request, output *PutJobTaggingOutput) {
@@ -5229,35 +5167,35 @@ func (c *S3Control) PutJobTaggingRequest(input *PutJobTaggingInput) (req *reques
 // jobs using tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
 // in the Amazon S3 User Guide.
 //
-//    * If you send this request with an empty tag set, Amazon S3 deletes the
-//    existing tag set on the Batch Operations job. If you use this method,
-//    you are charged for a Tier 1 Request (PUT). For more information, see
-//    Amazon S3 pricing (http://aws.amazon.com/s3/pricing/).
+//   - If you send this request with an empty tag set, Amazon S3 deletes the
+//     existing tag set on the Batch Operations job. If you use this method,
+//     you are charged for a Tier 1 Request (PUT). For more information, see
+//     Amazon S3 pricing (http://aws.amazon.com/s3/pricing/).
 //
-//    * For deleting existing tags for your Batch Operations job, a DeleteJobTagging
-//    (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
-//    request is preferred because it achieves the same result without incurring
-//    charges.
+//   - For deleting existing tags for your Batch Operations job, a DeleteJobTagging
+//     (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
+//     request is preferred because it achieves the same result without incurring
+//     charges.
 //
-//    * A few things to consider about using tags: Amazon S3 limits the maximum
-//    number of tags to 50 tags per job. You can associate up to 50 tags with
-//    a job as long as they have unique tag keys. A tag key can be up to 128
-//    Unicode characters in length, and tag values can be up to 256 Unicode
-//    characters in length. The key and values are case sensitive. For tagging-related
-//    restrictions related to characters and encodings, see User-Defined Tag
-//    Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
-//    in the Billing and Cost Management User Guide.
+//   - A few things to consider about using tags: Amazon S3 limits the maximum
+//     number of tags to 50 tags per job. You can associate up to 50 tags with
+//     a job as long as they have unique tag keys. A tag key can be up to 128
+//     Unicode characters in length, and tag values can be up to 256 Unicode
+//     characters in length. The key and values are case sensitive. For tagging-related
+//     restrictions related to characters and encodings, see User-Defined Tag
+//     Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
+//     in the Billing and Cost Management User Guide.
 //
 // To use this action, you must have permission to perform the s3:PutJobTagging
 // action.
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * GetJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetJobTagging.html)
+//   - GetJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetJobTagging.html)
 //
-//    * DeleteJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
+//   - DeleteJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteJobTagging.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5267,14 +5205,15 @@ func (c *S3Control) PutJobTaggingRequest(input *PutJobTaggingInput) (req *reques
 // API operation PutJobTagging for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeTooManyTagsException "TooManyTagsException"
-//   Amazon S3 throws this exception if you have too many tags in your tag set.
+//   - ErrCodeNotFoundException "NotFoundException"
+//
+//   - ErrCodeTooManyTagsException "TooManyTagsException"
+//     Amazon S3 throws this exception if you have too many tags in your tag set.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutJobTagging
 func (c *S3Control) PutJobTagging(input *PutJobTaggingInput) (*PutJobTaggingOutput, error) {
@@ -5314,14 +5253,13 @@ const opPutMultiRegionAccessPointPolicy = "PutMultiRegionAccessPointPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutMultiRegionAccessPointPolicyRequest method.
+//	req, resp := client.PutMultiRegionAccessPointPolicyRequest(params)
 //
-//    // Example sending a request using the PutMultiRegionAccessPointPolicyRequest method.
-//    req, resp := client.PutMultiRegionAccessPointPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutMultiRegionAccessPointPolicy
 func (c *S3Control) PutMultiRegionAccessPointPolicyRequest(input *PutMultiRegionAccessPointPolicyInput) (req *request.Request, output *PutMultiRegionAccessPointPolicyOutput) {
@@ -5360,9 +5298,9 @@ func (c *S3Control) PutMultiRegionAccessPointPolicyRequest(input *PutMultiRegion
 //
 // The following actions are related to PutMultiRegionAccessPointPolicy:
 //
-//    * GetMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicy.html)
+//   - GetMultiRegionAccessPointPolicy (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicy.html)
 //
-//    * GetMultiRegionAccessPointPolicyStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicyStatus.html)
+//   - GetMultiRegionAccessPointPolicyStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetMultiRegionAccessPointPolicyStatus.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5408,14 +5346,13 @@ const opPutPublicAccessBlock = "PutPublicAccessBlock"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutPublicAccessBlockRequest method.
+//	req, resp := client.PutPublicAccessBlockRequest(params)
 //
-//    // Example sending a request using the PutPublicAccessBlockRequest method.
-//    req, resp := client.PutPublicAccessBlockRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutPublicAccessBlock
 func (c *S3Control) PutPublicAccessBlockRequest(input *PutPublicAccessBlockInput) (req *request.Request, output *PutPublicAccessBlockOutput) {
@@ -5446,9 +5383,9 @@ func (c *S3Control) PutPublicAccessBlockRequest(input *PutPublicAccessBlockInput
 //
 // Related actions include:
 //
-//    * GetPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetPublicAccessBlock.html)
+//   - GetPublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetPublicAccessBlock.html)
 //
-//    * DeletePublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeletePublicAccessBlock.html)
+//   - DeletePublicAccessBlock (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeletePublicAccessBlock.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5494,14 +5431,13 @@ const opPutStorageLensConfiguration = "PutStorageLensConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutStorageLensConfigurationRequest method.
+//	req, resp := client.PutStorageLensConfigurationRequest(params)
 //
-//    // Example sending a request using the PutStorageLensConfigurationRequest method.
-//    req, resp := client.PutStorageLensConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutStorageLensConfiguration
 func (c *S3Control) PutStorageLensConfigurationRequest(input *PutStorageLensConfigurationInput) (req *request.Request, output *PutStorageLensConfigurationOutput) {
@@ -5578,14 +5514,13 @@ const opPutStorageLensConfigurationTagging = "PutStorageLensConfigurationTagging
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutStorageLensConfigurationTaggingRequest method.
+//	req, resp := client.PutStorageLensConfigurationTaggingRequest(params)
 //
-//    // Example sending a request using the PutStorageLensConfigurationTaggingRequest method.
-//    req, resp := client.PutStorageLensConfigurationTaggingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutStorageLensConfigurationTagging
 func (c *S3Control) PutStorageLensConfigurationTaggingRequest(input *PutStorageLensConfigurationTaggingInput) (req *request.Request, output *PutStorageLensConfigurationTaggingOutput) {
@@ -5663,14 +5598,13 @@ const opUpdateJobPriority = "UpdateJobPriority"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJobPriorityRequest method.
+//	req, resp := client.UpdateJobPriorityRequest(params)
 //
-//    // Example sending a request using the UpdateJobPriorityRequest method.
-//    req, resp := client.UpdateJobPriorityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateJobPriority
 func (c *S3Control) UpdateJobPriorityRequest(input *UpdateJobPriorityInput) (req *request.Request, output *UpdateJobPriorityOutput) {
@@ -5699,13 +5633,13 @@ func (c *S3Control) UpdateJobPriorityRequest(input *UpdateJobPriorityInput) (req
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
+//   - ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
 //
-//    * DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
+//   - DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
 //
-//    * UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
+//   - UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5715,13 +5649,14 @@ func (c *S3Control) UpdateJobPriorityRequest(input *UpdateJobPriorityInput) (req
 // API operation UpdateJobPriority for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeInternalServiceException "InternalServiceException"
+//   - ErrCodeNotFoundException "NotFoundException"
+//
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateJobPriority
 func (c *S3Control) UpdateJobPriority(input *UpdateJobPriorityInput) (*UpdateJobPriorityOutput, error) {
@@ -5761,14 +5696,13 @@ const opUpdateJobStatus = "UpdateJobStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJobStatusRequest method.
+//	req, resp := client.UpdateJobStatusRequest(params)
 //
-//    // Example sending a request using the UpdateJobStatusRequest method.
-//    req, resp := client.UpdateJobStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateJobStatus
 func (c *S3Control) UpdateJobStatusRequest(input *UpdateJobStatusInput) (req *request.Request, output *UpdateJobStatusOutput) {
@@ -5798,13 +5732,13 @@ func (c *S3Control) UpdateJobStatusRequest(input *UpdateJobStatusInput) (req *re
 //
 // Related actions include:
 //
-//    * CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
+//   - CreateJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateJob.html)
 //
-//    * ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
+//   - ListJobs (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_ListJobs.html)
 //
-//    * DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
+//   - DescribeJob (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DescribeJob.html)
 //
-//    * UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
+//   - UpdateJobStatus (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_UpdateJobStatus.html)
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5814,15 +5748,16 @@ func (c *S3Control) UpdateJobStatusRequest(input *UpdateJobStatusInput) (req *re
 // API operation UpdateJobStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   - ErrCodeBadRequestException "BadRequestException"
 //
-//   * ErrCodeNotFoundException "NotFoundException"
+//   - ErrCodeTooManyRequestsException "TooManyRequestsException"
 //
-//   * ErrCodeJobStatusException "JobStatusException"
+//   - ErrCodeNotFoundException "NotFoundException"
 //
-//   * ErrCodeInternalServiceException "InternalServiceException"
+//   - ErrCodeJobStatusException "JobStatusException"
+//
+//   - ErrCodeInternalServiceException "InternalServiceException"
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateJobStatus
 func (c *S3Control) UpdateJobStatus(input *UpdateJobStatusInput) (*UpdateJobStatusOutput, error) {

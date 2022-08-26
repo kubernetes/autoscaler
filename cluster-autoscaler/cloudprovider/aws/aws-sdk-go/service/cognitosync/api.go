@@ -29,14 +29,13 @@ const opBulkPublish = "BulkPublish"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BulkPublishRequest method.
+//	req, resp := client.BulkPublishRequest(params)
 //
-//    // Example sending a request using the BulkPublishRequest method.
-//    req, resp := client.BulkPublishRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/BulkPublish
 func (c *CognitoSync) BulkPublishRequest(input *BulkPublishInput) (req *request.Request, output *BulkPublishOutput) {
@@ -73,25 +72,26 @@ func (c *CognitoSync) BulkPublishRequest(input *BulkPublishInput) (req *request.
 // API operation BulkPublish for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * DuplicateRequestException
-//   An exception thrown when there is an IN_PROGRESS bulk publish operation for
-//   the given identity pool.
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * AlreadyStreamedException
-//   An exception thrown when a bulk publish operation is requested less than
-//   24 hours after a previous bulk publish operation completed successfully.
+//   - DuplicateRequestException
+//     An exception thrown when there is an IN_PROGRESS bulk publish operation for
+//     the given identity pool.
+//
+//   - AlreadyStreamedException
+//     An exception thrown when a bulk publish operation is requested less than
+//     24 hours after a previous bulk publish operation completed successfully.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/BulkPublish
 func (c *CognitoSync) BulkPublish(input *BulkPublishInput) (*BulkPublishOutput, error) {
@@ -131,14 +131,13 @@ const opDeleteDataset = "DeleteDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDatasetRequest method.
+//	req, resp := client.DeleteDatasetRequest(params)
 //
-//    // Example sending a request using the DeleteDatasetRequest method.
-//    req, resp := client.DeleteDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DeleteDataset
 func (c *CognitoSync) DeleteDatasetRequest(input *DeleteDatasetInput) (req *request.Request, output *DeleteDatasetOutput) {
@@ -175,24 +174,25 @@ func (c *CognitoSync) DeleteDatasetRequest(input *DeleteDatasetInput) (req *requ
 // API operation DeleteDataset for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * ResourceConflictException
-//   Thrown if an update can't be applied because the resource was changed by
-//   another call and this would result in a conflict.
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
+//
+//   - ResourceConflictException
+//     Thrown if an update can't be applied because the resource was changed by
+//     another call and this would result in a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DeleteDataset
 func (c *CognitoSync) DeleteDataset(input *DeleteDatasetInput) (*DeleteDatasetOutput, error) {
@@ -232,14 +232,13 @@ const opDescribeDataset = "DescribeDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDatasetRequest method.
+//	req, resp := client.DescribeDatasetRequest(params)
 //
-//    // Example sending a request using the DescribeDatasetRequest method.
-//    req, resp := client.DescribeDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeDataset
 func (c *CognitoSync) DescribeDatasetRequest(input *DescribeDatasetInput) (req *request.Request, output *DescribeDatasetOutput) {
@@ -276,20 +275,21 @@ func (c *CognitoSync) DescribeDatasetRequest(input *DescribeDatasetInput) (req *
 // API operation DescribeDataset for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeDataset
 func (c *CognitoSync) DescribeDataset(input *DescribeDatasetInput) (*DescribeDatasetOutput, error) {
@@ -329,14 +329,13 @@ const opDescribeIdentityPoolUsage = "DescribeIdentityPoolUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdentityPoolUsageRequest method.
+//	req, resp := client.DescribeIdentityPoolUsageRequest(params)
 //
-//    // Example sending a request using the DescribeIdentityPoolUsageRequest method.
-//    req, resp := client.DescribeIdentityPoolUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeIdentityPoolUsage
 func (c *CognitoSync) DescribeIdentityPoolUsageRequest(input *DescribeIdentityPoolUsageInput) (req *request.Request, output *DescribeIdentityPoolUsageOutput) {
@@ -371,20 +370,21 @@ func (c *CognitoSync) DescribeIdentityPoolUsageRequest(input *DescribeIdentityPo
 // API operation DescribeIdentityPoolUsage for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeIdentityPoolUsage
 func (c *CognitoSync) DescribeIdentityPoolUsage(input *DescribeIdentityPoolUsageInput) (*DescribeIdentityPoolUsageOutput, error) {
@@ -424,14 +424,13 @@ const opDescribeIdentityUsage = "DescribeIdentityUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeIdentityUsageRequest method.
+//	req, resp := client.DescribeIdentityUsageRequest(params)
 //
-//    // Example sending a request using the DescribeIdentityUsageRequest method.
-//    req, resp := client.DescribeIdentityUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeIdentityUsage
 func (c *CognitoSync) DescribeIdentityUsageRequest(input *DescribeIdentityUsageInput) (req *request.Request, output *DescribeIdentityUsageOutput) {
@@ -466,20 +465,21 @@ func (c *CognitoSync) DescribeIdentityUsageRequest(input *DescribeIdentityUsageI
 // API operation DescribeIdentityUsage for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/DescribeIdentityUsage
 func (c *CognitoSync) DescribeIdentityUsage(input *DescribeIdentityUsageInput) (*DescribeIdentityUsageOutput, error) {
@@ -519,14 +519,13 @@ const opGetBulkPublishDetails = "GetBulkPublishDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBulkPublishDetailsRequest method.
+//	req, resp := client.GetBulkPublishDetailsRequest(params)
 //
-//    // Example sending a request using the GetBulkPublishDetailsRequest method.
-//    req, resp := client.GetBulkPublishDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetBulkPublishDetails
 func (c *CognitoSync) GetBulkPublishDetailsRequest(input *GetBulkPublishDetailsInput) (req *request.Request, output *GetBulkPublishDetailsOutput) {
@@ -560,17 +559,18 @@ func (c *CognitoSync) GetBulkPublishDetailsRequest(input *GetBulkPublishDetailsI
 // API operation GetBulkPublishDetails for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
+//
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetBulkPublishDetails
 func (c *CognitoSync) GetBulkPublishDetails(input *GetBulkPublishDetailsInput) (*GetBulkPublishDetailsOutput, error) {
@@ -610,14 +610,13 @@ const opGetCognitoEvents = "GetCognitoEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCognitoEventsRequest method.
+//	req, resp := client.GetCognitoEventsRequest(params)
 //
-//    // Example sending a request using the GetCognitoEventsRequest method.
-//    req, resp := client.GetCognitoEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetCognitoEvents
 func (c *CognitoSync) GetCognitoEventsRequest(input *GetCognitoEventsInput) (req *request.Request, output *GetCognitoEventsOutput) {
@@ -652,20 +651,21 @@ func (c *CognitoSync) GetCognitoEventsRequest(input *GetCognitoEventsInput) (req
 // API operation GetCognitoEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetCognitoEvents
 func (c *CognitoSync) GetCognitoEvents(input *GetCognitoEventsInput) (*GetCognitoEventsOutput, error) {
@@ -705,14 +705,13 @@ const opGetIdentityPoolConfiguration = "GetIdentityPoolConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIdentityPoolConfigurationRequest method.
+//	req, resp := client.GetIdentityPoolConfigurationRequest(params)
 //
-//    // Example sending a request using the GetIdentityPoolConfigurationRequest method.
-//    req, resp := client.GetIdentityPoolConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetIdentityPoolConfiguration
 func (c *CognitoSync) GetIdentityPoolConfigurationRequest(input *GetIdentityPoolConfigurationInput) (req *request.Request, output *GetIdentityPoolConfigurationOutput) {
@@ -746,20 +745,21 @@ func (c *CognitoSync) GetIdentityPoolConfigurationRequest(input *GetIdentityPool
 // API operation GetIdentityPoolConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/GetIdentityPoolConfiguration
 func (c *CognitoSync) GetIdentityPoolConfiguration(input *GetIdentityPoolConfigurationInput) (*GetIdentityPoolConfigurationOutput, error) {
@@ -799,14 +799,13 @@ const opListDatasets = "ListDatasets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDatasetsRequest method.
+//	req, resp := client.ListDatasetsRequest(params)
 //
-//    // Example sending a request using the ListDatasetsRequest method.
-//    req, resp := client.ListDatasetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListDatasets
 func (c *CognitoSync) ListDatasetsRequest(input *ListDatasetsInput) (req *request.Request, output *ListDatasetsOutput) {
@@ -843,17 +842,18 @@ func (c *CognitoSync) ListDatasetsRequest(input *ListDatasetsInput) (req *reques
 // API operation ListDatasets for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListDatasets
 func (c *CognitoSync) ListDatasets(input *ListDatasetsInput) (*ListDatasetsOutput, error) {
@@ -893,14 +893,13 @@ const opListIdentityPoolUsage = "ListIdentityPoolUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIdentityPoolUsageRequest method.
+//	req, resp := client.ListIdentityPoolUsageRequest(params)
 //
-//    // Example sending a request using the ListIdentityPoolUsageRequest method.
-//    req, resp := client.ListIdentityPoolUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListIdentityPoolUsage
 func (c *CognitoSync) ListIdentityPoolUsageRequest(input *ListIdentityPoolUsageInput) (req *request.Request, output *ListIdentityPoolUsageOutput) {
@@ -935,17 +934,18 @@ func (c *CognitoSync) ListIdentityPoolUsageRequest(input *ListIdentityPoolUsageI
 // API operation ListIdentityPoolUsage for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListIdentityPoolUsage
 func (c *CognitoSync) ListIdentityPoolUsage(input *ListIdentityPoolUsageInput) (*ListIdentityPoolUsageOutput, error) {
@@ -985,14 +985,13 @@ const opListRecords = "ListRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecordsRequest method.
+//	req, resp := client.ListRecordsRequest(params)
 //
-//    // Example sending a request using the ListRecordsRequest method.
-//    req, resp := client.ListRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListRecords
 func (c *CognitoSync) ListRecordsRequest(input *ListRecordsInput) (req *request.Request, output *ListRecordsOutput) {
@@ -1030,17 +1029,18 @@ func (c *CognitoSync) ListRecordsRequest(input *ListRecordsInput) (req *request.
 // API operation ListRecords for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
+//
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/ListRecords
 func (c *CognitoSync) ListRecords(input *ListRecordsInput) (*ListRecordsOutput, error) {
@@ -1080,14 +1080,13 @@ const opRegisterDevice = "RegisterDevice"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterDeviceRequest method.
+//	req, resp := client.RegisterDeviceRequest(params)
 //
-//    // Example sending a request using the RegisterDeviceRequest method.
-//    req, resp := client.RegisterDeviceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/RegisterDevice
 func (c *CognitoSync) RegisterDeviceRequest(input *RegisterDeviceInput) (req *request.Request, output *RegisterDeviceOutput) {
@@ -1121,22 +1120,23 @@ func (c *CognitoSync) RegisterDeviceRequest(input *RegisterDeviceInput) (req *re
 // API operation RegisterDevice for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InvalidConfigurationException
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InvalidConfigurationException
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/RegisterDevice
 func (c *CognitoSync) RegisterDevice(input *RegisterDeviceInput) (*RegisterDeviceOutput, error) {
@@ -1176,14 +1176,13 @@ const opSetCognitoEvents = "SetCognitoEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetCognitoEventsRequest method.
+//	req, resp := client.SetCognitoEventsRequest(params)
 //
-//    // Example sending a request using the SetCognitoEventsRequest method.
-//    req, resp := client.SetCognitoEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SetCognitoEvents
 func (c *CognitoSync) SetCognitoEventsRequest(input *SetCognitoEventsInput) (req *request.Request, output *SetCognitoEventsOutput) {
@@ -1221,20 +1220,21 @@ func (c *CognitoSync) SetCognitoEventsRequest(input *SetCognitoEventsInput) (req
 // API operation SetCognitoEvents for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SetCognitoEvents
 func (c *CognitoSync) SetCognitoEvents(input *SetCognitoEventsInput) (*SetCognitoEventsOutput, error) {
@@ -1274,14 +1274,13 @@ const opSetIdentityPoolConfiguration = "SetIdentityPoolConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetIdentityPoolConfigurationRequest method.
+//	req, resp := client.SetIdentityPoolConfigurationRequest(params)
 //
-//    // Example sending a request using the SetIdentityPoolConfigurationRequest method.
-//    req, resp := client.SetIdentityPoolConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SetIdentityPoolConfiguration
 func (c *CognitoSync) SetIdentityPoolConfigurationRequest(input *SetIdentityPoolConfigurationInput) (req *request.Request, output *SetIdentityPoolConfigurationOutput) {
@@ -1315,23 +1314,24 @@ func (c *CognitoSync) SetIdentityPoolConfigurationRequest(input *SetIdentityPool
 // API operation SetIdentityPoolConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * ConcurrentModificationException
-//   Thrown if there are parallel requests to modify a resource.
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
+//
+//   - ConcurrentModificationException
+//     Thrown if there are parallel requests to modify a resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SetIdentityPoolConfiguration
 func (c *CognitoSync) SetIdentityPoolConfiguration(input *SetIdentityPoolConfigurationInput) (*SetIdentityPoolConfigurationOutput, error) {
@@ -1371,14 +1371,13 @@ const opSubscribeToDataset = "SubscribeToDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SubscribeToDatasetRequest method.
+//	req, resp := client.SubscribeToDatasetRequest(params)
 //
-//    // Example sending a request using the SubscribeToDatasetRequest method.
-//    req, resp := client.SubscribeToDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SubscribeToDataset
 func (c *CognitoSync) SubscribeToDatasetRequest(input *SubscribeToDatasetInput) (req *request.Request, output *SubscribeToDatasetOutput) {
@@ -1414,22 +1413,23 @@ func (c *CognitoSync) SubscribeToDatasetRequest(input *SubscribeToDatasetInput) 
 // API operation SubscribeToDataset for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InvalidConfigurationException
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InvalidConfigurationException
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/SubscribeToDataset
 func (c *CognitoSync) SubscribeToDataset(input *SubscribeToDatasetInput) (*SubscribeToDatasetOutput, error) {
@@ -1469,14 +1469,13 @@ const opUnsubscribeFromDataset = "UnsubscribeFromDataset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UnsubscribeFromDatasetRequest method.
+//	req, resp := client.UnsubscribeFromDatasetRequest(params)
 //
-//    // Example sending a request using the UnsubscribeFromDatasetRequest method.
-//    req, resp := client.UnsubscribeFromDatasetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/UnsubscribeFromDataset
 func (c *CognitoSync) UnsubscribeFromDatasetRequest(input *UnsubscribeFromDatasetInput) (req *request.Request, output *UnsubscribeFromDatasetOutput) {
@@ -1512,22 +1511,23 @@ func (c *CognitoSync) UnsubscribeFromDatasetRequest(input *UnsubscribeFromDatase
 // API operation UnsubscribeFromDataset for usage and error information.
 //
 // Returned Error Types:
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
 //
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InvalidConfigurationException
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - InvalidConfigurationException
+//
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/UnsubscribeFromDataset
 func (c *CognitoSync) UnsubscribeFromDataset(input *UnsubscribeFromDatasetInput) (*UnsubscribeFromDatasetOutput, error) {
@@ -1567,14 +1567,13 @@ const opUpdateRecords = "UpdateRecords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecordsRequest method.
+//	req, resp := client.UpdateRecordsRequest(params)
 //
-//    // Example sending a request using the UpdateRecordsRequest method.
-//    req, resp := client.UpdateRecordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/UpdateRecords
 func (c *CognitoSync) UpdateRecordsRequest(input *UpdateRecordsInput) (req *request.Request, output *UpdateRecordsOutput) {
@@ -1620,33 +1619,34 @@ func (c *CognitoSync) UpdateRecordsRequest(input *UpdateRecordsInput) (req *requ
 // API operation UpdateRecords for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * LimitExceededException
-//   Thrown when the limit on the number of objects or operations has been exceeded.
+//   - InvalidParameterException
+//     Thrown when a request parameter does not comply with the associated constraints.
 //
-//   * NotAuthorizedException
-//   Thrown when a user is not authorized to access the requested resource.
+//   - LimitExceededException
+//     Thrown when the limit on the number of objects or operations has been exceeded.
 //
-//   * ResourceNotFoundException
-//   Thrown if the resource doesn't exist.
+//   - NotAuthorizedException
+//     Thrown when a user is not authorized to access the requested resource.
 //
-//   * ResourceConflictException
-//   Thrown if an update can't be applied because the resource was changed by
-//   another call and this would result in a conflict.
+//   - ResourceNotFoundException
+//     Thrown if the resource doesn't exist.
 //
-//   * InvalidLambdaFunctionOutputException
-//   The AWS Lambda function returned invalid output or an exception.
+//   - ResourceConflictException
+//     Thrown if an update can't be applied because the resource was changed by
+//     another call and this would result in a conflict.
 //
-//   * LambdaThrottledException
-//   AWS Lambda throttled your account, please contact AWS Support
+//   - InvalidLambdaFunctionOutputException
+//     The AWS Lambda function returned invalid output or an exception.
 //
-//   * TooManyRequestsException
-//   Thrown if the request is throttled.
+//   - LambdaThrottledException
+//     AWS Lambda throttled your account, please contact AWS Support
 //
-//   * InternalErrorException
-//   Indicates an internal service error.
+//   - TooManyRequestsException
+//     Thrown if the request is throttled.
+//
+//   - InternalErrorException
+//     Indicates an internal service error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cognito-sync-2014-06-30/UpdateRecords
 func (c *CognitoSync) UpdateRecords(input *UpdateRecordsInput) (*UpdateRecordsOutput, error) {

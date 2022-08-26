@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a OpsWorksCM client from just a session.
-//     svc := opsworkscm.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a OpsWorksCM client with additional configuration
-//     svc := opsworkscm.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a OpsWorksCM client from just a session.
+//	svc := opsworkscm.New(mySession)
+//
+//	// Create a OpsWorksCM client with additional configuration
+//	svc := opsworkscm.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *OpsWorksCM {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-//
 type BatchRebootSeversOption struct {
 	// 云服务器ID列表。
 

@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ResourceGroupsTaggingAPI client from just a session.
-//     svc := resourcegroupstaggingapi.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ResourceGroupsTaggingAPI client with additional configuration
-//     svc := resourcegroupstaggingapi.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ResourceGroupsTaggingAPI client from just a session.
+//	svc := resourcegroupstaggingapi.New(mySession)
+//
+//	// Create a ResourceGroupsTaggingAPI client with additional configuration
+//	svc := resourcegroupstaggingapi.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ResourceGroupsTaggingAPI {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

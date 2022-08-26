@@ -80,17 +80,17 @@ func (m *topology) UnmarshalPolymorphicJSON(data []byte) (interface{}, error) {
 	}
 }
 
-//GetEntities returns Entities
+// GetEntities returns Entities
 func (m topology) GetEntities() []interface{} {
 	return m.Entities
 }
 
-//GetRelationships returns Relationships
+// GetRelationships returns Relationships
 func (m topology) GetRelationships() []TopologyEntityRelationship {
 	return m.Relationships
 }
 
-//GetTimeCreated returns TimeCreated
+// GetTimeCreated returns TimeCreated
 func (m topology) GetTimeCreated() *common.SDKTime {
 	return m.TimeCreated
 }

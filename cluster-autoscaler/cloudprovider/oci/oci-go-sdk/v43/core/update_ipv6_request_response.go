@@ -11,7 +11,7 @@ import (
 
 // UpdateIpv6Request wrapper for the UpdateIpv6 operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateIpv6.go.html to see an example of how to use UpdateIpv6Request.
 type UpdateIpv6Request struct {

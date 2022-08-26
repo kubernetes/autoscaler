@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a ManagedGrafana client from just a session.
-//     svc := managedgrafana.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a ManagedGrafana client with additional configuration
-//     svc := managedgrafana.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a ManagedGrafana client from just a session.
+//	svc := managedgrafana.New(mySession)
+//
+//	// Create a ManagedGrafana client with additional configuration
+//	svc := managedgrafana.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *ManagedGrafana {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -29,14 +29,13 @@ const opApplyArchiveRule = "ApplyArchiveRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ApplyArchiveRuleRequest method.
+//	req, resp := client.ApplyArchiveRuleRequest(params)
 //
-//    // Example sending a request using the ApplyArchiveRuleRequest method.
-//    req, resp := client.ApplyArchiveRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ApplyArchiveRule
 func (c *AccessAnalyzer) ApplyArchiveRuleRequest(input *ApplyArchiveRuleInput) (req *request.Request, output *ApplyArchiveRuleOutput) {
@@ -69,20 +68,21 @@ func (c *AccessAnalyzer) ApplyArchiveRuleRequest(input *ApplyArchiveRuleInput) (
 // API operation ApplyArchiveRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ApplyArchiveRule
 func (c *AccessAnalyzer) ApplyArchiveRule(input *ApplyArchiveRuleInput) (*ApplyArchiveRuleOutput, error) {
@@ -122,14 +122,13 @@ const opCancelPolicyGeneration = "CancelPolicyGeneration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelPolicyGenerationRequest method.
+//	req, resp := client.CancelPolicyGenerationRequest(params)
 //
-//    // Example sending a request using the CancelPolicyGenerationRequest method.
-//    req, resp := client.CancelPolicyGenerationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CancelPolicyGeneration
 func (c *AccessAnalyzer) CancelPolicyGenerationRequest(input *CancelPolicyGenerationInput) (req *request.Request, output *CancelPolicyGenerationOutput) {
@@ -161,17 +160,18 @@ func (c *AccessAnalyzer) CancelPolicyGenerationRequest(input *CancelPolicyGenera
 // API operation CancelPolicyGeneration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CancelPolicyGeneration
 func (c *AccessAnalyzer) CancelPolicyGeneration(input *CancelPolicyGenerationInput) (*CancelPolicyGenerationOutput, error) {
@@ -211,14 +211,13 @@ const opCreateAccessPreview = "CreateAccessPreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAccessPreviewRequest method.
+//	req, resp := client.CreateAccessPreviewRequest(params)
 //
-//    // Example sending a request using the CreateAccessPreviewRequest method.
-//    req, resp := client.CreateAccessPreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateAccessPreview
 func (c *AccessAnalyzer) CreateAccessPreviewRequest(input *CreateAccessPreviewInput) (req *request.Request, output *CreateAccessPreviewOutput) {
@@ -250,26 +249,27 @@ func (c *AccessAnalyzer) CreateAccessPreviewRequest(input *CreateAccessPreviewIn
 // API operation CreateAccessPreview for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   A conflict exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ConflictException
+//     A conflict exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ServiceQuotaExceededException
-//   Service quote met error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - ServiceQuotaExceededException
+//     Service quote met error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateAccessPreview
 func (c *AccessAnalyzer) CreateAccessPreview(input *CreateAccessPreviewInput) (*CreateAccessPreviewOutput, error) {
@@ -309,14 +309,13 @@ const opCreateAnalyzer = "CreateAnalyzer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAnalyzerRequest method.
+//	req, resp := client.CreateAnalyzerRequest(params)
 //
-//    // Example sending a request using the CreateAnalyzerRequest method.
-//    req, resp := client.CreateAnalyzerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateAnalyzer
 func (c *AccessAnalyzer) CreateAnalyzerRequest(input *CreateAnalyzerInput) (req *request.Request, output *CreateAnalyzerOutput) {
@@ -347,23 +346,24 @@ func (c *AccessAnalyzer) CreateAnalyzerRequest(input *CreateAnalyzerInput) (req 
 // API operation CreateAnalyzer for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   A conflict exception error.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ConflictException
+//     A conflict exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ServiceQuotaExceededException
-//   Service quote met error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - ServiceQuotaExceededException
+//     Service quote met error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateAnalyzer
 func (c *AccessAnalyzer) CreateAnalyzer(input *CreateAnalyzerInput) (*CreateAnalyzerOutput, error) {
@@ -403,14 +403,13 @@ const opCreateArchiveRule = "CreateArchiveRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateArchiveRuleRequest method.
+//	req, resp := client.CreateArchiveRuleRequest(params)
 //
-//    // Example sending a request using the CreateArchiveRuleRequest method.
-//    req, resp := client.CreateArchiveRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateArchiveRule
 func (c *AccessAnalyzer) CreateArchiveRuleRequest(input *CreateArchiveRuleInput) (req *request.Request, output *CreateArchiveRuleOutput) {
@@ -448,26 +447,27 @@ func (c *AccessAnalyzer) CreateArchiveRuleRequest(input *CreateArchiveRuleInput)
 // API operation CreateArchiveRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   A conflict exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ConflictException
+//     A conflict exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ServiceQuotaExceededException
-//   Service quote met error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - ServiceQuotaExceededException
+//     Service quote met error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/CreateArchiveRule
 func (c *AccessAnalyzer) CreateArchiveRule(input *CreateArchiveRuleInput) (*CreateArchiveRuleOutput, error) {
@@ -507,14 +507,13 @@ const opDeleteAnalyzer = "DeleteAnalyzer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAnalyzerRequest method.
+//	req, resp := client.DeleteAnalyzerRequest(params)
 //
-//    // Example sending a request using the DeleteAnalyzerRequest method.
-//    req, resp := client.DeleteAnalyzerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/DeleteAnalyzer
 func (c *AccessAnalyzer) DeleteAnalyzerRequest(input *DeleteAnalyzerInput) (req *request.Request, output *DeleteAnalyzerOutput) {
@@ -549,20 +548,21 @@ func (c *AccessAnalyzer) DeleteAnalyzerRequest(input *DeleteAnalyzerInput) (req 
 // API operation DeleteAnalyzer for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/DeleteAnalyzer
 func (c *AccessAnalyzer) DeleteAnalyzer(input *DeleteAnalyzerInput) (*DeleteAnalyzerOutput, error) {
@@ -602,14 +602,13 @@ const opDeleteArchiveRule = "DeleteArchiveRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteArchiveRuleRequest method.
+//	req, resp := client.DeleteArchiveRuleRequest(params)
 //
-//    // Example sending a request using the DeleteArchiveRuleRequest method.
-//    req, resp := client.DeleteArchiveRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/DeleteArchiveRule
 func (c *AccessAnalyzer) DeleteArchiveRuleRequest(input *DeleteArchiveRuleInput) (req *request.Request, output *DeleteArchiveRuleOutput) {
@@ -641,20 +640,21 @@ func (c *AccessAnalyzer) DeleteArchiveRuleRequest(input *DeleteArchiveRuleInput)
 // API operation DeleteArchiveRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/DeleteArchiveRule
 func (c *AccessAnalyzer) DeleteArchiveRule(input *DeleteArchiveRuleInput) (*DeleteArchiveRuleOutput, error) {
@@ -694,14 +694,13 @@ const opGetAccessPreview = "GetAccessPreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccessPreviewRequest method.
+//	req, resp := client.GetAccessPreviewRequest(params)
 //
-//    // Example sending a request using the GetAccessPreviewRequest method.
-//    req, resp := client.GetAccessPreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAccessPreview
 func (c *AccessAnalyzer) GetAccessPreviewRequest(input *GetAccessPreviewInput) (req *request.Request, output *GetAccessPreviewOutput) {
@@ -732,20 +731,21 @@ func (c *AccessAnalyzer) GetAccessPreviewRequest(input *GetAccessPreviewInput) (
 // API operation GetAccessPreview for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAccessPreview
 func (c *AccessAnalyzer) GetAccessPreview(input *GetAccessPreviewInput) (*GetAccessPreviewOutput, error) {
@@ -785,14 +785,13 @@ const opGetAnalyzedResource = "GetAnalyzedResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnalyzedResourceRequest method.
+//	req, resp := client.GetAnalyzedResourceRequest(params)
 //
-//    // Example sending a request using the GetAnalyzedResourceRequest method.
-//    req, resp := client.GetAnalyzedResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAnalyzedResource
 func (c *AccessAnalyzer) GetAnalyzedResourceRequest(input *GetAnalyzedResourceInput) (req *request.Request, output *GetAnalyzedResourceOutput) {
@@ -823,20 +822,21 @@ func (c *AccessAnalyzer) GetAnalyzedResourceRequest(input *GetAnalyzedResourceIn
 // API operation GetAnalyzedResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAnalyzedResource
 func (c *AccessAnalyzer) GetAnalyzedResource(input *GetAnalyzedResourceInput) (*GetAnalyzedResourceOutput, error) {
@@ -876,14 +876,13 @@ const opGetAnalyzer = "GetAnalyzer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAnalyzerRequest method.
+//	req, resp := client.GetAnalyzerRequest(params)
 //
-//    // Example sending a request using the GetAnalyzerRequest method.
-//    req, resp := client.GetAnalyzerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAnalyzer
 func (c *AccessAnalyzer) GetAnalyzerRequest(input *GetAnalyzerInput) (req *request.Request, output *GetAnalyzerOutput) {
@@ -914,20 +913,21 @@ func (c *AccessAnalyzer) GetAnalyzerRequest(input *GetAnalyzerInput) (req *reque
 // API operation GetAnalyzer for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetAnalyzer
 func (c *AccessAnalyzer) GetAnalyzer(input *GetAnalyzerInput) (*GetAnalyzerOutput, error) {
@@ -967,14 +967,13 @@ const opGetArchiveRule = "GetArchiveRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetArchiveRuleRequest method.
+//	req, resp := client.GetArchiveRuleRequest(params)
 //
-//    // Example sending a request using the GetArchiveRuleRequest method.
-//    req, resp := client.GetArchiveRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetArchiveRule
 func (c *AccessAnalyzer) GetArchiveRuleRequest(input *GetArchiveRuleInput) (req *request.Request, output *GetArchiveRuleOutput) {
@@ -1009,20 +1008,21 @@ func (c *AccessAnalyzer) GetArchiveRuleRequest(input *GetArchiveRuleInput) (req 
 // API operation GetArchiveRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetArchiveRule
 func (c *AccessAnalyzer) GetArchiveRule(input *GetArchiveRuleInput) (*GetArchiveRuleOutput, error) {
@@ -1062,14 +1062,13 @@ const opGetFinding = "GetFinding"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFindingRequest method.
+//	req, resp := client.GetFindingRequest(params)
 //
-//    // Example sending a request using the GetFindingRequest method.
-//    req, resp := client.GetFindingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetFinding
 func (c *AccessAnalyzer) GetFindingRequest(input *GetFindingInput) (req *request.Request, output *GetFindingOutput) {
@@ -1100,20 +1099,21 @@ func (c *AccessAnalyzer) GetFindingRequest(input *GetFindingInput) (req *request
 // API operation GetFinding for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetFinding
 func (c *AccessAnalyzer) GetFinding(input *GetFindingInput) (*GetFindingOutput, error) {
@@ -1153,14 +1153,13 @@ const opGetGeneratedPolicy = "GetGeneratedPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGeneratedPolicyRequest method.
+//	req, resp := client.GetGeneratedPolicyRequest(params)
 //
-//    // Example sending a request using the GetGeneratedPolicyRequest method.
-//    req, resp := client.GetGeneratedPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetGeneratedPolicy
 func (c *AccessAnalyzer) GetGeneratedPolicyRequest(input *GetGeneratedPolicyInput) (req *request.Request, output *GetGeneratedPolicyOutput) {
@@ -1191,17 +1190,18 @@ func (c *AccessAnalyzer) GetGeneratedPolicyRequest(input *GetGeneratedPolicyInpu
 // API operation GetGeneratedPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/GetGeneratedPolicy
 func (c *AccessAnalyzer) GetGeneratedPolicy(input *GetGeneratedPolicyInput) (*GetGeneratedPolicyOutput, error) {
@@ -1241,14 +1241,13 @@ const opListAccessPreviewFindings = "ListAccessPreviewFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessPreviewFindingsRequest method.
+//	req, resp := client.ListAccessPreviewFindingsRequest(params)
 //
-//    // Example sending a request using the ListAccessPreviewFindingsRequest method.
-//    req, resp := client.ListAccessPreviewFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAccessPreviewFindings
 func (c *AccessAnalyzer) ListAccessPreviewFindingsRequest(input *ListAccessPreviewFindingsInput) (req *request.Request, output *ListAccessPreviewFindingsOutput) {
@@ -1286,23 +1285,24 @@ func (c *AccessAnalyzer) ListAccessPreviewFindingsRequest(input *ListAccessPrevi
 // API operation ListAccessPreviewFindings for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ConflictException
-//   A conflict exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ConflictException
+//     A conflict exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAccessPreviewFindings
 func (c *AccessAnalyzer) ListAccessPreviewFindings(input *ListAccessPreviewFindingsInput) (*ListAccessPreviewFindingsOutput, error) {
@@ -1334,15 +1334,14 @@ func (c *AccessAnalyzer) ListAccessPreviewFindingsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessPreviewFindings operation.
-//    pageNum := 0
-//    err := client.ListAccessPreviewFindingsPages(params,
-//        func(page *accessanalyzer.ListAccessPreviewFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessPreviewFindings operation.
+//	pageNum := 0
+//	err := client.ListAccessPreviewFindingsPages(params,
+//	    func(page *accessanalyzer.ListAccessPreviewFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListAccessPreviewFindingsPages(input *ListAccessPreviewFindingsInput, fn func(*ListAccessPreviewFindingsOutput, bool) bool) error {
 	return c.ListAccessPreviewFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1394,14 +1393,13 @@ const opListAccessPreviews = "ListAccessPreviews"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccessPreviewsRequest method.
+//	req, resp := client.ListAccessPreviewsRequest(params)
 //
-//    // Example sending a request using the ListAccessPreviewsRequest method.
-//    req, resp := client.ListAccessPreviewsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAccessPreviews
 func (c *AccessAnalyzer) ListAccessPreviewsRequest(input *ListAccessPreviewsInput) (req *request.Request, output *ListAccessPreviewsOutput) {
@@ -1438,20 +1436,21 @@ func (c *AccessAnalyzer) ListAccessPreviewsRequest(input *ListAccessPreviewsInpu
 // API operation ListAccessPreviews for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAccessPreviews
 func (c *AccessAnalyzer) ListAccessPreviews(input *ListAccessPreviewsInput) (*ListAccessPreviewsOutput, error) {
@@ -1483,15 +1482,14 @@ func (c *AccessAnalyzer) ListAccessPreviewsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAccessPreviews operation.
-//    pageNum := 0
-//    err := client.ListAccessPreviewsPages(params,
-//        func(page *accessanalyzer.ListAccessPreviewsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAccessPreviews operation.
+//	pageNum := 0
+//	err := client.ListAccessPreviewsPages(params,
+//	    func(page *accessanalyzer.ListAccessPreviewsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListAccessPreviewsPages(input *ListAccessPreviewsInput, fn func(*ListAccessPreviewsOutput, bool) bool) error {
 	return c.ListAccessPreviewsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1543,14 +1541,13 @@ const opListAnalyzedResources = "ListAnalyzedResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnalyzedResourcesRequest method.
+//	req, resp := client.ListAnalyzedResourcesRequest(params)
 //
-//    // Example sending a request using the ListAnalyzedResourcesRequest method.
-//    req, resp := client.ListAnalyzedResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAnalyzedResources
 func (c *AccessAnalyzer) ListAnalyzedResourcesRequest(input *ListAnalyzedResourcesInput) (req *request.Request, output *ListAnalyzedResourcesOutput) {
@@ -1588,20 +1585,21 @@ func (c *AccessAnalyzer) ListAnalyzedResourcesRequest(input *ListAnalyzedResourc
 // API operation ListAnalyzedResources for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAnalyzedResources
 func (c *AccessAnalyzer) ListAnalyzedResources(input *ListAnalyzedResourcesInput) (*ListAnalyzedResourcesOutput, error) {
@@ -1633,15 +1631,14 @@ func (c *AccessAnalyzer) ListAnalyzedResourcesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnalyzedResources operation.
-//    pageNum := 0
-//    err := client.ListAnalyzedResourcesPages(params,
-//        func(page *accessanalyzer.ListAnalyzedResourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnalyzedResources operation.
+//	pageNum := 0
+//	err := client.ListAnalyzedResourcesPages(params,
+//	    func(page *accessanalyzer.ListAnalyzedResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListAnalyzedResourcesPages(input *ListAnalyzedResourcesInput, fn func(*ListAnalyzedResourcesOutput, bool) bool) error {
 	return c.ListAnalyzedResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1693,14 +1690,13 @@ const opListAnalyzers = "ListAnalyzers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAnalyzersRequest method.
+//	req, resp := client.ListAnalyzersRequest(params)
 //
-//    // Example sending a request using the ListAnalyzersRequest method.
-//    req, resp := client.ListAnalyzersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAnalyzers
 func (c *AccessAnalyzer) ListAnalyzersRequest(input *ListAnalyzersInput) (req *request.Request, output *ListAnalyzersOutput) {
@@ -1737,17 +1733,18 @@ func (c *AccessAnalyzer) ListAnalyzersRequest(input *ListAnalyzersInput) (req *r
 // API operation ListAnalyzers for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListAnalyzers
 func (c *AccessAnalyzer) ListAnalyzers(input *ListAnalyzersInput) (*ListAnalyzersOutput, error) {
@@ -1779,15 +1776,14 @@ func (c *AccessAnalyzer) ListAnalyzersWithContext(ctx aws.Context, input *ListAn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAnalyzers operation.
-//    pageNum := 0
-//    err := client.ListAnalyzersPages(params,
-//        func(page *accessanalyzer.ListAnalyzersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAnalyzers operation.
+//	pageNum := 0
+//	err := client.ListAnalyzersPages(params,
+//	    func(page *accessanalyzer.ListAnalyzersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListAnalyzersPages(input *ListAnalyzersInput, fn func(*ListAnalyzersOutput, bool) bool) error {
 	return c.ListAnalyzersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1839,14 +1835,13 @@ const opListArchiveRules = "ListArchiveRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListArchiveRulesRequest method.
+//	req, resp := client.ListArchiveRulesRequest(params)
 //
-//    // Example sending a request using the ListArchiveRulesRequest method.
-//    req, resp := client.ListArchiveRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListArchiveRules
 func (c *AccessAnalyzer) ListArchiveRulesRequest(input *ListArchiveRulesInput) (req *request.Request, output *ListArchiveRulesOutput) {
@@ -1883,17 +1878,18 @@ func (c *AccessAnalyzer) ListArchiveRulesRequest(input *ListArchiveRulesInput) (
 // API operation ListArchiveRules for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListArchiveRules
 func (c *AccessAnalyzer) ListArchiveRules(input *ListArchiveRulesInput) (*ListArchiveRulesOutput, error) {
@@ -1925,15 +1921,14 @@ func (c *AccessAnalyzer) ListArchiveRulesWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListArchiveRules operation.
-//    pageNum := 0
-//    err := client.ListArchiveRulesPages(params,
-//        func(page *accessanalyzer.ListArchiveRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListArchiveRules operation.
+//	pageNum := 0
+//	err := client.ListArchiveRulesPages(params,
+//	    func(page *accessanalyzer.ListArchiveRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListArchiveRulesPages(input *ListArchiveRulesInput, fn func(*ListArchiveRulesOutput, bool) bool) error {
 	return c.ListArchiveRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1985,14 +1980,13 @@ const opListFindings = "ListFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFindingsRequest method.
+//	req, resp := client.ListFindingsRequest(params)
 //
-//    // Example sending a request using the ListFindingsRequest method.
-//    req, resp := client.ListFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListFindings
 func (c *AccessAnalyzer) ListFindingsRequest(input *ListFindingsInput) (req *request.Request, output *ListFindingsOutput) {
@@ -2033,20 +2027,21 @@ func (c *AccessAnalyzer) ListFindingsRequest(input *ListFindingsInput) (req *req
 // API operation ListFindings for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListFindings
 func (c *AccessAnalyzer) ListFindings(input *ListFindingsInput) (*ListFindingsOutput, error) {
@@ -2078,15 +2073,14 @@ func (c *AccessAnalyzer) ListFindingsWithContext(ctx aws.Context, input *ListFin
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFindings operation.
-//    pageNum := 0
-//    err := client.ListFindingsPages(params,
-//        func(page *accessanalyzer.ListFindingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFindings operation.
+//	pageNum := 0
+//	err := client.ListFindingsPages(params,
+//	    func(page *accessanalyzer.ListFindingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListFindingsPages(input *ListFindingsInput, fn func(*ListFindingsOutput, bool) bool) error {
 	return c.ListFindingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2138,14 +2132,13 @@ const opListPolicyGenerations = "ListPolicyGenerations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPolicyGenerationsRequest method.
+//	req, resp := client.ListPolicyGenerationsRequest(params)
 //
-//    // Example sending a request using the ListPolicyGenerationsRequest method.
-//    req, resp := client.ListPolicyGenerationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListPolicyGenerations
 func (c *AccessAnalyzer) ListPolicyGenerationsRequest(input *ListPolicyGenerationsInput) (req *request.Request, output *ListPolicyGenerationsOutput) {
@@ -2182,17 +2175,18 @@ func (c *AccessAnalyzer) ListPolicyGenerationsRequest(input *ListPolicyGeneratio
 // API operation ListPolicyGenerations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListPolicyGenerations
 func (c *AccessAnalyzer) ListPolicyGenerations(input *ListPolicyGenerationsInput) (*ListPolicyGenerationsOutput, error) {
@@ -2224,15 +2218,14 @@ func (c *AccessAnalyzer) ListPolicyGenerationsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPolicyGenerations operation.
-//    pageNum := 0
-//    err := client.ListPolicyGenerationsPages(params,
-//        func(page *accessanalyzer.ListPolicyGenerationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPolicyGenerations operation.
+//	pageNum := 0
+//	err := client.ListPolicyGenerationsPages(params,
+//	    func(page *accessanalyzer.ListPolicyGenerationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ListPolicyGenerationsPages(input *ListPolicyGenerationsInput, fn func(*ListPolicyGenerationsOutput, bool) bool) error {
 	return c.ListPolicyGenerationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2284,14 +2277,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListTagsForResource
 func (c *AccessAnalyzer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2322,20 +2314,21 @@ func (c *AccessAnalyzer) ListTagsForResourceRequest(input *ListTagsForResourceIn
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ListTagsForResource
 func (c *AccessAnalyzer) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2375,14 +2368,13 @@ const opStartPolicyGeneration = "StartPolicyGeneration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartPolicyGenerationRequest method.
+//	req, resp := client.StartPolicyGenerationRequest(params)
 //
-//    // Example sending a request using the StartPolicyGenerationRequest method.
-//    req, resp := client.StartPolicyGenerationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/StartPolicyGeneration
 func (c *AccessAnalyzer) StartPolicyGenerationRequest(input *StartPolicyGenerationInput) (req *request.Request, output *StartPolicyGenerationOutput) {
@@ -2413,23 +2405,24 @@ func (c *AccessAnalyzer) StartPolicyGenerationRequest(input *StartPolicyGenerati
 // API operation StartPolicyGeneration for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   A conflict exception error.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ConflictException
+//     A conflict exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ServiceQuotaExceededException
-//   Service quote met error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - ServiceQuotaExceededException
+//     Service quote met error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/StartPolicyGeneration
 func (c *AccessAnalyzer) StartPolicyGeneration(input *StartPolicyGenerationInput) (*StartPolicyGenerationOutput, error) {
@@ -2469,14 +2462,13 @@ const opStartResourceScan = "StartResourceScan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartResourceScanRequest method.
+//	req, resp := client.StartResourceScanRequest(params)
 //
-//    // Example sending a request using the StartResourceScanRequest method.
-//    req, resp := client.StartResourceScanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/StartResourceScan
 func (c *AccessAnalyzer) StartResourceScanRequest(input *StartResourceScanInput) (req *request.Request, output *StartResourceScanOutput) {
@@ -2508,20 +2500,21 @@ func (c *AccessAnalyzer) StartResourceScanRequest(input *StartResourceScanInput)
 // API operation StartResourceScan for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/StartResourceScan
 func (c *AccessAnalyzer) StartResourceScan(input *StartResourceScanInput) (*StartResourceScanOutput, error) {
@@ -2561,14 +2554,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/TagResource
 func (c *AccessAnalyzer) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2600,20 +2592,21 @@ func (c *AccessAnalyzer) TagResourceRequest(input *TagResourceInput) (req *reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/TagResource
 func (c *AccessAnalyzer) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2653,14 +2646,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UntagResource
 func (c *AccessAnalyzer) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2692,20 +2684,21 @@ func (c *AccessAnalyzer) UntagResourceRequest(input *UntagResourceInput) (req *r
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UntagResource
 func (c *AccessAnalyzer) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2745,14 +2738,13 @@ const opUpdateArchiveRule = "UpdateArchiveRule"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateArchiveRuleRequest method.
+//	req, resp := client.UpdateArchiveRuleRequest(params)
 //
-//    // Example sending a request using the UpdateArchiveRuleRequest method.
-//    req, resp := client.UpdateArchiveRuleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UpdateArchiveRule
 func (c *AccessAnalyzer) UpdateArchiveRuleRequest(input *UpdateArchiveRuleInput) (req *request.Request, output *UpdateArchiveRuleOutput) {
@@ -2784,20 +2776,21 @@ func (c *AccessAnalyzer) UpdateArchiveRuleRequest(input *UpdateArchiveRuleInput)
 // API operation UpdateArchiveRule for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UpdateArchiveRule
 func (c *AccessAnalyzer) UpdateArchiveRule(input *UpdateArchiveRuleInput) (*UpdateArchiveRuleOutput, error) {
@@ -2837,14 +2830,13 @@ const opUpdateFindings = "UpdateFindings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFindingsRequest method.
+//	req, resp := client.UpdateFindingsRequest(params)
 //
-//    // Example sending a request using the UpdateFindingsRequest method.
-//    req, resp := client.UpdateFindingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UpdateFindings
 func (c *AccessAnalyzer) UpdateFindingsRequest(input *UpdateFindingsInput) (req *request.Request, output *UpdateFindingsOutput) {
@@ -2876,20 +2868,21 @@ func (c *AccessAnalyzer) UpdateFindingsRequest(input *UpdateFindingsInput) (req 
 // API operation UpdateFindings for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource could not be found.
 //
-//   * ValidationException
-//   Validation exception error.
+//   - ResourceNotFoundException
+//     The specified resource could not be found.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/UpdateFindings
 func (c *AccessAnalyzer) UpdateFindings(input *UpdateFindingsInput) (*UpdateFindingsOutput, error) {
@@ -2929,14 +2922,13 @@ const opValidatePolicy = "ValidatePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ValidatePolicyRequest method.
+//	req, resp := client.ValidatePolicyRequest(params)
 //
-//    // Example sending a request using the ValidatePolicyRequest method.
-//    req, resp := client.ValidatePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ValidatePolicy
 func (c *AccessAnalyzer) ValidatePolicyRequest(input *ValidatePolicyInput) (req *request.Request, output *ValidatePolicyOutput) {
@@ -2976,17 +2968,18 @@ func (c *AccessAnalyzer) ValidatePolicyRequest(input *ValidatePolicyInput) (req 
 // API operation ValidatePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   Validation exception error.
 //
-//   * InternalServerException
-//   Internal server error.
+//   - ValidationException
+//     Validation exception error.
 //
-//   * ThrottlingException
-//   Throttling limit exceeded error.
+//   - InternalServerException
+//     Internal server error.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ThrottlingException
+//     Throttling limit exceeded error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/accessanalyzer-2019-11-01/ValidatePolicy
 func (c *AccessAnalyzer) ValidatePolicy(input *ValidatePolicyInput) (*ValidatePolicyOutput, error) {
@@ -3018,15 +3011,14 @@ func (c *AccessAnalyzer) ValidatePolicyWithContext(ctx aws.Context, input *Valid
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ValidatePolicy operation.
-//    pageNum := 0
-//    err := client.ValidatePolicyPages(params,
-//        func(page *accessanalyzer.ValidatePolicyOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ValidatePolicy operation.
+//	pageNum := 0
+//	err := client.ValidatePolicyPages(params,
+//	    func(page *accessanalyzer.ValidatePolicyOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *AccessAnalyzer) ValidatePolicyPages(input *ValidatePolicyInput, fn func(*ValidatePolicyOutput, bool) bool) error {
 	return c.ValidatePolicyPagesWithContext(aws.BackgroundContext(), input, fn)
 }

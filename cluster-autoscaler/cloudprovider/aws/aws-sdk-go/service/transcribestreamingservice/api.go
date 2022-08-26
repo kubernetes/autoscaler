@@ -38,14 +38,13 @@ const opStartMedicalStreamTranscription = "StartMedicalStreamTranscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMedicalStreamTranscriptionRequest method.
+//	req, resp := client.StartMedicalStreamTranscriptionRequest(params)
 //
-//    // Example sending a request using the StartMedicalStreamTranscriptionRequest method.
-//    req, resp := client.StartMedicalStreamTranscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartMedicalStreamTranscription
 func (c *TranscribeStreamingService) StartMedicalStreamTranscriptionRequest(input *StartMedicalStreamTranscriptionInput) (req *request.Request, output *StartMedicalStreamTranscriptionOutput) {
@@ -107,28 +106,29 @@ func (c *TranscribeStreamingService) StartMedicalStreamTranscriptionRequest(inpu
 // API operation StartMedicalStreamTranscription for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-//   operation was invalid. For example, MediaEncoding was not set to a valid
-//   encoding, or LanguageCode was not set to a valid code. Check the parameters
-//   and try your request again.
 //
-//   * LimitExceededException
-//   You have exceeded the maximum number of concurrent transcription streams,
-//   are starting transcription streams too quickly, or the maximum audio length
-//   of 4 hours. Wait until a stream has finished processing, or break your audio
-//   stream into smaller chunks and try your request again.
+//   - BadRequestException
+//     One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
+//     operation was invalid. For example, MediaEncoding was not set to a valid
+//     encoding, or LanguageCode was not set to a valid code. Check the parameters
+//     and try your request again.
 //
-//   * InternalFailureException
-//   A problem occurred while processing the audio. Amazon Transcribe or Amazon
-//   Transcribe Medical terminated processing. Try your request again.
+//   - LimitExceededException
+//     You have exceeded the maximum number of concurrent transcription streams,
+//     are starting transcription streams too quickly, or the maximum audio length
+//     of 4 hours. Wait until a stream has finished processing, or break your audio
+//     stream into smaller chunks and try your request again.
 //
-//   * ConflictException
-//   A new stream started with the same session ID. The current stream has been
-//   terminated.
+//   - InternalFailureException
+//     A problem occurred while processing the audio. Amazon Transcribe or Amazon
+//     Transcribe Medical terminated processing. Try your request again.
 //
-//   * ServiceUnavailableException
-//   Service is currently unavailable. Try your request later.
+//   - ConflictException
+//     A new stream started with the same session ID. The current stream has been
+//     terminated.
+//
+//   - ServiceUnavailableException
+//     Service is currently unavailable. Try your request later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartMedicalStreamTranscription
 func (c *TranscribeStreamingService) StartMedicalStreamTranscription(input *StartMedicalStreamTranscriptionInput) (*StartMedicalStreamTranscriptionOutput, error) {
@@ -194,10 +194,10 @@ type StartMedicalStreamTranscriptionEventStream struct {
 //
 // The Reader member must be set before reading events from the stream.
 //
-//   es := NewStartMedicalStreamTranscriptionEventStream(func(o *StartMedicalStreamTranscriptionEventStream){
-//       es.Writer = myMockStreamWriter
-//       es.Reader = myMockStreamReader
-//   })
+//	es := NewStartMedicalStreamTranscriptionEventStream(func(o *StartMedicalStreamTranscriptionEventStream){
+//	    es.Writer = myMockStreamWriter
+//	    es.Reader = myMockStreamReader
+//	})
 func NewStartMedicalStreamTranscriptionEventStream(opts ...func(*StartMedicalStreamTranscriptionEventStream)) *StartMedicalStreamTranscriptionEventStream {
 	es := &StartMedicalStreamTranscriptionEventStream{
 		done: make(chan struct{}),
@@ -268,7 +268,7 @@ func (es *StartMedicalStreamTranscriptionEventStream) closeInputPipe() error {
 //
 // These events are:
 //
-//     * AudioEvent
+//   - AudioEvent
 func (es *StartMedicalStreamTranscriptionEventStream) Send(ctx aws.Context, event AudioStreamEvent) error {
 	return es.Writer.Send(ctx, event)
 }
@@ -312,8 +312,8 @@ func (es *StartMedicalStreamTranscriptionEventStream) runInputStream(r *request.
 //
 // These events are:
 //
-//     * MedicalTranscriptEvent
-//     * MedicalTranscriptResultStreamUnknownEvent
+//   - MedicalTranscriptEvent
+//   - MedicalTranscriptResultStreamUnknownEvent
 func (es *StartMedicalStreamTranscriptionEventStream) Events() <-chan MedicalTranscriptResultStreamEvent {
 	return es.Reader.Events()
 }
@@ -352,7 +352,6 @@ func (es *StartMedicalStreamTranscriptionEventStream) runOutputStream(r *request
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *StartMedicalStreamTranscriptionEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -418,14 +417,13 @@ const opStartStreamTranscription = "StartStreamTranscription"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartStreamTranscriptionRequest method.
+//	req, resp := client.StartStreamTranscriptionRequest(params)
 //
-//    // Example sending a request using the StartStreamTranscriptionRequest method.
-//    req, resp := client.StartStreamTranscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartStreamTranscription
 func (c *TranscribeStreamingService) StartStreamTranscriptionRequest(input *StartStreamTranscriptionInput) (req *request.Request, output *StartStreamTranscriptionOutput) {
@@ -481,13 +479,13 @@ func (c *TranscribeStreamingService) StartStreamTranscriptionRequest(input *Star
 //
 // The following are encoded as HTTP/2 headers:
 //
-//    * x-amzn-transcribe-language-code
+//   - x-amzn-transcribe-language-code
 //
-//    * x-amzn-transcribe-media-encoding
+//   - x-amzn-transcribe-media-encoding
 //
-//    * x-amzn-transcribe-sample-rate
+//   - x-amzn-transcribe-sample-rate
 //
-//    * x-amzn-transcribe-session-id
+//   - x-amzn-transcribe-session-id
 //
 // See the SDK for Go API Reference (https://docs.aws.amazon.com/sdk-for-go/api/service/transcribestreamingservice/#TranscribeStreamingService.StartStreamTranscription)
 // for more detail.
@@ -500,28 +498,29 @@ func (c *TranscribeStreamingService) StartStreamTranscriptionRequest(input *Star
 // API operation StartStreamTranscription for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-//   operation was invalid. For example, MediaEncoding was not set to a valid
-//   encoding, or LanguageCode was not set to a valid code. Check the parameters
-//   and try your request again.
 //
-//   * LimitExceededException
-//   You have exceeded the maximum number of concurrent transcription streams,
-//   are starting transcription streams too quickly, or the maximum audio length
-//   of 4 hours. Wait until a stream has finished processing, or break your audio
-//   stream into smaller chunks and try your request again.
+//   - BadRequestException
+//     One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
+//     operation was invalid. For example, MediaEncoding was not set to a valid
+//     encoding, or LanguageCode was not set to a valid code. Check the parameters
+//     and try your request again.
 //
-//   * InternalFailureException
-//   A problem occurred while processing the audio. Amazon Transcribe or Amazon
-//   Transcribe Medical terminated processing. Try your request again.
+//   - LimitExceededException
+//     You have exceeded the maximum number of concurrent transcription streams,
+//     are starting transcription streams too quickly, or the maximum audio length
+//     of 4 hours. Wait until a stream has finished processing, or break your audio
+//     stream into smaller chunks and try your request again.
 //
-//   * ConflictException
-//   A new stream started with the same session ID. The current stream has been
-//   terminated.
+//   - InternalFailureException
+//     A problem occurred while processing the audio. Amazon Transcribe or Amazon
+//     Transcribe Medical terminated processing. Try your request again.
 //
-//   * ServiceUnavailableException
-//   Service is currently unavailable. Try your request later.
+//   - ConflictException
+//     A new stream started with the same session ID. The current stream has been
+//     terminated.
+//
+//   - ServiceUnavailableException
+//     Service is currently unavailable. Try your request later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/transcribe-streaming-2017-10-26/StartStreamTranscription
 func (c *TranscribeStreamingService) StartStreamTranscription(input *StartStreamTranscriptionInput) (*StartStreamTranscriptionOutput, error) {
@@ -587,10 +586,10 @@ type StartStreamTranscriptionEventStream struct {
 //
 // The Reader member must be set before reading events from the stream.
 //
-//   es := NewStartStreamTranscriptionEventStream(func(o *StartStreamTranscriptionEventStream){
-//       es.Writer = myMockStreamWriter
-//       es.Reader = myMockStreamReader
-//   })
+//	es := NewStartStreamTranscriptionEventStream(func(o *StartStreamTranscriptionEventStream){
+//	    es.Writer = myMockStreamWriter
+//	    es.Reader = myMockStreamReader
+//	})
 func NewStartStreamTranscriptionEventStream(opts ...func(*StartStreamTranscriptionEventStream)) *StartStreamTranscriptionEventStream {
 	es := &StartStreamTranscriptionEventStream{
 		done: make(chan struct{}),
@@ -661,7 +660,7 @@ func (es *StartStreamTranscriptionEventStream) closeInputPipe() error {
 //
 // These events are:
 //
-//     * AudioEvent
+//   - AudioEvent
 func (es *StartStreamTranscriptionEventStream) Send(ctx aws.Context, event AudioStreamEvent) error {
 	return es.Writer.Send(ctx, event)
 }
@@ -705,8 +704,8 @@ func (es *StartStreamTranscriptionEventStream) runInputStream(r *request.Request
 //
 // These events are:
 //
-//     * TranscriptEvent
-//     * TranscriptResultStreamUnknownEvent
+//   - TranscriptEvent
+//   - TranscriptResultStreamUnknownEvent
 func (es *StartStreamTranscriptionEventStream) Events() <-chan TranscriptResultStreamEvent {
 	return es.Reader.Events()
 }
@@ -745,7 +744,6 @@ func (es *StartStreamTranscriptionEventStream) runOutputStream(r *request.Reques
 //
 // You can use the closing of the Reader's Events channel to terminate your
 // application's read from the API's stream.
-//
 func (es *StartStreamTranscriptionEventStream) Close() (err error) {
 	es.closeOnce.Do(es.safeClose)
 	return es.Err()
@@ -913,7 +911,7 @@ func (s *AudioEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg eventstream
 //
 // These events are:
 //
-//     * AudioEvent
+//   - AudioEvent
 type AudioStreamEvent interface {
 	eventAudioStream()
 	eventstreamapi.Marshaler
@@ -927,7 +925,7 @@ type AudioStreamEvent interface {
 //
 // These events are:
 //
-//     * AudioEvent
+//   - AudioEvent
 type AudioStreamWriter interface {
 	// Sends writes events to the stream blocking until the event has been
 	// written. An error is returned if the write fails.
@@ -1985,7 +1983,7 @@ func (s *MedicalTranscriptEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg
 //
 // These events are:
 //
-//     * MedicalTranscriptEvent
+//   - MedicalTranscriptEvent
 type MedicalTranscriptResultStreamEvent interface {
 	eventMedicalTranscriptResultStream()
 	eventstreamapi.Marshaler
@@ -1999,8 +1997,8 @@ type MedicalTranscriptResultStreamEvent interface {
 //
 // These events are:
 //
-//     * MedicalTranscriptEvent
-//     * MedicalTranscriptResultStreamUnknownEvent
+//   - MedicalTranscriptEvent
+//   - MedicalTranscriptResultStreamUnknownEvent
 type MedicalTranscriptResultStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan MedicalTranscriptResultStreamEvent
@@ -3339,7 +3337,7 @@ func (s *TranscriptEvent) MarshalEvent(pm protocol.PayloadMarshaler) (msg events
 //
 // These events are:
 //
-//     * TranscriptEvent
+//   - TranscriptEvent
 type TranscriptResultStreamEvent interface {
 	eventTranscriptResultStream()
 	eventstreamapi.Marshaler
@@ -3353,8 +3351,8 @@ type TranscriptResultStreamEvent interface {
 //
 // These events are:
 //
-//     * TranscriptEvent
-//     * TranscriptResultStreamUnknownEvent
+//   - TranscriptEvent
+//   - TranscriptResultStreamUnknownEvent
 type TranscriptResultStreamReader interface {
 	// Returns a channel of events as they are read from the event stream.
 	Events() <-chan TranscriptResultStreamEvent

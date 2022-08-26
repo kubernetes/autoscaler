@@ -29,14 +29,13 @@ const opAssociateOriginationIdentity = "AssociateOriginationIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateOriginationIdentityRequest method.
+//	req, resp := client.AssociateOriginationIdentityRequest(params)
 //
-//    // Example sending a request using the AssociateOriginationIdentityRequest method.
-//    req, resp := client.AssociateOriginationIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/AssociateOriginationIdentity
 func (c *PinpointSMSVoiceV2) AssociateOriginationIdentityRequest(input *AssociateOriginationIdentityInput) (req *request.Request, output *AssociateOriginationIdentityOutput) {
@@ -74,32 +73,33 @@ func (c *PinpointSMSVoiceV2) AssociateOriginationIdentityRequest(input *Associat
 // API operation AssociateOriginationIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/AssociateOriginationIdentity
 func (c *PinpointSMSVoiceV2) AssociateOriginationIdentity(input *AssociateOriginationIdentityInput) (*AssociateOriginationIdentityOutput, error) {
@@ -139,14 +139,13 @@ const opCreateConfigurationSet = "CreateConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigurationSetRequest method.
+//	req, resp := client.CreateConfigurationSetRequest(params)
 //
-//    // Example sending a request using the CreateConfigurationSetRequest method.
-//    req, resp := client.CreateConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateConfigurationSet
 func (c *PinpointSMSVoiceV2) CreateConfigurationSetRequest(input *CreateConfigurationSetInput) (req *request.Request, output *CreateConfigurationSetOutput) {
@@ -184,29 +183,30 @@ func (c *PinpointSMSVoiceV2) CreateConfigurationSetRequest(input *CreateConfigur
 // API operation CreateConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateConfigurationSet
 func (c *PinpointSMSVoiceV2) CreateConfigurationSet(input *CreateConfigurationSetInput) (*CreateConfigurationSetOutput, error) {
@@ -246,14 +246,13 @@ const opCreateEventDestination = "CreateEventDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEventDestinationRequest method.
+//	req, resp := client.CreateEventDestinationRequest(params)
 //
-//    // Example sending a request using the CreateEventDestinationRequest method.
-//    req, resp := client.CreateEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateEventDestination
 func (c *PinpointSMSVoiceV2) CreateEventDestinationRequest(input *CreateEventDestinationInput) (req *request.Request, output *CreateEventDestinationOutput) {
@@ -294,32 +293,33 @@ func (c *PinpointSMSVoiceV2) CreateEventDestinationRequest(input *CreateEventDes
 // API operation CreateEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateEventDestination
 func (c *PinpointSMSVoiceV2) CreateEventDestination(input *CreateEventDestinationInput) (*CreateEventDestinationOutput, error) {
@@ -359,14 +359,13 @@ const opCreateOptOutList = "CreateOptOutList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateOptOutListRequest method.
+//	req, resp := client.CreateOptOutListRequest(params)
 //
-//    // Example sending a request using the CreateOptOutListRequest method.
-//    req, resp := client.CreateOptOutListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateOptOutList
 func (c *PinpointSMSVoiceV2) CreateOptOutListRequest(input *CreateOptOutListInput) (req *request.Request, output *CreateOptOutListOutput) {
@@ -406,29 +405,30 @@ func (c *PinpointSMSVoiceV2) CreateOptOutListRequest(input *CreateOptOutListInpu
 // API operation CreateOptOutList for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreateOptOutList
 func (c *PinpointSMSVoiceV2) CreateOptOutList(input *CreateOptOutListInput) (*CreateOptOutListOutput, error) {
@@ -468,14 +468,13 @@ const opCreatePool = "CreatePool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePoolRequest method.
+//	req, resp := client.CreatePoolRequest(params)
 //
-//    // Example sending a request using the CreatePoolRequest method.
-//    req, resp := client.CreatePoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreatePool
 func (c *PinpointSMSVoiceV2) CreatePoolRequest(input *CreatePoolInput) (req *request.Request, output *CreatePoolOutput) {
@@ -517,32 +516,33 @@ func (c *PinpointSMSVoiceV2) CreatePoolRequest(input *CreatePoolInput) (req *req
 // API operation CreatePool for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/CreatePool
 func (c *PinpointSMSVoiceV2) CreatePool(input *CreatePoolInput) (*CreatePoolOutput, error) {
@@ -582,14 +582,13 @@ const opDeleteConfigurationSet = "DeleteConfigurationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigurationSetRequest method.
+//	req, resp := client.DeleteConfigurationSetRequest(params)
 //
-//    // Example sending a request using the DeleteConfigurationSetRequest method.
-//    req, resp := client.DeleteConfigurationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteConfigurationSet
 func (c *PinpointSMSVoiceV2) DeleteConfigurationSetRequest(input *DeleteConfigurationSetInput) (req *request.Request, output *DeleteConfigurationSetOutput) {
@@ -624,23 +623,24 @@ func (c *PinpointSMSVoiceV2) DeleteConfigurationSetRequest(input *DeleteConfigur
 // API operation DeleteConfigurationSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteConfigurationSet
 func (c *PinpointSMSVoiceV2) DeleteConfigurationSet(input *DeleteConfigurationSetInput) (*DeleteConfigurationSetOutput, error) {
@@ -680,14 +680,13 @@ const opDeleteDefaultMessageType = "DeleteDefaultMessageType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDefaultMessageTypeRequest method.
+//	req, resp := client.DeleteDefaultMessageTypeRequest(params)
 //
-//    // Example sending a request using the DeleteDefaultMessageTypeRequest method.
-//    req, resp := client.DeleteDefaultMessageTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteDefaultMessageType
 func (c *PinpointSMSVoiceV2) DeleteDefaultMessageTypeRequest(input *DeleteDefaultMessageTypeInput) (req *request.Request, output *DeleteDefaultMessageTypeOutput) {
@@ -724,23 +723,24 @@ func (c *PinpointSMSVoiceV2) DeleteDefaultMessageTypeRequest(input *DeleteDefaul
 // API operation DeleteDefaultMessageType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteDefaultMessageType
 func (c *PinpointSMSVoiceV2) DeleteDefaultMessageType(input *DeleteDefaultMessageTypeInput) (*DeleteDefaultMessageTypeOutput, error) {
@@ -780,14 +780,13 @@ const opDeleteDefaultSenderId = "DeleteDefaultSenderId"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDefaultSenderIdRequest method.
+//	req, resp := client.DeleteDefaultSenderIdRequest(params)
 //
-//    // Example sending a request using the DeleteDefaultSenderIdRequest method.
-//    req, resp := client.DeleteDefaultSenderIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteDefaultSenderId
 func (c *PinpointSMSVoiceV2) DeleteDefaultSenderIdRequest(input *DeleteDefaultSenderIdInput) (req *request.Request, output *DeleteDefaultSenderIdOutput) {
@@ -822,23 +821,24 @@ func (c *PinpointSMSVoiceV2) DeleteDefaultSenderIdRequest(input *DeleteDefaultSe
 // API operation DeleteDefaultSenderId for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteDefaultSenderId
 func (c *PinpointSMSVoiceV2) DeleteDefaultSenderId(input *DeleteDefaultSenderIdInput) (*DeleteDefaultSenderIdOutput, error) {
@@ -878,14 +878,13 @@ const opDeleteEventDestination = "DeleteEventDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventDestinationRequest method.
+//	req, resp := client.DeleteEventDestinationRequest(params)
 //
-//    // Example sending a request using the DeleteEventDestinationRequest method.
-//    req, resp := client.DeleteEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteEventDestination
 func (c *PinpointSMSVoiceV2) DeleteEventDestinationRequest(input *DeleteEventDestinationInput) (req *request.Request, output *DeleteEventDestinationOutput) {
@@ -921,23 +920,24 @@ func (c *PinpointSMSVoiceV2) DeleteEventDestinationRequest(input *DeleteEventDes
 // API operation DeleteEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteEventDestination
 func (c *PinpointSMSVoiceV2) DeleteEventDestination(input *DeleteEventDestinationInput) (*DeleteEventDestinationOutput, error) {
@@ -977,14 +977,13 @@ const opDeleteKeyword = "DeleteKeyword"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKeywordRequest method.
+//	req, resp := client.DeleteKeywordRequest(params)
 //
-//    // Example sending a request using the DeleteKeywordRequest method.
-//    req, resp := client.DeleteKeywordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteKeyword
 func (c *PinpointSMSVoiceV2) DeleteKeywordRequest(input *DeleteKeywordInput) (req *request.Request, output *DeleteKeywordOutput) {
@@ -1023,29 +1022,30 @@ func (c *PinpointSMSVoiceV2) DeleteKeywordRequest(input *DeleteKeywordInput) (re
 // API operation DeleteKeyword for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteKeyword
 func (c *PinpointSMSVoiceV2) DeleteKeyword(input *DeleteKeywordInput) (*DeleteKeywordOutput, error) {
@@ -1085,14 +1085,13 @@ const opDeleteOptOutList = "DeleteOptOutList"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOptOutListRequest method.
+//	req, resp := client.DeleteOptOutListRequest(params)
 //
-//    // Example sending a request using the DeleteOptOutListRequest method.
-//    req, resp := client.DeleteOptOutListRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteOptOutList
 func (c *PinpointSMSVoiceV2) DeleteOptOutListRequest(input *DeleteOptOutListInput) (req *request.Request, output *DeleteOptOutListOutput) {
@@ -1127,29 +1126,30 @@ func (c *PinpointSMSVoiceV2) DeleteOptOutListRequest(input *DeleteOptOutListInpu
 // API operation DeleteOptOutList for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteOptOutList
 func (c *PinpointSMSVoiceV2) DeleteOptOutList(input *DeleteOptOutListInput) (*DeleteOptOutListOutput, error) {
@@ -1189,14 +1189,13 @@ const opDeleteOptedOutNumber = "DeleteOptedOutNumber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOptedOutNumberRequest method.
+//	req, resp := client.DeleteOptedOutNumberRequest(params)
 //
-//    // Example sending a request using the DeleteOptedOutNumberRequest method.
-//    req, resp := client.DeleteOptedOutNumberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteOptedOutNumber
 func (c *PinpointSMSVoiceV2) DeleteOptedOutNumberRequest(input *DeleteOptedOutNumberInput) (req *request.Request, output *DeleteOptedOutNumberOutput) {
@@ -1233,29 +1232,30 @@ func (c *PinpointSMSVoiceV2) DeleteOptedOutNumberRequest(input *DeleteOptedOutNu
 // API operation DeleteOptedOutNumber for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteOptedOutNumber
 func (c *PinpointSMSVoiceV2) DeleteOptedOutNumber(input *DeleteOptedOutNumberInput) (*DeleteOptedOutNumberOutput, error) {
@@ -1295,14 +1295,13 @@ const opDeletePool = "DeletePool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePoolRequest method.
+//	req, resp := client.DeletePoolRequest(params)
 //
-//    // Example sending a request using the DeletePoolRequest method.
-//    req, resp := client.DeletePoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeletePool
 func (c *PinpointSMSVoiceV2) DeletePoolRequest(input *DeletePoolInput) (req *request.Request, output *DeletePoolOutput) {
@@ -1341,29 +1340,30 @@ func (c *PinpointSMSVoiceV2) DeletePoolRequest(input *DeletePoolInput) (req *req
 // API operation DeletePool for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeletePool
 func (c *PinpointSMSVoiceV2) DeletePool(input *DeletePoolInput) (*DeletePoolOutput, error) {
@@ -1403,14 +1403,13 @@ const opDeleteTextMessageSpendLimitOverride = "DeleteTextMessageSpendLimitOverri
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTextMessageSpendLimitOverrideRequest method.
+//	req, resp := client.DeleteTextMessageSpendLimitOverrideRequest(params)
 //
-//    // Example sending a request using the DeleteTextMessageSpendLimitOverrideRequest method.
-//    req, resp := client.DeleteTextMessageSpendLimitOverrideRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteTextMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) DeleteTextMessageSpendLimitOverrideRequest(input *DeleteTextMessageSpendLimitOverrideInput) (req *request.Request, output *DeleteTextMessageSpendLimitOverrideOutput) {
@@ -1445,20 +1444,21 @@ func (c *PinpointSMSVoiceV2) DeleteTextMessageSpendLimitOverrideRequest(input *D
 // API operation DeleteTextMessageSpendLimitOverride for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteTextMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) DeleteTextMessageSpendLimitOverride(input *DeleteTextMessageSpendLimitOverrideInput) (*DeleteTextMessageSpendLimitOverrideOutput, error) {
@@ -1498,14 +1498,13 @@ const opDeleteVoiceMessageSpendLimitOverride = "DeleteVoiceMessageSpendLimitOver
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVoiceMessageSpendLimitOverrideRequest method.
+//	req, resp := client.DeleteVoiceMessageSpendLimitOverrideRequest(params)
 //
-//    // Example sending a request using the DeleteVoiceMessageSpendLimitOverrideRequest method.
-//    req, resp := client.DeleteVoiceMessageSpendLimitOverrideRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteVoiceMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) DeleteVoiceMessageSpendLimitOverrideRequest(input *DeleteVoiceMessageSpendLimitOverrideInput) (req *request.Request, output *DeleteVoiceMessageSpendLimitOverrideOutput) {
@@ -1540,20 +1539,21 @@ func (c *PinpointSMSVoiceV2) DeleteVoiceMessageSpendLimitOverrideRequest(input *
 // API operation DeleteVoiceMessageSpendLimitOverride for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DeleteVoiceMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) DeleteVoiceMessageSpendLimitOverride(input *DeleteVoiceMessageSpendLimitOverrideInput) (*DeleteVoiceMessageSpendLimitOverrideOutput, error) {
@@ -1593,14 +1593,13 @@ const opDescribeAccountAttributes = "DescribeAccountAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountAttributesRequest method.
+//	req, resp := client.DescribeAccountAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeAccountAttributesRequest method.
-//    req, resp := client.DescribeAccountAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeAccountAttributes
 func (c *PinpointSMSVoiceV2) DescribeAccountAttributesRequest(input *DescribeAccountAttributesInput) (req *request.Request, output *DescribeAccountAttributesOutput) {
@@ -1645,20 +1644,21 @@ func (c *PinpointSMSVoiceV2) DescribeAccountAttributesRequest(input *DescribeAcc
 // API operation DescribeAccountAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeAccountAttributes
 func (c *PinpointSMSVoiceV2) DescribeAccountAttributes(input *DescribeAccountAttributesInput) (*DescribeAccountAttributesOutput, error) {
@@ -1690,15 +1690,14 @@ func (c *PinpointSMSVoiceV2) DescribeAccountAttributesWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAccountAttributes operation.
-//    pageNum := 0
-//    err := client.DescribeAccountAttributesPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeAccountAttributesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAccountAttributes operation.
+//	pageNum := 0
+//	err := client.DescribeAccountAttributesPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeAccountAttributesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeAccountAttributesPages(input *DescribeAccountAttributesInput, fn func(*DescribeAccountAttributesOutput, bool) bool) error {
 	return c.DescribeAccountAttributesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1750,14 +1749,13 @@ const opDescribeAccountLimits = "DescribeAccountLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAccountLimitsRequest method.
+//	req, resp := client.DescribeAccountLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeAccountLimitsRequest method.
-//    req, resp := client.DescribeAccountLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeAccountLimits
 func (c *PinpointSMSVoiceV2) DescribeAccountLimitsRequest(input *DescribeAccountLimitsInput) (req *request.Request, output *DescribeAccountLimitsOutput) {
@@ -1802,20 +1800,21 @@ func (c *PinpointSMSVoiceV2) DescribeAccountLimitsRequest(input *DescribeAccount
 // API operation DescribeAccountLimits for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeAccountLimits
 func (c *PinpointSMSVoiceV2) DescribeAccountLimits(input *DescribeAccountLimitsInput) (*DescribeAccountLimitsOutput, error) {
@@ -1847,15 +1846,14 @@ func (c *PinpointSMSVoiceV2) DescribeAccountLimitsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAccountLimits operation.
-//    pageNum := 0
-//    err := client.DescribeAccountLimitsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeAccountLimitsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAccountLimits operation.
+//	pageNum := 0
+//	err := client.DescribeAccountLimitsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeAccountLimitsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeAccountLimitsPages(input *DescribeAccountLimitsInput, fn func(*DescribeAccountLimitsOutput, bool) bool) error {
 	return c.DescribeAccountLimitsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1907,14 +1905,13 @@ const opDescribeConfigurationSets = "DescribeConfigurationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeConfigurationSetsRequest method.
+//	req, resp := client.DescribeConfigurationSetsRequest(params)
 //
-//    // Example sending a request using the DescribeConfigurationSetsRequest method.
-//    req, resp := client.DescribeConfigurationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeConfigurationSets
 func (c *PinpointSMSVoiceV2) DescribeConfigurationSetsRequest(input *DescribeConfigurationSetsInput) (req *request.Request, output *DescribeConfigurationSetsOutput) {
@@ -1959,23 +1956,24 @@ func (c *PinpointSMSVoiceV2) DescribeConfigurationSetsRequest(input *DescribeCon
 // API operation DescribeConfigurationSets for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeConfigurationSets
 func (c *PinpointSMSVoiceV2) DescribeConfigurationSets(input *DescribeConfigurationSetsInput) (*DescribeConfigurationSetsOutput, error) {
@@ -2007,15 +2005,14 @@ func (c *PinpointSMSVoiceV2) DescribeConfigurationSetsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeConfigurationSets operation.
-//    pageNum := 0
-//    err := client.DescribeConfigurationSetsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeConfigurationSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeConfigurationSets operation.
+//	pageNum := 0
+//	err := client.DescribeConfigurationSetsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeConfigurationSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeConfigurationSetsPages(input *DescribeConfigurationSetsInput, fn func(*DescribeConfigurationSetsOutput, bool) bool) error {
 	return c.DescribeConfigurationSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2067,14 +2064,13 @@ const opDescribeKeywords = "DescribeKeywords"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeKeywordsRequest method.
+//	req, resp := client.DescribeKeywordsRequest(params)
 //
-//    // Example sending a request using the DescribeKeywordsRequest method.
-//    req, resp := client.DescribeKeywordsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeKeywords
 func (c *PinpointSMSVoiceV2) DescribeKeywordsRequest(input *DescribeKeywordsInput) (req *request.Request, output *DescribeKeywordsOutput) {
@@ -2120,23 +2116,24 @@ func (c *PinpointSMSVoiceV2) DescribeKeywordsRequest(input *DescribeKeywordsInpu
 // API operation DescribeKeywords for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeKeywords
 func (c *PinpointSMSVoiceV2) DescribeKeywords(input *DescribeKeywordsInput) (*DescribeKeywordsOutput, error) {
@@ -2168,15 +2165,14 @@ func (c *PinpointSMSVoiceV2) DescribeKeywordsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeKeywords operation.
-//    pageNum := 0
-//    err := client.DescribeKeywordsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeKeywordsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeKeywords operation.
+//	pageNum := 0
+//	err := client.DescribeKeywordsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeKeywordsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeKeywordsPages(input *DescribeKeywordsInput, fn func(*DescribeKeywordsOutput, bool) bool) error {
 	return c.DescribeKeywordsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2228,14 +2224,13 @@ const opDescribeOptOutLists = "DescribeOptOutLists"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOptOutListsRequest method.
+//	req, resp := client.DescribeOptOutListsRequest(params)
 //
-//    // Example sending a request using the DescribeOptOutListsRequest method.
-//    req, resp := client.DescribeOptOutListsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeOptOutLists
 func (c *PinpointSMSVoiceV2) DescribeOptOutListsRequest(input *DescribeOptOutListsInput) (req *request.Request, output *DescribeOptOutListsOutput) {
@@ -2279,23 +2274,24 @@ func (c *PinpointSMSVoiceV2) DescribeOptOutListsRequest(input *DescribeOptOutLis
 // API operation DescribeOptOutLists for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeOptOutLists
 func (c *PinpointSMSVoiceV2) DescribeOptOutLists(input *DescribeOptOutListsInput) (*DescribeOptOutListsOutput, error) {
@@ -2327,15 +2323,14 @@ func (c *PinpointSMSVoiceV2) DescribeOptOutListsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOptOutLists operation.
-//    pageNum := 0
-//    err := client.DescribeOptOutListsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeOptOutListsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOptOutLists operation.
+//	pageNum := 0
+//	err := client.DescribeOptOutListsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeOptOutListsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeOptOutListsPages(input *DescribeOptOutListsInput, fn func(*DescribeOptOutListsOutput, bool) bool) error {
 	return c.DescribeOptOutListsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2387,14 +2382,13 @@ const opDescribeOptedOutNumbers = "DescribeOptedOutNumbers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOptedOutNumbersRequest method.
+//	req, resp := client.DescribeOptedOutNumbersRequest(params)
 //
-//    // Example sending a request using the DescribeOptedOutNumbersRequest method.
-//    req, resp := client.DescribeOptedOutNumbersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeOptedOutNumbers
 func (c *PinpointSMSVoiceV2) DescribeOptedOutNumbersRequest(input *DescribeOptedOutNumbersInput) (req *request.Request, output *DescribeOptedOutNumbersOutput) {
@@ -2440,23 +2434,24 @@ func (c *PinpointSMSVoiceV2) DescribeOptedOutNumbersRequest(input *DescribeOpted
 // API operation DescribeOptedOutNumbers for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeOptedOutNumbers
 func (c *PinpointSMSVoiceV2) DescribeOptedOutNumbers(input *DescribeOptedOutNumbersInput) (*DescribeOptedOutNumbersOutput, error) {
@@ -2488,15 +2483,14 @@ func (c *PinpointSMSVoiceV2) DescribeOptedOutNumbersWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOptedOutNumbers operation.
-//    pageNum := 0
-//    err := client.DescribeOptedOutNumbersPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeOptedOutNumbersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOptedOutNumbers operation.
+//	pageNum := 0
+//	err := client.DescribeOptedOutNumbersPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeOptedOutNumbersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeOptedOutNumbersPages(input *DescribeOptedOutNumbersInput, fn func(*DescribeOptedOutNumbersOutput, bool) bool) error {
 	return c.DescribeOptedOutNumbersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2548,14 +2542,13 @@ const opDescribePhoneNumbers = "DescribePhoneNumbers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePhoneNumbersRequest method.
+//	req, resp := client.DescribePhoneNumbersRequest(params)
 //
-//    // Example sending a request using the DescribePhoneNumbersRequest method.
-//    req, resp := client.DescribePhoneNumbersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribePhoneNumbers
 func (c *PinpointSMSVoiceV2) DescribePhoneNumbersRequest(input *DescribePhoneNumbersInput) (req *request.Request, output *DescribePhoneNumbersOutput) {
@@ -2601,23 +2594,24 @@ func (c *PinpointSMSVoiceV2) DescribePhoneNumbersRequest(input *DescribePhoneNum
 // API operation DescribePhoneNumbers for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribePhoneNumbers
 func (c *PinpointSMSVoiceV2) DescribePhoneNumbers(input *DescribePhoneNumbersInput) (*DescribePhoneNumbersOutput, error) {
@@ -2649,15 +2643,14 @@ func (c *PinpointSMSVoiceV2) DescribePhoneNumbersWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePhoneNumbers operation.
-//    pageNum := 0
-//    err := client.DescribePhoneNumbersPages(params,
-//        func(page *pinpointsmsvoicev2.DescribePhoneNumbersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePhoneNumbers operation.
+//	pageNum := 0
+//	err := client.DescribePhoneNumbersPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribePhoneNumbersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribePhoneNumbersPages(input *DescribePhoneNumbersInput, fn func(*DescribePhoneNumbersOutput, bool) bool) error {
 	return c.DescribePhoneNumbersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2709,14 +2702,13 @@ const opDescribePools = "DescribePools"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePoolsRequest method.
+//	req, resp := client.DescribePoolsRequest(params)
 //
-//    // Example sending a request using the DescribePoolsRequest method.
-//    req, resp := client.DescribePoolsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribePools
 func (c *PinpointSMSVoiceV2) DescribePoolsRequest(input *DescribePoolsInput) (req *request.Request, output *DescribePoolsOutput) {
@@ -2765,23 +2757,24 @@ func (c *PinpointSMSVoiceV2) DescribePoolsRequest(input *DescribePoolsInput) (re
 // API operation DescribePools for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribePools
 func (c *PinpointSMSVoiceV2) DescribePools(input *DescribePoolsInput) (*DescribePoolsOutput, error) {
@@ -2813,15 +2806,14 @@ func (c *PinpointSMSVoiceV2) DescribePoolsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePools operation.
-//    pageNum := 0
-//    err := client.DescribePoolsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribePoolsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePools operation.
+//	pageNum := 0
+//	err := client.DescribePoolsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribePoolsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribePoolsPages(input *DescribePoolsInput, fn func(*DescribePoolsOutput, bool) bool) error {
 	return c.DescribePoolsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2873,14 +2865,13 @@ const opDescribeSenderIds = "DescribeSenderIds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSenderIdsRequest method.
+//	req, resp := client.DescribeSenderIdsRequest(params)
 //
-//    // Example sending a request using the DescribeSenderIdsRequest method.
-//    req, resp := client.DescribeSenderIdsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeSenderIds
 func (c *PinpointSMSVoiceV2) DescribeSenderIdsRequest(input *DescribeSenderIdsInput) (req *request.Request, output *DescribeSenderIdsOutput) {
@@ -2925,23 +2916,24 @@ func (c *PinpointSMSVoiceV2) DescribeSenderIdsRequest(input *DescribeSenderIdsIn
 // API operation DescribeSenderIds for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeSenderIds
 func (c *PinpointSMSVoiceV2) DescribeSenderIds(input *DescribeSenderIdsInput) (*DescribeSenderIdsOutput, error) {
@@ -2973,15 +2965,14 @@ func (c *PinpointSMSVoiceV2) DescribeSenderIdsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSenderIds operation.
-//    pageNum := 0
-//    err := client.DescribeSenderIdsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeSenderIdsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSenderIds operation.
+//	pageNum := 0
+//	err := client.DescribeSenderIdsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeSenderIdsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeSenderIdsPages(input *DescribeSenderIdsInput, fn func(*DescribeSenderIdsOutput, bool) bool) error {
 	return c.DescribeSenderIdsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3033,14 +3024,13 @@ const opDescribeSpendLimits = "DescribeSpendLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSpendLimitsRequest method.
+//	req, resp := client.DescribeSpendLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeSpendLimitsRequest method.
-//    req, resp := client.DescribeSpendLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeSpendLimits
 func (c *PinpointSMSVoiceV2) DescribeSpendLimitsRequest(input *DescribeSpendLimitsInput) (req *request.Request, output *DescribeSpendLimitsOutput) {
@@ -3084,20 +3074,21 @@ func (c *PinpointSMSVoiceV2) DescribeSpendLimitsRequest(input *DescribeSpendLimi
 // API operation DescribeSpendLimits for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DescribeSpendLimits
 func (c *PinpointSMSVoiceV2) DescribeSpendLimits(input *DescribeSpendLimitsInput) (*DescribeSpendLimitsOutput, error) {
@@ -3129,15 +3120,14 @@ func (c *PinpointSMSVoiceV2) DescribeSpendLimitsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeSpendLimits operation.
-//    pageNum := 0
-//    err := client.DescribeSpendLimitsPages(params,
-//        func(page *pinpointsmsvoicev2.DescribeSpendLimitsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeSpendLimits operation.
+//	pageNum := 0
+//	err := client.DescribeSpendLimitsPages(params,
+//	    func(page *pinpointsmsvoicev2.DescribeSpendLimitsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) DescribeSpendLimitsPages(input *DescribeSpendLimitsInput, fn func(*DescribeSpendLimitsOutput, bool) bool) error {
 	return c.DescribeSpendLimitsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3189,14 +3179,13 @@ const opDisassociateOriginationIdentity = "DisassociateOriginationIdentity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateOriginationIdentityRequest method.
+//	req, resp := client.DisassociateOriginationIdentityRequest(params)
 //
-//    // Example sending a request using the DisassociateOriginationIdentityRequest method.
-//    req, resp := client.DisassociateOriginationIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DisassociateOriginationIdentity
 func (c *PinpointSMSVoiceV2) DisassociateOriginationIdentityRequest(input *DisassociateOriginationIdentityInput) (req *request.Request, output *DisassociateOriginationIdentityOutput) {
@@ -3230,29 +3219,30 @@ func (c *PinpointSMSVoiceV2) DisassociateOriginationIdentityRequest(input *Disas
 // API operation DisassociateOriginationIdentity for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/DisassociateOriginationIdentity
 func (c *PinpointSMSVoiceV2) DisassociateOriginationIdentity(input *DisassociateOriginationIdentityInput) (*DisassociateOriginationIdentityOutput, error) {
@@ -3292,14 +3282,13 @@ const opListPoolOriginationIdentities = "ListPoolOriginationIdentities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPoolOriginationIdentitiesRequest method.
+//	req, resp := client.ListPoolOriginationIdentitiesRequest(params)
 //
-//    // Example sending a request using the ListPoolOriginationIdentitiesRequest method.
-//    req, resp := client.ListPoolOriginationIdentitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ListPoolOriginationIdentities
 func (c *PinpointSMSVoiceV2) ListPoolOriginationIdentitiesRequest(input *ListPoolOriginationIdentitiesInput) (req *request.Request, output *ListPoolOriginationIdentitiesOutput) {
@@ -3339,23 +3328,24 @@ func (c *PinpointSMSVoiceV2) ListPoolOriginationIdentitiesRequest(input *ListPoo
 // API operation ListPoolOriginationIdentities for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ListPoolOriginationIdentities
 func (c *PinpointSMSVoiceV2) ListPoolOriginationIdentities(input *ListPoolOriginationIdentitiesInput) (*ListPoolOriginationIdentitiesOutput, error) {
@@ -3387,15 +3377,14 @@ func (c *PinpointSMSVoiceV2) ListPoolOriginationIdentitiesWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPoolOriginationIdentities operation.
-//    pageNum := 0
-//    err := client.ListPoolOriginationIdentitiesPages(params,
-//        func(page *pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPoolOriginationIdentities operation.
+//	pageNum := 0
+//	err := client.ListPoolOriginationIdentitiesPages(params,
+//	    func(page *pinpointsmsvoicev2.ListPoolOriginationIdentitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PinpointSMSVoiceV2) ListPoolOriginationIdentitiesPages(input *ListPoolOriginationIdentitiesInput, fn func(*ListPoolOriginationIdentitiesOutput, bool) bool) error {
 	return c.ListPoolOriginationIdentitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3447,14 +3436,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ListTagsForResource
 func (c *PinpointSMSVoiceV2) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3485,23 +3473,24 @@ func (c *PinpointSMSVoiceV2) ListTagsForResourceRequest(input *ListTagsForResour
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ListTagsForResource
 func (c *PinpointSMSVoiceV2) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3541,14 +3530,13 @@ const opPutKeyword = "PutKeyword"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutKeywordRequest method.
+//	req, resp := client.PutKeywordRequest(params)
 //
-//    // Example sending a request using the PutKeywordRequest method.
-//    req, resp := client.PutKeywordRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/PutKeyword
 func (c *PinpointSMSVoiceV2) PutKeywordRequest(input *PutKeywordInput) (req *request.Request, output *PutKeywordOutput) {
@@ -3588,32 +3576,33 @@ func (c *PinpointSMSVoiceV2) PutKeywordRequest(input *PutKeywordInput) (req *req
 // API operation PutKeyword for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/PutKeyword
 func (c *PinpointSMSVoiceV2) PutKeyword(input *PutKeywordInput) (*PutKeywordOutput, error) {
@@ -3653,14 +3642,13 @@ const opPutOptedOutNumber = "PutOptedOutNumber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutOptedOutNumberRequest method.
+//	req, resp := client.PutOptedOutNumberRequest(params)
 //
-//    // Example sending a request using the PutOptedOutNumberRequest method.
-//    req, resp := client.PutOptedOutNumberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/PutOptedOutNumber
 func (c *PinpointSMSVoiceV2) PutOptedOutNumberRequest(input *PutOptedOutNumberInput) (req *request.Request, output *PutOptedOutNumberOutput) {
@@ -3694,23 +3682,24 @@ func (c *PinpointSMSVoiceV2) PutOptedOutNumberRequest(input *PutOptedOutNumberIn
 // API operation PutOptedOutNumber for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/PutOptedOutNumber
 func (c *PinpointSMSVoiceV2) PutOptedOutNumber(input *PutOptedOutNumberInput) (*PutOptedOutNumberOutput, error) {
@@ -3750,14 +3739,13 @@ const opReleasePhoneNumber = "ReleasePhoneNumber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReleasePhoneNumberRequest method.
+//	req, resp := client.ReleasePhoneNumberRequest(params)
 //
-//    // Example sending a request using the ReleasePhoneNumberRequest method.
-//    req, resp := client.ReleasePhoneNumberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ReleasePhoneNumber
 func (c *PinpointSMSVoiceV2) ReleasePhoneNumberRequest(input *ReleasePhoneNumberInput) (req *request.Request, output *ReleasePhoneNumberOutput) {
@@ -3792,29 +3780,30 @@ func (c *PinpointSMSVoiceV2) ReleasePhoneNumberRequest(input *ReleasePhoneNumber
 // API operation ReleasePhoneNumber for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/ReleasePhoneNumber
 func (c *PinpointSMSVoiceV2) ReleasePhoneNumber(input *ReleasePhoneNumberInput) (*ReleasePhoneNumberOutput, error) {
@@ -3854,14 +3843,13 @@ const opRequestPhoneNumber = "RequestPhoneNumber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestPhoneNumberRequest method.
+//	req, resp := client.RequestPhoneNumberRequest(params)
 //
-//    // Example sending a request using the RequestPhoneNumberRequest method.
-//    req, resp := client.RequestPhoneNumberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/RequestPhoneNumber
 func (c *PinpointSMSVoiceV2) RequestPhoneNumberRequest(input *RequestPhoneNumberInput) (req *request.Request, output *RequestPhoneNumberOutput) {
@@ -3894,32 +3882,33 @@ func (c *PinpointSMSVoiceV2) RequestPhoneNumberRequest(input *RequestPhoneNumber
 // API operation RequestPhoneNumber for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/RequestPhoneNumber
 func (c *PinpointSMSVoiceV2) RequestPhoneNumber(input *RequestPhoneNumberInput) (*RequestPhoneNumberOutput, error) {
@@ -3959,14 +3948,13 @@ const opSendTextMessage = "SendTextMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendTextMessageRequest method.
+//	req, resp := client.SendTextMessageRequest(params)
 //
-//    // Example sending a request using the SendTextMessageRequest method.
-//    req, resp := client.SendTextMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SendTextMessage
 func (c *PinpointSMSVoiceV2) SendTextMessageRequest(input *SendTextMessageInput) (req *request.Request, output *SendTextMessageOutput) {
@@ -4003,32 +3991,33 @@ func (c *PinpointSMSVoiceV2) SendTextMessageRequest(input *SendTextMessageInput)
 // API operation SendTextMessage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SendTextMessage
 func (c *PinpointSMSVoiceV2) SendTextMessage(input *SendTextMessageInput) (*SendTextMessageOutput, error) {
@@ -4068,14 +4057,13 @@ const opSendVoiceMessage = "SendVoiceMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendVoiceMessageRequest method.
+//	req, resp := client.SendVoiceMessageRequest(params)
 //
-//    // Example sending a request using the SendVoiceMessageRequest method.
-//    req, resp := client.SendVoiceMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SendVoiceMessage
 func (c *PinpointSMSVoiceV2) SendVoiceMessageRequest(input *SendVoiceMessageInput) (req *request.Request, output *SendVoiceMessageOutput) {
@@ -4108,32 +4096,33 @@ func (c *PinpointSMSVoiceV2) SendVoiceMessageRequest(input *SendVoiceMessageInpu
 // API operation SendVoiceMessage for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SendVoiceMessage
 func (c *PinpointSMSVoiceV2) SendVoiceMessage(input *SendVoiceMessageInput) (*SendVoiceMessageOutput, error) {
@@ -4173,14 +4162,13 @@ const opSetDefaultMessageType = "SetDefaultMessageType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetDefaultMessageTypeRequest method.
+//	req, resp := client.SetDefaultMessageTypeRequest(params)
 //
-//    // Example sending a request using the SetDefaultMessageTypeRequest method.
-//    req, resp := client.SetDefaultMessageTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetDefaultMessageType
 func (c *PinpointSMSVoiceV2) SetDefaultMessageTypeRequest(input *SetDefaultMessageTypeInput) (req *request.Request, output *SetDefaultMessageTypeOutput) {
@@ -4217,23 +4205,24 @@ func (c *PinpointSMSVoiceV2) SetDefaultMessageTypeRequest(input *SetDefaultMessa
 // API operation SetDefaultMessageType for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetDefaultMessageType
 func (c *PinpointSMSVoiceV2) SetDefaultMessageType(input *SetDefaultMessageTypeInput) (*SetDefaultMessageTypeOutput, error) {
@@ -4273,14 +4262,13 @@ const opSetDefaultSenderId = "SetDefaultSenderId"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetDefaultSenderIdRequest method.
+//	req, resp := client.SetDefaultSenderIdRequest(params)
 //
-//    // Example sending a request using the SetDefaultSenderIdRequest method.
-//    req, resp := client.SetDefaultSenderIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetDefaultSenderId
 func (c *PinpointSMSVoiceV2) SetDefaultSenderIdRequest(input *SetDefaultSenderIdInput) (req *request.Request, output *SetDefaultSenderIdOutput) {
@@ -4316,23 +4304,24 @@ func (c *PinpointSMSVoiceV2) SetDefaultSenderIdRequest(input *SetDefaultSenderId
 // API operation SetDefaultSenderId for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetDefaultSenderId
 func (c *PinpointSMSVoiceV2) SetDefaultSenderId(input *SetDefaultSenderIdInput) (*SetDefaultSenderIdOutput, error) {
@@ -4372,14 +4361,13 @@ const opSetTextMessageSpendLimitOverride = "SetTextMessageSpendLimitOverride"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetTextMessageSpendLimitOverrideRequest method.
+//	req, resp := client.SetTextMessageSpendLimitOverrideRequest(params)
 //
-//    // Example sending a request using the SetTextMessageSpendLimitOverrideRequest method.
-//    req, resp := client.SetTextMessageSpendLimitOverrideRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetTextMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) SetTextMessageSpendLimitOverrideRequest(input *SetTextMessageSpendLimitOverrideInput) (req *request.Request, output *SetTextMessageSpendLimitOverrideOutput) {
@@ -4412,20 +4400,21 @@ func (c *PinpointSMSVoiceV2) SetTextMessageSpendLimitOverrideRequest(input *SetT
 // API operation SetTextMessageSpendLimitOverride for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetTextMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) SetTextMessageSpendLimitOverride(input *SetTextMessageSpendLimitOverrideInput) (*SetTextMessageSpendLimitOverrideOutput, error) {
@@ -4465,14 +4454,13 @@ const opSetVoiceMessageSpendLimitOverride = "SetVoiceMessageSpendLimitOverride"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SetVoiceMessageSpendLimitOverrideRequest method.
+//	req, resp := client.SetVoiceMessageSpendLimitOverrideRequest(params)
 //
-//    // Example sending a request using the SetVoiceMessageSpendLimitOverrideRequest method.
-//    req, resp := client.SetVoiceMessageSpendLimitOverrideRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetVoiceMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) SetVoiceMessageSpendLimitOverrideRequest(input *SetVoiceMessageSpendLimitOverrideInput) (req *request.Request, output *SetVoiceMessageSpendLimitOverrideOutput) {
@@ -4505,20 +4493,21 @@ func (c *PinpointSMSVoiceV2) SetVoiceMessageSpendLimitOverrideRequest(input *Set
 // API operation SetVoiceMessageSpendLimitOverride for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/SetVoiceMessageSpendLimitOverride
 func (c *PinpointSMSVoiceV2) SetVoiceMessageSpendLimitOverride(input *SetVoiceMessageSpendLimitOverrideInput) (*SetVoiceMessageSpendLimitOverrideOutput, error) {
@@ -4558,14 +4547,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/TagResource
 func (c *PinpointSMSVoiceV2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4603,26 +4591,27 @@ func (c *PinpointSMSVoiceV2) TagResourceRequest(input *TagResourceInput) (req *r
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceQuotaExceededException
-//   The request would cause a service quota to be exceeded.
 //
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/TagResource
 func (c *PinpointSMSVoiceV2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4662,14 +4651,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UntagResource
 func (c *PinpointSMSVoiceV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4704,23 +4692,24 @@ func (c *PinpointSMSVoiceV2) UntagResourceRequest(input *UntagResourceInput) (re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ValidationException
+//     A validation exception for a field.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UntagResource
 func (c *PinpointSMSVoiceV2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4760,14 +4749,13 @@ const opUpdateEventDestination = "UpdateEventDestination"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEventDestinationRequest method.
+//	req, resp := client.UpdateEventDestinationRequest(params)
 //
-//    // Example sending a request using the UpdateEventDestinationRequest method.
-//    req, resp := client.UpdateEventDestinationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdateEventDestination
 func (c *PinpointSMSVoiceV2) UpdateEventDestinationRequest(input *UpdateEventDestinationInput) (req *request.Request, output *UpdateEventDestinationOutput) {
@@ -4805,29 +4793,30 @@ func (c *PinpointSMSVoiceV2) UpdateEventDestinationRequest(input *UpdateEventDes
 // API operation UpdateEventDestination for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdateEventDestination
 func (c *PinpointSMSVoiceV2) UpdateEventDestination(input *UpdateEventDestinationInput) (*UpdateEventDestinationOutput, error) {
@@ -4867,14 +4856,13 @@ const opUpdatePhoneNumber = "UpdatePhoneNumber"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePhoneNumberRequest method.
+//	req, resp := client.UpdatePhoneNumberRequest(params)
 //
-//    // Example sending a request using the UpdatePhoneNumberRequest method.
-//    req, resp := client.UpdatePhoneNumberRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdatePhoneNumber
 func (c *PinpointSMSVoiceV2) UpdatePhoneNumberRequest(input *UpdatePhoneNumberInput) (req *request.Request, output *UpdatePhoneNumberOutput) {
@@ -4910,29 +4898,30 @@ func (c *PinpointSMSVoiceV2) UpdatePhoneNumberRequest(input *UpdatePhoneNumberIn
 // API operation UpdatePhoneNumber for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdatePhoneNumber
 func (c *PinpointSMSVoiceV2) UpdatePhoneNumber(input *UpdatePhoneNumberInput) (*UpdatePhoneNumberOutput, error) {
@@ -4972,14 +4961,13 @@ const opUpdatePool = "UpdatePool"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePoolRequest method.
+//	req, resp := client.UpdatePoolRequest(params)
 //
-//    // Example sending a request using the UpdatePoolRequest method.
-//    req, resp := client.UpdatePoolRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdatePool
 func (c *PinpointSMSVoiceV2) UpdatePoolRequest(input *UpdatePoolInput) (req *request.Request, output *UpdatePoolOutput) {
@@ -5013,29 +5001,30 @@ func (c *PinpointSMSVoiceV2) UpdatePoolRequest(input *UpdatePoolInput) (req *req
 // API operation UpdatePool for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   An error that occurred because too many requests were sent during a certain
-//   amount of time.
 //
-//   * AccessDeniedException
-//   The request was denied because you don't have sufficient permissions to access
-//   the resource.
+//   - ThrottlingException
+//     An error that occurred because too many requests were sent during a certain
+//     amount of time.
 //
-//   * ResourceNotFoundException
-//   A requested resource couldn't be found.
+//   - AccessDeniedException
+//     The request was denied because you don't have sufficient permissions to access
+//     the resource.
 //
-//   * ValidationException
-//   A validation exception for a field.
+//   - ResourceNotFoundException
+//     A requested resource couldn't be found.
 //
-//   * ConflictException
-//   Your request has conflicting operations. This can occur if you're trying
-//   to perform more than one operation on the same resource at the same time
-//   or it could be that the requested action isn't valid for the current state
-//   or configuration of the resource.
+//   - ValidationException
+//     A validation exception for a field.
 //
-//   * InternalServerException
-//   The API encountered an unexpected error and couldn't complete the request.
-//   You might be able to successfully issue the request again in the future.
+//   - ConflictException
+//     Your request has conflicting operations. This can occur if you're trying
+//     to perform more than one operation on the same resource at the same time
+//     or it could be that the requested action isn't valid for the current state
+//     or configuration of the resource.
+//
+//   - InternalServerException
+//     The API encountered an unexpected error and couldn't complete the request.
+//     You might be able to successfully issue the request again in the future.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31/UpdatePool
 func (c *PinpointSMSVoiceV2) UpdatePool(input *UpdatePoolInput) (*UpdatePoolOutput, error) {

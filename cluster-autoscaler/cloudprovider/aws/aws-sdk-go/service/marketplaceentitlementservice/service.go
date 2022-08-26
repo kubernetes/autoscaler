@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceEntitlementService client from just a session.
-//     svc := marketplaceentitlementservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a MarketplaceEntitlementService client with additional configuration
-//     svc := marketplaceentitlementservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a MarketplaceEntitlementService client from just a session.
+//	svc := marketplaceentitlementservice.New(mySession)
+//
+//	// Create a MarketplaceEntitlementService client with additional configuration
+//	svc := marketplaceentitlementservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *MarketplaceEntitlementService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

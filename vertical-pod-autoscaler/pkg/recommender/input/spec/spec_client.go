@@ -45,7 +45,7 @@ type BasicContainerSpec struct {
 	Request model.Resources
 }
 
-//SpecClient provides information about pods and containers Specification
+// SpecClient provides information about pods and containers Specification
 type SpecClient interface {
 	// Returns BasicPodSpec for each pod in the cluster
 	GetPodSpecs() ([]*BasicPodSpec, error)

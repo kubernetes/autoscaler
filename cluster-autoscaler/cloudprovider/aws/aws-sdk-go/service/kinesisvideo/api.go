@@ -29,14 +29,13 @@ const opCreateSignalingChannel = "CreateSignalingChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSignalingChannelRequest method.
+//	req, resp := client.CreateSignalingChannelRequest(params)
 //
-//    // Example sending a request using the CreateSignalingChannelRequest method.
-//    req, resp := client.CreateSignalingChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/CreateSignalingChannel
 func (c *KinesisVideo) CreateSignalingChannelRequest(input *CreateSignalingChannelInput) (req *request.Request, output *CreateSignalingChannelOutput) {
@@ -69,32 +68,33 @@ func (c *KinesisVideo) CreateSignalingChannelRequest(input *CreateSignalingChann
 // API operation CreateSignalingChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * AccountChannelLimitExceededException
-//   You have reached the maximum limit of active signaling channels for this
-//   Amazon Web Services account in this region.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - AccountChannelLimitExceededException
+//     You have reached the maximum limit of active signaling channels for this
+//     Amazon Web Services account in this region.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
-//   * TagsPerResourceExceededLimitException
-//   You have exceeded the limit of tags that you can associate with the resource.
-//   A Kinesis video stream can support up to 50 tags.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
+//
+//   - TagsPerResourceExceededLimitException
+//     You have exceeded the limit of tags that you can associate with the resource.
+//     A Kinesis video stream can support up to 50 tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/CreateSignalingChannel
 func (c *KinesisVideo) CreateSignalingChannel(input *CreateSignalingChannelInput) (*CreateSignalingChannelOutput, error) {
@@ -134,14 +134,13 @@ const opCreateStream = "CreateStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamRequest method.
+//	req, resp := client.CreateStreamRequest(params)
 //
-//    // Example sending a request using the CreateStreamRequest method.
-//    req, resp := client.CreateStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/CreateStream
 func (c *KinesisVideo) CreateStreamRequest(input *CreateStreamInput) (req *request.Request, output *CreateStreamOutput) {
@@ -182,34 +181,35 @@ func (c *KinesisVideo) CreateStreamRequest(input *CreateStreamInput) (req *reque
 // API operation CreateStream for usage and error information.
 //
 // Returned Error Types:
-//   * AccountStreamLimitExceededException
-//   The number of streams created for the account is too high.
 //
-//   * DeviceStreamLimitExceededException
-//   Not implemented.
+//   - AccountStreamLimitExceededException
+//     The number of streams created for the account is too high.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - DeviceStreamLimitExceededException
+//     Not implemented.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * InvalidDeviceException
-//   Not implemented.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - InvalidDeviceException
+//     Not implemented.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * TagsPerResourceExceededLimitException
-//   You have exceeded the limit of tags that you can associate with the resource.
-//   A Kinesis video stream can support up to 50 tags.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
+//
+//   - TagsPerResourceExceededLimitException
+//     You have exceeded the limit of tags that you can associate with the resource.
+//     A Kinesis video stream can support up to 50 tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/CreateStream
 func (c *KinesisVideo) CreateStream(input *CreateStreamInput) (*CreateStreamOutput, error) {
@@ -249,14 +249,13 @@ const opDeleteSignalingChannel = "DeleteSignalingChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSignalingChannelRequest method.
+//	req, resp := client.DeleteSignalingChannelRequest(params)
 //
-//    // Example sending a request using the DeleteSignalingChannelRequest method.
-//    req, resp := client.DeleteSignalingChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DeleteSignalingChannel
 func (c *KinesisVideo) DeleteSignalingChannelRequest(input *DeleteSignalingChannelInput) (req *request.Request, output *DeleteSignalingChannelOutput) {
@@ -290,32 +289,33 @@ func (c *KinesisVideo) DeleteSignalingChannelRequest(input *DeleteSignalingChann
 // API operation DeleteSignalingChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * VersionMismatchException
-//   The stream version that you specified is not the latest version. To get the
-//   latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
-//   API.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - VersionMismatchException
+//     The stream version that you specified is not the latest version. To get the
+//     latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
+//     API.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
+//
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DeleteSignalingChannel
 func (c *KinesisVideo) DeleteSignalingChannel(input *DeleteSignalingChannelInput) (*DeleteSignalingChannelOutput, error) {
@@ -355,14 +355,13 @@ const opDeleteStream = "DeleteStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamRequest method.
+//	req, resp := client.DeleteStreamRequest(params)
 //
-//    // Example sending a request using the DeleteStreamRequest method.
-//    req, resp := client.DeleteStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DeleteStream
 func (c *KinesisVideo) DeleteStreamRequest(input *DeleteStreamInput) (req *request.Request, output *DeleteStreamOutput) {
@@ -405,32 +404,33 @@ func (c *KinesisVideo) DeleteStreamRequest(input *DeleteStreamInput) (req *reque
 // API operation DeleteStream for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * VersionMismatchException
-//   The stream version that you specified is not the latest version. To get the
-//   latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
-//   API.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - VersionMismatchException
+//     The stream version that you specified is not the latest version. To get the
+//     latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
+//     API.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
+//
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DeleteStream
 func (c *KinesisVideo) DeleteStream(input *DeleteStreamInput) (*DeleteStreamOutput, error) {
@@ -470,14 +470,13 @@ const opDescribeImageGenerationConfiguration = "DescribeImageGenerationConfigura
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeImageGenerationConfigurationRequest method.
+//	req, resp := client.DescribeImageGenerationConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeImageGenerationConfigurationRequest method.
-//    req, resp := client.DescribeImageGenerationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeImageGenerationConfiguration
 func (c *KinesisVideo) DescribeImageGenerationConfigurationRequest(input *DescribeImageGenerationConfigurationInput) (req *request.Request, output *DescribeImageGenerationConfigurationOutput) {
@@ -508,18 +507,19 @@ func (c *KinesisVideo) DescribeImageGenerationConfigurationRequest(input *Descri
 // API operation DescribeImageGenerationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeImageGenerationConfiguration
 func (c *KinesisVideo) DescribeImageGenerationConfiguration(input *DescribeImageGenerationConfigurationInput) (*DescribeImageGenerationConfigurationOutput, error) {
@@ -559,14 +559,13 @@ const opDescribeNotificationConfiguration = "DescribeNotificationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeNotificationConfigurationRequest method.
+//	req, resp := client.DescribeNotificationConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeNotificationConfigurationRequest method.
-//    req, resp := client.DescribeNotificationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeNotificationConfiguration
 func (c *KinesisVideo) DescribeNotificationConfigurationRequest(input *DescribeNotificationConfigurationInput) (req *request.Request, output *DescribeNotificationConfigurationOutput) {
@@ -597,18 +596,19 @@ func (c *KinesisVideo) DescribeNotificationConfigurationRequest(input *DescribeN
 // API operation DescribeNotificationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeNotificationConfiguration
 func (c *KinesisVideo) DescribeNotificationConfiguration(input *DescribeNotificationConfigurationInput) (*DescribeNotificationConfigurationOutput, error) {
@@ -648,14 +648,13 @@ const opDescribeSignalingChannel = "DescribeSignalingChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSignalingChannelRequest method.
+//	req, resp := client.DescribeSignalingChannelRequest(params)
 //
-//    // Example sending a request using the DescribeSignalingChannelRequest method.
-//    req, resp := client.DescribeSignalingChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeSignalingChannel
 func (c *KinesisVideo) DescribeSignalingChannelRequest(input *DescribeSignalingChannelInput) (req *request.Request, output *DescribeSignalingChannelOutput) {
@@ -688,18 +687,19 @@ func (c *KinesisVideo) DescribeSignalingChannelRequest(input *DescribeSignalingC
 // API operation DescribeSignalingChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeSignalingChannel
 func (c *KinesisVideo) DescribeSignalingChannel(input *DescribeSignalingChannelInput) (*DescribeSignalingChannelOutput, error) {
@@ -739,14 +739,13 @@ const opDescribeStream = "DescribeStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStreamRequest method.
+//	req, resp := client.DescribeStreamRequest(params)
 //
-//    // Example sending a request using the DescribeStreamRequest method.
-//    req, resp := client.DescribeStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeStream
 func (c *KinesisVideo) DescribeStreamRequest(input *DescribeStreamInput) (req *request.Request, output *DescribeStreamOutput) {
@@ -778,18 +777,19 @@ func (c *KinesisVideo) DescribeStreamRequest(input *DescribeStreamInput) (req *r
 // API operation DescribeStream for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
+//
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/DescribeStream
 func (c *KinesisVideo) DescribeStream(input *DescribeStreamInput) (*DescribeStreamOutput, error) {
@@ -829,14 +829,13 @@ const opGetDataEndpoint = "GetDataEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataEndpointRequest method.
+//	req, resp := client.GetDataEndpointRequest(params)
 //
-//    // Example sending a request using the GetDataEndpointRequest method.
-//    req, resp := client.GetDataEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/GetDataEndpoint
 func (c *KinesisVideo) GetDataEndpointRequest(input *GetDataEndpointInput) (req *request.Request, output *GetDataEndpointOutput) {
@@ -875,18 +874,19 @@ func (c *KinesisVideo) GetDataEndpointRequest(input *GetDataEndpointInput) (req 
 // API operation GetDataEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
+//
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/GetDataEndpoint
 func (c *KinesisVideo) GetDataEndpoint(input *GetDataEndpointInput) (*GetDataEndpointOutput, error) {
@@ -926,14 +926,13 @@ const opGetSignalingChannelEndpoint = "GetSignalingChannelEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSignalingChannelEndpointRequest method.
+//	req, resp := client.GetSignalingChannelEndpointRequest(params)
 //
-//    // Example sending a request using the GetSignalingChannelEndpointRequest method.
-//    req, resp := client.GetSignalingChannelEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/GetSignalingChannelEndpoint
 func (c *KinesisVideo) GetSignalingChannelEndpointRequest(input *GetSignalingChannelEndpointInput) (req *request.Request, output *GetSignalingChannelEndpointOutput) {
@@ -976,27 +975,28 @@ func (c *KinesisVideo) GetSignalingChannelEndpointRequest(input *GetSignalingCha
 // API operation GetSignalingChannelEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/GetSignalingChannelEndpoint
 func (c *KinesisVideo) GetSignalingChannelEndpoint(input *GetSignalingChannelEndpointInput) (*GetSignalingChannelEndpointOutput, error) {
@@ -1036,14 +1036,13 @@ const opListSignalingChannels = "ListSignalingChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSignalingChannelsRequest method.
+//	req, resp := client.ListSignalingChannelsRequest(params)
 //
-//    // Example sending a request using the ListSignalingChannelsRequest method.
-//    req, resp := client.ListSignalingChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListSignalingChannels
 func (c *KinesisVideo) ListSignalingChannelsRequest(input *ListSignalingChannelsInput) (req *request.Request, output *ListSignalingChannelsOutput) {
@@ -1082,15 +1081,16 @@ func (c *KinesisVideo) ListSignalingChannelsRequest(input *ListSignalingChannels
 // API operation ListSignalingChannels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListSignalingChannels
 func (c *KinesisVideo) ListSignalingChannels(input *ListSignalingChannelsInput) (*ListSignalingChannelsOutput, error) {
@@ -1122,15 +1122,14 @@ func (c *KinesisVideo) ListSignalingChannelsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSignalingChannels operation.
-//    pageNum := 0
-//    err := client.ListSignalingChannelsPages(params,
-//        func(page *kinesisvideo.ListSignalingChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSignalingChannels operation.
+//	pageNum := 0
+//	err := client.ListSignalingChannelsPages(params,
+//	    func(page *kinesisvideo.ListSignalingChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *KinesisVideo) ListSignalingChannelsPages(input *ListSignalingChannelsInput, fn func(*ListSignalingChannelsOutput, bool) bool) error {
 	return c.ListSignalingChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1182,14 +1181,13 @@ const opListStreams = "ListStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamsRequest method.
+//	req, resp := client.ListStreamsRequest(params)
 //
-//    // Example sending a request using the ListStreamsRequest method.
-//    req, resp := client.ListStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListStreams
 func (c *KinesisVideo) ListStreamsRequest(input *ListStreamsInput) (req *request.Request, output *ListStreamsOutput) {
@@ -1228,12 +1226,13 @@ func (c *KinesisVideo) ListStreamsRequest(input *ListStreamsInput) (req *request
 // API operation ListStreams for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
+//
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListStreams
 func (c *KinesisVideo) ListStreams(input *ListStreamsInput) (*ListStreamsOutput, error) {
@@ -1265,15 +1264,14 @@ func (c *KinesisVideo) ListStreamsWithContext(ctx aws.Context, input *ListStream
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreams operation.
-//    pageNum := 0
-//    err := client.ListStreamsPages(params,
-//        func(page *kinesisvideo.ListStreamsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreams operation.
+//	pageNum := 0
+//	err := client.ListStreamsPages(params,
+//	    func(page *kinesisvideo.ListStreamsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *KinesisVideo) ListStreamsPages(input *ListStreamsInput, fn func(*ListStreamsOutput, bool) bool) error {
 	return c.ListStreamsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1325,14 +1323,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListTagsForResource
 func (c *KinesisVideo) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1363,18 +1360,19 @@ func (c *KinesisVideo) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListTagsForResource
 func (c *KinesisVideo) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1414,14 +1412,13 @@ const opListTagsForStream = "ListTagsForStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForStreamRequest method.
+//	req, resp := client.ListTagsForStreamRequest(params)
 //
-//    // Example sending a request using the ListTagsForStreamRequest method.
-//    req, resp := client.ListTagsForStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListTagsForStream
 func (c *KinesisVideo) ListTagsForStreamRequest(input *ListTagsForStreamInput) (req *request.Request, output *ListTagsForStreamOutput) {
@@ -1454,21 +1451,22 @@ func (c *KinesisVideo) ListTagsForStreamRequest(input *ListTagsForStreamInput) (
 // API operation ListTagsForStream for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * InvalidResourceFormatException
-//   The format of the StreamARN is invalid.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
+//
+//   - InvalidResourceFormatException
+//     The format of the StreamARN is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/ListTagsForStream
 func (c *KinesisVideo) ListTagsForStream(input *ListTagsForStreamInput) (*ListTagsForStreamOutput, error) {
@@ -1508,14 +1506,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/TagResource
 func (c *KinesisVideo) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1552,22 +1549,23 @@ func (c *KinesisVideo) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * TagsPerResourceExceededLimitException
-//   You have exceeded the limit of tags that you can associate with the resource.
-//   A Kinesis video stream can support up to 50 tags.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
+//
+//   - TagsPerResourceExceededLimitException
+//     You have exceeded the limit of tags that you can associate with the resource.
+//     A Kinesis video stream can support up to 50 tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/TagResource
 func (c *KinesisVideo) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1607,14 +1605,13 @@ const opTagStream = "TagStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagStreamRequest method.
+//	req, resp := client.TagStreamRequest(params)
 //
-//    // Example sending a request using the TagStreamRequest method.
-//    req, resp := client.TagStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/TagStream
 func (c *KinesisVideo) TagStreamRequest(input *TagStreamInput) (req *request.Request, output *TagStreamOutput) {
@@ -1657,25 +1654,26 @@ func (c *KinesisVideo) TagStreamRequest(input *TagStreamInput) (req *request.Req
 // API operation TagStream for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * InvalidResourceFormatException
-//   The format of the StreamARN is invalid.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
 //
-//   * TagsPerResourceExceededLimitException
-//   You have exceeded the limit of tags that you can associate with the resource.
-//   A Kinesis video stream can support up to 50 tags.
+//   - InvalidResourceFormatException
+//     The format of the StreamARN is invalid.
+//
+//   - TagsPerResourceExceededLimitException
+//     You have exceeded the limit of tags that you can associate with the resource.
+//     A Kinesis video stream can support up to 50 tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/TagStream
 func (c *KinesisVideo) TagStream(input *TagStreamInput) (*TagStreamOutput, error) {
@@ -1715,14 +1713,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UntagResource
 func (c *KinesisVideo) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1756,18 +1753,19 @@ func (c *KinesisVideo) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
+//
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UntagResource
 func (c *KinesisVideo) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1807,14 +1805,13 @@ const opUntagStream = "UntagStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagStreamRequest method.
+//	req, resp := client.UntagStreamRequest(params)
 //
-//    // Example sending a request using the UntagStreamRequest method.
-//    req, resp := client.UntagStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UntagStream
 func (c *KinesisVideo) UntagStreamRequest(input *UntagStreamInput) (req *request.Request, output *UntagStreamOutput) {
@@ -1850,21 +1847,22 @@ func (c *KinesisVideo) UntagStreamRequest(input *UntagStreamInput) (req *request
 // API operation UntagStream for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * InvalidResourceFormatException
-//   The format of the StreamARN is invalid.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
+//
+//   - InvalidResourceFormatException
+//     The format of the StreamARN is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UntagStream
 func (c *KinesisVideo) UntagStream(input *UntagStreamInput) (*UntagStreamOutput, error) {
@@ -1904,14 +1902,13 @@ const opUpdateDataRetention = "UpdateDataRetention"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDataRetentionRequest method.
+//	req, resp := client.UpdateDataRetentionRequest(params)
 //
-//    // Example sending a request using the UpdateDataRetentionRequest method.
-//    req, resp := client.UpdateDataRetentionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateDataRetention
 func (c *KinesisVideo) UpdateDataRetentionRequest(input *UpdateDataRetentionInput) (req *request.Request, output *UpdateDataRetentionOutput) {
@@ -1945,15 +1942,15 @@ func (c *KinesisVideo) UpdateDataRetentionRequest(input *UpdateDataRetentionInpu
 //
 // Changing the data retention period affects the data in the stream as follows:
 //
-//    * If the data retention period is increased, existing data is retained
-//    for the new retention period. For example, if the data retention period
-//    is increased from one hour to seven hours, all existing data is retained
-//    for seven hours.
+//   - If the data retention period is increased, existing data is retained
+//     for the new retention period. For example, if the data retention period
+//     is increased from one hour to seven hours, all existing data is retained
+//     for seven hours.
 //
-//    * If the data retention period is decreased, existing data is retained
-//    for the new retention period. For example, if the data retention period
-//    is decreased from seven hours to one hour, all existing data is retained
-//    for one hour, and any data older than one hour is deleted immediately.
+//   - If the data retention period is decreased, existing data is retained
+//     for the new retention period. For example, if the data retention period
+//     is decreased from seven hours to one hour, all existing data is retained
+//     for one hour, and any data older than one hour is deleted immediately.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1963,32 +1960,33 @@ func (c *KinesisVideo) UpdateDataRetentionRequest(input *UpdateDataRetentionInpu
 // API operation UpdateDataRetention for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
-//   * VersionMismatchException
-//   The stream version that you specified is not the latest version. To get the
-//   latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
-//   API.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
+//
+//   - VersionMismatchException
+//     The stream version that you specified is not the latest version. To get the
+//     latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
+//     API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateDataRetention
 func (c *KinesisVideo) UpdateDataRetention(input *UpdateDataRetentionInput) (*UpdateDataRetentionOutput, error) {
@@ -2028,14 +2026,13 @@ const opUpdateImageGenerationConfiguration = "UpdateImageGenerationConfiguration
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateImageGenerationConfigurationRequest method.
+//	req, resp := client.UpdateImageGenerationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateImageGenerationConfigurationRequest method.
-//    req, resp := client.UpdateImageGenerationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateImageGenerationConfiguration
 func (c *KinesisVideo) UpdateImageGenerationConfigurationRequest(input *UpdateImageGenerationConfigurationInput) (req *request.Request, output *UpdateImageGenerationConfigurationOutput) {
@@ -2067,30 +2064,31 @@ func (c *KinesisVideo) UpdateImageGenerationConfigurationRequest(input *UpdateIm
 // API operation UpdateImageGenerationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * NoDataRetentionException
-//   The Stream data retention in hours is equal to zero.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
+//
+//   - NoDataRetentionException
+//     The Stream data retention in hours is equal to zero.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateImageGenerationConfiguration
 func (c *KinesisVideo) UpdateImageGenerationConfiguration(input *UpdateImageGenerationConfigurationInput) (*UpdateImageGenerationConfigurationOutput, error) {
@@ -2130,14 +2128,13 @@ const opUpdateNotificationConfiguration = "UpdateNotificationConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNotificationConfigurationRequest method.
+//	req, resp := client.UpdateNotificationConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateNotificationConfigurationRequest method.
-//    req, resp := client.UpdateNotificationConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateNotificationConfiguration
 func (c *KinesisVideo) UpdateNotificationConfigurationRequest(input *UpdateNotificationConfigurationInput) (req *request.Request, output *UpdateNotificationConfigurationOutput) {
@@ -2169,30 +2166,31 @@ func (c *KinesisVideo) UpdateNotificationConfigurationRequest(input *UpdateNotif
 // API operation UpdateNotificationConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * NoDataRetentionException
-//   The Stream data retention in hours is equal to zero.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
+//
+//   - NoDataRetentionException
+//     The Stream data retention in hours is equal to zero.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateNotificationConfiguration
 func (c *KinesisVideo) UpdateNotificationConfiguration(input *UpdateNotificationConfigurationInput) (*UpdateNotificationConfigurationOutput, error) {
@@ -2232,14 +2230,13 @@ const opUpdateSignalingChannel = "UpdateSignalingChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSignalingChannelRequest method.
+//	req, resp := client.UpdateSignalingChannelRequest(params)
 //
-//    // Example sending a request using the UpdateSignalingChannelRequest method.
-//    req, resp := client.UpdateSignalingChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateSignalingChannel
 func (c *KinesisVideo) UpdateSignalingChannelRequest(input *UpdateSignalingChannelInput) (req *request.Request, output *UpdateSignalingChannelOutput) {
@@ -2277,32 +2274,33 @@ func (c *KinesisVideo) UpdateSignalingChannelRequest(input *UpdateSignalingChann
 // API operation UpdateSignalingChannel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
 //
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * AccessDeniedException
-//   You do not have required permissions to perform this operation.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
-//   * VersionMismatchException
-//   The stream version that you specified is not the latest version. To get the
-//   latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
-//   API.
+//   - AccessDeniedException
+//     You do not have required permissions to perform this operation.
+//
+//   - VersionMismatchException
+//     The stream version that you specified is not the latest version. To get the
+//     latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
+//     API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateSignalingChannel
 func (c *KinesisVideo) UpdateSignalingChannel(input *UpdateSignalingChannelInput) (*UpdateSignalingChannelOutput, error) {
@@ -2342,14 +2340,13 @@ const opUpdateStream = "UpdateStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStreamRequest method.
+//	req, resp := client.UpdateStreamRequest(params)
 //
-//    // Example sending a request using the UpdateStreamRequest method.
-//    req, resp := client.UpdateStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateStream
 func (c *KinesisVideo) UpdateStreamRequest(input *UpdateStreamInput) (req *request.Request, output *UpdateStreamOutput) {
@@ -2392,32 +2389,33 @@ func (c *KinesisVideo) UpdateStreamRequest(input *UpdateStreamInput) (req *reque
 // API operation UpdateStream for usage and error information.
 //
 // Returned Error Types:
-//   * ClientLimitExceededException
-//   Kinesis Video Streams has throttled the request because you have exceeded
-//   the limit of allowed client calls. Try making the call later.
 //
-//   * InvalidArgumentException
-//   The value for this input parameter is invalid.
+//   - ClientLimitExceededException
+//     Kinesis Video Streams has throttled the request because you have exceeded
+//     the limit of allowed client calls. Try making the call later.
 //
-//   * ResourceNotFoundException
-//   Amazon Kinesis Video Streams can't find the stream that you specified.
+//   - InvalidArgumentException
+//     The value for this input parameter is invalid.
 //
-//   * ResourceInUseException
-//   The resource is currently not available for this operation. New resources
-//   cannot be created with the same name as existing resources. Also, resources
-//   cannot be updated or deleted unless they are in an ACTIVE state.
+//   - ResourceNotFoundException
+//     Amazon Kinesis Video Streams can't find the stream that you specified.
 //
-//   If this exception is returned, do not use it to determine whether the requested
-//   resource already exists. Instead, it is recommended you use the resource-specific
-//   describe API, for example, DescribeStream for video streams.
+//   - ResourceInUseException
+//     The resource is currently not available for this operation. New resources
+//     cannot be created with the same name as existing resources. Also, resources
+//     cannot be updated or deleted unless they are in an ACTIVE state.
 //
-//   * NotAuthorizedException
-//   The caller is not authorized to perform this operation.
+//     If this exception is returned, do not use it to determine whether the requested
+//     resource already exists. Instead, it is recommended you use the resource-specific
+//     describe API, for example, DescribeStream for video streams.
 //
-//   * VersionMismatchException
-//   The stream version that you specified is not the latest version. To get the
-//   latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
-//   API.
+//   - NotAuthorizedException
+//     The caller is not authorized to perform this operation.
+//
+//   - VersionMismatchException
+//     The stream version that you specified is not the latest version. To get the
+//     latest version, use the DescribeStream (https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/API_DescribeStream.html)
+//     API.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisvideo-2017-09-30/UpdateStream
 func (c *KinesisVideo) UpdateStream(input *UpdateStreamInput) (*UpdateStreamOutput, error) {

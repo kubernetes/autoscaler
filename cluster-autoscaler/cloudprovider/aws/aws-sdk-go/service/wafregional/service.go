@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a WAFRegional client from just a session.
-//     svc := wafregional.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a WAFRegional client with additional configuration
-//     svc := wafregional.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a WAFRegional client from just a session.
+//	svc := wafregional.New(mySession)
+//
+//	// Create a WAFRegional client with additional configuration
+//	svc := wafregional.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *WAFRegional {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

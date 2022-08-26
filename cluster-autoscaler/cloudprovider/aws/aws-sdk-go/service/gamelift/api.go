@@ -29,14 +29,13 @@ const opAcceptMatch = "AcceptMatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptMatchRequest method.
+//	req, resp := client.AcceptMatchRequest(params)
 //
-//    // Example sending a request using the AcceptMatchRequest method.
-//    req, resp := client.AcceptMatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatch
 func (c *GameLift) AcceptMatchRequest(input *AcceptMatchInput) (req *request.Request, output *AcceptMatchOutput) {
@@ -83,12 +82,12 @@ func (c *GameLift) AcceptMatchRequest(input *AcceptMatchInput) (req *request.Req
 //
 // Learn more
 //
-//  Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
+//	Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
 //
-//  FlexMatch events (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-events.html)
-//  (reference)
+//	FlexMatch events (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-events.html)
+//	(reference)
 //
-// Related actions
+// # Related actions
 //
 // StartMatchmaking | DescribeMatchmaking | StopMatchmaking | AcceptMatch |
 // StartMatchBackfill | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -101,21 +100,22 @@ func (c *GameLift) AcceptMatchRequest(input *AcceptMatchInput) (req *request.Req
 // API operation AcceptMatch for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/AcceptMatch
 func (c *GameLift) AcceptMatch(input *AcceptMatchInput) (*AcceptMatchOutput, error) {
@@ -155,14 +155,13 @@ const opClaimGameServer = "ClaimGameServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ClaimGameServerRequest method.
+//	req, resp := client.ClaimGameServerRequest(params)
 //
-//    // Example sending a request using the ClaimGameServerRequest method.
-//    req, resp := client.ClaimGameServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ClaimGameServer
 func (c *GameLift) ClaimGameServerRequest(input *ClaimGameServerInput) (req *request.Request, output *ClaimGameServerOutput) {
@@ -209,19 +208,19 @@ func (c *GameLift) ClaimGameServerRequest(input *ClaimGameServerInput) (req *req
 // If you try to claim a specific game server, this request will fail in the
 // following cases:
 //
-//    * If the game server utilization status is UTILIZED.
+//   - If the game server utilization status is UTILIZED.
 //
-//    * If the game server claim status is CLAIMED.
+//   - If the game server claim status is CLAIMED.
 //
 // When claiming a specific game server, this request will succeed even if the
 // game server is running on an instance in DRAINING status. To avoid this,
 // first check the instance status by calling DescribeGameServerInstances.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -234,31 +233,32 @@ func (c *GameLift) ClaimGameServerRequest(input *ClaimGameServerInput) (req *req
 // API operation ClaimGameServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * OutOfCapacityException
-//   The specified game server group has no available game servers to fulfill
-//   a ClaimGameServer request. Clients can retry such requests immediately or
-//   after a waiting period.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - OutOfCapacityException
+//     The specified game server group has no available game servers to fulfill
+//     a ClaimGameServer request. Clients can retry such requests immediately or
+//     after a waiting period.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ClaimGameServer
 func (c *GameLift) ClaimGameServer(input *ClaimGameServerInput) (*ClaimGameServerOutput, error) {
@@ -298,14 +298,13 @@ const opCreateAlias = "CreateAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAliasRequest method.
+//	req, resp := client.CreateAliasRequest(params)
 //
-//    // Example sending a request using the CreateAliasRequest method.
-//    req, resp := client.CreateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAlias
 func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *CreateAliasOutput) {
@@ -344,7 +343,7 @@ func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Req
 // an alias ID and an ARN. You can reassign an alias to another fleet by calling
 // UpdateAlias.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -357,31 +356,32 @@ func (c *GameLift) CreateAliasRequest(input *CreateAliasInput) (req *request.Req
 // API operation CreateAlias for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateAlias
 func (c *GameLift) CreateAlias(input *CreateAliasInput) (*CreateAliasOutput, error) {
@@ -421,14 +421,13 @@ const opCreateBuild = "CreateBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBuildRequest method.
+//	req, resp := client.CreateBuildRequest(params)
 //
-//    // Example sending a request using the CreateBuildRequest method.
-//    req, resp := client.CreateBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuild
 func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Request, output *CreateBuildOutput) {
@@ -461,33 +460,33 @@ func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Req
 //
 // The CreateBuild operation can used in the following scenarios:
 //
-//    * To create a new game build with build files that are in an Amazon S3
-//    location under an Amazon Web Services account that you control. To use
-//    this option, you must first give Amazon GameLift access to the Amazon
-//    S3 bucket. With permissions in place, call CreateBuild and specify a build
-//    name, operating system, and the Amazon S3 storage location of your game
-//    build.
+//   - To create a new game build with build files that are in an Amazon S3
+//     location under an Amazon Web Services account that you control. To use
+//     this option, you must first give Amazon GameLift access to the Amazon
+//     S3 bucket. With permissions in place, call CreateBuild and specify a build
+//     name, operating system, and the Amazon S3 storage location of your game
+//     build.
 //
-//    * To directly upload your build files to a GameLift Amazon S3 location.
-//    To use this option, first call CreateBuild and specify a build name and
-//    operating system. This operation creates a new build resource and also
-//    returns an Amazon S3 location with temporary access credentials. Use the
-//    credentials to manually upload your build files to the specified Amazon
-//    S3 location. For more information, see Uploading Objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadingObjects.html)
-//    in the Amazon S3 Developer Guide. Build files can be uploaded to the GameLift
-//    Amazon S3 location once only; that can't be updated.
+//   - To directly upload your build files to a GameLift Amazon S3 location.
+//     To use this option, first call CreateBuild and specify a build name and
+//     operating system. This operation creates a new build resource and also
+//     returns an Amazon S3 location with temporary access credentials. Use the
+//     credentials to manually upload your build files to the specified Amazon
+//     S3 location. For more information, see Uploading Objects (https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadingObjects.html)
+//     in the Amazon S3 Developer Guide. Build files can be uploaded to the GameLift
+//     Amazon S3 location once only; that can't be updated.
 //
 // If successful, this operation creates a new build resource with a unique
 // build ID and places it in INITIALIZED status. A build must be in READY status
 // before you can create fleets with it.
 //
-// Learn more
+// # Learn more
 //
 // Uploading Your Game (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
 //
-//  Create a Build with Files in Amazon S3 (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-cli-uploading.html#gamelift-build-cli-uploading-create-build)
+//	Create a Build with Files in Amazon S3 (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-cli-uploading.html#gamelift-build-cli-uploading-create-build)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -500,27 +499,28 @@ func (c *GameLift) CreateBuildRequest(input *CreateBuildInput) (req *request.Req
 // API operation CreateBuild for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateBuild
 func (c *GameLift) CreateBuild(input *CreateBuildInput) (*CreateBuildOutput, error) {
@@ -560,14 +560,13 @@ const opCreateFleet = "CreateFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetRequest method.
+//	req, resp := client.CreateFleetRequest(params)
 //
-//    // Example sending a request using the CreateFleetRequest method.
-//    req, resp := client.CreateFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleet
 func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Request, output *CreateFleetOutput) {
@@ -626,7 +625,7 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 // of each remote location reaches ACTIVE, you can set capacity by location
 // using UpdateFleetCapacity.
 //
-// Learn more
+// # Learn more
 //
 // Setting up fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
@@ -634,7 +633,7 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 //
 // Multi-location fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | UpdateFleetCapacity | PutScalingPolicy | DescribeEC2InstanceLimits
 // | DescribeFleetAttributes | DescribeFleetLocationAttributes | UpdateFleetAttributes
@@ -648,38 +647,39 @@ func (c *GameLift) CreateFleetRequest(input *CreateFleetInput) (req *request.Req
 // API operation CreateFleet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleet
 func (c *GameLift) CreateFleet(input *CreateFleetInput) (*CreateFleetOutput, error) {
@@ -719,14 +719,13 @@ const opCreateFleetLocations = "CreateFleetLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFleetLocationsRequest method.
+//	req, resp := client.CreateFleetLocationsRequest(params)
 //
-//    // Example sending a request using the CreateFleetLocationsRequest method.
-//    req, resp := client.CreateFleetLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleetLocations
 func (c *GameLift) CreateFleetLocationsRequest(input *CreateFleetLocationsInput) (req *request.Request, output *CreateFleetLocationsOutput) {
@@ -767,13 +766,13 @@ func (c *GameLift) CreateFleetLocationsRequest(input *CreateFleetLocationsInput)
 // After a location status becomes ACTIVE, you can adjust the location's capacity
 // as needed with UpdateFleetCapacity.
 //
-// Learn more
+// # Learn more
 //
 // Setting up fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // Multi-location fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | DescribeFleetLocationAttributes | DescribeFleetLocationCapacity
 // | DescribeFleetLocationUtilization | DescribeFleetAttributes | DescribeFleetCapacity
@@ -788,29 +787,30 @@ func (c *GameLift) CreateFleetLocationsRequest(input *CreateFleetLocationsInput)
 // API operation CreateFleetLocations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateFleetLocations
 func (c *GameLift) CreateFleetLocations(input *CreateFleetLocationsInput) (*CreateFleetLocationsOutput, error) {
@@ -850,14 +850,13 @@ const opCreateGameServerGroup = "CreateGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGameServerGroupRequest method.
+//	req, resp := client.CreateGameServerGroupRequest(params)
 //
-//    // Example sending a request using the CreateGameServerGroupRequest method.
-//    req, resp := client.CreateGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameServerGroup
 func (c *GameLift) CreateGameServerGroupRequest(input *CreateGameServerGroupInput) (req *request.Request, output *CreateGameServerGroupOutput) {
@@ -890,17 +889,17 @@ func (c *GameLift) CreateGameServerGroupRequest(input *CreateGameServerGroupInpu
 //
 // Before creating a new game server group, you must have the following:
 //
-//    * An Amazon Elastic Compute Cloud launch template that specifies how to
-//    launch Amazon Elastic Compute Cloud instances with your game server build.
-//    For more information, see Launching an Instance from a Launch Template
-//    (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html)
-//    in the Amazon Elastic Compute Cloud User Guide.
+//   - An Amazon Elastic Compute Cloud launch template that specifies how to
+//     launch Amazon Elastic Compute Cloud instances with your game server build.
+//     For more information, see Launching an Instance from a Launch Template
+//     (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html)
+//     in the Amazon Elastic Compute Cloud User Guide.
 //
-//    * An IAM role that extends limited access to your Amazon Web Services
-//    account to allow GameLift FleetIQ to create and interact with the Auto
-//    Scaling group. For more information, see Create IAM roles for cross-service
-//    interaction (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-iam-permissions-roles.html)
-//    in the GameLift FleetIQ Developer Guide.
+//   - An IAM role that extends limited access to your Amazon Web Services
+//     account to allow GameLift FleetIQ to create and interact with the Auto
+//     Scaling group. For more information, see Create IAM roles for cross-service
+//     interaction (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-iam-permissions-roles.html)
+//     in the GameLift FleetIQ Developer Guide.
 //
 // To create a new game server group, specify a unique group name, IAM role
 // and Amazon Elastic Compute Cloud launch template, and provide a list of instance
@@ -916,11 +915,11 @@ func (c *GameLift) CreateGameServerGroupRequest(input *CreateGameServerGroupInpu
 // group properties are periodically updated by GameLift FleetIQ as part of
 // its balancing activities to optimize for availability and cost.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -934,26 +933,27 @@ func (c *GameLift) CreateGameServerGroupRequest(input *CreateGameServerGroupInpu
 // API operation CreateGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameServerGroup
 func (c *GameLift) CreateGameServerGroup(input *CreateGameServerGroupInput) (*CreateGameServerGroupOutput, error) {
@@ -993,14 +993,13 @@ const opCreateGameSession = "CreateGameSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGameSessionRequest method.
+//	req, resp := client.CreateGameSessionRequest(params)
 //
-//    // Example sending a request using the CreateGameSessionRequest method.
-//    req, resp := client.CreateGameSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSession
 func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req *request.Request, output *CreateGameSessionOutput) {
@@ -1035,12 +1034,12 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 //
 // This operation can be used in the following ways:
 //
-//    * To create a game session on an instance in a fleet's home Region, provide
-//    a fleet or alias ID along with your game session configuration.
+//   - To create a game session on an instance in a fleet's home Region, provide
+//     a fleet or alias ID along with your game session configuration.
 //
-//    * To create a game session on an instance in a fleet's remote location,
-//    provide a fleet or alias ID and a location name, along with your game
-//    session configuration.
+//   - To create a game session on an instance in a fleet's remote location,
+//     provide a fleet or alias ID and a location name, along with your game
+//     session configuration.
 //
 // If successful, a workflow is initiated to start a new game session. A GameSession
 // object is returned containing the game session configuration and status.
@@ -1055,11 +1054,11 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 //
 // Available in Amazon GameLift Local.
 //
-// Learn more
+// # Learn more
 //
 // Start a game session (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-server-api.html#gamelift-sdk-server-startsession)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -1074,53 +1073,54 @@ func (c *GameLift) CreateGameSessionRequest(input *CreateGameSessionInput) (req 
 // API operation CreateGameSession for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * FleetCapacityExceededException
-//   The specified fleet has no available instances to fulfill a CreateGameSession
-//   request. Clients can retry such requests immediately or after a waiting period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - FleetCapacityExceededException
+//     The specified fleet has no available instances to fulfill a CreateGameSession
+//     request. Clients can retry such requests immediately or after a waiting period.
 //
-//   * IdempotentParameterMismatchException
-//   A game session with this custom ID string already exists in this fleet. Resolve
-//   this conflict before retrying this request.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - IdempotentParameterMismatchException
+//     A game session with this custom ID string already exists in this fleet. Resolve
+//     this conflict before retrying this request.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSession
 func (c *GameLift) CreateGameSession(input *CreateGameSessionInput) (*CreateGameSessionOutput, error) {
@@ -1160,14 +1160,13 @@ const opCreateGameSessionQueue = "CreateGameSessionQueue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateGameSessionQueueRequest method.
+//	req, resp := client.CreateGameSessionQueueRequest(params)
 //
-//    // Example sending a request using the CreateGameSessionQueueRequest method.
-//    req, resp := client.CreateGameSessionQueueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSessionQueue
 func (c *GameLift) CreateGameSessionQueueRequest(input *CreateGameSessionQueueInput) (req *request.Request, output *CreateGameSessionQueueOutput) {
@@ -1222,11 +1221,11 @@ func (c *GameLift) CreateGameSessionQueueRequest(input *CreateGameSessionQueueIn
 //
 // Learn more
 //
-//  Design a game session queue (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-design.html)
+//	Design a game session queue (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-design.html)
 //
-//  Create a game session queue (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-creating.html)
+//	Create a game session queue (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-creating.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSessionQueue (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateGameSessionQueue.html)
 // | DescribeGameSessionQueues (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeGameSessionQueues.html)
@@ -1242,30 +1241,31 @@ func (c *GameLift) CreateGameSessionQueueRequest(input *CreateGameSessionQueueIn
 // API operation CreateGameSessionQueue for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateGameSessionQueue
 func (c *GameLift) CreateGameSessionQueue(input *CreateGameSessionQueueInput) (*CreateGameSessionQueueOutput, error) {
@@ -1305,14 +1305,13 @@ const opCreateMatchmakingConfiguration = "CreateMatchmakingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMatchmakingConfigurationRequest method.
+//	req, resp := client.CreateMatchmakingConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateMatchmakingConfigurationRequest method.
-//    req, resp := client.CreateMatchmakingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfiguration
 func (c *GameLift) CreateMatchmakingConfigurationRequest(input *CreateMatchmakingConfigurationInput) (req *request.Request, output *CreateMatchmakingConfigurationOutput) {
@@ -1357,11 +1356,11 @@ func (c *GameLift) CreateMatchmakingConfigurationRequest(input *CreateMatchmakin
 //
 // Learn more
 //
-//  Design a FlexMatch matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
+//	Design a FlexMatch matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
 //
-//  Set up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
+//	Set up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -1376,30 +1375,31 @@ func (c *GameLift) CreateMatchmakingConfigurationRequest(input *CreateMatchmakin
 // API operation CreateMatchmakingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingConfiguration
 func (c *GameLift) CreateMatchmakingConfiguration(input *CreateMatchmakingConfigurationInput) (*CreateMatchmakingConfigurationOutput, error) {
@@ -1439,14 +1439,13 @@ const opCreateMatchmakingRuleSet = "CreateMatchmakingRuleSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMatchmakingRuleSetRequest method.
+//	req, resp := client.CreateMatchmakingRuleSetRequest(params)
 //
-//    // Example sending a request using the CreateMatchmakingRuleSetRequest method.
-//    req, resp := client.CreateMatchmakingRuleSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSet
 func (c *GameLift) CreateMatchmakingRuleSetRequest(input *CreateMatchmakingRuleSetInput) (req *request.Request, output *CreateMatchmakingRuleSetOutput) {
@@ -1482,13 +1481,13 @@ func (c *GameLift) CreateMatchmakingRuleSetRequest(input *CreateMatchmakingRuleS
 //
 // Learn more
 //
-//    * Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
+//   - Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
 //
-//    * Design a matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
+//   - Design a matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
 //
-//    * Matchmaking with FlexMatch (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-intro.html)
+//   - Matchmaking with FlexMatch (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -1503,22 +1502,23 @@ func (c *GameLift) CreateMatchmakingRuleSetRequest(input *CreateMatchmakingRuleS
 // API operation CreateMatchmakingRuleSet for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateMatchmakingRuleSet
 func (c *GameLift) CreateMatchmakingRuleSet(input *CreateMatchmakingRuleSetInput) (*CreateMatchmakingRuleSetOutput, error) {
@@ -1558,14 +1558,13 @@ const opCreatePlayerSession = "CreatePlayerSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePlayerSessionRequest method.
+//	req, resp := client.CreatePlayerSessionRequest(params)
 //
-//    // Example sending a request using the CreatePlayerSessionRequest method.
-//    req, resp := client.CreatePlayerSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSession
 func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (req *request.Request, output *CreatePlayerSessionOutput) {
@@ -1604,7 +1603,7 @@ func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (
 //
 // Available in Amazon GameLift Local.
 //
-// Related actions
+// # Related actions
 //
 // CreatePlayerSession | CreatePlayerSessions | DescribePlayerSessions | StartGameSessionPlacement
 // | DescribeGameSessionPlacement | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -1617,37 +1616,38 @@ func (c *GameLift) CreatePlayerSessionRequest(input *CreatePlayerSessionInput) (
 // API operation CreatePlayerSession for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidGameSessionStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the game instance. Resolve
-//   the conflict before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * GameSessionFullException
-//   The game instance is currently full and cannot allow the requested player(s)
-//   to join. Clients can retry such requests immediately or after a waiting period.
+//   - InvalidGameSessionStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the game instance. Resolve
+//     the conflict before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - GameSessionFullException
+//     The game instance is currently full and cannot allow the requested player(s)
+//     to join. Clients can retry such requests immediately or after a waiting period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSession
 func (c *GameLift) CreatePlayerSession(input *CreatePlayerSessionInput) (*CreatePlayerSessionOutput, error) {
@@ -1687,14 +1687,13 @@ const opCreatePlayerSessions = "CreatePlayerSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePlayerSessionsRequest method.
+//	req, resp := client.CreatePlayerSessionsRequest(params)
 //
-//    // Example sending a request using the CreatePlayerSessionsRequest method.
-//    req, resp := client.CreatePlayerSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessions
 func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput) (req *request.Request, output *CreatePlayerSessionsOutput) {
@@ -1733,7 +1732,7 @@ func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput)
 //
 // Available in Amazon GameLift Local.
 //
-// Related actions
+// # Related actions
 //
 // CreatePlayerSession | CreatePlayerSessions | DescribePlayerSessions | StartGameSessionPlacement
 // | DescribeGameSessionPlacement | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -1746,37 +1745,38 @@ func (c *GameLift) CreatePlayerSessionsRequest(input *CreatePlayerSessionsInput)
 // API operation CreatePlayerSessions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidGameSessionStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the game instance. Resolve
-//   the conflict before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * GameSessionFullException
-//   The game instance is currently full and cannot allow the requested player(s)
-//   to join. Clients can retry such requests immediately or after a waiting period.
+//   - InvalidGameSessionStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the game instance. Resolve
+//     the conflict before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - GameSessionFullException
+//     The game instance is currently full and cannot allow the requested player(s)
+//     to join. Clients can retry such requests immediately or after a waiting period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreatePlayerSessions
 func (c *GameLift) CreatePlayerSessions(input *CreatePlayerSessionsInput) (*CreatePlayerSessionsOutput, error) {
@@ -1816,14 +1816,13 @@ const opCreateScript = "CreateScript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateScriptRequest method.
+//	req, resp := client.CreateScriptRequest(params)
 //
-//    // Example sending a request using the CreateScriptRequest method.
-//    req, resp := client.CreateScriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateScript
 func (c *GameLift) CreateScriptRequest(input *CreateScriptInput) (req *request.Request, output *CreateScriptOutput) {
@@ -1854,12 +1853,12 @@ func (c *GameLift) CreateScriptRequest(input *CreateScriptInput) (req *request.R
 // file(s). The script files and all dependencies must be zipped into a single
 // file. You can pull the zip file from either of these locations:
 //
-//    * A locally available directory. Use the ZipFile parameter for this option.
+//   - A locally available directory. Use the ZipFile parameter for this option.
 //
-//    * An Amazon Simple Storage Service (Amazon S3) bucket under your Amazon
-//    Web Services account. Use the StorageLocation parameter for this option.
-//    You'll need to have an Identity Access Management (IAM) role that allows
-//    the Amazon GameLift service to access your S3 bucket.
+//   - An Amazon Simple Storage Service (Amazon S3) bucket under your Amazon
+//     Web Services account. Use the StorageLocation parameter for this option.
+//     You'll need to have an Identity Access Management (IAM) role that allows
+//     the Amazon GameLift service to access your S3 bucket.
 //
 // If the call is successful, a new script record is created with a unique script
 // ID. If the script file is provided as a local file, the file is uploaded
@@ -1867,13 +1866,13 @@ func (c *GameLift) CreateScriptRequest(input *CreateScriptInput) (req *request.R
 // reflects this location. If the script file is provided as an S3 bucket, Amazon
 // GameLift accesses the file at this storage location as needed for deployment.
 //
-// Learn more
+// # Learn more
 //
 // Amazon GameLift Realtime Servers (https://docs.aws.amazon.com/gamelift/latest/developerguide/realtime-intro.html)
 //
 // Set Up a Role for Amazon GameLift Access (https://docs.aws.amazon.com/gamelift/latest/developerguide/setting-up-role.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -1886,27 +1885,28 @@ func (c *GameLift) CreateScriptRequest(input *CreateScriptInput) (req *request.R
 // API operation CreateScript for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateScript
 func (c *GameLift) CreateScript(input *CreateScriptInput) (*CreateScriptOutput, error) {
@@ -1946,14 +1946,13 @@ const opCreateVpcPeeringAuthorization = "CreateVpcPeeringAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcPeeringAuthorizationRequest method.
+//	req, resp := client.CreateVpcPeeringAuthorizationRequest(params)
 //
-//    // Example sending a request using the CreateVpcPeeringAuthorizationRequest method.
-//    req, resp := client.CreateVpcPeeringAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateVpcPeeringAuthorization
 func (c *GameLift) CreateVpcPeeringAuthorizationRequest(input *CreateVpcPeeringAuthorizationInput) (req *request.Request, output *CreateVpcPeeringAuthorizationOutput) {
@@ -2005,7 +2004,7 @@ func (c *GameLift) CreateVpcPeeringAuthorizationRequest(input *CreateVpcPeeringA
 // to DeleteVpcPeeringAuthorization. You must create or delete the peering connection
 // while the authorization is valid.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -2019,21 +2018,22 @@ func (c *GameLift) CreateVpcPeeringAuthorizationRequest(input *CreateVpcPeeringA
 // API operation CreateVpcPeeringAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateVpcPeeringAuthorization
 func (c *GameLift) CreateVpcPeeringAuthorization(input *CreateVpcPeeringAuthorizationInput) (*CreateVpcPeeringAuthorizationOutput, error) {
@@ -2073,14 +2073,13 @@ const opCreateVpcPeeringConnection = "CreateVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcPeeringConnectionRequest method.
+//	req, resp := client.CreateVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the CreateVpcPeeringConnectionRequest method.
-//    req, resp := client.CreateVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateVpcPeeringConnection
 func (c *GameLift) CreateVpcPeeringConnectionRequest(input *CreateVpcPeeringConnectionInput) (req *request.Request, output *CreateVpcPeeringConnectionOutput) {
@@ -2127,7 +2126,7 @@ func (c *GameLift) CreateVpcPeeringConnectionRequest(input *CreateVpcPeeringConn
 // can use continuous polling to track the request's status using DescribeVpcPeeringConnections,
 // or by monitoring fleet events for success or failure using DescribeFleetEvents.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -2141,21 +2140,22 @@ func (c *GameLift) CreateVpcPeeringConnectionRequest(input *CreateVpcPeeringConn
 // API operation CreateVpcPeeringConnection for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/CreateVpcPeeringConnection
 func (c *GameLift) CreateVpcPeeringConnection(input *CreateVpcPeeringConnectionInput) (*CreateVpcPeeringConnectionOutput, error) {
@@ -2195,14 +2195,13 @@ const opDeleteAlias = "DeleteAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAliasRequest method.
+//	req, resp := client.DeleteAliasRequest(params)
 //
-//    // Example sending a request using the DeleteAliasRequest method.
-//    req, resp := client.DeleteAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAlias
 func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request, output *DeleteAliasOutput) {
@@ -2228,7 +2227,7 @@ func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Req
 // attempting to access a server process using the deleted alias receive an
 // error. To delete an alias, specify the alias ID to be deleted.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -2241,26 +2240,27 @@ func (c *GameLift) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Req
 // API operation DeleteAlias for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteAlias
 func (c *GameLift) DeleteAlias(input *DeleteAliasInput) (*DeleteAliasOutput, error) {
@@ -2300,14 +2300,13 @@ const opDeleteBuild = "DeleteBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBuildRequest method.
+//	req, resp := client.DeleteBuildRequest(params)
 //
-//    // Example sending a request using the DeleteBuildRequest method.
-//    req, resp := client.DeleteBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuild
 func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Request, output *DeleteBuildOutput) {
@@ -2338,9 +2337,9 @@ func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Req
 //
 // Learn more
 //
-//  Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
+//	Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -2353,26 +2352,27 @@ func (c *GameLift) DeleteBuildRequest(input *DeleteBuildInput) (req *request.Req
 // API operation DeleteBuild for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteBuild
 func (c *GameLift) DeleteBuild(input *DeleteBuildInput) (*DeleteBuildOutput, error) {
@@ -2412,14 +2412,13 @@ const opDeleteFleet = "DeleteFleet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetRequest method.
+//	req, resp := client.DeleteFleetRequest(params)
 //
-//    // Example sending a request using the DeleteFleetRequest method.
-//    req, resp := client.DeleteFleetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleet
 func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Request, output *DeleteFleetOutput) {
@@ -2454,11 +2453,11 @@ func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Req
 // process the fleet status is changed to DELETING. When completed, the status
 // switches to TERMINATED and the fleet event FLEET_DELETED is sent.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift Fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | UpdateFleetAttributes | UpdateFleetCapacity | UpdateFleetPortSettings
 // | UpdateRuntimeConfiguration | StopFleetActions | StartFleetActions | PutScalingPolicy
@@ -2473,31 +2472,32 @@ func (c *GameLift) DeleteFleetRequest(input *DeleteFleetInput) (req *request.Req
 // API operation DeleteFleet for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleet
 func (c *GameLift) DeleteFleet(input *DeleteFleetInput) (*DeleteFleetOutput, error) {
@@ -2537,14 +2537,13 @@ const opDeleteFleetLocations = "DeleteFleetLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFleetLocationsRequest method.
+//	req, resp := client.DeleteFleetLocationsRequest(params)
 //
-//    // Example sending a request using the DeleteFleetLocationsRequest method.
-//    req, resp := client.DeleteFleetLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleetLocations
 func (c *GameLift) DeleteFleetLocationsRequest(input *DeleteFleetLocationsInput) (req *request.Request, output *DeleteFleetLocationsOutput) {
@@ -2576,11 +2575,11 @@ func (c *GameLift) DeleteFleetLocationsRequest(input *DeleteFleetLocationsInput)
 // to shut down existing server processes and terminate instances in each location
 // being deleted. When completed, the location status changes to TERMINATED.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | DescribeFleetLocationAttributes | DescribeFleetLocationCapacity
 // | DescribeFleetLocationUtilization | DescribeFleetAttributes | DescribeFleetCapacity
@@ -2595,24 +2594,25 @@ func (c *GameLift) DeleteFleetLocationsRequest(input *DeleteFleetLocationsInput)
 // API operation DeleteFleetLocations for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteFleetLocations
 func (c *GameLift) DeleteFleetLocations(input *DeleteFleetLocationsInput) (*DeleteFleetLocationsOutput, error) {
@@ -2652,14 +2652,13 @@ const opDeleteGameServerGroup = "DeleteGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGameServerGroupRequest method.
+//	req, resp := client.DeleteGameServerGroupRequest(params)
 //
-//    // Example sending a request using the DeleteGameServerGroupRequest method.
-//    req, resp := client.DeleteGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteGameServerGroup
 func (c *GameLift) DeleteGameServerGroupRequest(input *DeleteGameServerGroupInput) (req *request.Request, output *DeleteGameServerGroupOutput) {
@@ -2688,11 +2687,11 @@ func (c *GameLift) DeleteGameServerGroupRequest(input *DeleteGameServerGroupInpu
 // deleting the game server group. Depending on the type of delete operation
 // selected, this operation might affect these resources:
 //
-//    * The game server group
+//   - The game server group
 //
-//    * The corresponding Auto Scaling group
+//   - The corresponding Auto Scaling group
 //
-//    * All game servers that are currently running in the group
+//   - All game servers that are currently running in the group
 //
 // To delete a game server group, identify the game server group to delete and
 // specify the type of delete operation to initiate. Game server groups can
@@ -2707,11 +2706,11 @@ func (c *GameLift) DeleteGameServerGroupRequest(input *DeleteGameServerGroupInpu
 //
 // GameLift FleetIQ emits delete events to Amazon CloudWatch.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -2725,21 +2724,22 @@ func (c *GameLift) DeleteGameServerGroupRequest(input *DeleteGameServerGroupInpu
 // API operation DeleteGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteGameServerGroup
 func (c *GameLift) DeleteGameServerGroup(input *DeleteGameServerGroupInput) (*DeleteGameServerGroupOutput, error) {
@@ -2779,14 +2779,13 @@ const opDeleteGameSessionQueue = "DeleteGameSessionQueue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGameSessionQueueRequest method.
+//	req, resp := client.DeleteGameSessionQueueRequest(params)
 //
-//    // Example sending a request using the DeleteGameSessionQueueRequest method.
-//    req, resp := client.DeleteGameSessionQueueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteGameSessionQueue
 func (c *GameLift) DeleteGameSessionQueueRequest(input *DeleteGameSessionQueueInput) (req *request.Request, output *DeleteGameSessionQueueOutput) {
@@ -2815,9 +2814,9 @@ func (c *GameLift) DeleteGameSessionQueueRequest(input *DeleteGameSessionQueueIn
 //
 // Learn more
 //
-//  Using Multi-Region Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html)
+//	Using Multi-Region Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSessionQueue (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateGameSessionQueue.html)
 // | DescribeGameSessionQueues (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeGameSessionQueues.html)
@@ -2833,26 +2832,27 @@ func (c *GameLift) DeleteGameSessionQueueRequest(input *DeleteGameSessionQueueIn
 // API operation DeleteGameSessionQueue for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteGameSessionQueue
 func (c *GameLift) DeleteGameSessionQueue(input *DeleteGameSessionQueueInput) (*DeleteGameSessionQueueOutput, error) {
@@ -2892,14 +2892,13 @@ const opDeleteMatchmakingConfiguration = "DeleteMatchmakingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMatchmakingConfigurationRequest method.
+//	req, resp := client.DeleteMatchmakingConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteMatchmakingConfigurationRequest method.
-//    req, resp := client.DeleteMatchmakingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfiguration
 func (c *GameLift) DeleteMatchmakingConfigurationRequest(input *DeleteMatchmakingConfigurationInput) (req *request.Request, output *DeleteMatchmakingConfigurationOutput) {
@@ -2925,7 +2924,7 @@ func (c *GameLift) DeleteMatchmakingConfigurationRequest(input *DeleteMatchmakin
 // the configuration name. A matchmaking configuration cannot be deleted if
 // it is being used in any active matchmaking tickets.
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -2940,26 +2939,27 @@ func (c *GameLift) DeleteMatchmakingConfigurationRequest(input *DeleteMatchmakin
 // API operation DeleteMatchmakingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingConfiguration
 func (c *GameLift) DeleteMatchmakingConfiguration(input *DeleteMatchmakingConfigurationInput) (*DeleteMatchmakingConfigurationOutput, error) {
@@ -2999,14 +2999,13 @@ const opDeleteMatchmakingRuleSet = "DeleteMatchmakingRuleSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMatchmakingRuleSetRequest method.
+//	req, resp := client.DeleteMatchmakingRuleSetRequest(params)
 //
-//    // Example sending a request using the DeleteMatchmakingRuleSetRequest method.
-//    req, resp := client.DeleteMatchmakingRuleSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingRuleSet
 func (c *GameLift) DeleteMatchmakingRuleSetRequest(input *DeleteMatchmakingRuleSetInput) (req *request.Request, output *DeleteMatchmakingRuleSetOutput) {
@@ -3034,9 +3033,9 @@ func (c *GameLift) DeleteMatchmakingRuleSetRequest(input *DeleteMatchmakingRuleS
 //
 // Learn more
 //
-//    * Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
+//   - Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -3051,26 +3050,27 @@ func (c *GameLift) DeleteMatchmakingRuleSetRequest(input *DeleteMatchmakingRuleS
 // API operation DeleteMatchmakingRuleSet for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteMatchmakingRuleSet
 func (c *GameLift) DeleteMatchmakingRuleSet(input *DeleteMatchmakingRuleSetInput) (*DeleteMatchmakingRuleSetOutput, error) {
@@ -3110,14 +3110,13 @@ const opDeleteScalingPolicy = "DeleteScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScalingPolicyRequest method.
+//	req, resp := client.DeleteScalingPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteScalingPolicyRequest method.
-//    req, resp := client.DeleteScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicy
 func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (req *request.Request, output *DeleteScalingPolicyOutput) {
@@ -3146,7 +3145,7 @@ func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (
 // To temporarily suspend scaling policies, call StopFleetActions. This operation
 // suspends all policies for the fleet.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity | UpdateFleetCapacity | DescribeEC2InstanceLimits |
 // PutScalingPolicy | DescribeScalingPolicies | DeleteScalingPolicy | StopFleetActions
@@ -3160,21 +3159,22 @@ func (c *GameLift) DeleteScalingPolicyRequest(input *DeleteScalingPolicyInput) (
 // API operation DeleteScalingPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScalingPolicy
 func (c *GameLift) DeleteScalingPolicy(input *DeleteScalingPolicyInput) (*DeleteScalingPolicyOutput, error) {
@@ -3214,14 +3214,13 @@ const opDeleteScript = "DeleteScript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteScriptRequest method.
+//	req, resp := client.DeleteScriptRequest(params)
 //
-//    // Example sending a request using the DeleteScriptRequest method.
-//    req, resp := client.DeleteScriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScript
 func (c *GameLift) DeleteScriptRequest(input *DeleteScriptInput) (req *request.Request, output *DeleteScriptOutput) {
@@ -3253,11 +3252,11 @@ func (c *GameLift) DeleteScriptRequest(input *DeleteScriptInput) (req *request.R
 // record no longer exists, the instance will go into an error state and be
 // unable to host game sessions.
 //
-// Learn more
+// # Learn more
 //
 // Amazon GameLift Realtime Servers (https://docs.aws.amazon.com/gamelift/latest/developerguide/realtime-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -3270,26 +3269,27 @@ func (c *GameLift) DeleteScriptRequest(input *DeleteScriptInput) (req *request.R
 // API operation DeleteScript for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteScript
 func (c *GameLift) DeleteScript(input *DeleteScriptInput) (*DeleteScriptOutput, error) {
@@ -3329,14 +3329,13 @@ const opDeleteVpcPeeringAuthorization = "DeleteVpcPeeringAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcPeeringAuthorizationRequest method.
+//	req, resp := client.DeleteVpcPeeringAuthorizationRequest(params)
 //
-//    // Example sending a request using the DeleteVpcPeeringAuthorizationRequest method.
-//    req, resp := client.DeleteVpcPeeringAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteVpcPeeringAuthorization
 func (c *GameLift) DeleteVpcPeeringAuthorizationRequest(input *DeleteVpcPeeringAuthorizationInput) (req *request.Request, output *DeleteVpcPeeringAuthorizationOutput) {
@@ -3361,7 +3360,7 @@ func (c *GameLift) DeleteVpcPeeringAuthorizationRequest(input *DeleteVpcPeeringA
 // Cancels a pending VPC peering authorization for the specified VPC. If you
 // need to delete an existing VPC peering connection, call DeleteVpcPeeringConnection.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -3375,21 +3374,22 @@ func (c *GameLift) DeleteVpcPeeringAuthorizationRequest(input *DeleteVpcPeeringA
 // API operation DeleteVpcPeeringAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteVpcPeeringAuthorization
 func (c *GameLift) DeleteVpcPeeringAuthorization(input *DeleteVpcPeeringAuthorizationInput) (*DeleteVpcPeeringAuthorizationOutput, error) {
@@ -3429,14 +3429,13 @@ const opDeleteVpcPeeringConnection = "DeleteVpcPeeringConnection"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcPeeringConnectionRequest method.
+//	req, resp := client.DeleteVpcPeeringConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteVpcPeeringConnectionRequest method.
-//    req, resp := client.DeleteVpcPeeringConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteVpcPeeringConnection
 func (c *GameLift) DeleteVpcPeeringConnectionRequest(input *DeleteVpcPeeringConnectionInput) (req *request.Request, output *DeleteVpcPeeringConnectionOutput) {
@@ -3468,7 +3467,7 @@ func (c *GameLift) DeleteVpcPeeringConnectionRequest(input *DeleteVpcPeeringConn
 // the connection to delete by the connection ID and fleet ID. If successful,
 // the connection is removed.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -3482,21 +3481,22 @@ func (c *GameLift) DeleteVpcPeeringConnectionRequest(input *DeleteVpcPeeringConn
 // API operation DeleteVpcPeeringConnection for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeleteVpcPeeringConnection
 func (c *GameLift) DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error) {
@@ -3536,14 +3536,13 @@ const opDeregisterGameServer = "DeregisterGameServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterGameServerRequest method.
+//	req, resp := client.DeregisterGameServerRequest(params)
 //
-//    // Example sending a request using the DeregisterGameServerRequest method.
-//    req, resp := client.DeregisterGameServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeregisterGameServer
 func (c *GameLift) DeregisterGameServerRequest(input *DeregisterGameServerInput) (req *request.Request, output *DeregisterGameServerOutput) {
@@ -3576,11 +3575,11 @@ func (c *GameLift) DeregisterGameServerRequest(input *DeregisterGameServerInput)
 // ID. If successful, this operation emits a CloudWatch event with termination
 // timestamp and reason.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -3593,21 +3592,22 @@ func (c *GameLift) DeregisterGameServerRequest(input *DeregisterGameServerInput)
 // API operation DeregisterGameServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DeregisterGameServer
 func (c *GameLift) DeregisterGameServer(input *DeregisterGameServerInput) (*DeregisterGameServerOutput, error) {
@@ -3647,14 +3647,13 @@ const opDescribeAlias = "DescribeAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAliasRequest method.
+//	req, resp := client.DescribeAliasRequest(params)
 //
-//    // Example sending a request using the DescribeAliasRequest method.
-//    req, resp := client.DescribeAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAlias
 func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request.Request, output *DescribeAliasOutput) {
@@ -3681,7 +3680,7 @@ func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request
 // To get alias properties, specify the alias ID. If successful, the requested
 // alias record is returned.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -3694,21 +3693,22 @@ func (c *GameLift) DescribeAliasRequest(input *DescribeAliasInput) (req *request
 // API operation DescribeAlias for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeAlias
 func (c *GameLift) DescribeAlias(input *DescribeAliasInput) (*DescribeAliasOutput, error) {
@@ -3748,14 +3748,13 @@ const opDescribeBuild = "DescribeBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBuildRequest method.
+//	req, resp := client.DescribeBuildRequest(params)
 //
-//    // Example sending a request using the DescribeBuildRequest method.
-//    req, resp := client.DescribeBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuild
 func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request.Request, output *DescribeBuildOutput) {
@@ -3782,9 +3781,9 @@ func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request
 //
 // Learn more
 //
-//  Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
+//	Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -3797,21 +3796,22 @@ func (c *GameLift) DescribeBuildRequest(input *DescribeBuildInput) (req *request
 // API operation DescribeBuild for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeBuild
 func (c *GameLift) DescribeBuild(input *DescribeBuildInput) (*DescribeBuildOutput, error) {
@@ -3851,14 +3851,13 @@ const opDescribeEC2InstanceLimits = "DescribeEC2InstanceLimits"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEC2InstanceLimitsRequest method.
+//	req, resp := client.DescribeEC2InstanceLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeEC2InstanceLimitsRequest method.
-//    req, resp := client.DescribeEC2InstanceLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimits
 func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLimitsInput) (req *request.Request, output *DescribeEC2InstanceLimitsOutput) {
@@ -3897,40 +3896,40 @@ func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLi
 // specify the location. For example, the following requests all return different
 // results:
 //
-//    * Request specifies the Region ap-northeast-1 with no location. The result
-//    is limits and usage data on all instance types that are deployed in us-east-2,
-//    by all of the fleets that reside in ap-northeast-1.
+//   - Request specifies the Region ap-northeast-1 with no location. The result
+//     is limits and usage data on all instance types that are deployed in us-east-2,
+//     by all of the fleets that reside in ap-northeast-1.
 //
-//    * Request specifies the Region us-east-1 with location ca-central-1. The
-//    result is limits and usage data on all instance types that are deployed
-//    in ca-central-1, by all of the fleets that reside in us-east-2. These
-//    limits do not affect fleets in any other Regions that deploy instances
-//    to ca-central-1.
+//   - Request specifies the Region us-east-1 with location ca-central-1. The
+//     result is limits and usage data on all instance types that are deployed
+//     in ca-central-1, by all of the fleets that reside in us-east-2. These
+//     limits do not affect fleets in any other Regions that deploy instances
+//     to ca-central-1.
 //
-//    * Request specifies the Region eu-west-1 with location ca-central-1. The
-//    result is limits and usage data on all instance types that are deployed
-//    in ca-central-1, by all of the fleets that reside in eu-west-1.
+//   - Request specifies the Region eu-west-1 with location ca-central-1. The
+//     result is limits and usage data on all instance types that are deployed
+//     in ca-central-1, by all of the fleets that reside in eu-west-1.
 //
 // This operation can be used in the following ways:
 //
-//    * To get limit and usage data for all instance types that are deployed
-//    in an Amazon Web Services Region by fleets that reside in the same Region:
-//    Specify the Region only. Optionally, specify a single instance type to
-//    retrieve information for.
+//   - To get limit and usage data for all instance types that are deployed
+//     in an Amazon Web Services Region by fleets that reside in the same Region:
+//     Specify the Region only. Optionally, specify a single instance type to
+//     retrieve information for.
 //
-//    * To get limit and usage data for all instance types that are deployed
-//    to a remote location by fleets that reside in different Amazon Web Services
-//    Region: Provide both the Amazon Web Services Region and the remote location.
-//    Optionally, specify a single instance type to retrieve information for.
+//   - To get limit and usage data for all instance types that are deployed
+//     to a remote location by fleets that reside in different Amazon Web Services
+//     Region: Provide both the Amazon Web Services Region and the remote location.
+//     Optionally, specify a single instance type to retrieve information for.
 //
 // If successful, an EC2InstanceLimits object is returned with limits and usage
 // data for each requested instance type.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | UpdateFleetCapacity | PutScalingPolicy | DescribeEC2InstanceLimits
 // | DescribeFleetAttributes | DescribeFleetLocationAttributes | UpdateFleetAttributes
@@ -3944,20 +3943,21 @@ func (c *GameLift) DescribeEC2InstanceLimitsRequest(input *DescribeEC2InstanceLi
 // API operation DescribeEC2InstanceLimits for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeEC2InstanceLimits
 func (c *GameLift) DescribeEC2InstanceLimits(input *DescribeEC2InstanceLimitsInput) (*DescribeEC2InstanceLimitsOutput, error) {
@@ -3997,14 +3997,13 @@ const opDescribeFleetAttributes = "DescribeFleetAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetAttributesRequest method.
+//	req, resp := client.DescribeFleetAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeFleetAttributesRequest method.
-//    req, resp := client.DescribeFleetAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributes
 func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributesInput) (req *request.Request, output *DescribeFleetAttributesOutput) {
@@ -4036,10 +4035,10 @@ func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributes
 //
 // This operation can be used in the following ways:
 //
-//    * To get attributes for one or more specific fleets, provide a list of
-//    fleet IDs or fleet ARNs.
+//   - To get attributes for one or more specific fleets, provide a list of
+//     fleet IDs or fleet ARNs.
 //
-//    * To get attributes for all fleets, do not provide a fleet identifier.
+//   - To get attributes for all fleets, do not provide a fleet identifier.
 //
 // When requesting attributes for multiple fleets, use the pagination parameters
 // to retrieve results as a set of sequential pages.
@@ -4051,11 +4050,11 @@ func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributes
 // If a request exceeds this limit, the request fails and the error message
 // contains the maximum allowed number.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -4070,21 +4069,22 @@ func (c *GameLift) DescribeFleetAttributesRequest(input *DescribeFleetAttributes
 // API operation DescribeFleetAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetAttributes
 func (c *GameLift) DescribeFleetAttributes(input *DescribeFleetAttributesInput) (*DescribeFleetAttributesOutput, error) {
@@ -4116,15 +4116,14 @@ func (c *GameLift) DescribeFleetAttributesWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleetAttributes operation.
-//    pageNum := 0
-//    err := client.DescribeFleetAttributesPages(params,
-//        func(page *gamelift.DescribeFleetAttributesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleetAttributes operation.
+//	pageNum := 0
+//	err := client.DescribeFleetAttributesPages(params,
+//	    func(page *gamelift.DescribeFleetAttributesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeFleetAttributesPages(input *DescribeFleetAttributesInput, fn func(*DescribeFleetAttributesOutput, bool) bool) error {
 	return c.DescribeFleetAttributesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4176,14 +4175,13 @@ const opDescribeFleetCapacity = "DescribeFleetCapacity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetCapacityRequest method.
+//	req, resp := client.DescribeFleetCapacityRequest(params)
 //
-//    // Example sending a request using the DescribeFleetCapacityRequest method.
-//    req, resp := client.DescribeFleetCapacityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacity
 func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInput) (req *request.Request, output *DescribeFleetCapacityOutput) {
@@ -4218,10 +4216,10 @@ func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInpu
 //
 // This operation can be used in the following ways:
 //
-//    * To get capacity data for one or more specific fleets, provide a list
-//    of fleet IDs or fleet ARNs.
+//   - To get capacity data for one or more specific fleets, provide a list
+//     of fleet IDs or fleet ARNs.
 //
-//    * To get capacity data for all fleets, do not provide a fleet identifier.
+//   - To get capacity data for all fleets, do not provide a fleet identifier.
 //
 // When requesting multiple fleets, use the pagination parameters to retrieve
 // results as a set of sequential pages.
@@ -4235,13 +4233,13 @@ func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInpu
 // one request. If a request exceeds this limit, the request fails and the error
 // message includes the maximum allowed.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // GameLift metrics for fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/monitoring-cloudwatch.html#gamelift-metrics-fleet)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -4256,21 +4254,22 @@ func (c *GameLift) DescribeFleetCapacityRequest(input *DescribeFleetCapacityInpu
 // API operation DescribeFleetCapacity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetCapacity
 func (c *GameLift) DescribeFleetCapacity(input *DescribeFleetCapacityInput) (*DescribeFleetCapacityOutput, error) {
@@ -4302,15 +4301,14 @@ func (c *GameLift) DescribeFleetCapacityWithContext(ctx aws.Context, input *Desc
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleetCapacity operation.
-//    pageNum := 0
-//    err := client.DescribeFleetCapacityPages(params,
-//        func(page *gamelift.DescribeFleetCapacityOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleetCapacity operation.
+//	pageNum := 0
+//	err := client.DescribeFleetCapacityPages(params,
+//	    func(page *gamelift.DescribeFleetCapacityOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeFleetCapacityPages(input *DescribeFleetCapacityInput, fn func(*DescribeFleetCapacityOutput, bool) bool) error {
 	return c.DescribeFleetCapacityPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4362,14 +4360,13 @@ const opDescribeFleetEvents = "DescribeFleetEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetEventsRequest method.
+//	req, resp := client.DescribeFleetEventsRequest(params)
 //
-//    // Example sending a request using the DescribeFleetEventsRequest method.
-//    req, resp := client.DescribeFleetEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEvents
 func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (req *request.Request, output *DescribeFleetEventsOutput) {
@@ -4407,11 +4404,11 @@ func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (
 // If successful, a collection of event log entries matching the request are
 // returned.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -4426,21 +4423,22 @@ func (c *GameLift) DescribeFleetEventsRequest(input *DescribeFleetEventsInput) (
 // API operation DescribeFleetEvents for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetEvents
 func (c *GameLift) DescribeFleetEvents(input *DescribeFleetEventsInput) (*DescribeFleetEventsOutput, error) {
@@ -4472,15 +4470,14 @@ func (c *GameLift) DescribeFleetEventsWithContext(ctx aws.Context, input *Descri
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleetEvents operation.
-//    pageNum := 0
-//    err := client.DescribeFleetEventsPages(params,
-//        func(page *gamelift.DescribeFleetEventsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleetEvents operation.
+//	pageNum := 0
+//	err := client.DescribeFleetEventsPages(params,
+//	    func(page *gamelift.DescribeFleetEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeFleetEventsPages(input *DescribeFleetEventsInput, fn func(*DescribeFleetEventsOutput, bool) bool) error {
 	return c.DescribeFleetEventsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4532,14 +4529,13 @@ const opDescribeFleetLocationAttributes = "DescribeFleetLocationAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetLocationAttributesRequest method.
+//	req, resp := client.DescribeFleetLocationAttributesRequest(params)
 //
-//    // Example sending a request using the DescribeFleetLocationAttributesRequest method.
-//    req, resp := client.DescribeFleetLocationAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationAttributes
 func (c *GameLift) DescribeFleetLocationAttributesRequest(input *DescribeFleetLocationAttributesInput) (req *request.Request, output *DescribeFleetLocationAttributesOutput) {
@@ -4571,11 +4567,11 @@ func (c *GameLift) DescribeFleetLocationAttributesRequest(input *DescribeFleetLo
 //
 // This operation can be used in the following ways:
 //
-//    * To get data for specific locations, provide a fleet identifier and a
-//    list of locations. Location data is returned in the order that it is requested.
+//   - To get data for specific locations, provide a fleet identifier and a
+//     list of locations. Location data is returned in the order that it is requested.
 //
-//    * To get data for all locations, provide a fleet identifier only. Location
-//    data is returned in no particular order.
+//   - To get data for all locations, provide a fleet identifier only. Location
+//     data is returned in no particular order.
 //
 // When requesting attributes for multiple locations, use the pagination parameters
 // to retrieve results as a set of sequential pages.
@@ -4585,11 +4581,11 @@ func (c *GameLift) DescribeFleetLocationAttributesRequest(input *DescribeFleetLo
 // is returned. This operation does not return the home Region. To get information
 // on a fleet's home Region, call DescribeFleetAttributes.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | DescribeFleetLocationAttributes | DescribeFleetLocationCapacity
 // | DescribeFleetLocationUtilization | DescribeFleetAttributes | DescribeFleetCapacity
@@ -4604,24 +4600,25 @@ func (c *GameLift) DescribeFleetLocationAttributesRequest(input *DescribeFleetLo
 // API operation DescribeFleetLocationAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationAttributes
 func (c *GameLift) DescribeFleetLocationAttributes(input *DescribeFleetLocationAttributesInput) (*DescribeFleetLocationAttributesOutput, error) {
@@ -4653,15 +4650,14 @@ func (c *GameLift) DescribeFleetLocationAttributesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleetLocationAttributes operation.
-//    pageNum := 0
-//    err := client.DescribeFleetLocationAttributesPages(params,
-//        func(page *gamelift.DescribeFleetLocationAttributesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleetLocationAttributes operation.
+//	pageNum := 0
+//	err := client.DescribeFleetLocationAttributesPages(params,
+//	    func(page *gamelift.DescribeFleetLocationAttributesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeFleetLocationAttributesPages(input *DescribeFleetLocationAttributesInput, fn func(*DescribeFleetLocationAttributesOutput, bool) bool) error {
 	return c.DescribeFleetLocationAttributesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4713,14 +4709,13 @@ const opDescribeFleetLocationCapacity = "DescribeFleetLocationCapacity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetLocationCapacityRequest method.
+//	req, resp := client.DescribeFleetLocationCapacityRequest(params)
 //
-//    // Example sending a request using the DescribeFleetLocationCapacityRequest method.
-//    req, resp := client.DescribeFleetLocationCapacityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationCapacity
 func (c *GameLift) DescribeFleetLocationCapacityRequest(input *DescribeFleetLocationCapacityInput) (req *request.Request, output *DescribeFleetLocationCapacityOutput) {
@@ -4752,13 +4747,13 @@ func (c *GameLift) DescribeFleetLocationCapacityRequest(input *DescribeFleetLoca
 // If successful, a FleetCapacity object is returned for the requested fleet
 // location.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // GameLift metrics for fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/monitoring-cloudwatch.html#gamelift-metrics-fleet)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | DescribeFleetLocationAttributes | DescribeFleetLocationCapacity
 // | DescribeFleetLocationUtilization | DescribeFleetAttributes | DescribeFleetCapacity
@@ -4773,24 +4768,25 @@ func (c *GameLift) DescribeFleetLocationCapacityRequest(input *DescribeFleetLoca
 // API operation DescribeFleetLocationCapacity for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationCapacity
 func (c *GameLift) DescribeFleetLocationCapacity(input *DescribeFleetLocationCapacityInput) (*DescribeFleetLocationCapacityOutput, error) {
@@ -4830,14 +4826,13 @@ const opDescribeFleetLocationUtilization = "DescribeFleetLocationUtilization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetLocationUtilizationRequest method.
+//	req, resp := client.DescribeFleetLocationUtilizationRequest(params)
 //
-//    // Example sending a request using the DescribeFleetLocationUtilizationRequest method.
-//    req, resp := client.DescribeFleetLocationUtilizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationUtilization
 func (c *GameLift) DescribeFleetLocationUtilizationRequest(input *DescribeFleetLocationUtilizationInput) (req *request.Request, output *DescribeFleetLocationUtilizationOutput) {
@@ -4869,13 +4864,13 @@ func (c *GameLift) DescribeFleetLocationUtilizationRequest(input *DescribeFleetL
 // If successful, a FleetUtilization object is returned for the requested fleet
 // location.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // GameLift metrics for fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/monitoring-cloudwatch.html#gamelift-metrics-fleet)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | DescribeFleetLocationAttributes | DescribeFleetLocationCapacity
 // | DescribeFleetLocationUtilization | DescribeFleetAttributes | DescribeFleetCapacity
@@ -4890,24 +4885,25 @@ func (c *GameLift) DescribeFleetLocationUtilizationRequest(input *DescribeFleetL
 // API operation DescribeFleetLocationUtilization for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetLocationUtilization
 func (c *GameLift) DescribeFleetLocationUtilization(input *DescribeFleetLocationUtilizationInput) (*DescribeFleetLocationUtilizationOutput, error) {
@@ -4947,14 +4943,13 @@ const opDescribeFleetPortSettings = "DescribeFleetPortSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetPortSettingsRequest method.
+//	req, resp := client.DescribeFleetPortSettingsRequest(params)
 //
-//    // Example sending a request using the DescribeFleetPortSettingsRequest method.
-//    req, resp := client.DescribeFleetPortSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettings
 func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSettingsInput) (req *request.Request, output *DescribeFleetPortSettingsOutput) {
@@ -4982,22 +4977,22 @@ func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSett
 //
 // This operation can be used in the following ways:
 //
-//    * To retrieve the inbound connection permissions for a fleet, identify
-//    the fleet's unique identifier.
+//   - To retrieve the inbound connection permissions for a fleet, identify
+//     the fleet's unique identifier.
 //
-//    * To check the status of recent updates to a fleet remote location, specify
-//    the fleet ID and a location. Port setting updates can take time to propagate
-//    across all locations.
+//   - To check the status of recent updates to a fleet remote location, specify
+//     the fleet ID and a location. Port setting updates can take time to propagate
+//     across all locations.
 //
 // If successful, a set of IpPermission objects is returned for the requested
 // fleet ID. When a location is specified, a pending status is included. If
 // the requested fleet has been deleted, the result set is empty.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -5012,21 +5007,22 @@ func (c *GameLift) DescribeFleetPortSettingsRequest(input *DescribeFleetPortSett
 // API operation DescribeFleetPortSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetPortSettings
 func (c *GameLift) DescribeFleetPortSettings(input *DescribeFleetPortSettingsInput) (*DescribeFleetPortSettingsOutput, error) {
@@ -5066,14 +5062,13 @@ const opDescribeFleetUtilization = "DescribeFleetUtilization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFleetUtilizationRequest method.
+//	req, resp := client.DescribeFleetUtilizationRequest(params)
 //
-//    // Example sending a request using the DescribeFleetUtilizationRequest method.
-//    req, resp := client.DescribeFleetUtilizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilization
 func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizationInput) (req *request.Request, output *DescribeFleetUtilizationOutput) {
@@ -5108,10 +5103,10 @@ func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizati
 //
 // This operation can be used in the following ways:
 //
-//    * To get utilization data for one or more specific fleets, provide a list
-//    of fleet IDs or fleet ARNs.
+//   - To get utilization data for one or more specific fleets, provide a list
+//     of fleet IDs or fleet ARNs.
 //
-//    * To get utilization data for all fleets, do not provide a fleet identifier.
+//   - To get utilization data for all fleets, do not provide a fleet identifier.
 //
 // When requesting multiple fleets, use the pagination parameters to retrieve
 // results as a set of sequential pages.
@@ -5124,13 +5119,13 @@ func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizati
 // If a request exceeds this limit, the request fails and the error message
 // includes the maximum allowed.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift Fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // GameLift Metrics for Fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/monitoring-cloudwatch.html#gamelift-metrics-fleet)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -5145,21 +5140,22 @@ func (c *GameLift) DescribeFleetUtilizationRequest(input *DescribeFleetUtilizati
 // API operation DescribeFleetUtilization for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeFleetUtilization
 func (c *GameLift) DescribeFleetUtilization(input *DescribeFleetUtilizationInput) (*DescribeFleetUtilizationOutput, error) {
@@ -5191,15 +5187,14 @@ func (c *GameLift) DescribeFleetUtilizationWithContext(ctx aws.Context, input *D
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeFleetUtilization operation.
-//    pageNum := 0
-//    err := client.DescribeFleetUtilizationPages(params,
-//        func(page *gamelift.DescribeFleetUtilizationOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeFleetUtilization operation.
+//	pageNum := 0
+//	err := client.DescribeFleetUtilizationPages(params,
+//	    func(page *gamelift.DescribeFleetUtilizationOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeFleetUtilizationPages(input *DescribeFleetUtilizationInput, fn func(*DescribeFleetUtilizationOutput, bool) bool) error {
 	return c.DescribeFleetUtilizationPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5251,14 +5246,13 @@ const opDescribeGameServer = "DescribeGameServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameServerRequest method.
+//	req, resp := client.DescribeGameServerRequest(params)
 //
-//    // Example sending a request using the DescribeGameServerRequest method.
-//    req, resp := client.DescribeGameServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServer
 func (c *GameLift) DescribeGameServerRequest(input *DescribeGameServerInput) (req *request.Request, output *DescribeGameServerOutput) {
@@ -5289,11 +5283,11 @@ func (c *GameLift) DescribeGameServerRequest(input *DescribeGameServerInput) (re
 // To retrieve game server information, specify the game server ID. If successful,
 // the requested game server object is returned.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -5306,21 +5300,22 @@ func (c *GameLift) DescribeGameServerRequest(input *DescribeGameServerInput) (re
 // API operation DescribeGameServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServer
 func (c *GameLift) DescribeGameServer(input *DescribeGameServerInput) (*DescribeGameServerOutput, error) {
@@ -5360,14 +5355,13 @@ const opDescribeGameServerGroup = "DescribeGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameServerGroupRequest method.
+//	req, resp := client.DescribeGameServerGroupRequest(params)
 //
-//    // Example sending a request using the DescribeGameServerGroupRequest method.
-//    req, resp := client.DescribeGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServerGroup
 func (c *GameLift) DescribeGameServerGroupRequest(input *DescribeGameServerGroupInput) (req *request.Request, output *DescribeGameServerGroupOutput) {
@@ -5399,11 +5393,11 @@ func (c *GameLift) DescribeGameServerGroupRequest(input *DescribeGameServerGroup
 // To get attributes for a game server group, provide a group name or ARN value.
 // If successful, a GameServerGroup object is returned.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -5417,21 +5411,22 @@ func (c *GameLift) DescribeGameServerGroupRequest(input *DescribeGameServerGroup
 // API operation DescribeGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServerGroup
 func (c *GameLift) DescribeGameServerGroup(input *DescribeGameServerGroupInput) (*DescribeGameServerGroupOutput, error) {
@@ -5471,14 +5466,13 @@ const opDescribeGameServerInstances = "DescribeGameServerInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameServerInstancesRequest method.
+//	req, resp := client.DescribeGameServerInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeGameServerInstancesRequest method.
-//    req, resp := client.DescribeGameServerInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServerInstances
 func (c *GameLift) DescribeGameServerInstancesRequest(input *DescribeGameServerInstancesInput) (req *request.Request, output *DescribeGameServerInstancesOutput) {
@@ -5525,11 +5519,11 @@ func (c *GameLift) DescribeGameServerInstancesRequest(input *DescribeGameServerI
 // in errors. Instead, as a best practice, cache the results and refresh your
 // cache no more than once every 10 seconds.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -5543,21 +5537,22 @@ func (c *GameLift) DescribeGameServerInstancesRequest(input *DescribeGameServerI
 // API operation DescribeGameServerInstances for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameServerInstances
 func (c *GameLift) DescribeGameServerInstances(input *DescribeGameServerInstancesInput) (*DescribeGameServerInstancesOutput, error) {
@@ -5589,15 +5584,14 @@ func (c *GameLift) DescribeGameServerInstancesWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGameServerInstances operation.
-//    pageNum := 0
-//    err := client.DescribeGameServerInstancesPages(params,
-//        func(page *gamelift.DescribeGameServerInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGameServerInstances operation.
+//	pageNum := 0
+//	err := client.DescribeGameServerInstancesPages(params,
+//	    func(page *gamelift.DescribeGameServerInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeGameServerInstancesPages(input *DescribeGameServerInstancesInput, fn func(*DescribeGameServerInstancesOutput, bool) bool) error {
 	return c.DescribeGameServerInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5649,14 +5643,13 @@ const opDescribeGameSessionDetails = "DescribeGameSessionDetails"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameSessionDetailsRequest method.
+//	req, resp := client.DescribeGameSessionDetailsRequest(params)
 //
-//    // Example sending a request using the DescribeGameSessionDetailsRequest method.
-//    req, resp := client.DescribeGameSessionDetailsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetails
 func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionDetailsInput) (req *request.Request, output *DescribeGameSessionDetailsOutput) {
@@ -5692,19 +5685,19 @@ func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionD
 //
 // This operation can be used in the following ways:
 //
-//    * To retrieve details for all game sessions that are currently running
-//    on all locations in a fleet, provide a fleet or alias ID, with an optional
-//    status filter. This approach returns details from the fleet's home Region
-//    and all remote locations.
+//   - To retrieve details for all game sessions that are currently running
+//     on all locations in a fleet, provide a fleet or alias ID, with an optional
+//     status filter. This approach returns details from the fleet's home Region
+//     and all remote locations.
 //
-//    * To retrieve details for all game sessions that are currently running
-//    on a specific fleet location, provide a fleet or alias ID and a location
-//    name, with optional status filter. The location can be the fleet's home
-//    Region or any remote location.
+//   - To retrieve details for all game sessions that are currently running
+//     on a specific fleet location, provide a fleet or alias ID and a location
+//     name, with optional status filter. The location can be the fleet's home
+//     Region or any remote location.
 //
-//    * To retrieve details for a specific game session, provide the game session
-//    ID. This approach looks for the game session ID in all fleets that reside
-//    in the Amazon Web Services Region defined in the request.
+//   - To retrieve details for a specific game session, provide the game session
+//     ID. This approach looks for the game session ID in all fleets that reside
+//     in the Amazon Web Services Region defined in the request.
 //
 // Use the pagination parameters to retrieve results as a set of sequential
 // pages.
@@ -5712,11 +5705,11 @@ func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionD
 // If successful, a GameSessionDetail object is returned for each game session
 // that matches the request.
 //
-// Learn more
+// # Learn more
 //
 // Find a game session (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-client-api.html#gamelift-sdk-client-api-find)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -5731,31 +5724,32 @@ func (c *GameLift) DescribeGameSessionDetailsRequest(input *DescribeGameSessionD
 // API operation DescribeGameSessionDetails for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionDetails
 func (c *GameLift) DescribeGameSessionDetails(input *DescribeGameSessionDetailsInput) (*DescribeGameSessionDetailsOutput, error) {
@@ -5787,15 +5781,14 @@ func (c *GameLift) DescribeGameSessionDetailsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGameSessionDetails operation.
-//    pageNum := 0
-//    err := client.DescribeGameSessionDetailsPages(params,
-//        func(page *gamelift.DescribeGameSessionDetailsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGameSessionDetails operation.
+//	pageNum := 0
+//	err := client.DescribeGameSessionDetailsPages(params,
+//	    func(page *gamelift.DescribeGameSessionDetailsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeGameSessionDetailsPages(input *DescribeGameSessionDetailsInput, fn func(*DescribeGameSessionDetailsOutput, bool) bool) error {
 	return c.DescribeGameSessionDetailsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5847,14 +5840,13 @@ const opDescribeGameSessionPlacement = "DescribeGameSessionPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameSessionPlacementRequest method.
+//	req, resp := client.DescribeGameSessionPlacementRequest(params)
 //
-//    // Example sending a request using the DescribeGameSessionPlacementRequest method.
-//    req, resp := client.DescribeGameSessionPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionPlacement
 func (c *GameLift) DescribeGameSessionPlacementRequest(input *DescribeGameSessionPlacementInput) (req *request.Request, output *DescribeGameSessionPlacementOutput) {
@@ -5889,7 +5881,7 @@ func (c *GameLift) DescribeGameSessionPlacementRequest(input *DescribeGameSessio
 //
 // If successful, a GameSessionPlacement object is returned.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -5904,21 +5896,22 @@ func (c *GameLift) DescribeGameSessionPlacementRequest(input *DescribeGameSessio
 // API operation DescribeGameSessionPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionPlacement
 func (c *GameLift) DescribeGameSessionPlacement(input *DescribeGameSessionPlacementInput) (*DescribeGameSessionPlacementOutput, error) {
@@ -5958,14 +5951,13 @@ const opDescribeGameSessionQueues = "DescribeGameSessionQueues"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameSessionQueuesRequest method.
+//	req, resp := client.DescribeGameSessionQueuesRequest(params)
 //
-//    // Example sending a request using the DescribeGameSessionQueuesRequest method.
-//    req, resp := client.DescribeGameSessionQueuesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionQueues
 func (c *GameLift) DescribeGameSessionQueuesRequest(input *DescribeGameSessionQueuesInput) (req *request.Request, output *DescribeGameSessionQueuesOutput) {
@@ -6000,9 +5992,9 @@ func (c *GameLift) DescribeGameSessionQueuesRequest(input *DescribeGameSessionQu
 //
 // Learn more
 //
-//  View Your Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-console.html)
+//	View Your Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-console.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSessionQueue (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateGameSessionQueue.html)
 // | DescribeGameSessionQueues (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeGameSessionQueues.html)
@@ -6018,21 +6010,22 @@ func (c *GameLift) DescribeGameSessionQueuesRequest(input *DescribeGameSessionQu
 // API operation DescribeGameSessionQueues for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessionQueues
 func (c *GameLift) DescribeGameSessionQueues(input *DescribeGameSessionQueuesInput) (*DescribeGameSessionQueuesOutput, error) {
@@ -6064,15 +6057,14 @@ func (c *GameLift) DescribeGameSessionQueuesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGameSessionQueues operation.
-//    pageNum := 0
-//    err := client.DescribeGameSessionQueuesPages(params,
-//        func(page *gamelift.DescribeGameSessionQueuesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGameSessionQueues operation.
+//	pageNum := 0
+//	err := client.DescribeGameSessionQueuesPages(params,
+//	    func(page *gamelift.DescribeGameSessionQueuesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeGameSessionQueuesPages(input *DescribeGameSessionQueuesInput, fn func(*DescribeGameSessionQueuesOutput, bool) bool) error {
 	return c.DescribeGameSessionQueuesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6124,14 +6116,13 @@ const opDescribeGameSessions = "DescribeGameSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeGameSessionsRequest method.
+//	req, resp := client.DescribeGameSessionsRequest(params)
 //
-//    // Example sending a request using the DescribeGameSessionsRequest method.
-//    req, resp := client.DescribeGameSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessions
 func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput) (req *request.Request, output *DescribeGameSessionsOutput) {
@@ -6173,19 +6164,19 @@ func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput)
 //
 // This operation can be used in the following ways:
 //
-//    * To retrieve all game sessions that are currently running on all locations
-//    in a fleet, provide a fleet or alias ID, with an optional status filter.
-//    This approach returns all game sessions in the fleet's home Region and
-//    all remote locations.
+//   - To retrieve all game sessions that are currently running on all locations
+//     in a fleet, provide a fleet or alias ID, with an optional status filter.
+//     This approach returns all game sessions in the fleet's home Region and
+//     all remote locations.
 //
-//    * To retrieve all game sessions that are currently running on a specific
-//    fleet location, provide a fleet or alias ID and a location name, with
-//    optional status filter. The location can be the fleet's home Region or
-//    any remote location.
+//   - To retrieve all game sessions that are currently running on a specific
+//     fleet location, provide a fleet or alias ID and a location name, with
+//     optional status filter. The location can be the fleet's home Region or
+//     any remote location.
 //
-//    * To retrieve a specific game session, provide the game session ID. This
-//    approach looks for the game session ID in all fleets that reside in the
-//    Amazon Web Services Region defined in the request.
+//   - To retrieve a specific game session, provide the game session ID. This
+//     approach looks for the game session ID in all fleets that reside in the
+//     Amazon Web Services Region defined in the request.
 //
 // Use the pagination parameters to retrieve results as a set of sequential
 // pages.
@@ -6202,11 +6193,11 @@ func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput)
 //
 // Available in Amazon GameLift Local.
 //
-// Learn more
+// # Learn more
 //
 // Find a game session (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-sdk-client-api.html#gamelift-sdk-client-api-find)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -6221,31 +6212,32 @@ func (c *GameLift) DescribeGameSessionsRequest(input *DescribeGameSessionsInput)
 // API operation DescribeGameSessions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeGameSessions
 func (c *GameLift) DescribeGameSessions(input *DescribeGameSessionsInput) (*DescribeGameSessionsOutput, error) {
@@ -6277,15 +6269,14 @@ func (c *GameLift) DescribeGameSessionsWithContext(ctx aws.Context, input *Descr
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeGameSessions operation.
-//    pageNum := 0
-//    err := client.DescribeGameSessionsPages(params,
-//        func(page *gamelift.DescribeGameSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeGameSessions operation.
+//	pageNum := 0
+//	err := client.DescribeGameSessionsPages(params,
+//	    func(page *gamelift.DescribeGameSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeGameSessionsPages(input *DescribeGameSessionsInput, fn func(*DescribeGameSessionsOutput, bool) bool) error {
 	return c.DescribeGameSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6337,14 +6328,13 @@ const opDescribeInstances = "DescribeInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInstancesRequest method.
+//	req, resp := client.DescribeInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeInstancesRequest method.
-//    req, resp := client.DescribeInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstances
 func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req *request.Request, output *DescribeInstancesOutput) {
@@ -6376,14 +6366,14 @@ func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 //
 // This operation can be used in the following ways:
 //
-//    * To get information on all instances that are deployed to a fleet's home
-//    Region, provide the fleet ID.
+//   - To get information on all instances that are deployed to a fleet's home
+//     Region, provide the fleet ID.
 //
-//    * To get information on all instances that are deployed to a fleet's remote
-//    location, provide the fleet ID and location name.
+//   - To get information on all instances that are deployed to a fleet's remote
+//     location, provide the fleet ID and location name.
 //
-//    * To get information on a specific instance in a fleet, provide the fleet
-//    ID and instance ID.
+//   - To get information on a specific instance in a fleet, provide the fleet
+//     ID and instance ID.
 //
 // Use the pagination parameters to retrieve results as a set of sequential
 // pages.
@@ -6391,13 +6381,13 @@ func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 // If successful, an Instance object is returned for each requested instance.
 // Instances are not returned in any particular order.
 //
-// Learn more
+// # Learn more
 //
 // Remotely Access Fleet Instances (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-remote-access.html)
 //
 // Debug Fleet Issues (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-creating-debug.html)
 //
-// Related actions
+// # Related actions
 //
 // DescribeInstances | GetInstanceAccess | DescribeEC2InstanceLimits | All APIs
 // by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -6410,24 +6400,25 @@ func (c *GameLift) DescribeInstancesRequest(input *DescribeInstancesInput) (req 
 // API operation DescribeInstances for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeInstances
 func (c *GameLift) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
@@ -6459,15 +6450,14 @@ func (c *GameLift) DescribeInstancesWithContext(ctx aws.Context, input *Describe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInstances operation.
-//    pageNum := 0
-//    err := client.DescribeInstancesPages(params,
-//        func(page *gamelift.DescribeInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInstances operation.
+//	pageNum := 0
+//	err := client.DescribeInstancesPages(params,
+//	    func(page *gamelift.DescribeInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeInstancesPages(input *DescribeInstancesInput, fn func(*DescribeInstancesOutput, bool) bool) error {
 	return c.DescribeInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6519,14 +6509,13 @@ const opDescribeMatchmaking = "DescribeMatchmaking"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMatchmakingRequest method.
+//	req, resp := client.DescribeMatchmakingRequest(params)
 //
-//    // Example sending a request using the DescribeMatchmakingRequest method.
-//    req, resp := client.DescribeMatchmakingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmaking
 func (c *GameLift) DescribeMatchmakingRequest(input *DescribeMatchmakingInput) (req *request.Request, output *DescribeMatchmakingOutput) {
@@ -6564,11 +6553,11 @@ func (c *GameLift) DescribeMatchmakingRequest(input *DescribeMatchmakingInput) (
 //
 // Learn more
 //
-//  Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
+//	Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
 //
-//  Set Up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
+//	Set Up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
 //
-// Related actions
+// # Related actions
 //
 // StartMatchmaking | DescribeMatchmaking | StopMatchmaking | AcceptMatch |
 // StartMatchBackfill | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -6581,17 +6570,18 @@ func (c *GameLift) DescribeMatchmakingRequest(input *DescribeMatchmakingInput) (
 // API operation DescribeMatchmaking for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmaking
 func (c *GameLift) DescribeMatchmaking(input *DescribeMatchmakingInput) (*DescribeMatchmakingOutput, error) {
@@ -6631,14 +6621,13 @@ const opDescribeMatchmakingConfigurations = "DescribeMatchmakingConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMatchmakingConfigurationsRequest method.
+//	req, resp := client.DescribeMatchmakingConfigurationsRequest(params)
 //
-//    // Example sending a request using the DescribeMatchmakingConfigurationsRequest method.
-//    req, resp := client.DescribeMatchmakingConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurations
 func (c *GameLift) DescribeMatchmakingConfigurationsRequest(input *DescribeMatchmakingConfigurationsInput) (req *request.Request, output *DescribeMatchmakingConfigurationsOutput) {
@@ -6679,9 +6668,9 @@ func (c *GameLift) DescribeMatchmakingConfigurationsRequest(input *DescribeMatch
 //
 // Learn more
 //
-//  Setting up FlexMatch matchmakers (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/matchmaker-build.html)
+//	Setting up FlexMatch matchmakers (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/matchmaker-build.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -6696,17 +6685,18 @@ func (c *GameLift) DescribeMatchmakingConfigurationsRequest(input *DescribeMatch
 // API operation DescribeMatchmakingConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingConfigurations
 func (c *GameLift) DescribeMatchmakingConfigurations(input *DescribeMatchmakingConfigurationsInput) (*DescribeMatchmakingConfigurationsOutput, error) {
@@ -6738,15 +6728,14 @@ func (c *GameLift) DescribeMatchmakingConfigurationsWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeMatchmakingConfigurations operation.
-//    pageNum := 0
-//    err := client.DescribeMatchmakingConfigurationsPages(params,
-//        func(page *gamelift.DescribeMatchmakingConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeMatchmakingConfigurations operation.
+//	pageNum := 0
+//	err := client.DescribeMatchmakingConfigurationsPages(params,
+//	    func(page *gamelift.DescribeMatchmakingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeMatchmakingConfigurationsPages(input *DescribeMatchmakingConfigurationsInput, fn func(*DescribeMatchmakingConfigurationsOutput, bool) bool) error {
 	return c.DescribeMatchmakingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6798,14 +6787,13 @@ const opDescribeMatchmakingRuleSets = "DescribeMatchmakingRuleSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMatchmakingRuleSetsRequest method.
+//	req, resp := client.DescribeMatchmakingRuleSetsRequest(params)
 //
-//    // Example sending a request using the DescribeMatchmakingRuleSetsRequest method.
-//    req, resp := client.DescribeMatchmakingRuleSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSets
 func (c *GameLift) DescribeMatchmakingRuleSetsRequest(input *DescribeMatchmakingRuleSetsInput) (req *request.Request, output *DescribeMatchmakingRuleSetsOutput) {
@@ -6840,9 +6828,9 @@ func (c *GameLift) DescribeMatchmakingRuleSetsRequest(input *DescribeMatchmaking
 //
 // Learn more
 //
-//    * Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
+//   - Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -6857,21 +6845,22 @@ func (c *GameLift) DescribeMatchmakingRuleSetsRequest(input *DescribeMatchmaking
 // API operation DescribeMatchmakingRuleSets for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeMatchmakingRuleSets
 func (c *GameLift) DescribeMatchmakingRuleSets(input *DescribeMatchmakingRuleSetsInput) (*DescribeMatchmakingRuleSetsOutput, error) {
@@ -6903,15 +6892,14 @@ func (c *GameLift) DescribeMatchmakingRuleSetsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeMatchmakingRuleSets operation.
-//    pageNum := 0
-//    err := client.DescribeMatchmakingRuleSetsPages(params,
-//        func(page *gamelift.DescribeMatchmakingRuleSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeMatchmakingRuleSets operation.
+//	pageNum := 0
+//	err := client.DescribeMatchmakingRuleSetsPages(params,
+//	    func(page *gamelift.DescribeMatchmakingRuleSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeMatchmakingRuleSetsPages(input *DescribeMatchmakingRuleSetsInput, fn func(*DescribeMatchmakingRuleSetsOutput, bool) bool) error {
 	return c.DescribeMatchmakingRuleSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6963,14 +6951,13 @@ const opDescribePlayerSessions = "DescribePlayerSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePlayerSessionsRequest method.
+//	req, resp := client.DescribePlayerSessionsRequest(params)
 //
-//    // Example sending a request using the DescribePlayerSessionsRequest method.
-//    req, resp := client.DescribePlayerSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessions
 func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsInput) (req *request.Request, output *DescribePlayerSessionsOutput) {
@@ -7001,14 +6988,14 @@ func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsIn
 //
 // This action can be used in the following ways:
 //
-//    * To retrieve a specific player session, provide the player session ID
-//    only.
+//   - To retrieve a specific player session, provide the player session ID
+//     only.
 //
-//    * To retrieve all player sessions in a game session, provide the game
-//    session ID only.
+//   - To retrieve all player sessions in a game session, provide the game
+//     session ID only.
 //
-//    * To retrieve all player sessions for a specific player, provide a player
-//    ID only.
+//   - To retrieve all player sessions for a specific player, provide a player
+//     ID only.
 //
 // To request player sessions, specify either a player session ID, game session
 // ID, or player ID. You can filter this request by player session status. Use
@@ -7019,7 +7006,7 @@ func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsIn
 //
 // Available in Amazon GameLift Local.
 //
-// Related actions
+// # Related actions
 //
 // CreatePlayerSession | CreatePlayerSessions | DescribePlayerSessions | StartGameSessionPlacement
 // | DescribeGameSessionPlacement | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -7032,21 +7019,22 @@ func (c *GameLift) DescribePlayerSessionsRequest(input *DescribePlayerSessionsIn
 // API operation DescribePlayerSessions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribePlayerSessions
 func (c *GameLift) DescribePlayerSessions(input *DescribePlayerSessionsInput) (*DescribePlayerSessionsOutput, error) {
@@ -7078,15 +7066,14 @@ func (c *GameLift) DescribePlayerSessionsWithContext(ctx aws.Context, input *Des
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePlayerSessions operation.
-//    pageNum := 0
-//    err := client.DescribePlayerSessionsPages(params,
-//        func(page *gamelift.DescribePlayerSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePlayerSessions operation.
+//	pageNum := 0
+//	err := client.DescribePlayerSessionsPages(params,
+//	    func(page *gamelift.DescribePlayerSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribePlayerSessionsPages(input *DescribePlayerSessionsInput, fn func(*DescribePlayerSessionsOutput, bool) bool) error {
 	return c.DescribePlayerSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7138,14 +7125,13 @@ const opDescribeRuntimeConfiguration = "DescribeRuntimeConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRuntimeConfigurationRequest method.
+//	req, resp := client.DescribeRuntimeConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribeRuntimeConfigurationRequest method.
-//    req, resp := client.DescribeRuntimeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfiguration
 func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeConfigurationInput) (req *request.Request, output *DescribeRuntimeConfigurationOutput) {
@@ -7176,13 +7162,13 @@ func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeCon
 // If successful, a RuntimeConfiguration object is returned for the requested
 // fleet. If the requested fleet has been deleted, the result set is empty.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
 // Running multiple processes on a fleet (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-multiprocess.html)
 //
-// Related actions
+// # Related actions
 //
 // ListFleets | DescribeEC2InstanceLimits | DescribeFleetAttributes | DescribeFleetCapacity
 // | DescribeFleetEvents | DescribeFleetLocationAttributes | DescribeFleetPortSettings
@@ -7197,21 +7183,22 @@ func (c *GameLift) DescribeRuntimeConfigurationRequest(input *DescribeRuntimeCon
 // API operation DescribeRuntimeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeRuntimeConfiguration
 func (c *GameLift) DescribeRuntimeConfiguration(input *DescribeRuntimeConfigurationInput) (*DescribeRuntimeConfigurationOutput, error) {
@@ -7251,14 +7238,13 @@ const opDescribeScalingPolicies = "DescribeScalingPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScalingPoliciesRequest method.
+//	req, resp := client.DescribeScalingPoliciesRequest(params)
 //
-//    // Example sending a request using the DescribeScalingPoliciesRequest method.
-//    req, resp := client.DescribeScalingPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPolicies
 func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPoliciesInput) (req *request.Request, output *DescribeScalingPoliciesOutput) {
@@ -7297,7 +7283,7 @@ func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPolicies
 // remains ACTIVE. To see whether a fleet's scaling policies are in force or
 // suspended, call DescribeFleetAttributes and check the stopped actions.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity | UpdateFleetCapacity | DescribeEC2InstanceLimits |
 // PutScalingPolicy | DescribeScalingPolicies | DeleteScalingPolicy | StopFleetActions
@@ -7311,24 +7297,25 @@ func (c *GameLift) DescribeScalingPoliciesRequest(input *DescribeScalingPolicies
 // API operation DescribeScalingPolicies for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScalingPolicies
 func (c *GameLift) DescribeScalingPolicies(input *DescribeScalingPoliciesInput) (*DescribeScalingPoliciesOutput, error) {
@@ -7360,15 +7347,14 @@ func (c *GameLift) DescribeScalingPoliciesWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeScalingPolicies operation.
-//    pageNum := 0
-//    err := client.DescribeScalingPoliciesPages(params,
-//        func(page *gamelift.DescribeScalingPoliciesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeScalingPolicies operation.
+//	pageNum := 0
+//	err := client.DescribeScalingPoliciesPages(params,
+//	    func(page *gamelift.DescribeScalingPoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) DescribeScalingPoliciesPages(input *DescribeScalingPoliciesInput, fn func(*DescribeScalingPoliciesOutput, bool) bool) error {
 	return c.DescribeScalingPoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7420,14 +7406,13 @@ const opDescribeScript = "DescribeScript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeScriptRequest method.
+//	req, resp := client.DescribeScriptRequest(params)
 //
-//    // Example sending a request using the DescribeScriptRequest method.
-//    req, resp := client.DescribeScriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScript
 func (c *GameLift) DescribeScriptRequest(input *DescribeScriptInput) (req *request.Request, output *DescribeScriptOutput) {
@@ -7453,11 +7438,11 @@ func (c *GameLift) DescribeScriptRequest(input *DescribeScriptInput) (req *reque
 // To request a script record, specify the script ID. If successful, an object
 // containing the script properties is returned.
 //
-// Learn more
+// # Learn more
 //
 // Amazon GameLift Realtime Servers (https://docs.aws.amazon.com/gamelift/latest/developerguide/realtime-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -7470,21 +7455,22 @@ func (c *GameLift) DescribeScriptRequest(input *DescribeScriptInput) (req *reque
 // API operation DescribeScript for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeScript
 func (c *GameLift) DescribeScript(input *DescribeScriptInput) (*DescribeScriptOutput, error) {
@@ -7524,14 +7510,13 @@ const opDescribeVpcPeeringAuthorizations = "DescribeVpcPeeringAuthorizations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcPeeringAuthorizationsRequest method.
+//	req, resp := client.DescribeVpcPeeringAuthorizationsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcPeeringAuthorizationsRequest method.
-//    req, resp := client.DescribeVpcPeeringAuthorizationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeVpcPeeringAuthorizations
 func (c *GameLift) DescribeVpcPeeringAuthorizationsRequest(input *DescribeVpcPeeringAuthorizationsInput) (req *request.Request, output *DescribeVpcPeeringAuthorizationsOutput) {
@@ -7557,7 +7542,7 @@ func (c *GameLift) DescribeVpcPeeringAuthorizationsRequest(input *DescribeVpcPee
 // and requests for peering. This includes those initiated and received by this
 // account.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -7571,17 +7556,18 @@ func (c *GameLift) DescribeVpcPeeringAuthorizationsRequest(input *DescribeVpcPee
 // API operation DescribeVpcPeeringAuthorizations for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeVpcPeeringAuthorizations
 func (c *GameLift) DescribeVpcPeeringAuthorizations(input *DescribeVpcPeeringAuthorizationsInput) (*DescribeVpcPeeringAuthorizationsOutput, error) {
@@ -7621,14 +7607,13 @@ const opDescribeVpcPeeringConnections = "DescribeVpcPeeringConnections"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVpcPeeringConnectionsRequest method.
+//	req, resp := client.DescribeVpcPeeringConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeVpcPeeringConnectionsRequest method.
-//    req, resp := client.DescribeVpcPeeringConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeVpcPeeringConnections
 func (c *GameLift) DescribeVpcPeeringConnectionsRequest(input *DescribeVpcPeeringConnectionsInput) (req *request.Request, output *DescribeVpcPeeringConnectionsOutput) {
@@ -7659,7 +7644,7 @@ func (c *GameLift) DescribeVpcPeeringConnectionsRequest(input *DescribeVpcPeerin
 // connections. Active connections identify the IpV4 CIDR block that the VPC
 // uses to connect.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -7673,21 +7658,22 @@ func (c *GameLift) DescribeVpcPeeringConnectionsRequest(input *DescribeVpcPeerin
 // API operation DescribeVpcPeeringConnections for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/DescribeVpcPeeringConnections
 func (c *GameLift) DescribeVpcPeeringConnections(input *DescribeVpcPeeringConnectionsInput) (*DescribeVpcPeeringConnectionsOutput, error) {
@@ -7727,14 +7713,13 @@ const opGetGameSessionLogUrl = "GetGameSessionLogUrl"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGameSessionLogUrlRequest method.
+//	req, resp := client.GetGameSessionLogUrlRequest(params)
 //
-//    // Example sending a request using the GetGameSessionLogUrlRequest method.
-//    req, resp := client.GetGameSessionLogUrlRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrl
 func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput) (req *request.Request, output *GetGameSessionLogUrlOutput) {
@@ -7763,7 +7748,7 @@ func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput)
 // page for maximum log file sizes. Log files that exceed this limit are not
 // saved.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -7778,21 +7763,22 @@ func (c *GameLift) GetGameSessionLogUrlRequest(input *GetGameSessionLogUrlInput)
 // API operation GetGameSessionLogUrl for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetGameSessionLogUrl
 func (c *GameLift) GetGameSessionLogUrl(input *GetGameSessionLogUrlInput) (*GetGameSessionLogUrlOutput, error) {
@@ -7832,14 +7818,13 @@ const opGetInstanceAccess = "GetInstanceAccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInstanceAccessRequest method.
+//	req, resp := client.GetInstanceAccessRequest(params)
 //
-//    // Example sending a request using the GetInstanceAccessRequest method.
-//    req, resp := client.GetInstanceAccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccess
 func (c *GameLift) GetInstanceAccessRequest(input *GetInstanceAccessInput) (req *request.Request, output *GetInstanceAccessOutput) {
@@ -7877,13 +7862,13 @@ func (c *GameLift) GetInstanceAccessRequest(input *GetInstanceAccessInput) (req 
 // DescribeInstances. If successful, an InstanceAccess object is returned that
 // contains the instance's IP address and a set of credentials.
 //
-// Learn more
+// # Learn more
 //
 // Remotely Access Fleet Instances (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-remote-access.html)
 //
 // Debug Fleet Issues (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-creating-debug.html)
 //
-// Related actions
+// # Related actions
 //
 // DescribeInstances | GetInstanceAccess | DescribeEC2InstanceLimits | All APIs
 // by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -7896,21 +7881,22 @@ func (c *GameLift) GetInstanceAccessRequest(input *GetInstanceAccessInput) (req 
 // API operation GetInstanceAccess for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/GetInstanceAccess
 func (c *GameLift) GetInstanceAccess(input *GetInstanceAccessInput) (*GetInstanceAccessOutput, error) {
@@ -7950,14 +7936,13 @@ const opListAliases = "ListAliases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAliasesRequest method.
+//	req, resp := client.ListAliasesRequest(params)
 //
-//    // Example sending a request using the ListAliasesRequest method.
-//    req, resp := client.ListAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliases
 func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Request, output *ListAliasesOutput) {
@@ -7990,7 +7975,7 @@ func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Req
 //
 // Returned aliases are not listed in any particular order.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -8003,17 +7988,18 @@ func (c *GameLift) ListAliasesRequest(input *ListAliasesInput) (req *request.Req
 // API operation ListAliases for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListAliases
 func (c *GameLift) ListAliases(input *ListAliasesInput) (*ListAliasesOutput, error) {
@@ -8045,15 +8031,14 @@ func (c *GameLift) ListAliasesWithContext(ctx aws.Context, input *ListAliasesInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAliases operation.
-//    pageNum := 0
-//    err := client.ListAliasesPages(params,
-//        func(page *gamelift.ListAliasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAliases operation.
+//	pageNum := 0
+//	err := client.ListAliasesPages(params,
+//	    func(page *gamelift.ListAliasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListAliasesPages(input *ListAliasesInput, fn func(*ListAliasesOutput, bool) bool) error {
 	return c.ListAliasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8105,14 +8090,13 @@ const opListBuilds = "ListBuilds"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBuildsRequest method.
+//	req, resp := client.ListBuildsRequest(params)
 //
-//    // Example sending a request using the ListBuildsRequest method.
-//    req, resp := client.ListBuildsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuilds
 func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Request, output *ListBuildsOutput) {
@@ -8148,9 +8132,9 @@ func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Reque
 //
 // Learn more
 //
-//  Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
+//	Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -8163,17 +8147,18 @@ func (c *GameLift) ListBuildsRequest(input *ListBuildsInput) (req *request.Reque
 // API operation ListBuilds for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListBuilds
 func (c *GameLift) ListBuilds(input *ListBuildsInput) (*ListBuildsOutput, error) {
@@ -8205,15 +8190,14 @@ func (c *GameLift) ListBuildsWithContext(ctx aws.Context, input *ListBuildsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBuilds operation.
-//    pageNum := 0
-//    err := client.ListBuildsPages(params,
-//        func(page *gamelift.ListBuildsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBuilds operation.
+//	pageNum := 0
+//	err := client.ListBuildsPages(params,
+//	    func(page *gamelift.ListBuildsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListBuildsPages(input *ListBuildsInput, fn func(*ListBuildsOutput, bool) bool) error {
 	return c.ListBuildsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8265,14 +8249,13 @@ const opListFleets = "ListFleets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFleetsRequest method.
+//	req, resp := client.ListFleetsRequest(params)
 //
-//    // Example sending a request using the ListFleetsRequest method.
-//    req, resp := client.ListFleetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleets
 func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Request, output *ListFleetsOutput) {
@@ -8310,14 +8293,14 @@ func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 //
 // This operation can be used in the following ways:
 //
-//    * To get a list of all fleets in a Region, don't provide a build or script
-//    identifier.
+//   - To get a list of all fleets in a Region, don't provide a build or script
+//     identifier.
 //
-//    * To get a list of all fleets where a specific custom game build is deployed,
-//    provide the build ID.
+//   - To get a list of all fleets where a specific custom game build is deployed,
+//     provide the build ID.
 //
-//    * To get a list of all Realtime Servers fleets with a specific configuration
-//    script, provide the script ID.
+//   - To get a list of all Realtime Servers fleets with a specific configuration
+//     script, provide the script ID.
 //
 // Use the pagination parameters to retrieve results as a set of sequential
 // pages.
@@ -8327,11 +8310,11 @@ func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 //
 // Fleet resources are not listed in a particular order.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | UpdateFleetCapacity | PutScalingPolicy | DescribeEC2InstanceLimits
 // | DescribeFleetAttributes | DescribeFleetLocationAttributes | UpdateFleetAttributes
@@ -8345,21 +8328,22 @@ func (c *GameLift) ListFleetsRequest(input *ListFleetsInput) (req *request.Reque
 // API operation ListFleets for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListFleets
 func (c *GameLift) ListFleets(input *ListFleetsInput) (*ListFleetsOutput, error) {
@@ -8391,15 +8375,14 @@ func (c *GameLift) ListFleetsWithContext(ctx aws.Context, input *ListFleetsInput
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFleets operation.
-//    pageNum := 0
-//    err := client.ListFleetsPages(params,
-//        func(page *gamelift.ListFleetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFleets operation.
+//	pageNum := 0
+//	err := client.ListFleetsPages(params,
+//	    func(page *gamelift.ListFleetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListFleetsPages(input *ListFleetsInput, fn func(*ListFleetsOutput, bool) bool) error {
 	return c.ListFleetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8451,14 +8434,13 @@ const opListGameServerGroups = "ListGameServerGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGameServerGroupsRequest method.
+//	req, resp := client.ListGameServerGroupsRequest(params)
 //
-//    // Example sending a request using the ListGameServerGroupsRequest method.
-//    req, resp := client.ListGameServerGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListGameServerGroups
 func (c *GameLift) ListGameServerGroupsRequest(input *ListGameServerGroupsInput) (req *request.Request, output *ListGameServerGroupsOutput) {
@@ -8492,11 +8474,11 @@ func (c *GameLift) ListGameServerGroupsRequest(input *ListGameServerGroupsInput)
 // Amazon Web Services account for the selected Region. Use the pagination parameters
 // to retrieve results in a set of sequential segments.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -8510,17 +8492,18 @@ func (c *GameLift) ListGameServerGroupsRequest(input *ListGameServerGroupsInput)
 // API operation ListGameServerGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListGameServerGroups
 func (c *GameLift) ListGameServerGroups(input *ListGameServerGroupsInput) (*ListGameServerGroupsOutput, error) {
@@ -8552,15 +8535,14 @@ func (c *GameLift) ListGameServerGroupsWithContext(ctx aws.Context, input *ListG
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGameServerGroups operation.
-//    pageNum := 0
-//    err := client.ListGameServerGroupsPages(params,
-//        func(page *gamelift.ListGameServerGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGameServerGroups operation.
+//	pageNum := 0
+//	err := client.ListGameServerGroupsPages(params,
+//	    func(page *gamelift.ListGameServerGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListGameServerGroupsPages(input *ListGameServerGroupsInput, fn func(*ListGameServerGroupsOutput, bool) bool) error {
 	return c.ListGameServerGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8612,14 +8594,13 @@ const opListGameServers = "ListGameServers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGameServersRequest method.
+//	req, resp := client.ListGameServersRequest(params)
 //
-//    // Example sending a request using the ListGameServersRequest method.
-//    req, resp := client.ListGameServersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListGameServers
 func (c *GameLift) ListGameServersRequest(input *ListGameServersInput) (req *request.Request, output *ListGameServersOutput) {
@@ -8654,11 +8635,11 @@ func (c *GameLift) ListGameServersRequest(input *ListGameServersInput) (req *req
 // age. Use the pagination parameters to retrieve results in a set of sequential
 // segments.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -8671,17 +8652,18 @@ func (c *GameLift) ListGameServersRequest(input *ListGameServersInput) (req *req
 // API operation ListGameServers for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListGameServers
 func (c *GameLift) ListGameServers(input *ListGameServersInput) (*ListGameServersOutput, error) {
@@ -8713,15 +8695,14 @@ func (c *GameLift) ListGameServersWithContext(ctx aws.Context, input *ListGameSe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGameServers operation.
-//    pageNum := 0
-//    err := client.ListGameServersPages(params,
-//        func(page *gamelift.ListGameServersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGameServers operation.
+//	pageNum := 0
+//	err := client.ListGameServersPages(params,
+//	    func(page *gamelift.ListGameServersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListGameServersPages(input *ListGameServersInput, fn func(*ListGameServersOutput, bool) bool) error {
 	return c.ListGameServersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8773,14 +8754,13 @@ const opListScripts = "ListScripts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListScriptsRequest method.
+//	req, resp := client.ListScriptsRequest(params)
 //
-//    // Example sending a request using the ListScriptsRequest method.
-//    req, resp := client.ListScriptsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListScripts
 func (c *GameLift) ListScriptsRequest(input *ListScriptsInput) (req *request.Request, output *ListScriptsOutput) {
@@ -8810,11 +8790,11 @@ func (c *GameLift) ListScriptsRequest(input *ListScriptsInput) (req *request.Req
 // Retrieves script records for all Realtime scripts that are associated with
 // the Amazon Web Services account in use.
 //
-// Learn more
+// # Learn more
 //
 // Amazon GameLift Realtime Servers (https://docs.aws.amazon.com/gamelift/latest/developerguide/realtime-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -8827,17 +8807,18 @@ func (c *GameLift) ListScriptsRequest(input *ListScriptsInput) (req *request.Req
 // API operation ListScripts for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListScripts
 func (c *GameLift) ListScripts(input *ListScriptsInput) (*ListScriptsOutput, error) {
@@ -8869,15 +8850,14 @@ func (c *GameLift) ListScriptsWithContext(ctx aws.Context, input *ListScriptsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListScripts operation.
-//    pageNum := 0
-//    err := client.ListScriptsPages(params,
-//        func(page *gamelift.ListScriptsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListScripts operation.
+//	pageNum := 0
+//	err := client.ListScriptsPages(params,
+//	    func(page *gamelift.ListScriptsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) ListScriptsPages(input *ListScriptsInput, fn func(*ListScriptsOutput, bool) bool) error {
 	return c.ListScriptsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -8929,14 +8909,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListTagsForResource
 func (c *GameLift) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -8962,30 +8941,30 @@ func (c *GameLift) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // This operation handles the permissions necessary to manage tags for the following
 // GameLift resource types:
 //
-//    * Build
+//   - Build
 //
-//    * Script
+//   - Script
 //
-//    * Fleet
+//   - Fleet
 //
-//    * Alias
+//   - Alias
 //
-//    * GameSessionQueue
+//   - GameSessionQueue
 //
-//    * MatchmakingConfiguration
+//   - MatchmakingConfiguration
 //
-//    * MatchmakingRuleSet
+//   - MatchmakingRuleSet
 //
 // To list tags for a resource, specify the unique ARN value for the resource.
 //
-// Learn more
+// # Learn more
 //
 // Tagging Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
 // in the Amazon Web Services General Reference
 //
-//  Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
+//	Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
 //
-// Related actions
+// # Related actions
 //
 // TagResource | UntagResource | ListTagsForResource | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
 //
@@ -8997,23 +8976,24 @@ func (c *GameLift) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ListTagsForResource
 func (c *GameLift) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -9053,14 +9033,13 @@ const opPutScalingPolicy = "PutScalingPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutScalingPolicyRequest method.
+//	req, resp := client.PutScalingPolicyRequest(params)
 //
-//    // Example sending a request using the PutScalingPolicyRequest method.
-//    req, resp := client.PutScalingPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicy
 func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *request.Request, output *PutScalingPolicyOutput) {
@@ -9103,7 +9082,7 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 // Learn more about how to work with auto-scaling in Set Up Fleet Automatic
 // Scaling (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-autoscaling.html).
 //
-// Target-based policy
+// # Target-based policy
 //
 // A target-based policy tracks a single metric: PercentAvailableGameSessions.
 // This metric tells us how much of a fleet's hosting capacity is ready to host
@@ -9127,7 +9106,7 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 // created. If the fleet's auto-scaling actions are temporarily suspended, the
 // new policy will be in force once the fleet actions are restarted.
 //
-// Rule-based policy
+// # Rule-based policy
 //
 // A rule-based policy tracks specified fleet metric, sets a threshold value,
 // and specifies the type of action to initiate when triggered. With a rule-based
@@ -9156,7 +9135,7 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 // successfully created. If the fleet's auto-scaling actions are temporarily
 // suspended, the new policy will be in force once the fleet actions are restarted.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity | UpdateFleetCapacity | DescribeEC2InstanceLimits |
 // PutScalingPolicy | DescribeScalingPolicies | DeleteScalingPolicy | StopFleetActions
@@ -9170,21 +9149,22 @@ func (c *GameLift) PutScalingPolicyRequest(input *PutScalingPolicyInput) (req *r
 // API operation PutScalingPolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/PutScalingPolicy
 func (c *GameLift) PutScalingPolicy(input *PutScalingPolicyInput) (*PutScalingPolicyOutput, error) {
@@ -9224,14 +9204,13 @@ const opRegisterGameServer = "RegisterGameServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterGameServerRequest method.
+//	req, resp := client.RegisterGameServerRequest(params)
 //
-//    // Example sending a request using the RegisterGameServerRequest method.
-//    req, resp := client.RegisterGameServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RegisterGameServer
 func (c *GameLift) RegisterGameServerRequest(input *RegisterGameServerInput) (req *request.Request, output *RegisterGameServerOutput) {
@@ -9273,11 +9252,11 @@ func (c *GameLift) RegisterGameServerRequest(input *RegisterGameServerInput) (re
 // on is in the process of shutting down as part of instance balancing or scale-down
 // activity.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -9290,26 +9269,27 @@ func (c *GameLift) RegisterGameServerRequest(input *RegisterGameServerInput) (re
 // API operation RegisterGameServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RegisterGameServer
 func (c *GameLift) RegisterGameServer(input *RegisterGameServerInput) (*RegisterGameServerOutput, error) {
@@ -9349,14 +9329,13 @@ const opRequestUploadCredentials = "RequestUploadCredentials"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestUploadCredentialsRequest method.
+//	req, resp := client.RequestUploadCredentialsRequest(params)
 //
-//    // Example sending a request using the RequestUploadCredentialsRequest method.
-//    req, resp := client.RequestUploadCredentialsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentials
 func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentialsInput) (req *request.Request, output *RequestUploadCredentialsOutput) {
@@ -9387,9 +9366,9 @@ func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentia
 //
 // Learn more
 //
-//  Create a Build with Files in S3 (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-cli-uploading.html#gamelift-build-cli-uploading-create-build)
+//	Create a Build with Files in S3 (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-cli-uploading.html#gamelift-build-cli-uploading-create-build)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -9402,21 +9381,22 @@ func (c *GameLift) RequestUploadCredentialsRequest(input *RequestUploadCredentia
 // API operation RequestUploadCredentials for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/RequestUploadCredentials
 func (c *GameLift) RequestUploadCredentials(input *RequestUploadCredentialsInput) (*RequestUploadCredentialsOutput, error) {
@@ -9456,14 +9436,13 @@ const opResolveAlias = "ResolveAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResolveAliasRequest method.
+//	req, resp := client.ResolveAliasRequest(params)
 //
-//    // Example sending a request using the ResolveAliasRequest method.
-//    req, resp := client.ResolveAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAlias
 func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.Request, output *ResolveAliasOutput) {
@@ -9486,7 +9465,7 @@ func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.R
 //
 // Retrieves the fleet ID that an alias is currently pointing to.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -9499,28 +9478,29 @@ func (c *GameLift) ResolveAliasRequest(input *ResolveAliasInput) (req *request.R
 // API operation ResolveAlias for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResolveAlias
 func (c *GameLift) ResolveAlias(input *ResolveAliasInput) (*ResolveAliasOutput, error) {
@@ -9560,14 +9540,13 @@ const opResumeGameServerGroup = "ResumeGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResumeGameServerGroupRequest method.
+//	req, resp := client.ResumeGameServerGroupRequest(params)
 //
-//    // Example sending a request using the ResumeGameServerGroupRequest method.
-//    req, resp := client.ResumeGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResumeGameServerGroup
 func (c *GameLift) ResumeGameServerGroupRequest(input *ResumeGameServerGroupInput) (req *request.Request, output *ResumeGameServerGroupOutput) {
@@ -9602,11 +9581,11 @@ func (c *GameLift) ResumeGameServerGroupRequest(input *ResumeGameServerGroupInpu
 // to be resumed. If successful, a GameServerGroup object is returned showing
 // that the resumed activity is no longer listed in SuspendedActions.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -9620,21 +9599,22 @@ func (c *GameLift) ResumeGameServerGroupRequest(input *ResumeGameServerGroupInpu
 // API operation ResumeGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ResumeGameServerGroup
 func (c *GameLift) ResumeGameServerGroup(input *ResumeGameServerGroupInput) (*ResumeGameServerGroupOutput, error) {
@@ -9674,14 +9654,13 @@ const opSearchGameSessions = "SearchGameSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchGameSessionsRequest method.
+//	req, resp := client.SearchGameSessionsRequest(params)
 //
-//    // Example sending a request using the SearchGameSessionsRequest method.
-//    req, resp := client.SearchGameSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessions
 func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (req *request.Request, output *SearchGameSessionsOutput) {
@@ -9724,14 +9703,14 @@ func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (re
 //
 // This operation can be used in the following ways:
 //
-//    * To search all game sessions that are currently running on all locations
-//    in a fleet, provide a fleet or alias ID. This approach returns game sessions
-//    in the fleet's home Region and all remote locations that fit the search
-//    criteria.
+//   - To search all game sessions that are currently running on all locations
+//     in a fleet, provide a fleet or alias ID. This approach returns game sessions
+//     in the fleet's home Region and all remote locations that fit the search
+//     criteria.
 //
-//    * To search all game sessions that are currently running on a specific
-//    fleet location, provide a fleet or alias ID and a location name. For location,
-//    you can specify a fleet's home Region or any remote location.
+//   - To search all game sessions that are currently running on a specific
+//     fleet location, provide a fleet or alias ID and a location name. For location,
+//     you can specify a fleet's home Region or any remote location.
 //
 // Use the pagination parameters to retrieve results as a set of sequential
 // pages.
@@ -9742,43 +9721,43 @@ func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (re
 //
 // You can search or sort by the following game session attributes:
 //
-//    * gameSessionId -- A unique identifier for the game session. You can use
-//    either a GameSessionId or GameSessionArn value.
+//   - gameSessionId -- A unique identifier for the game session. You can use
+//     either a GameSessionId or GameSessionArn value.
 //
-//    * gameSessionName -- Name assigned to a game session. This value is set
-//    when requesting a new game session with CreateGameSession or updating
-//    with UpdateGameSession. Game session names do not need to be unique to
-//    a game session.
+//   - gameSessionName -- Name assigned to a game session. This value is set
+//     when requesting a new game session with CreateGameSession or updating
+//     with UpdateGameSession. Game session names do not need to be unique to
+//     a game session.
 //
-//    * gameSessionProperties -- Custom data defined in a game session's GameProperty
-//    parameter. GameProperty values are stored as key:value pairs; the filter
-//    expression must indicate the key and a string to search the data values
-//    for. For example, to search for game sessions with custom data containing
-//    the key:value pair "gameMode:brawl", specify the following: gameSessionProperties.gameMode
-//    = "brawl". All custom data values are searched as strings.
+//   - gameSessionProperties -- Custom data defined in a game session's GameProperty
+//     parameter. GameProperty values are stored as key:value pairs; the filter
+//     expression must indicate the key and a string to search the data values
+//     for. For example, to search for game sessions with custom data containing
+//     the key:value pair "gameMode:brawl", specify the following: gameSessionProperties.gameMode
+//     = "brawl". All custom data values are searched as strings.
 //
-//    * maximumSessions -- Maximum number of player sessions allowed for a game
-//    session. This value is set when requesting a new game session with CreateGameSession
-//    or updating with UpdateGameSession.
+//   - maximumSessions -- Maximum number of player sessions allowed for a game
+//     session. This value is set when requesting a new game session with CreateGameSession
+//     or updating with UpdateGameSession.
 //
-//    * creationTimeMillis -- Value indicating when a game session was created.
-//    It is expressed in Unix time as milliseconds.
+//   - creationTimeMillis -- Value indicating when a game session was created.
+//     It is expressed in Unix time as milliseconds.
 //
-//    * playerSessionCount -- Number of players currently connected to a game
-//    session. This value changes rapidly as players join the session or drop
-//    out.
+//   - playerSessionCount -- Number of players currently connected to a game
+//     session. This value changes rapidly as players join the session or drop
+//     out.
 //
-//    * hasAvailablePlayerSessions -- Boolean value indicating whether a game
-//    session has reached its maximum number of players. It is highly recommended
-//    that all search requests include this filter attribute to optimize search
-//    performance and return only sessions that players can join.
+//   - hasAvailablePlayerSessions -- Boolean value indicating whether a game
+//     session has reached its maximum number of players. It is highly recommended
+//     that all search requests include this filter attribute to optimize search
+//     performance and return only sessions that players can join.
 //
 // Returned values for playerSessionCount and hasAvailablePlayerSessions change
 // quickly as players join sessions and others drop out. Results should be considered
 // a snapshot in time. Be sure to refresh search results often, and handle sessions
 // that fill up before a player can join.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -9793,31 +9772,32 @@ func (c *GameLift) SearchGameSessionsRequest(input *SearchGameSessionsInput) (re
 // API operation SearchGameSessions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * TerminalRoutingStrategyException
-//   The service is unable to resolve the routing for a particular alias because
-//   it has a terminal RoutingStrategy associated with it. The message returned
-//   in this exception is the message defined in the routing strategy itself.
-//   Such requests should only be retried if the routing strategy for the specified
-//   alias is modified.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - TerminalRoutingStrategyException
+//     The service is unable to resolve the routing for a particular alias because
+//     it has a terminal RoutingStrategy associated with it. The message returned
+//     in this exception is the message defined in the routing strategy itself.
+//     Such requests should only be retried if the routing strategy for the specified
+//     alias is modified.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SearchGameSessions
 func (c *GameLift) SearchGameSessions(input *SearchGameSessionsInput) (*SearchGameSessionsOutput, error) {
@@ -9849,15 +9829,14 @@ func (c *GameLift) SearchGameSessionsWithContext(ctx aws.Context, input *SearchG
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchGameSessions operation.
-//    pageNum := 0
-//    err := client.SearchGameSessionsPages(params,
-//        func(page *gamelift.SearchGameSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchGameSessions operation.
+//	pageNum := 0
+//	err := client.SearchGameSessionsPages(params,
+//	    func(page *gamelift.SearchGameSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GameLift) SearchGameSessionsPages(input *SearchGameSessionsInput, fn func(*SearchGameSessionsOutput, bool) bool) error {
 	return c.SearchGameSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -9909,14 +9888,13 @@ const opStartFleetActions = "StartFleetActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFleetActionsRequest method.
+//	req, resp := client.StartFleetActionsRequest(params)
 //
-//    // Example sending a request using the StartFleetActionsRequest method.
-//    req, resp := client.StartFleetActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartFleetActions
 func (c *GameLift) StartFleetActionsRequest(input *StartFleetActionsInput) (req *request.Request, output *StartFleetActionsOutput) {
@@ -9944,22 +9922,22 @@ func (c *GameLift) StartFleetActionsRequest(input *StartFleetActionsInput) (req 
 //
 // This operation can be used in the following ways:
 //
-//    * To restart actions on instances in the fleet's home Region, provide
-//    a fleet ID and the type of actions to resume.
+//   - To restart actions on instances in the fleet's home Region, provide
+//     a fleet ID and the type of actions to resume.
 //
-//    * To restart actions on instances in one of the fleet's remote locations,
-//    provide a fleet ID, a location name, and the type of actions to resume.
+//   - To restart actions on instances in one of the fleet's remote locations,
+//     provide a fleet ID, a location name, and the type of actions to resume.
 //
 // If successful, GameLift once again initiates scaling events as triggered
 // by the fleet's scaling policies. If actions on the fleet location were never
 // stopped, this operation will have no effect. You can view a fleet's stopped
 // actions using DescribeFleetAttributes or DescribeFleetLocationAttributes.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | UpdateFleetCapacity | PutScalingPolicy | DescribeEC2InstanceLimits
 // | DescribeFleetAttributes | DescribeFleetLocationAttributes | UpdateFleetAttributes
@@ -9973,24 +9951,25 @@ func (c *GameLift) StartFleetActionsRequest(input *StartFleetActionsInput) (req 
 // API operation StartFleetActions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartFleetActions
 func (c *GameLift) StartFleetActions(input *StartFleetActionsInput) (*StartFleetActionsOutput, error) {
@@ -10030,14 +10009,13 @@ const opStartGameSessionPlacement = "StartGameSessionPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartGameSessionPlacementRequest method.
+//	req, resp := client.StartGameSessionPlacementRequest(params)
 //
-//    // Example sending a request using the StartGameSessionPlacementRequest method.
-//    req, resp := client.StartGameSessionPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartGameSessionPlacement
 func (c *GameLift) StartGameSessionPlacementRequest(input *StartGameSessionPlacementInput) (req *request.Request, output *StartGameSessionPlacementOutput) {
@@ -10081,17 +10059,17 @@ func (c *GameLift) StartGameSessionPlacementRequest(input *StartGameSessionPlace
 //
 // To place a new game session request, specify the following:
 //
-//    * The queue name and a set of game session properties and settings
+//   - The queue name and a set of game session properties and settings
 //
-//    * A unique ID (such as a UUID) for the placement. You use this ID to track
-//    the status of the placement request
+//   - A unique ID (such as a UUID) for the placement. You use this ID to track
+//     the status of the placement request
 //
-//    * (Optional) A set of player data and a unique player ID for each player
-//    that you are joining to the new game session (player data is optional,
-//    but if you include it, you must also provide a unique ID for each player)
+//   - (Optional) A set of player data and a unique player ID for each player
+//     that you are joining to the new game session (player data is optional,
+//     but if you include it, you must also provide a unique ID for each player)
 //
-//    * Latency data for all players (if you want to optimize game play for
-//    the players)
+//   - Latency data for all players (if you want to optimize game play for
+//     the players)
 //
 // If successful, a new game session placement is created.
 //
@@ -10101,7 +10079,7 @@ func (c *GameLift) StartGameSessionPlacementRequest(input *StartGameSessionPlace
 // placement request times out, you can resubmit the request or retry it with
 // a different queue.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -10116,21 +10094,22 @@ func (c *GameLift) StartGameSessionPlacementRequest(input *StartGameSessionPlace
 // API operation StartGameSessionPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartGameSessionPlacement
 func (c *GameLift) StartGameSessionPlacement(input *StartGameSessionPlacementInput) (*StartGameSessionPlacementOutput, error) {
@@ -10170,14 +10149,13 @@ const opStartMatchBackfill = "StartMatchBackfill"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMatchBackfillRequest method.
+//	req, resp := client.StartMatchBackfillRequest(params)
 //
-//    // Example sending a request using the StartMatchBackfillRequest method.
-//    req, resp := client.StartMatchBackfillRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchBackfill
 func (c *GameLift) StartMatchBackfillRequest(input *StartMatchBackfillInput) (req *request.Request, output *StartMatchBackfillOutput) {
@@ -10231,14 +10209,14 @@ func (c *GameLift) StartMatchBackfillRequest(input *StartMatchBackfillInput) (re
 //
 // Learn more
 //
-//  Backfill existing games with FlexMatch (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-backfill.html)
+//	Backfill existing games with FlexMatch (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-backfill.html)
 //
-//  Matchmaking events (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-events.html)
-//  (reference)
+//	Matchmaking events (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-events.html)
+//	(reference)
 //
-//  How GameLift FlexMatch works (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/gamelift-match.html)
+//	How GameLift FlexMatch works (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/gamelift-match.html)
 //
-// Related actions
+// # Related actions
 //
 // StartMatchmaking | DescribeMatchmaking | StopMatchmaking | AcceptMatch |
 // StartMatchBackfill | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -10251,21 +10229,22 @@ func (c *GameLift) StartMatchBackfillRequest(input *StartMatchBackfillInput) (re
 // API operation StartMatchBackfill for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchBackfill
 func (c *GameLift) StartMatchBackfill(input *StartMatchBackfillInput) (*StartMatchBackfillOutput, error) {
@@ -10305,14 +10284,13 @@ const opStartMatchmaking = "StartMatchmaking"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartMatchmakingRequest method.
+//	req, resp := client.StartMatchmakingRequest(params)
 //
-//    // Example sending a request using the StartMatchmakingRequest method.
-//    req, resp := client.StartMatchmakingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmaking
 func (c *GameLift) StartMatchmakingRequest(input *StartMatchmakingInput) (req *request.Request, output *StartMatchmakingOutput) {
@@ -10354,13 +10332,13 @@ func (c *GameLift) StartMatchmakingRequest(input *StartMatchmakingInput) (req *r
 //
 // Learn more
 //
-//  Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
+//	Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
 //
-//  Set Up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
+//	Set Up FlexMatch event notification (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-notification.html)
 //
-//  How GameLift FlexMatch works (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/gamelift-match.html)
+//	How GameLift FlexMatch works (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/gamelift-match.html)
 //
-// Related actions
+// # Related actions
 //
 // StartMatchmaking | DescribeMatchmaking | StopMatchmaking | AcceptMatch |
 // StartMatchBackfill | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -10373,21 +10351,22 @@ func (c *GameLift) StartMatchmakingRequest(input *StartMatchmakingInput) (req *r
 // API operation StartMatchmaking for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StartMatchmaking
 func (c *GameLift) StartMatchmaking(input *StartMatchmakingInput) (*StartMatchmakingOutput, error) {
@@ -10427,14 +10406,13 @@ const opStopFleetActions = "StopFleetActions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopFleetActionsRequest method.
+//	req, resp := client.StopFleetActionsRequest(params)
 //
-//    // Example sending a request using the StopFleetActionsRequest method.
-//    req, resp := client.StopFleetActionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopFleetActions
 func (c *GameLift) StopFleetActionsRequest(input *StopFleetActionsInput) (req *request.Request, output *StopFleetActionsOutput) {
@@ -10466,22 +10444,22 @@ func (c *GameLift) StopFleetActionsRequest(input *StopFleetActionsInput) (req *r
 //
 // This operation can be used in the following ways:
 //
-//    * To stop actions on instances in the fleet's home Region, provide a fleet
-//    ID and the type of actions to suspend.
+//   - To stop actions on instances in the fleet's home Region, provide a fleet
+//     ID and the type of actions to suspend.
 //
-//    * To stop actions on instances in one of the fleet's remote locations,
-//    provide a fleet ID, a location name, and the type of actions to suspend.
+//   - To stop actions on instances in one of the fleet's remote locations,
+//     provide a fleet ID, a location name, and the type of actions to suspend.
 //
 // If successful, GameLift no longer initiates scaling events except in response
 // to manual changes using UpdateFleetCapacity. You can view a fleet's stopped
 // actions using DescribeFleetAttributes or DescribeFleetLocationAttributes.
 // Suspended activity can be restarted using StartFleetActions.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift Fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | UpdateFleetCapacity | PutScalingPolicy | DescribeEC2InstanceLimits
 // | DescribeFleetAttributes | DescribeFleetLocationAttributes | UpdateFleetAttributes
@@ -10495,24 +10473,25 @@ func (c *GameLift) StopFleetActionsRequest(input *StopFleetActionsInput) (req *r
 // API operation StopFleetActions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopFleetActions
 func (c *GameLift) StopFleetActions(input *StopFleetActionsInput) (*StopFleetActionsOutput, error) {
@@ -10552,14 +10531,13 @@ const opStopGameSessionPlacement = "StopGameSessionPlacement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopGameSessionPlacementRequest method.
+//	req, resp := client.StopGameSessionPlacementRequest(params)
 //
-//    // Example sending a request using the StopGameSessionPlacementRequest method.
-//    req, resp := client.StopGameSessionPlacementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopGameSessionPlacement
 func (c *GameLift) StopGameSessionPlacementRequest(input *StopGameSessionPlacementInput) (req *request.Request, output *StopGameSessionPlacementOutput) {
@@ -10584,7 +10562,7 @@ func (c *GameLift) StopGameSessionPlacementRequest(input *StopGameSessionPlaceme
 // provide the placement ID values. If successful, the placement is moved to
 // CANCELLED status.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -10599,21 +10577,22 @@ func (c *GameLift) StopGameSessionPlacementRequest(input *StopGameSessionPlaceme
 // API operation StopGameSessionPlacement for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopGameSessionPlacement
 func (c *GameLift) StopGameSessionPlacement(input *StopGameSessionPlacementInput) (*StopGameSessionPlacementOutput, error) {
@@ -10653,14 +10632,13 @@ const opStopMatchmaking = "StopMatchmaking"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopMatchmakingRequest method.
+//	req, resp := client.StopMatchmakingRequest(params)
 //
-//    // Example sending a request using the StopMatchmakingRequest method.
-//    req, resp := client.StopMatchmakingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmaking
 func (c *GameLift) StopMatchmakingRequest(input *StopMatchmakingInput) (req *request.Request, output *StopMatchmakingOutput) {
@@ -10696,9 +10674,9 @@ func (c *GameLift) StopMatchmakingRequest(input *StopMatchmakingInput) (req *req
 //
 // Learn more
 //
-//  Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
+//	Add FlexMatch to a game client (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-client.html)
 //
-// Related actions
+// # Related actions
 //
 // StartMatchmaking | DescribeMatchmaking | StopMatchmaking | AcceptMatch |
 // StartMatchBackfill | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -10711,21 +10689,22 @@ func (c *GameLift) StopMatchmakingRequest(input *StopMatchmakingInput) (req *req
 // API operation StopMatchmaking for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/StopMatchmaking
 func (c *GameLift) StopMatchmaking(input *StopMatchmakingInput) (*StopMatchmakingOutput, error) {
@@ -10765,14 +10744,13 @@ const opSuspendGameServerGroup = "SuspendGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SuspendGameServerGroupRequest method.
+//	req, resp := client.SuspendGameServerGroupRequest(params)
 //
-//    // Example sending a request using the SuspendGameServerGroupRequest method.
-//    req, resp := client.SuspendGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SuspendGameServerGroup
 func (c *GameLift) SuspendGameServerGroupRequest(input *SuspendGameServerGroupInput) (req *request.Request, output *SuspendGameServerGroupOutput) {
@@ -10800,24 +10778,24 @@ func (c *GameLift) SuspendGameServerGroupRequest(input *SuspendGameServerGroupIn
 // or the game server group. You can restart activity by calling ResumeGameServerGroup.
 // You can suspend the following activity:
 //
-//    * Instance type replacement - This activity evaluates the current game
-//    hosting viability of all Spot instance types that are defined for the
-//    game server group. It updates the Auto Scaling group to remove nonviable
-//    Spot Instance types, which have a higher chance of game server interruptions.
-//    It then balances capacity across the remaining viable Spot Instance types.
-//    When this activity is suspended, the Auto Scaling group continues with
-//    its current balance, regardless of viability. Instance protection, utilization
-//    metrics, and capacity scaling activities continue to be active.
+//   - Instance type replacement - This activity evaluates the current game
+//     hosting viability of all Spot instance types that are defined for the
+//     game server group. It updates the Auto Scaling group to remove nonviable
+//     Spot Instance types, which have a higher chance of game server interruptions.
+//     It then balances capacity across the remaining viable Spot Instance types.
+//     When this activity is suspended, the Auto Scaling group continues with
+//     its current balance, regardless of viability. Instance protection, utilization
+//     metrics, and capacity scaling activities continue to be active.
 //
 // To suspend activity, specify a game server group ARN and the type of activity
 // to be suspended. If successful, a GameServerGroup object is returned showing
 // that the activity is listed in SuspendedActions.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -10831,21 +10809,22 @@ func (c *GameLift) SuspendGameServerGroupRequest(input *SuspendGameServerGroupIn
 // API operation SuspendGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/SuspendGameServerGroup
 func (c *GameLift) SuspendGameServerGroup(input *SuspendGameServerGroupInput) (*SuspendGameServerGroupOutput, error) {
@@ -10885,14 +10864,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/TagResource
 func (c *GameLift) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -10921,33 +10899,33 @@ func (c *GameLift) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // the permissions necessary to manage tags for the following GameLift resource
 // types:
 //
-//    * Build
+//   - Build
 //
-//    * Script
+//   - Script
 //
-//    * Fleet
+//   - Fleet
 //
-//    * Alias
+//   - Alias
 //
-//    * GameSessionQueue
+//   - GameSessionQueue
 //
-//    * MatchmakingConfiguration
+//   - MatchmakingConfiguration
 //
-//    * MatchmakingRuleSet
+//   - MatchmakingRuleSet
 //
 // To add a tag to a resource, specify the unique ARN value for the resource
 // and provide a tag list containing one or more tags. The operation succeeds
 // even if the list includes tags that are already assigned to the specified
 // resource.
 //
-// Learn more
+// # Learn more
 //
 // Tagging Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
 // in the Amazon Web Services General Reference
 //
-//  Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
+//	Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
 //
-// Related actions
+// # Related actions
 //
 // TagResource | UntagResource | ListTagsForResource | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
 //
@@ -10959,23 +10937,24 @@ func (c *GameLift) TagResourceRequest(input *TagResourceInput) (req *request.Req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/TagResource
 func (c *GameLift) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -11015,14 +10994,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UntagResource
 func (c *GameLift) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -11049,33 +11027,33 @@ func (c *GameLift) UntagResourceRequest(input *UntagResourceInput) (req *request
 // operation handles the permissions necessary to manage tags for the following
 // GameLift resource types:
 //
-//    * Build
+//   - Build
 //
-//    * Script
+//   - Script
 //
-//    * Fleet
+//   - Fleet
 //
-//    * Alias
+//   - Alias
 //
-//    * GameSessionQueue
+//   - GameSessionQueue
 //
-//    * MatchmakingConfiguration
+//   - MatchmakingConfiguration
 //
-//    * MatchmakingRuleSet
+//   - MatchmakingRuleSet
 //
 // To remove a tag from a resource, specify the unique ARN value for the resource
 // and provide a string list containing one or more tags to be removed. This
 // operation succeeds even if the list includes tags that are not currently
 // assigned to the specified resource.
 //
-// Learn more
+// # Learn more
 //
 // Tagging Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
 // in the Amazon Web Services General Reference
 //
-//  Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
+//	Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
 //
-// Related actions
+// # Related actions
 //
 // TagResource | UntagResource | ListTagsForResource | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
 //
@@ -11087,23 +11065,24 @@ func (c *GameLift) UntagResourceRequest(input *UntagResourceInput) (req *request
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * TaggingFailedException
-//   The requested tagging operation did not succeed. This may be due to invalid
-//   tag format or the maximum tag limit may have been exceeded. Resolve the issue
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - TaggingFailedException
+//     The requested tagging operation did not succeed. This may be due to invalid
+//     tag format or the maximum tag limit may have been exceeded. Resolve the issue
+//     before retrying.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UntagResource
 func (c *GameLift) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -11143,14 +11122,13 @@ const opUpdateAlias = "UpdateAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAliasRequest method.
+//	req, resp := client.UpdateAliasRequest(params)
 //
-//    // Example sending a request using the UpdateAliasRequest method.
-//    req, resp := client.UpdateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAlias
 func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request, output *UpdateAliasOutput) {
@@ -11176,7 +11154,7 @@ func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Req
 // alias to another fleet, provide an updated routing strategy. If successful,
 // the updated alias record is returned.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -11189,21 +11167,22 @@ func (c *GameLift) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Req
 // API operation UpdateAlias for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateAlias
 func (c *GameLift) UpdateAlias(input *UpdateAliasInput) (*UpdateAliasOutput, error) {
@@ -11243,14 +11222,13 @@ const opUpdateBuild = "UpdateBuild"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBuildRequest method.
+//	req, resp := client.UpdateBuildRequest(params)
 //
-//    // Example sending a request using the UpdateBuildRequest method.
-//    req, resp := client.UpdateBuildRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuild
 func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Request, output *UpdateBuildOutput) {
@@ -11278,9 +11256,9 @@ func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Req
 //
 // Learn more
 //
-//  Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
+//	Upload a Custom Server Build (https://docs.aws.amazon.com/gamelift/latest/developerguide/gamelift-build-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -11293,21 +11271,22 @@ func (c *GameLift) UpdateBuildRequest(input *UpdateBuildInput) (req *request.Req
 // API operation UpdateBuild for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateBuild
 func (c *GameLift) UpdateBuild(input *UpdateBuildInput) (*UpdateBuildOutput, error) {
@@ -11347,14 +11326,13 @@ const opUpdateFleetAttributes = "UpdateFleetAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFleetAttributesRequest method.
+//	req, resp := client.UpdateFleetAttributesRequest(params)
 //
-//    // Example sending a request using the UpdateFleetAttributesRequest method.
-//    req, resp := client.UpdateFleetAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributes
 func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInput) (req *request.Request, output *UpdateFleetAttributesOutput) {
@@ -11383,11 +11361,11 @@ func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInpu
 //
 // If successful, an updated FleetAttributes object is returned.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | UpdateFleetAttributes | UpdateFleetCapacity | UpdateFleetPortSettings
 // | UpdateRuntimeConfiguration | StopFleetActions | StartFleetActions | PutScalingPolicy
@@ -11402,35 +11380,36 @@ func (c *GameLift) UpdateFleetAttributesRequest(input *UpdateFleetAttributesInpu
 // API operation UpdateFleetAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetAttributes
 func (c *GameLift) UpdateFleetAttributes(input *UpdateFleetAttributesInput) (*UpdateFleetAttributesOutput, error) {
@@ -11470,14 +11449,13 @@ const opUpdateFleetCapacity = "UpdateFleetCapacity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFleetCapacityRequest method.
+//	req, resp := client.UpdateFleetCapacityRequest(params)
 //
-//    // Example sending a request using the UpdateFleetCapacityRequest method.
-//    req, resp := client.UpdateFleetCapacityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacity
 func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (req *request.Request, output *UpdateFleetCapacityOutput) {
@@ -11504,25 +11482,25 @@ func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (
 // be hosted based on the fleet configuration. Use this operation to set the
 // following fleet capacity properties:
 //
-//    * Minimum/maximum size: Set hard limits on fleet capacity. GameLift cannot
-//    set the fleet's capacity to a value outside of this range, whether the
-//    capacity is changed manually or through automatic scaling.
+//   - Minimum/maximum size: Set hard limits on fleet capacity. GameLift cannot
+//     set the fleet's capacity to a value outside of this range, whether the
+//     capacity is changed manually or through automatic scaling.
 //
-//    * Desired capacity: Manually set the number of Amazon EC2 instances to
-//    be maintained in a fleet location. Before changing a fleet's desired capacity,
-//    you may want to call DescribeEC2InstanceLimits to get the maximum capacity
-//    of the fleet's Amazon EC2 instance type. Alternatively, consider using
-//    automatic scaling to adjust capacity based on player demand.
+//   - Desired capacity: Manually set the number of Amazon EC2 instances to
+//     be maintained in a fleet location. Before changing a fleet's desired capacity,
+//     you may want to call DescribeEC2InstanceLimits to get the maximum capacity
+//     of the fleet's Amazon EC2 instance type. Alternatively, consider using
+//     automatic scaling to adjust capacity based on player demand.
 //
 // This operation can be used in the following ways:
 //
-//    * To update capacity for a fleet's home Region, or if the fleet has no
-//    remote locations, omit the Location parameter. The fleet must be in ACTIVE
-//    status.
+//   - To update capacity for a fleet's home Region, or if the fleet has no
+//     remote locations, omit the Location parameter. The fleet must be in ACTIVE
+//     status.
 //
-//    * To update capacity for a fleet's remote location, include the Location
-//    parameter set to the location to be updated. The location must be in ACTIVE
-//    status.
+//   - To update capacity for a fleet's remote location, include the Location
+//     parameter set to the location to be updated. The location must be in ACTIVE
+//     status.
 //
 // If successful, capacity settings are updated immediately. In response a change
 // in desired capacity, GameLift initiates steps to start new instances or terminate
@@ -11532,11 +11510,11 @@ func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (
 // or DescribeFleetLocationCapacity. If the requested desired instance count
 // is higher than the instance type's limit, the LimitExceeded exception occurs.
 //
-// Learn more
+// # Learn more
 //
 // Scaling fleet capacity (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-manage-capacity.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | UpdateFleetAttributes | UpdateFleetCapacity | UpdateFleetPortSettings
 // | UpdateRuntimeConfiguration | StopFleetActions | StartFleetActions | PutScalingPolicy
@@ -11551,38 +11529,39 @@ func (c *GameLift) UpdateFleetCapacityRequest(input *UpdateFleetCapacityInput) (
 // API operation UpdateFleetCapacity for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetCapacity
 func (c *GameLift) UpdateFleetCapacity(input *UpdateFleetCapacityInput) (*UpdateFleetCapacityOutput, error) {
@@ -11622,14 +11601,13 @@ const opUpdateFleetPortSettings = "UpdateFleetPortSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFleetPortSettingsRequest method.
+//	req, resp := client.UpdateFleetPortSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateFleetPortSettingsRequest method.
-//    req, resp := client.UpdateFleetPortSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettings
 func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettingsInput) (req *request.Request, output *UpdateFleetPortSettingsOutput) {
@@ -11663,11 +11641,11 @@ func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettings
 // all locations. You can check the status of updates in each location by calling
 // DescribeFleetPortSettings with a location name.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | UpdateFleetAttributes | UpdateFleetCapacity | UpdateFleetPortSettings
 // | UpdateRuntimeConfiguration | StopFleetActions | StartFleetActions | PutScalingPolicy
@@ -11682,35 +11660,36 @@ func (c *GameLift) UpdateFleetPortSettingsRequest(input *UpdateFleetPortSettings
 // API operation UpdateFleetPortSettings for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * LimitExceededException
-//   The requested operation would cause the resource to exceed the allowed service
-//   limit. Resolve the issue before retrying.
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - LimitExceededException
+//     The requested operation would cause the resource to exceed the allowed service
+//     limit. Resolve the issue before retrying.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateFleetPortSettings
 func (c *GameLift) UpdateFleetPortSettings(input *UpdateFleetPortSettingsInput) (*UpdateFleetPortSettingsOutput, error) {
@@ -11750,14 +11729,13 @@ const opUpdateGameServer = "UpdateGameServer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameServerRequest method.
+//	req, resp := client.UpdateGameServerRequest(params)
 //
-//    // Example sending a request using the UpdateGameServerRequest method.
-//    req, resp := client.UpdateGameServerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameServer
 func (c *GameLift) UpdateGameServerRequest(input *UpdateGameServerInput) (req *request.Request, output *UpdateGameServerOutput) {
@@ -11788,28 +11766,28 @@ func (c *GameLift) UpdateGameServerRequest(input *UpdateGameServerInput) (req *r
 // Use this operation to update the following types of game server information.
 // You can make all three types of updates in the same request:
 //
-//    * To update the game server's utilization status, identify the game server
-//    and game server group and specify the current utilization status. Use
-//    this status to identify when game servers are currently hosting games
-//    and when they are available to be claimed.
+//   - To update the game server's utilization status, identify the game server
+//     and game server group and specify the current utilization status. Use
+//     this status to identify when game servers are currently hosting games
+//     and when they are available to be claimed.
 //
-//    * To report health status, identify the game server and game server group
-//    and set health check to HEALTHY. If a game server does not report health
-//    status for a certain length of time, the game server is no longer considered
-//    healthy. As a result, it will be eventually deregistered from the game
-//    server group to avoid affecting utilization metrics. The best practice
-//    is to report health every 60 seconds.
+//   - To report health status, identify the game server and game server group
+//     and set health check to HEALTHY. If a game server does not report health
+//     status for a certain length of time, the game server is no longer considered
+//     healthy. As a result, it will be eventually deregistered from the game
+//     server group to avoid affecting utilization metrics. The best practice
+//     is to report health every 60 seconds.
 //
-//    * To change game server metadata, provide updated game server data.
+//   - To change game server metadata, provide updated game server data.
 //
 // Once a game server is successfully updated, the relevant statuses and timestamps
 // are updated.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -11822,21 +11800,22 @@ func (c *GameLift) UpdateGameServerRequest(input *UpdateGameServerInput) (req *r
 // API operation UpdateGameServer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameServer
 func (c *GameLift) UpdateGameServer(input *UpdateGameServerInput) (*UpdateGameServerOutput, error) {
@@ -11876,14 +11855,13 @@ const opUpdateGameServerGroup = "UpdateGameServerGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameServerGroupRequest method.
+//	req, resp := client.UpdateGameServerGroupRequest(params)
 //
-//    // Example sending a request using the UpdateGameServerGroupRequest method.
-//    req, resp := client.UpdateGameServerGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameServerGroup
 func (c *GameLift) UpdateGameServerGroupRequest(input *UpdateGameServerGroupInput) (req *request.Request, output *UpdateGameServerGroupOutput) {
@@ -11917,11 +11895,11 @@ func (c *GameLift) UpdateGameServerGroupRequest(input *UpdateGameServerGroupInpu
 // to ensure that GameLift FleetIQ can continue to perform instance balancing
 // activity. If successful, a GameServerGroup object is returned.
 //
-// Learn more
+// # Learn more
 //
 // GameLift FleetIQ Guide (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/gsg-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -11935,21 +11913,22 @@ func (c *GameLift) UpdateGameServerGroupRequest(input *UpdateGameServerGroupInpu
 // API operation UpdateGameServerGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameServerGroup
 func (c *GameLift) UpdateGameServerGroup(input *UpdateGameServerGroupInput) (*UpdateGameServerGroupOutput, error) {
@@ -11989,14 +11968,13 @@ const opUpdateGameSession = "UpdateGameSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameSessionRequest method.
+//	req, resp := client.UpdateGameSessionRequest(params)
 //
-//    // Example sending a request using the UpdateGameSessionRequest method.
-//    req, resp := client.UpdateGameSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSession
 func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req *request.Request, output *UpdateGameSessionOutput) {
@@ -12024,7 +12002,7 @@ func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req 
 //
 // If successful, the updated GameSession object is returned.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -12039,31 +12017,32 @@ func (c *GameLift) UpdateGameSessionRequest(input *UpdateGameSessionInput) (req 
 // API operation UpdateGameSession for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidGameSessionStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the game instance. Resolve
-//   the conflict before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InvalidGameSessionStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the game instance. Resolve
+//     the conflict before retrying.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSession
 func (c *GameLift) UpdateGameSession(input *UpdateGameSessionInput) (*UpdateGameSessionOutput, error) {
@@ -12103,14 +12082,13 @@ const opUpdateGameSessionQueue = "UpdateGameSessionQueue"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGameSessionQueueRequest method.
+//	req, resp := client.UpdateGameSessionQueueRequest(params)
 //
-//    // Example sending a request using the UpdateGameSessionQueueRequest method.
-//    req, resp := client.UpdateGameSessionQueueRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSessionQueue
 func (c *GameLift) UpdateGameSessionQueueRequest(input *UpdateGameSessionQueueInput) (req *request.Request, output *UpdateGameSessionQueueOutput) {
@@ -12138,9 +12116,9 @@ func (c *GameLift) UpdateGameSessionQueueRequest(input *UpdateGameSessionQueueIn
 //
 // Learn more
 //
-//  Using Multi-Region Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html)
+//	Using Multi-Region Queues (https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSessionQueue (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateGameSessionQueue.html)
 // | DescribeGameSessionQueues (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeGameSessionQueues.html)
@@ -12156,21 +12134,22 @@ func (c *GameLift) UpdateGameSessionQueueRequest(input *UpdateGameSessionQueueIn
 // API operation UpdateGameSessionQueue for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateGameSessionQueue
 func (c *GameLift) UpdateGameSessionQueue(input *UpdateGameSessionQueueInput) (*UpdateGameSessionQueueOutput, error) {
@@ -12210,14 +12189,13 @@ const opUpdateMatchmakingConfiguration = "UpdateMatchmakingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMatchmakingConfigurationRequest method.
+//	req, resp := client.UpdateMatchmakingConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateMatchmakingConfigurationRequest method.
-//    req, resp := client.UpdateMatchmakingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfiguration
 func (c *GameLift) UpdateMatchmakingConfigurationRequest(input *UpdateMatchmakingConfigurationInput) (req *request.Request, output *UpdateMatchmakingConfigurationOutput) {
@@ -12245,9 +12223,9 @@ func (c *GameLift) UpdateMatchmakingConfigurationRequest(input *UpdateMatchmakin
 //
 // Learn more
 //
-//  Design a FlexMatch matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
+//	Design a FlexMatch matchmaker (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-configuration.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -12262,21 +12240,22 @@ func (c *GameLift) UpdateMatchmakingConfigurationRequest(input *UpdateMatchmakin
 // API operation UpdateMatchmakingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
+//
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateMatchmakingConfiguration
 func (c *GameLift) UpdateMatchmakingConfiguration(input *UpdateMatchmakingConfigurationInput) (*UpdateMatchmakingConfigurationOutput, error) {
@@ -12316,14 +12295,13 @@ const opUpdateRuntimeConfiguration = "UpdateRuntimeConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRuntimeConfigurationRequest method.
+//	req, resp := client.UpdateRuntimeConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateRuntimeConfigurationRequest method.
-//    req, resp := client.UpdateRuntimeConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfiguration
 func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigurationInput) (req *request.Request, output *UpdateRuntimeConfigurationOutput) {
@@ -12359,11 +12337,11 @@ func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigu
 // they shut down. Updating a fleet's runtime configuration never affects existing
 // server processes.
 //
-// Learn more
+// # Learn more
 //
 // Setting up GameLift fleets (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateFleetLocations | UpdateFleetAttributes | UpdateFleetCapacity | UpdateFleetPortSettings
 // | UpdateRuntimeConfiguration | StopFleetActions | StartFleetActions | PutScalingPolicy
@@ -12378,26 +12356,27 @@ func (c *GameLift) UpdateRuntimeConfigurationRequest(input *UpdateRuntimeConfigu
 // API operation UpdateRuntimeConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidFleetStatusException
-//   The requested operation would cause a conflict with the current state of
-//   a resource associated with the request and/or the fleet. Resolve the conflict
-//   before retrying.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
+//
+//   - InvalidFleetStatusException
+//     The requested operation would cause a conflict with the current state of
+//     a resource associated with the request and/or the fleet. Resolve the conflict
+//     before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateRuntimeConfiguration
 func (c *GameLift) UpdateRuntimeConfiguration(input *UpdateRuntimeConfigurationInput) (*UpdateRuntimeConfigurationOutput, error) {
@@ -12437,14 +12416,13 @@ const opUpdateScript = "UpdateScript"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateScriptRequest method.
+//	req, resp := client.UpdateScriptRequest(params)
 //
-//    // Example sending a request using the UpdateScriptRequest method.
-//    req, resp := client.UpdateScriptRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateScript
 func (c *GameLift) UpdateScriptRequest(input *UpdateScriptInput) (req *request.Request, output *UpdateScriptOutput) {
@@ -12480,11 +12458,11 @@ func (c *GameLift) UpdateScriptRequest(input *UpdateScriptInput) (req *request.R
 // script is updated and acquired by a fleet instance, the new version is used
 // for all new game sessions.
 //
-// Learn more
+// # Learn more
 //
 // Amazon GameLift Realtime Servers (https://docs.aws.amazon.com/gamelift/latest/developerguide/realtime-intro.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -12497,21 +12475,22 @@ func (c *GameLift) UpdateScriptRequest(input *UpdateScriptInput) (req *request.R
 // API operation UpdateScript for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedException
-//   The client failed authentication. Clients should not retry such requests.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnauthorizedException
+//     The client failed authentication. Clients should not retry such requests.
 //
-//   * NotFoundException
-//   A service resource associated with the request could not be found. Clients
-//   should not retry such requests.
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
+//   - NotFoundException
+//     A service resource associated with the request could not be found. Clients
+//     should not retry such requests.
+//
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/UpdateScript
 func (c *GameLift) UpdateScript(input *UpdateScriptInput) (*UpdateScriptOutput, error) {
@@ -12551,14 +12530,13 @@ const opValidateMatchmakingRuleSet = "ValidateMatchmakingRuleSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ValidateMatchmakingRuleSetRequest method.
+//	req, resp := client.ValidateMatchmakingRuleSetRequest(params)
 //
-//    // Example sending a request using the ValidateMatchmakingRuleSetRequest method.
-//    req, resp := client.ValidateMatchmakingRuleSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSet
 func (c *GameLift) ValidateMatchmakingRuleSetRequest(input *ValidateMatchmakingRuleSetInput) (req *request.Request, output *ValidateMatchmakingRuleSetOutput) {
@@ -12586,9 +12564,9 @@ func (c *GameLift) ValidateMatchmakingRuleSetRequest(input *ValidateMatchmakingR
 //
 // Learn more
 //
-//    * Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
+//   - Build a rule set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html)
 //
-// Related actions
+// # Related actions
 //
 // CreateMatchmakingConfiguration | DescribeMatchmakingConfigurations | UpdateMatchmakingConfiguration
 // | DeleteMatchmakingConfiguration | CreateMatchmakingRuleSet | DescribeMatchmakingRuleSets
@@ -12603,17 +12581,18 @@ func (c *GameLift) ValidateMatchmakingRuleSetRequest(input *ValidateMatchmakingR
 // API operation ValidateMatchmakingRuleSet for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceException
-//   The service encountered an unrecoverable internal failure while processing
-//   the request. Clients can retry such requests immediately or after a waiting
-//   period.
 //
-//   * UnsupportedRegionException
-//   The requested operation is not supported in the Region specified.
+//   - InternalServiceException
+//     The service encountered an unrecoverable internal failure while processing
+//     the request. Clients can retry such requests immediately or after a waiting
+//     period.
 //
-//   * InvalidRequestException
-//   One or more parameter values in the request are invalid. Correct the invalid
-//   parameter values before retrying.
+//   - UnsupportedRegionException
+//     The requested operation is not supported in the Region specified.
+//
+//   - InvalidRequestException
+//     One or more parameter values in the request are invalid. Correct the invalid
+//     parameter values before retrying.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/gamelift-2015-10-01/ValidateMatchmakingRuleSet
 func (c *GameLift) ValidateMatchmakingRuleSet(input *ValidateMatchmakingRuleSetInput) (*ValidateMatchmakingRuleSetOutput, error) {
@@ -12738,7 +12717,7 @@ func (s AcceptMatchOutput) GoString() string {
 
 // Properties that describe an alias resource.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -12967,7 +12946,7 @@ func (s *AwsCredentials) SetSessionToken(v string) *AwsCredentials {
 
 // Properties describing a custom game build.
 //
-// Related actions
+// # Related actions
 //
 // CreateBuild | ListBuilds | DescribeBuild | UpdateBuild | DeleteBuild | All
 // APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -20338,7 +20317,7 @@ func (s *EC2InstanceCounts) SetTERMINATING(v int64) *EC2InstanceCounts {
 // GameLift. You can request an limit increase for your account by using the
 // Service limits page in the GameLift console.
 //
-// Related actions
+// # Related actions
 //
 // DescribeEC2InstanceLimits
 type EC2InstanceLimit struct {
@@ -20406,7 +20385,7 @@ func (s *EC2InstanceLimit) SetLocation(v string) *EC2InstanceLimit {
 // fleet). In addition to tracking activity, event codes and messages can provide
 // additional information for troubleshooting and debugging problems.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetEvents
 type Event struct {
@@ -20693,7 +20672,7 @@ func (s *FilterConfiguration) SetAllowedLocations(v []*string) *FilterConfigurat
 
 // Describes a GameLift fleet of game hosting resources.
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | DescribeFleetAttributes
 type FleetAttributes struct {
@@ -20987,7 +20966,7 @@ func (s *FleetAttributes) SetTerminationTime(v time.Time) *FleetAttributes {
 // Current resource capacity settings in a specified fleet or location. The
 // location value might refer to a fleet's remote location or its home Region.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeFleetCapacity.html)
 // | DescribeFleetLocationCapacity (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeFleetLocationCapacity.html)
@@ -21133,7 +21112,7 @@ func (s *FleetCapacityExceededException) RequestID() string {
 // Current resource utilization statistics in a specified fleet or location.
 // The location value might refer to a fleet's remote location or its home Region.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetUtilization | DescribeFleetLocationUtilization
 type FleetUtilization struct {
@@ -21302,7 +21281,7 @@ func (s *GameProperty) SetValue(v string) *GameProperty {
 // by calling DeregisterGameServer. A game server is claimed to host a game
 // session by calling ClaimGameServer.
 //
-// Related actions
+// # Related actions
 //
 // RegisterGameServer | ListGameServers | ClaimGameServer | DescribeGameServer
 // | UpdateGameServer | DeregisterGameServer | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/fleetiqguide/reference-awssdk-fleetiq.html)
@@ -21468,7 +21447,7 @@ func (s *GameServer) SetUtilizationStatus(v string) *GameServer {
 // can be temporarily suspended and resumed by calling SuspendGameServerGroup
 // and ResumeGameServerGroup, respectively.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -21742,7 +21721,7 @@ func (s *GameServerGroupAutoScalingPolicy) SetTargetTrackingConfiguration(v *Tar
 //
 // Retrieve game server instances for a game server group by calling DescribeGameServerInstances.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameServerGroup | ListGameServerGroups | DescribeGameServerGroup |
 // UpdateGameServerGroup | DeleteGameServerGroup | ResumeGameServerGroup | SuspendGameServerGroup
@@ -21832,7 +21811,7 @@ func (s *GameServerInstance) SetInstanceStatus(v string) *GameServerInstance {
 // means you can reuse idempotency token values after this time. Game session
 // logs are retained for 14 days.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSession | DescribeGameSessions | DescribeGameSessionDetails | SearchGameSessions
 // | UpdateGameSession | GetGameSessionLogUrl | StartGameSessionPlacement |
@@ -22271,11 +22250,11 @@ func (s *GameSessionFullException) RequestID() string {
 //
 // Game session placement-related operations include:
 //
-//    * StartGameSessionPlacement
+//   - StartGameSessionPlacement
 //
-//    * DescribeGameSessionPlacement
+//   - DescribeGameSessionPlacement
 //
-//    * StopGameSessionPlacement
+//   - StopGameSessionPlacement
 type GameSessionPlacement struct {
 	_ struct{} `type:"structure"`
 
@@ -22518,7 +22497,7 @@ func (s *GameSessionPlacement) SetStatus(v string) *GameSessionPlacement {
 // for new game sessions. A queue can be used on its own or as part of a matchmaking
 // solution.
 //
-// Related actions
+// # Related actions
 //
 // CreateGameSessionQueue (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateGameSessionQueue.html)
 // | DescribeGameSessionQueues (https://docs.aws.amazon.com/gamelift/latest/apireference/API_DescribeGameSessionQueues.html)
@@ -22950,7 +22929,7 @@ func (s *IdempotentParameterMismatchException) RequestID() string {
 // Represents an EC2 instance of virtual computing resources that hosts one
 // or more game servers. In GameLift, a fleet can contain zero or more instances.
 //
-// Related actions
+// # Related actions
 //
 // DescribeInstances
 type Instance struct {
@@ -23548,7 +23527,7 @@ func (s *InvalidRequestException) RequestID() string {
 // For Realtime Servers fleets, GameLift automatically opens two port ranges,
 // one for TCP messaging and one for UDP.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetPortSettings
 type IpPermission struct {
@@ -24602,7 +24581,7 @@ func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput
 
 // Represents a location in a multi-location fleet.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetLocationAttributes
 type LocationAttributes struct {
@@ -24659,7 +24638,7 @@ func (s *LocationAttributes) SetUpdateStatus(v string) *LocationAttributes {
 // A remote location where a multi-location fleet can deploy EC2 instances for
 // game hosting.
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet (https://docs.aws.amazon.com/gamelift/latest/apireference/API_CreateFleet.html)
 type LocationConfiguration struct {
@@ -24712,7 +24691,7 @@ func (s *LocationConfiguration) SetLocation(v string) *LocationConfiguration {
 // and preparing it for game hosting, and then removing all instances and deleting
 // the location from the fleet.
 //
-// Related actions
+// # Related actions
 //
 // CreateFleet | CreateFleetLocations | DeleteFleetLocations
 type LocationState struct {
@@ -25037,30 +25016,30 @@ func (s *MatchmakingConfiguration) SetRuleSetName(v string) *MatchmakingConfigur
 // and examples showing how to construct a rule set, see Build a FlexMatch rule
 // set (https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-rulesets.html).
 //
-//    * Teams -- Required. A rule set must define one or multiple teams for
-//    the match and set minimum and maximum team sizes. For example, a rule
-//    set might describe a 4x4 match that requires all eight slots to be filled.
+//   - Teams -- Required. A rule set must define one or multiple teams for
+//     the match and set minimum and maximum team sizes. For example, a rule
+//     set might describe a 4x4 match that requires all eight slots to be filled.
 //
-//    * Player attributes -- Optional. These attributes specify a set of player
-//    characteristics to evaluate when looking for a match. Matchmaking requests
-//    that use a rule set with player attributes must provide the corresponding
-//    attribute values. For example, an attribute might specify a player's skill
-//    or level.
+//   - Player attributes -- Optional. These attributes specify a set of player
+//     characteristics to evaluate when looking for a match. Matchmaking requests
+//     that use a rule set with player attributes must provide the corresponding
+//     attribute values. For example, an attribute might specify a player's skill
+//     or level.
 //
-//    * Rules -- Optional. Rules define how to evaluate potential players for
-//    a match based on player attributes. A rule might specify minimum requirements
-//    for individual players, teams, or entire matches. For example, a rule
-//    might require each player to meet a certain skill level, each team to
-//    have at least one player in a certain role, or the match to have a minimum
-//    average skill level. or may describe an entire group--such as all teams
-//    must be evenly matched or have at least one player in a certain role.
+//   - Rules -- Optional. Rules define how to evaluate potential players for
+//     a match based on player attributes. A rule might specify minimum requirements
+//     for individual players, teams, or entire matches. For example, a rule
+//     might require each player to meet a certain skill level, each team to
+//     have at least one player in a certain role, or the match to have a minimum
+//     average skill level. or may describe an entire group--such as all teams
+//     must be evenly matched or have at least one player in a certain role.
 //
-//    * Expansions -- Optional. Expansions allow you to relax the rules after
-//    a period of time when no acceptable matches are found. This feature lets
-//    you balance getting players into games in a reasonable amount of time
-//    instead of making them wait indefinitely for the best possible match.
-//    For example, you might use an expansion to increase the maximum skill
-//    variance between players after 30 seconds.
+//   - Expansions -- Optional. Expansions allow you to relax the rules after
+//     a period of time when no acceptable matches are found. This feature lets
+//     you balance getting players into games in a reasonable amount of time
+//     instead of making them wait indefinitely for the best possible match.
+//     For example, you might use an expansion to increase the maximum skill
+//     variance between players after 30 seconds.
 type MatchmakingRuleSet struct {
 	_ struct{} `type:"structure"`
 
@@ -25433,7 +25412,7 @@ func (s *OutOfCapacityException) RequestID() string {
 // retrieve full details on a player session, call DescribePlayerSessions with
 // the player session ID.
 //
-// Related actions
+// # Related actions
 //
 // CreatePlayerSession | CreatePlayerSessions | DescribePlayerSessions | StartGameSessionPlacement
 // | DescribeGameSessionPlacement | StopGameSessionPlacement | All APIs by task
@@ -25709,7 +25688,7 @@ func (s *PlayerLatencyPolicy) SetPolicyDurationSeconds(v int64) *PlayerLatencyPo
 // is validated. After the game session ends, player sessions information is
 // retained for 30 days and then removed.
 //
-// Related actions
+// # Related actions
 //
 // CreatePlayerSession | CreatePlayerSessions | DescribePlayerSessions | StartGameSessionPlacement
 // | DescribeGameSessionPlacement | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -25878,20 +25857,20 @@ func (s *PlayerSession) SetTerminationTime(v time.Time) *PlayerSession {
 // new game sessions with available game servers. When defined, this configuration
 // replaces the default FleetIQ prioritization process, which is as follows:
 //
-//    * If player latency data is included in a game session request, destinations
-//    and locations are prioritized first based on lowest average latency (1),
-//    then on lowest hosting cost (2), then on destination list order (3), and
-//    finally on location (alphabetical) (4). This approach ensures that the
-//    queue's top priority is to place game sessions where average player latency
-//    is lowest, and--if latency is the same--where the hosting cost is less,
-//    etc.
+//   - If player latency data is included in a game session request, destinations
+//     and locations are prioritized first based on lowest average latency (1),
+//     then on lowest hosting cost (2), then on destination list order (3), and
+//     finally on location (alphabetical) (4). This approach ensures that the
+//     queue's top priority is to place game sessions where average player latency
+//     is lowest, and--if latency is the same--where the hosting cost is less,
+//     etc.
 //
-//    * If player latency data is not included, destinations and locations are
-//    prioritized first on destination list order (1), and then on location
-//    (alphabetical) (2). This approach ensures that the queue's top priority
-//    is to place game sessions on the first destination fleet listed. If that
-//    fleet has multiple locations, the game session is placed on the first
-//    location (when listed alphabetically).
+//   - If player latency data is not included, destinations and locations are
+//     prioritized first on destination list order (1), and then on location
+//     (alphabetical) (2). This approach ensures that the queue's top priority
+//     is to place game sessions on the first destination fleet listed. If that
+//     fleet has multiple locations, the game session is placed on the first
+//     location (when listed alphabetically).
 //
 // Changing the priority order will affect how game sessions are placed.
 //
@@ -26688,7 +26667,7 @@ func (s *ResumeGameServerGroupOutput) SetGameServerGroup(v *GameServerGroup) *Re
 
 // The routing configuration for a fleet alias.
 //
-// Related actions
+// # Related actions
 //
 // CreateAlias | ListAliases | DescribeAlias | UpdateAlias | DeleteAlias | ResolveAlias
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -26762,7 +26741,7 @@ func (s *RoutingStrategy) SetType(v string) *RoutingStrategy {
 // of the ConcurrentExecutions parameter for each ServerProcess. Learn more
 // about Running Multiple Processes on a Fleet (https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-multiprocess.html).
 //
-// Related actions
+// # Related actions
 //
 // DescribeRuntimeConfiguration | UpdateRuntimeConfiguration
 type RuntimeConfiguration struct {
@@ -26942,7 +26921,7 @@ func (s *S3Location) SetRoleArn(v string) *S3Location {
 // Rule that controls how a fleet is scaled. Scaling policies are uniquely identified
 // by the combination of name and fleet ID.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity | UpdateFleetCapacity | DescribeEC2InstanceLimits |
 // PutScalingPolicy | DescribeScalingPolicies | DeleteScalingPolicy | StopFleetActions
@@ -27172,7 +27151,7 @@ func (s *ScalingPolicy) SetUpdateStatus(v string) *ScalingPolicy {
 
 // Properties describing a Realtime script.
 //
-// Related actions
+// # Related actions
 //
 // CreateScript | ListScripts | DescribeScript | UpdateScript | DeleteScript
 // | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
@@ -28549,14 +28528,14 @@ func (s *SuspendGameServerGroupOutput) SetGameServerGroup(v *GameServerGroup) *S
 
 // A label that can be assigned to a GameLift resource.
 //
-// Learn more
+// # Learn more
 //
 // Tagging Amazon Web Services Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
 // in the Amazon Web Services General Reference
 //
-//  Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
+//	Amazon Web Services Tagging Strategies (http://aws.amazon.com/answers/account-management/aws-tagging-strategies/)
 //
-// Related actions
+// # Related actions
 //
 // TagResource | UntagResource | ListTagsForResource | All APIs by task (https://docs.aws.amazon.com/gamelift/latest/developerguide/reference-awssdk.html#reference-awssdk-resources-fleets)
 type Tag struct {
@@ -28800,7 +28779,7 @@ func (s *TaggingFailedException) RequestID() string {
 // specifies settings as needed for the target based policy, including the target
 // value.
 //
-// Related actions
+// # Related actions
 //
 // DescribeFleetCapacity | UpdateFleetCapacity | DescribeEC2InstanceLimits |
 // PutScalingPolicy | DescribeScalingPolicies | DeleteScalingPolicy | StopFleetActions
@@ -31045,7 +31024,7 @@ func (s *ValidateMatchmakingRuleSetOutput) SetValid(v bool) *ValidateMatchmaking
 // to. This authorization must exist and be valid for the peering connection
 // to be established. Authorizations are valid for 24 hours after they are issued.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
@@ -31129,7 +31108,7 @@ func (s *VpcPeeringAuthorization) SetPeerVpcId(v string) *VpcPeeringAuthorizatio
 // for an active peering connection or a pending connection that has not yet
 // been established.
 //
-// Related actions
+// # Related actions
 //
 // CreateVpcPeeringAuthorization | DescribeVpcPeeringAuthorizations | DeleteVpcPeeringAuthorization
 // | CreateVpcPeeringConnection | DescribeVpcPeeringConnections | DeleteVpcPeeringConnection
