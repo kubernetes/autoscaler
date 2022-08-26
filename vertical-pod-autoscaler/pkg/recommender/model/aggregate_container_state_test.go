@@ -64,8 +64,10 @@ func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryByt
 }
 
 // Creates two pods, each having two containers:
-//   testPodID1: { 'app-A', 'app-B' }
-//   testPodID2: { 'app-A', 'app-C' }
+//
+//	testPodID1: { 'app-A', 'app-B' }
+//	testPodID2: { 'app-A', 'app-C' }
+//
 // Adds a few usage samples to the containers.
 // Verifies that AggregateStateByContainerName() properly aggregates
 // container CPU and memory peak histograms, grouping the two containers

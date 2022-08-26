@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a RecycleBin client from just a session.
-//     svc := recyclebin.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a RecycleBin client with additional configuration
-//     svc := recyclebin.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a RecycleBin client from just a session.
+//	svc := recyclebin.New(mySession)
+//
+//	// Create a RecycleBin client with additional configuration
+//	svc := recyclebin.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *RecycleBin {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

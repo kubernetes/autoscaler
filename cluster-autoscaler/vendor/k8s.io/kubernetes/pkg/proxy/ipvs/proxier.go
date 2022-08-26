@@ -304,11 +304,10 @@ type realIPGetter struct {
 // NodeIPs returns all LOCAL type IP addresses from host which are
 // taken as the Node IPs of NodePort service. Filtered addresses:
 //
-//  * Loopback addresses
-//  * Addresses of the "other" family (not handled by this proxier instance)
-//  * Link-local IPv6 addresses
-//  * Addresses on the created dummy device `kube-ipvs0`
-//
+//   - Loopback addresses
+//   - Addresses of the "other" family (not handled by this proxier instance)
+//   - Link-local IPv6 addresses
+//   - Addresses on the created dummy device `kube-ipvs0`
 func (r *realIPGetter) NodeIPs() (ips []net.IP, err error) {
 
 	nodeAddress, err := r.nl.GetAllLocalAddresses()
@@ -955,7 +954,7 @@ func (proxier *Proxier) OnNodeAdd(node *v1.Node) {
 	proxier.mu.Unlock()
 	klog.V(4).InfoS("Updated proxier node labels", "labels", node.Labels)
 
-	proxier.syncProxyRules()
+	proxier.Sync()
 }
 
 // OnNodeUpdate is called whenever modification of an existing
@@ -978,7 +977,7 @@ func (proxier *Proxier) OnNodeUpdate(oldNode, node *v1.Node) {
 	proxier.mu.Unlock()
 	klog.V(4).InfoS("Updated proxier node labels", "labels", node.Labels)
 
-	proxier.syncProxyRules()
+	proxier.Sync()
 }
 
 // OnNodeDelete is called whenever deletion of an existing node
@@ -992,7 +991,7 @@ func (proxier *Proxier) OnNodeDelete(node *v1.Node) {
 	proxier.nodeLabels = nil
 	proxier.mu.Unlock()
 
-	proxier.syncProxyRules()
+	proxier.Sync()
 }
 
 // OnNodeSynced is called once all the initial event handlers were
@@ -1839,27 +1838,15 @@ func (proxier *Proxier) acceptIPVSTraffic() {
 
 // createAndLinkKubeChain create all kube chains that ipvs proxier need and write basic link.
 func (proxier *Proxier) createAndLinkKubeChain() {
-	existingFilterChains := proxier.getExistingChains(proxier.filterChainsData, utiliptables.TableFilter)
-	existingNATChains := proxier.getExistingChains(proxier.iptablesData, utiliptables.TableNAT)
-
-	// Make sure we keep stats for the top-level chains
 	for _, ch := range iptablesChains {
 		if _, err := proxier.iptables.EnsureChain(ch.table, ch.chain); err != nil {
 			klog.ErrorS(err, "Failed to ensure chain exists", "table", ch.table, "chain", ch.chain)
 			return
 		}
 		if ch.table == utiliptables.TableNAT {
-			if chain, ok := existingNATChains[ch.chain]; ok {
-				proxier.natChains.WriteBytes(chain)
-			} else {
-				proxier.natChains.Write(utiliptables.MakeChainLine(ch.chain))
-			}
+			proxier.natChains.Write(utiliptables.MakeChainLine(ch.chain))
 		} else {
-			if chain, ok := existingFilterChains[ch.chain]; ok {
-				proxier.filterChains.WriteBytes(chain)
-			} else {
-				proxier.filterChains.Write(utiliptables.MakeChainLine(ch.chain))
-			}
+			proxier.filterChains.Write(utiliptables.MakeChainLine(ch.chain))
 		}
 	}
 
@@ -1870,20 +1857,6 @@ func (proxier *Proxier) createAndLinkKubeChain() {
 		}
 	}
 
-}
-
-// getExistingChains get iptables-save output so we can check for existing chains and rules.
-// This will be a map of chain name to chain with rules as stored in iptables-save/iptables-restore
-// Result may SHARE memory with contents of buffer.
-func (proxier *Proxier) getExistingChains(buffer *bytes.Buffer, table utiliptables.Table) map[utiliptables.Chain][]byte {
-	buffer.Reset()
-	err := proxier.iptables.SaveInto(table, buffer)
-	if err != nil { // if we failed to get any rules
-		klog.ErrorS(err, "Failed to execute iptables-save, syncing all rules")
-	} else { // otherwise parse the output
-		return utiliptables.GetChainLines(table, buffer.Bytes())
-	}
-	return nil
 }
 
 // After a UDP or SCTP endpoint has been removed, we must flush any pending conntrack entries to it, or else we

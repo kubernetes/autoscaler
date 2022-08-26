@@ -29,14 +29,13 @@ const opAddProfilePermission = "AddProfilePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddProfilePermissionRequest method.
+//	req, resp := client.AddProfilePermissionRequest(params)
 //
-//    // Example sending a request using the AddProfilePermissionRequest method.
-//    req, resp := client.AddProfilePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/AddProfilePermission
 func (c *Signer) AddProfilePermissionRequest(input *AddProfilePermissionInput) (req *request.Request, output *AddProfilePermissionOutput) {
@@ -67,28 +66,29 @@ func (c *Signer) AddProfilePermissionRequest(input *AddProfilePermissionInput) (
 // API operation AddProfilePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * ServiceLimitExceededException
-//   The client is making a request that exceeds service limits.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ConflictException
-//   The resource encountered a conflicting state.
+//   - ServiceLimitExceededException
+//     The client is making a request that exceeds service limits.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - ConflictException
+//     The resource encountered a conflicting state.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/AddProfilePermission
 func (c *Signer) AddProfilePermission(input *AddProfilePermissionInput) (*AddProfilePermissionOutput, error) {
@@ -128,14 +128,13 @@ const opCancelSigningProfile = "CancelSigningProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelSigningProfileRequest method.
+//	req, resp := client.CancelSigningProfileRequest(params)
 //
-//    // Example sending a request using the CancelSigningProfileRequest method.
-//    req, resp := client.CancelSigningProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/CancelSigningProfile
 func (c *Signer) CancelSigningProfileRequest(input *CancelSigningProfileInput) (req *request.Request, output *CancelSigningProfileOutput) {
@@ -169,19 +168,20 @@ func (c *Signer) CancelSigningProfileRequest(input *CancelSigningProfileInput) (
 // API operation CancelSigningProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/CancelSigningProfile
 func (c *Signer) CancelSigningProfile(input *CancelSigningProfileInput) (*CancelSigningProfileOutput, error) {
@@ -221,14 +221,13 @@ const opDescribeSigningJob = "DescribeSigningJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSigningJobRequest method.
+//	req, resp := client.DescribeSigningJobRequest(params)
 //
-//    // Example sending a request using the DescribeSigningJobRequest method.
-//    req, resp := client.DescribeSigningJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/DescribeSigningJob
 func (c *Signer) DescribeSigningJobRequest(input *DescribeSigningJobInput) (req *request.Request, output *DescribeSigningJobOutput) {
@@ -260,19 +259,20 @@ func (c *Signer) DescribeSigningJobRequest(input *DescribeSigningJobInput) (req 
 // API operation DescribeSigningJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/DescribeSigningJob
 func (c *Signer) DescribeSigningJob(input *DescribeSigningJobInput) (*DescribeSigningJobOutput, error) {
@@ -312,14 +312,13 @@ const opGetSigningPlatform = "GetSigningPlatform"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSigningPlatformRequest method.
+//	req, resp := client.GetSigningPlatformRequest(params)
 //
-//    // Example sending a request using the GetSigningPlatformRequest method.
-//    req, resp := client.GetSigningPlatformRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetSigningPlatform
 func (c *Signer) GetSigningPlatformRequest(input *GetSigningPlatformInput) (req *request.Request, output *GetSigningPlatformOutput) {
@@ -350,19 +349,20 @@ func (c *Signer) GetSigningPlatformRequest(input *GetSigningPlatformInput) (req 
 // API operation GetSigningPlatform for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetSigningPlatform
 func (c *Signer) GetSigningPlatform(input *GetSigningPlatformInput) (*GetSigningPlatformOutput, error) {
@@ -402,14 +402,13 @@ const opGetSigningProfile = "GetSigningProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSigningProfileRequest method.
+//	req, resp := client.GetSigningProfileRequest(params)
 //
-//    // Example sending a request using the GetSigningProfileRequest method.
-//    req, resp := client.GetSigningProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetSigningProfile
 func (c *Signer) GetSigningProfileRequest(input *GetSigningProfileInput) (req *request.Request, output *GetSigningProfileOutput) {
@@ -440,19 +439,20 @@ func (c *Signer) GetSigningProfileRequest(input *GetSigningProfileInput) (req *r
 // API operation GetSigningProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetSigningProfile
 func (c *Signer) GetSigningProfile(input *GetSigningProfileInput) (*GetSigningProfileOutput, error) {
@@ -492,14 +492,13 @@ const opListProfilePermissions = "ListProfilePermissions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfilePermissionsRequest method.
+//	req, resp := client.ListProfilePermissionsRequest(params)
 //
-//    // Example sending a request using the ListProfilePermissionsRequest method.
-//    req, resp := client.ListProfilePermissionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListProfilePermissions
 func (c *Signer) ListProfilePermissionsRequest(input *ListProfilePermissionsInput) (req *request.Request, output *ListProfilePermissionsOutput) {
@@ -530,22 +529,23 @@ func (c *Signer) ListProfilePermissionsRequest(input *ListProfilePermissionsInpu
 // API operation ListProfilePermissions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListProfilePermissions
 func (c *Signer) ListProfilePermissions(input *ListProfilePermissionsInput) (*ListProfilePermissionsOutput, error) {
@@ -585,14 +585,13 @@ const opListSigningJobs = "ListSigningJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSigningJobsRequest method.
+//	req, resp := client.ListSigningJobsRequest(params)
 //
-//    // Example sending a request using the ListSigningJobsRequest method.
-//    req, resp := client.ListSigningJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningJobs
 func (c *Signer) ListSigningJobsRequest(input *ListSigningJobsInput) (req *request.Request, output *ListSigningJobsOutput) {
@@ -635,19 +634,20 @@ func (c *Signer) ListSigningJobsRequest(input *ListSigningJobsInput) (req *reque
 // API operation ListSigningJobs for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningJobs
 func (c *Signer) ListSigningJobs(input *ListSigningJobsInput) (*ListSigningJobsOutput, error) {
@@ -679,15 +679,14 @@ func (c *Signer) ListSigningJobsWithContext(ctx aws.Context, input *ListSigningJ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSigningJobs operation.
-//    pageNum := 0
-//    err := client.ListSigningJobsPages(params,
-//        func(page *signer.ListSigningJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSigningJobs operation.
+//	pageNum := 0
+//	err := client.ListSigningJobsPages(params,
+//	    func(page *signer.ListSigningJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Signer) ListSigningJobsPages(input *ListSigningJobsInput, fn func(*ListSigningJobsOutput, bool) bool) error {
 	return c.ListSigningJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -739,14 +738,13 @@ const opListSigningPlatforms = "ListSigningPlatforms"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSigningPlatformsRequest method.
+//	req, resp := client.ListSigningPlatformsRequest(params)
 //
-//    // Example sending a request using the ListSigningPlatformsRequest method.
-//    req, resp := client.ListSigningPlatformsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningPlatforms
 func (c *Signer) ListSigningPlatformsRequest(input *ListSigningPlatformsInput) (req *request.Request, output *ListSigningPlatformsOutput) {
@@ -788,19 +786,20 @@ func (c *Signer) ListSigningPlatformsRequest(input *ListSigningPlatformsInput) (
 // API operation ListSigningPlatforms for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningPlatforms
 func (c *Signer) ListSigningPlatforms(input *ListSigningPlatformsInput) (*ListSigningPlatformsOutput, error) {
@@ -832,15 +831,14 @@ func (c *Signer) ListSigningPlatformsWithContext(ctx aws.Context, input *ListSig
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSigningPlatforms operation.
-//    pageNum := 0
-//    err := client.ListSigningPlatformsPages(params,
-//        func(page *signer.ListSigningPlatformsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSigningPlatforms operation.
+//	pageNum := 0
+//	err := client.ListSigningPlatformsPages(params,
+//	    func(page *signer.ListSigningPlatformsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Signer) ListSigningPlatformsPages(input *ListSigningPlatformsInput, fn func(*ListSigningPlatformsOutput, bool) bool) error {
 	return c.ListSigningPlatformsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -892,14 +890,13 @@ const opListSigningProfiles = "ListSigningProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSigningProfilesRequest method.
+//	req, resp := client.ListSigningProfilesRequest(params)
 //
-//    // Example sending a request using the ListSigningProfilesRequest method.
-//    req, resp := client.ListSigningProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningProfiles
 func (c *Signer) ListSigningProfilesRequest(input *ListSigningProfilesInput) (req *request.Request, output *ListSigningProfilesOutput) {
@@ -942,16 +939,17 @@ func (c *Signer) ListSigningProfilesRequest(input *ListSigningProfilesInput) (re
 // API operation ListSigningProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListSigningProfiles
 func (c *Signer) ListSigningProfiles(input *ListSigningProfilesInput) (*ListSigningProfilesOutput, error) {
@@ -983,15 +981,14 @@ func (c *Signer) ListSigningProfilesWithContext(ctx aws.Context, input *ListSign
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSigningProfiles operation.
-//    pageNum := 0
-//    err := client.ListSigningProfilesPages(params,
-//        func(page *signer.ListSigningProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSigningProfiles operation.
+//	pageNum := 0
+//	err := client.ListSigningProfilesPages(params,
+//	    func(page *signer.ListSigningProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Signer) ListSigningProfilesPages(input *ListSigningProfilesInput, fn func(*ListSigningProfilesOutput, bool) bool) error {
 	return c.ListSigningProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1043,14 +1040,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListTagsForResource
 func (c *Signer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1081,20 +1077,21 @@ func (c *Signer) ListTagsForResourceRequest(input *ListTagsForResourceInput) (re
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   An internal error occurred.
 //
-//   * BadRequestException
-//   The request contains invalid parameters for the ARN or tags. This exception
-//   also occurs when you call a tagging API on a cancelled signing profile.
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
-//   * NotFoundException
-//   The signing profile was not found.
+//   - BadRequestException
+//     The request contains invalid parameters for the ARN or tags. This exception
+//     also occurs when you call a tagging API on a cancelled signing profile.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - NotFoundException
+//     The signing profile was not found.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
+//
+//     This error supersedes the error ThrottlingException.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/ListTagsForResource
 func (c *Signer) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1134,14 +1131,13 @@ const opPutSigningProfile = "PutSigningProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutSigningProfileRequest method.
+//	req, resp := client.PutSigningProfileRequest(params)
 //
-//    // Example sending a request using the PutSigningProfileRequest method.
-//    req, resp := client.PutSigningProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/PutSigningProfile
 func (c *Signer) PutSigningProfileRequest(input *PutSigningProfileInput) (req *request.Request, output *PutSigningProfileOutput) {
@@ -1175,22 +1171,23 @@ func (c *Signer) PutSigningProfileRequest(input *PutSigningProfileInput) (req *r
 // API operation PutSigningProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * ValidationException
-//   You signing certificate could not be validated.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/PutSigningProfile
 func (c *Signer) PutSigningProfile(input *PutSigningProfileInput) (*PutSigningProfileOutput, error) {
@@ -1230,14 +1227,13 @@ const opRemoveProfilePermission = "RemoveProfilePermission"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveProfilePermissionRequest method.
+//	req, resp := client.RemoveProfilePermissionRequest(params)
 //
-//    // Example sending a request using the RemoveProfilePermissionRequest method.
-//    req, resp := client.RemoveProfilePermissionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RemoveProfilePermission
 func (c *Signer) RemoveProfilePermissionRequest(input *RemoveProfilePermissionInput) (req *request.Request, output *RemoveProfilePermissionOutput) {
@@ -1268,25 +1264,26 @@ func (c *Signer) RemoveProfilePermissionRequest(input *RemoveProfilePermissionIn
 // API operation RemoveProfilePermission for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * ConflictException
-//   The resource encountered a conflicting state.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - ConflictException
+//     The resource encountered a conflicting state.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RemoveProfilePermission
 func (c *Signer) RemoveProfilePermission(input *RemoveProfilePermissionInput) (*RemoveProfilePermissionOutput, error) {
@@ -1326,14 +1323,13 @@ const opRevokeSignature = "RevokeSignature"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeSignatureRequest method.
+//	req, resp := client.RevokeSignatureRequest(params)
 //
-//    // Example sending a request using the RevokeSignatureRequest method.
-//    req, resp := client.RevokeSignatureRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RevokeSignature
 func (c *Signer) RevokeSignatureRequest(input *RevokeSignatureInput) (req *request.Request, output *RevokeSignatureOutput) {
@@ -1366,22 +1362,23 @@ func (c *Signer) RevokeSignatureRequest(input *RevokeSignatureInput) (req *reque
 // API operation RevokeSignature for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RevokeSignature
 func (c *Signer) RevokeSignature(input *RevokeSignatureInput) (*RevokeSignatureOutput, error) {
@@ -1421,14 +1418,13 @@ const opRevokeSigningProfile = "RevokeSigningProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeSigningProfileRequest method.
+//	req, resp := client.RevokeSigningProfileRequest(params)
 //
-//    // Example sending a request using the RevokeSigningProfileRequest method.
-//    req, resp := client.RevokeSigningProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RevokeSigningProfile
 func (c *Signer) RevokeSigningProfileRequest(input *RevokeSigningProfileInput) (req *request.Request, output *RevokeSigningProfileOutput) {
@@ -1462,22 +1458,23 @@ func (c *Signer) RevokeSigningProfileRequest(input *RevokeSigningProfileInput) (
 // API operation RevokeSigningProfile for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/RevokeSigningProfile
 func (c *Signer) RevokeSigningProfile(input *RevokeSigningProfileInput) (*RevokeSigningProfileOutput, error) {
@@ -1517,14 +1514,13 @@ const opStartSigningJob = "StartSigningJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSigningJobRequest method.
+//	req, resp := client.StartSigningJobRequest(params)
 //
-//    // Example sending a request using the StartSigningJobRequest method.
-//    req, resp := client.StartSigningJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/StartSigningJob
 func (c *Signer) StartSigningJobRequest(input *StartSigningJobInput) (req *request.Request, output *StartSigningJobOutput) {
@@ -1549,20 +1545,20 @@ func (c *Signer) StartSigningJobRequest(input *StartSigningJobInput) (req *reque
 // are viewable by the ListSigningJobs operation for two years after they are
 // performed. Note the following requirements:
 //
-//    * You must create an Amazon S3 source bucket. For more information, see
-//    Create a Bucket (http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html)
-//    in the Amazon S3 Getting Started Guide.
+//   - You must create an Amazon S3 source bucket. For more information, see
+//     Create a Bucket (http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html)
+//     in the Amazon S3 Getting Started Guide.
 //
-//    * Your S3 source bucket must be version enabled.
+//   - Your S3 source bucket must be version enabled.
 //
-//    * You must create an S3 destination bucket. Code signing uses your S3
-//    destination bucket to write your signed code.
+//   - You must create an S3 destination bucket. Code signing uses your S3
+//     destination bucket to write your signed code.
 //
-//    * You specify the name of the source and destination buckets when calling
-//    the StartSigningJob operation.
+//   - You specify the name of the source and destination buckets when calling
+//     the StartSigningJob operation.
 //
-//    * You must also specify a request token that identifies your request to
-//    code signing.
+//   - You must also specify a request token that identifies your request to
+//     code signing.
 //
 // You can call the DescribeSigningJob and the ListSigningJobs actions after
 // you call StartSigningJob.
@@ -1578,27 +1574,28 @@ func (c *Signer) StartSigningJobRequest(input *StartSigningJobInput) (req *reque
 // API operation StartSigningJob for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   You signing certificate could not be validated.
 //
-//   * ResourceNotFoundException
-//   A specified resource could not be found.
+//   - ValidationException
+//     You signing certificate could not be validated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
 //
-//   * ThrottlingException
-//   The request was denied due to request throttling.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   Instead of this error, TooManyRequestsException should be used.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//     Instead of this error, TooManyRequestsException should be used.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
 //
-//   * InternalServiceErrorException
-//   An internal error occurred.
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/StartSigningJob
 func (c *Signer) StartSigningJob(input *StartSigningJobInput) (*StartSigningJobOutput, error) {
@@ -1638,14 +1635,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/TagResource
 func (c *Signer) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1680,20 +1676,21 @@ func (c *Signer) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   An internal error occurred.
 //
-//   * BadRequestException
-//   The request contains invalid parameters for the ARN or tags. This exception
-//   also occurs when you call a tagging API on a cancelled signing profile.
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
-//   * NotFoundException
-//   The signing profile was not found.
+//   - BadRequestException
+//     The request contains invalid parameters for the ARN or tags. This exception
+//     also occurs when you call a tagging API on a cancelled signing profile.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - NotFoundException
+//     The signing profile was not found.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
+//
+//     This error supersedes the error ThrottlingException.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/TagResource
 func (c *Signer) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1733,14 +1730,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/UntagResource
 func (c *Signer) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1773,20 +1769,21 @@ func (c *Signer) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServiceErrorException
-//   An internal error occurred.
 //
-//   * BadRequestException
-//   The request contains invalid parameters for the ARN or tags. This exception
-//   also occurs when you call a tagging API on a cancelled signing profile.
+//   - InternalServiceErrorException
+//     An internal error occurred.
 //
-//   * NotFoundException
-//   The signing profile was not found.
+//   - BadRequestException
+//     The request contains invalid parameters for the ARN or tags. This exception
+//     also occurs when you call a tagging API on a cancelled signing profile.
 //
-//   * TooManyRequestsException
-//   The allowed number of job-signing requests has been exceeded.
+//   - NotFoundException
+//     The signing profile was not found.
 //
-//   This error supersedes the error ThrottlingException.
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
+//
+//     This error supersedes the error ThrottlingException.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/UntagResource
 func (c *Signer) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

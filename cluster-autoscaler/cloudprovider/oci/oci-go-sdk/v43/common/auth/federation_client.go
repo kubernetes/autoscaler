@@ -372,7 +372,7 @@ type sessionKeySupplier interface {
 	PublicKeyPemRaw() []byte
 }
 
-//genericKeySupplier implements sessionKeySupplier and provides an arbitrary refresh mechanism
+// genericKeySupplier implements sessionKeySupplier and provides an arbitrary refresh mechanism
 type genericKeySupplier struct {
 	RefreshFn func() (*rsa.PrivateKey, []byte, error)
 

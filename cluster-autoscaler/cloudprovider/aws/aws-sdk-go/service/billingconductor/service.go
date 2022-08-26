@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a BillingConductor client from just a session.
-//     svc := billingconductor.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a BillingConductor client with additional configuration
-//     svc := billingconductor.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a BillingConductor client from just a session.
+//	svc := billingconductor.New(mySession)
+//
+//	// Create a BillingConductor client with additional configuration
+//	svc := billingconductor.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *BillingConductor {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

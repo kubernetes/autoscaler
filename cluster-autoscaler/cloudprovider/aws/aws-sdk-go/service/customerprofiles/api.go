@@ -29,14 +29,13 @@ const opAddProfileKey = "AddProfileKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddProfileKeyRequest method.
+//	req, resp := client.AddProfileKeyRequest(params)
 //
-//    // Example sending a request using the AddProfileKeyRequest method.
-//    req, resp := client.AddProfileKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/AddProfileKey
 func (c *CustomerProfiles) AddProfileKeyRequest(input *AddProfileKeyInput) (req *request.Request, output *AddProfileKeyOutput) {
@@ -71,20 +70,21 @@ func (c *CustomerProfiles) AddProfileKeyRequest(input *AddProfileKeyInput) (req 
 // API operation AddProfileKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/AddProfileKey
 func (c *CustomerProfiles) AddProfileKey(input *AddProfileKeyInput) (*AddProfileKeyOutput, error) {
@@ -124,14 +124,13 @@ const opCreateDomain = "CreateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainRequest method.
+//	req, resp := client.CreateDomainRequest(params)
 //
-//    // Example sending a request using the CreateDomainRequest method.
-//    req, resp := client.CreateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateDomain
 func (c *CustomerProfiles) CreateDomainRequest(input *CreateDomainInput) (req *request.Request, output *CreateDomainOutput) {
@@ -176,20 +175,21 @@ func (c *CustomerProfiles) CreateDomainRequest(input *CreateDomainInput) (req *r
 // API operation CreateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateDomain
 func (c *CustomerProfiles) CreateDomain(input *CreateDomainInput) (*CreateDomainOutput, error) {
@@ -229,14 +229,13 @@ const opCreateIntegrationWorkflow = "CreateIntegrationWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIntegrationWorkflowRequest method.
+//	req, resp := client.CreateIntegrationWorkflowRequest(params)
 //
-//    // Example sending a request using the CreateIntegrationWorkflowRequest method.
-//    req, resp := client.CreateIntegrationWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateIntegrationWorkflow
 func (c *CustomerProfiles) CreateIntegrationWorkflowRequest(input *CreateIntegrationWorkflowInput) (req *request.Request, output *CreateIntegrationWorkflowOutput) {
@@ -269,20 +268,21 @@ func (c *CustomerProfiles) CreateIntegrationWorkflowRequest(input *CreateIntegra
 // API operation CreateIntegrationWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateIntegrationWorkflow
 func (c *CustomerProfiles) CreateIntegrationWorkflow(input *CreateIntegrationWorkflowInput) (*CreateIntegrationWorkflowOutput, error) {
@@ -322,14 +322,13 @@ const opCreateProfile = "CreateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateProfileRequest method.
+//	req, resp := client.CreateProfileRequest(params)
 //
-//    // Example sending a request using the CreateProfileRequest method.
-//    req, resp := client.CreateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateProfile
 func (c *CustomerProfiles) CreateProfileRequest(input *CreateProfileInput) (req *request.Request, output *CreateProfileOutput) {
@@ -363,20 +362,21 @@ func (c *CustomerProfiles) CreateProfileRequest(input *CreateProfileInput) (req 
 // API operation CreateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/CreateProfile
 func (c *CustomerProfiles) CreateProfile(input *CreateProfileInput) (*CreateProfileOutput, error) {
@@ -416,14 +416,13 @@ const opDeleteDomain = "DeleteDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainRequest method.
+//	req, resp := client.DeleteDomainRequest(params)
 //
-//    // Example sending a request using the DeleteDomainRequest method.
-//    req, resp := client.DeleteDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteDomain
 func (c *CustomerProfiles) DeleteDomainRequest(input *DeleteDomainInput) (req *request.Request, output *DeleteDomainOutput) {
@@ -455,20 +454,21 @@ func (c *CustomerProfiles) DeleteDomainRequest(input *DeleteDomainInput) (req *r
 // API operation DeleteDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteDomain
 func (c *CustomerProfiles) DeleteDomain(input *DeleteDomainInput) (*DeleteDomainOutput, error) {
@@ -508,14 +508,13 @@ const opDeleteIntegration = "DeleteIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntegrationRequest method.
+//	req, resp := client.DeleteIntegrationRequest(params)
 //
-//    // Example sending a request using the DeleteIntegrationRequest method.
-//    req, resp := client.DeleteIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteIntegration
 func (c *CustomerProfiles) DeleteIntegrationRequest(input *DeleteIntegrationInput) (req *request.Request, output *DeleteIntegrationOutput) {
@@ -546,20 +545,21 @@ func (c *CustomerProfiles) DeleteIntegrationRequest(input *DeleteIntegrationInpu
 // API operation DeleteIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteIntegration
 func (c *CustomerProfiles) DeleteIntegration(input *DeleteIntegrationInput) (*DeleteIntegrationOutput, error) {
@@ -599,14 +599,13 @@ const opDeleteProfile = "DeleteProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfileRequest method.
+//	req, resp := client.DeleteProfileRequest(params)
 //
-//    // Example sending a request using the DeleteProfileRequest method.
-//    req, resp := client.DeleteProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfile
 func (c *CustomerProfiles) DeleteProfileRequest(input *DeleteProfileInput) (req *request.Request, output *DeleteProfileOutput) {
@@ -637,20 +636,21 @@ func (c *CustomerProfiles) DeleteProfileRequest(input *DeleteProfileInput) (req 
 // API operation DeleteProfile for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfile
 func (c *CustomerProfiles) DeleteProfile(input *DeleteProfileInput) (*DeleteProfileOutput, error) {
@@ -690,14 +690,13 @@ const opDeleteProfileKey = "DeleteProfileKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfileKeyRequest method.
+//	req, resp := client.DeleteProfileKeyRequest(params)
 //
-//    // Example sending a request using the DeleteProfileKeyRequest method.
-//    req, resp := client.DeleteProfileKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileKey
 func (c *CustomerProfiles) DeleteProfileKeyRequest(input *DeleteProfileKeyInput) (req *request.Request, output *DeleteProfileKeyOutput) {
@@ -728,20 +727,21 @@ func (c *CustomerProfiles) DeleteProfileKeyRequest(input *DeleteProfileKeyInput)
 // API operation DeleteProfileKey for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileKey
 func (c *CustomerProfiles) DeleteProfileKey(input *DeleteProfileKeyInput) (*DeleteProfileKeyOutput, error) {
@@ -781,14 +781,13 @@ const opDeleteProfileObject = "DeleteProfileObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfileObjectRequest method.
+//	req, resp := client.DeleteProfileObjectRequest(params)
 //
-//    // Example sending a request using the DeleteProfileObjectRequest method.
-//    req, resp := client.DeleteProfileObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileObject
 func (c *CustomerProfiles) DeleteProfileObjectRequest(input *DeleteProfileObjectInput) (req *request.Request, output *DeleteProfileObjectOutput) {
@@ -819,20 +818,21 @@ func (c *CustomerProfiles) DeleteProfileObjectRequest(input *DeleteProfileObject
 // API operation DeleteProfileObject for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileObject
 func (c *CustomerProfiles) DeleteProfileObject(input *DeleteProfileObjectInput) (*DeleteProfileObjectOutput, error) {
@@ -872,14 +872,13 @@ const opDeleteProfileObjectType = "DeleteProfileObjectType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteProfileObjectTypeRequest method.
+//	req, resp := client.DeleteProfileObjectTypeRequest(params)
 //
-//    // Example sending a request using the DeleteProfileObjectTypeRequest method.
-//    req, resp := client.DeleteProfileObjectTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileObjectType
 func (c *CustomerProfiles) DeleteProfileObjectTypeRequest(input *DeleteProfileObjectTypeInput) (req *request.Request, output *DeleteProfileObjectTypeOutput) {
@@ -913,20 +912,21 @@ func (c *CustomerProfiles) DeleteProfileObjectTypeRequest(input *DeleteProfileOb
 // API operation DeleteProfileObjectType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteProfileObjectType
 func (c *CustomerProfiles) DeleteProfileObjectType(input *DeleteProfileObjectTypeInput) (*DeleteProfileObjectTypeOutput, error) {
@@ -966,14 +966,13 @@ const opDeleteWorkflow = "DeleteWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkflowRequest method.
+//	req, resp := client.DeleteWorkflowRequest(params)
 //
-//    // Example sending a request using the DeleteWorkflowRequest method.
-//    req, resp := client.DeleteWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteWorkflow
 func (c *CustomerProfiles) DeleteWorkflowRequest(input *DeleteWorkflowInput) (req *request.Request, output *DeleteWorkflowOutput) {
@@ -1006,20 +1005,21 @@ func (c *CustomerProfiles) DeleteWorkflowRequest(input *DeleteWorkflowInput) (re
 // API operation DeleteWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/DeleteWorkflow
 func (c *CustomerProfiles) DeleteWorkflow(input *DeleteWorkflowInput) (*DeleteWorkflowOutput, error) {
@@ -1059,14 +1059,13 @@ const opGetAutoMergingPreview = "GetAutoMergingPreview"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAutoMergingPreviewRequest method.
+//	req, resp := client.GetAutoMergingPreviewRequest(params)
 //
-//    // Example sending a request using the GetAutoMergingPreviewRequest method.
-//    req, resp := client.GetAutoMergingPreviewRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetAutoMergingPreview
 func (c *CustomerProfiles) GetAutoMergingPreviewRequest(input *GetAutoMergingPreviewInput) (req *request.Request, output *GetAutoMergingPreviewOutput) {
@@ -1110,20 +1109,21 @@ func (c *CustomerProfiles) GetAutoMergingPreviewRequest(input *GetAutoMergingPre
 // API operation GetAutoMergingPreview for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetAutoMergingPreview
 func (c *CustomerProfiles) GetAutoMergingPreview(input *GetAutoMergingPreviewInput) (*GetAutoMergingPreviewOutput, error) {
@@ -1163,14 +1163,13 @@ const opGetDomain = "GetDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainRequest method.
+//	req, resp := client.GetDomainRequest(params)
 //
-//    // Example sending a request using the GetDomainRequest method.
-//    req, resp := client.GetDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetDomain
 func (c *CustomerProfiles) GetDomainRequest(input *GetDomainInput) (req *request.Request, output *GetDomainOutput) {
@@ -1201,20 +1200,21 @@ func (c *CustomerProfiles) GetDomainRequest(input *GetDomainInput) (req *request
 // API operation GetDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetDomain
 func (c *CustomerProfiles) GetDomain(input *GetDomainInput) (*GetDomainOutput, error) {
@@ -1254,14 +1254,13 @@ const opGetIdentityResolutionJob = "GetIdentityResolutionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIdentityResolutionJobRequest method.
+//	req, resp := client.GetIdentityResolutionJobRequest(params)
 //
-//    // Example sending a request using the GetIdentityResolutionJobRequest method.
-//    req, resp := client.GetIdentityResolutionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetIdentityResolutionJob
 func (c *CustomerProfiles) GetIdentityResolutionJobRequest(input *GetIdentityResolutionJobInput) (req *request.Request, output *GetIdentityResolutionJobOutput) {
@@ -1296,20 +1295,21 @@ func (c *CustomerProfiles) GetIdentityResolutionJobRequest(input *GetIdentityRes
 // API operation GetIdentityResolutionJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetIdentityResolutionJob
 func (c *CustomerProfiles) GetIdentityResolutionJob(input *GetIdentityResolutionJobInput) (*GetIdentityResolutionJobOutput, error) {
@@ -1349,14 +1349,13 @@ const opGetIntegration = "GetIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationRequest method.
+//	req, resp := client.GetIntegrationRequest(params)
 //
-//    // Example sending a request using the GetIntegrationRequest method.
-//    req, resp := client.GetIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetIntegration
 func (c *CustomerProfiles) GetIntegrationRequest(input *GetIntegrationInput) (req *request.Request, output *GetIntegrationOutput) {
@@ -1387,20 +1386,21 @@ func (c *CustomerProfiles) GetIntegrationRequest(input *GetIntegrationInput) (re
 // API operation GetIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetIntegration
 func (c *CustomerProfiles) GetIntegration(input *GetIntegrationInput) (*GetIntegrationOutput, error) {
@@ -1440,14 +1440,13 @@ const opGetMatches = "GetMatches"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMatchesRequest method.
+//	req, resp := client.GetMatchesRequest(params)
 //
-//    // Example sending a request using the GetMatchesRequest method.
-//    req, resp := client.GetMatchesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetMatches
 func (c *CustomerProfiles) GetMatchesRequest(input *GetMatchesInput) (req *request.Request, output *GetMatchesOutput) {
@@ -1487,21 +1486,21 @@ func (c *CustomerProfiles) GetMatchesRequest(input *GetMatchesInput) (req *reque
 //
 // Amazon Connect uses the following profile attributes to identify matches:
 //
-//    * PhoneNumber
+//   - PhoneNumber
 //
-//    * HomePhoneNumber
+//   - HomePhoneNumber
 //
-//    * BusinessPhoneNumber
+//   - BusinessPhoneNumber
 //
-//    * MobilePhoneNumber
+//   - MobilePhoneNumber
 //
-//    * EmailAddress
+//   - EmailAddress
 //
-//    * PersonalEmailAddress
+//   - PersonalEmailAddress
 //
-//    * BusinessEmailAddress
+//   - BusinessEmailAddress
 //
-//    * FullName
+//   - FullName
 //
 // For example, two or more profiles—with spelling mistakes such as John Doe
 // and Jhn Doe, or different casing email addresses such as JOHN_DOE@ANYCOMPANY.COM
@@ -1517,20 +1516,21 @@ func (c *CustomerProfiles) GetMatchesRequest(input *GetMatchesInput) (req *reque
 // API operation GetMatches for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetMatches
 func (c *CustomerProfiles) GetMatches(input *GetMatchesInput) (*GetMatchesOutput, error) {
@@ -1570,14 +1570,13 @@ const opGetProfileObjectType = "GetProfileObjectType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProfileObjectTypeRequest method.
+//	req, resp := client.GetProfileObjectTypeRequest(params)
 //
-//    // Example sending a request using the GetProfileObjectTypeRequest method.
-//    req, resp := client.GetProfileObjectTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetProfileObjectType
 func (c *CustomerProfiles) GetProfileObjectTypeRequest(input *GetProfileObjectTypeInput) (req *request.Request, output *GetProfileObjectTypeOutput) {
@@ -1608,20 +1607,21 @@ func (c *CustomerProfiles) GetProfileObjectTypeRequest(input *GetProfileObjectTy
 // API operation GetProfileObjectType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetProfileObjectType
 func (c *CustomerProfiles) GetProfileObjectType(input *GetProfileObjectTypeInput) (*GetProfileObjectTypeOutput, error) {
@@ -1661,14 +1661,13 @@ const opGetProfileObjectTypeTemplate = "GetProfileObjectTypeTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetProfileObjectTypeTemplateRequest method.
+//	req, resp := client.GetProfileObjectTypeTemplateRequest(params)
 //
-//    // Example sending a request using the GetProfileObjectTypeTemplateRequest method.
-//    req, resp := client.GetProfileObjectTypeTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetProfileObjectTypeTemplate
 func (c *CustomerProfiles) GetProfileObjectTypeTemplateRequest(input *GetProfileObjectTypeTemplateInput) (req *request.Request, output *GetProfileObjectTypeTemplateOutput) {
@@ -1704,20 +1703,21 @@ func (c *CustomerProfiles) GetProfileObjectTypeTemplateRequest(input *GetProfile
 // API operation GetProfileObjectTypeTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetProfileObjectTypeTemplate
 func (c *CustomerProfiles) GetProfileObjectTypeTemplate(input *GetProfileObjectTypeTemplateInput) (*GetProfileObjectTypeTemplateOutput, error) {
@@ -1757,14 +1757,13 @@ const opGetWorkflow = "GetWorkflow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowRequest method.
+//	req, resp := client.GetWorkflowRequest(params)
 //
-//    // Example sending a request using the GetWorkflowRequest method.
-//    req, resp := client.GetWorkflowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetWorkflow
 func (c *CustomerProfiles) GetWorkflowRequest(input *GetWorkflowInput) (req *request.Request, output *GetWorkflowOutput) {
@@ -1795,20 +1794,21 @@ func (c *CustomerProfiles) GetWorkflowRequest(input *GetWorkflowInput) (req *req
 // API operation GetWorkflow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetWorkflow
 func (c *CustomerProfiles) GetWorkflow(input *GetWorkflowInput) (*GetWorkflowOutput, error) {
@@ -1848,14 +1848,13 @@ const opGetWorkflowSteps = "GetWorkflowSteps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetWorkflowStepsRequest method.
+//	req, resp := client.GetWorkflowStepsRequest(params)
 //
-//    // Example sending a request using the GetWorkflowStepsRequest method.
-//    req, resp := client.GetWorkflowStepsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetWorkflowSteps
 func (c *CustomerProfiles) GetWorkflowStepsRequest(input *GetWorkflowStepsInput) (req *request.Request, output *GetWorkflowStepsOutput) {
@@ -1886,20 +1885,21 @@ func (c *CustomerProfiles) GetWorkflowStepsRequest(input *GetWorkflowStepsInput)
 // API operation GetWorkflowSteps for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/GetWorkflowSteps
 func (c *CustomerProfiles) GetWorkflowSteps(input *GetWorkflowStepsInput) (*GetWorkflowStepsOutput, error) {
@@ -1939,14 +1939,13 @@ const opListAccountIntegrations = "ListAccountIntegrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAccountIntegrationsRequest method.
+//	req, resp := client.ListAccountIntegrationsRequest(params)
 //
-//    // Example sending a request using the ListAccountIntegrationsRequest method.
-//    req, resp := client.ListAccountIntegrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListAccountIntegrations
 func (c *CustomerProfiles) ListAccountIntegrationsRequest(input *ListAccountIntegrationsInput) (req *request.Request, output *ListAccountIntegrationsOutput) {
@@ -1977,20 +1976,21 @@ func (c *CustomerProfiles) ListAccountIntegrationsRequest(input *ListAccountInte
 // API operation ListAccountIntegrations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListAccountIntegrations
 func (c *CustomerProfiles) ListAccountIntegrations(input *ListAccountIntegrationsInput) (*ListAccountIntegrationsOutput, error) {
@@ -2030,14 +2030,13 @@ const opListDomains = "ListDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsRequest method.
+//	req, resp := client.ListDomainsRequest(params)
 //
-//    // Example sending a request using the ListDomainsRequest method.
-//    req, resp := client.ListDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListDomains
 func (c *CustomerProfiles) ListDomainsRequest(input *ListDomainsInput) (req *request.Request, output *ListDomainsOutput) {
@@ -2068,20 +2067,21 @@ func (c *CustomerProfiles) ListDomainsRequest(input *ListDomainsInput) (req *req
 // API operation ListDomains for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListDomains
 func (c *CustomerProfiles) ListDomains(input *ListDomainsInput) (*ListDomainsOutput, error) {
@@ -2121,14 +2121,13 @@ const opListIdentityResolutionJobs = "ListIdentityResolutionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIdentityResolutionJobsRequest method.
+//	req, resp := client.ListIdentityResolutionJobsRequest(params)
 //
-//    // Example sending a request using the ListIdentityResolutionJobsRequest method.
-//    req, resp := client.ListIdentityResolutionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListIdentityResolutionJobs
 func (c *CustomerProfiles) ListIdentityResolutionJobsRequest(input *ListIdentityResolutionJobsInput) (req *request.Request, output *ListIdentityResolutionJobsOutput) {
@@ -2160,20 +2159,21 @@ func (c *CustomerProfiles) ListIdentityResolutionJobsRequest(input *ListIdentity
 // API operation ListIdentityResolutionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListIdentityResolutionJobs
 func (c *CustomerProfiles) ListIdentityResolutionJobs(input *ListIdentityResolutionJobsInput) (*ListIdentityResolutionJobsOutput, error) {
@@ -2213,14 +2213,13 @@ const opListIntegrations = "ListIntegrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIntegrationsRequest method.
+//	req, resp := client.ListIntegrationsRequest(params)
 //
-//    // Example sending a request using the ListIntegrationsRequest method.
-//    req, resp := client.ListIntegrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListIntegrations
 func (c *CustomerProfiles) ListIntegrationsRequest(input *ListIntegrationsInput) (req *request.Request, output *ListIntegrationsOutput) {
@@ -2251,20 +2250,21 @@ func (c *CustomerProfiles) ListIntegrationsRequest(input *ListIntegrationsInput)
 // API operation ListIntegrations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListIntegrations
 func (c *CustomerProfiles) ListIntegrations(input *ListIntegrationsInput) (*ListIntegrationsOutput, error) {
@@ -2304,14 +2304,13 @@ const opListProfileObjectTypeTemplates = "ListProfileObjectTypeTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfileObjectTypeTemplatesRequest method.
+//	req, resp := client.ListProfileObjectTypeTemplatesRequest(params)
 //
-//    // Example sending a request using the ListProfileObjectTypeTemplatesRequest method.
-//    req, resp := client.ListProfileObjectTypeTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjectTypeTemplates
 func (c *CustomerProfiles) ListProfileObjectTypeTemplatesRequest(input *ListProfileObjectTypeTemplatesInput) (req *request.Request, output *ListProfileObjectTypeTemplatesOutput) {
@@ -2342,20 +2341,21 @@ func (c *CustomerProfiles) ListProfileObjectTypeTemplatesRequest(input *ListProf
 // API operation ListProfileObjectTypeTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjectTypeTemplates
 func (c *CustomerProfiles) ListProfileObjectTypeTemplates(input *ListProfileObjectTypeTemplatesInput) (*ListProfileObjectTypeTemplatesOutput, error) {
@@ -2395,14 +2395,13 @@ const opListProfileObjectTypes = "ListProfileObjectTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfileObjectTypesRequest method.
+//	req, resp := client.ListProfileObjectTypesRequest(params)
 //
-//    // Example sending a request using the ListProfileObjectTypesRequest method.
-//    req, resp := client.ListProfileObjectTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjectTypes
 func (c *CustomerProfiles) ListProfileObjectTypesRequest(input *ListProfileObjectTypesInput) (req *request.Request, output *ListProfileObjectTypesOutput) {
@@ -2433,20 +2432,21 @@ func (c *CustomerProfiles) ListProfileObjectTypesRequest(input *ListProfileObjec
 // API operation ListProfileObjectTypes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjectTypes
 func (c *CustomerProfiles) ListProfileObjectTypes(input *ListProfileObjectTypesInput) (*ListProfileObjectTypesOutput, error) {
@@ -2486,14 +2486,13 @@ const opListProfileObjects = "ListProfileObjects"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListProfileObjectsRequest method.
+//	req, resp := client.ListProfileObjectsRequest(params)
 //
-//    // Example sending a request using the ListProfileObjectsRequest method.
-//    req, resp := client.ListProfileObjectsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjects
 func (c *CustomerProfiles) ListProfileObjectsRequest(input *ListProfileObjectsInput) (req *request.Request, output *ListProfileObjectsOutput) {
@@ -2524,20 +2523,21 @@ func (c *CustomerProfiles) ListProfileObjectsRequest(input *ListProfileObjectsIn
 // API operation ListProfileObjects for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListProfileObjects
 func (c *CustomerProfiles) ListProfileObjects(input *ListProfileObjectsInput) (*ListProfileObjectsOutput, error) {
@@ -2577,14 +2577,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListTagsForResource
 func (c *CustomerProfiles) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2617,14 +2616,15 @@ func (c *CustomerProfiles) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - InternalServerException
+//     An internal service error occurred.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListTagsForResource
 func (c *CustomerProfiles) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2664,14 +2664,13 @@ const opListWorkflows = "ListWorkflows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkflowsRequest method.
+//	req, resp := client.ListWorkflowsRequest(params)
 //
-//    // Example sending a request using the ListWorkflowsRequest method.
-//    req, resp := client.ListWorkflowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListWorkflows
 func (c *CustomerProfiles) ListWorkflowsRequest(input *ListWorkflowsInput) (req *request.Request, output *ListWorkflowsOutput) {
@@ -2702,20 +2701,21 @@ func (c *CustomerProfiles) ListWorkflowsRequest(input *ListWorkflowsInput) (req 
 // API operation ListWorkflows for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/ListWorkflows
 func (c *CustomerProfiles) ListWorkflows(input *ListWorkflowsInput) (*ListWorkflowsOutput, error) {
@@ -2755,14 +2755,13 @@ const opMergeProfiles = "MergeProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the MergeProfilesRequest method.
+//	req, resp := client.MergeProfilesRequest(params)
 //
-//    // Example sending a request using the MergeProfilesRequest method.
-//    req, resp := client.MergeProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/MergeProfiles
 func (c *CustomerProfiles) MergeProfilesRequest(input *MergeProfilesInput) (req *request.Request, output *MergeProfilesOutput) {
@@ -2820,17 +2819,18 @@ func (c *CustomerProfiles) MergeProfilesRequest(input *MergeProfilesInput) (req 
 // API operation MergeProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/MergeProfiles
 func (c *CustomerProfiles) MergeProfiles(input *MergeProfilesInput) (*MergeProfilesOutput, error) {
@@ -2870,14 +2870,13 @@ const opPutIntegration = "PutIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutIntegrationRequest method.
+//	req, resp := client.PutIntegrationRequest(params)
 //
-//    // Example sending a request using the PutIntegrationRequest method.
-//    req, resp := client.PutIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutIntegration
 func (c *CustomerProfiles) PutIntegrationRequest(input *PutIntegrationInput) (req *request.Request, output *PutIntegrationOutput) {
@@ -2911,20 +2910,21 @@ func (c *CustomerProfiles) PutIntegrationRequest(input *PutIntegrationInput) (re
 // API operation PutIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutIntegration
 func (c *CustomerProfiles) PutIntegration(input *PutIntegrationInput) (*PutIntegrationOutput, error) {
@@ -2964,14 +2964,13 @@ const opPutProfileObject = "PutProfileObject"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutProfileObjectRequest method.
+//	req, resp := client.PutProfileObjectRequest(params)
 //
-//    // Example sending a request using the PutProfileObjectRequest method.
-//    req, resp := client.PutProfileObjectRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutProfileObject
 func (c *CustomerProfiles) PutProfileObjectRequest(input *PutProfileObjectInput) (req *request.Request, output *PutProfileObjectOutput) {
@@ -3014,20 +3013,21 @@ func (c *CustomerProfiles) PutProfileObjectRequest(input *PutProfileObjectInput)
 // API operation PutProfileObject for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutProfileObject
 func (c *CustomerProfiles) PutProfileObject(input *PutProfileObjectInput) (*PutProfileObjectOutput, error) {
@@ -3067,14 +3067,13 @@ const opPutProfileObjectType = "PutProfileObjectType"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutProfileObjectTypeRequest method.
+//	req, resp := client.PutProfileObjectTypeRequest(params)
 //
-//    // Example sending a request using the PutProfileObjectTypeRequest method.
-//    req, resp := client.PutProfileObjectTypeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutProfileObjectType
 func (c *CustomerProfiles) PutProfileObjectTypeRequest(input *PutProfileObjectTypeInput) (req *request.Request, output *PutProfileObjectTypeOutput) {
@@ -3105,20 +3104,21 @@ func (c *CustomerProfiles) PutProfileObjectTypeRequest(input *PutProfileObjectTy
 // API operation PutProfileObjectType for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/PutProfileObjectType
 func (c *CustomerProfiles) PutProfileObjectType(input *PutProfileObjectTypeInput) (*PutProfileObjectTypeOutput, error) {
@@ -3158,14 +3158,13 @@ const opSearchProfiles = "SearchProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchProfilesRequest method.
+//	req, resp := client.SearchProfilesRequest(params)
 //
-//    // Example sending a request using the SearchProfilesRequest method.
-//    req, resp := client.SearchProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/SearchProfiles
 func (c *CustomerProfiles) SearchProfilesRequest(input *SearchProfilesInput) (req *request.Request, output *SearchProfilesOutput) {
@@ -3197,20 +3196,21 @@ func (c *CustomerProfiles) SearchProfilesRequest(input *SearchProfilesInput) (re
 // API operation SearchProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/SearchProfiles
 func (c *CustomerProfiles) SearchProfiles(input *SearchProfilesInput) (*SearchProfilesOutput, error) {
@@ -3250,14 +3250,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/TagResource
 func (c *CustomerProfiles) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3305,14 +3304,15 @@ func (c *CustomerProfiles) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - InternalServerException
+//     An internal service error occurred.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/TagResource
 func (c *CustomerProfiles) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3352,14 +3352,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UntagResource
 func (c *CustomerProfiles) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3393,14 +3392,15 @@ func (c *CustomerProfiles) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal service error occurred.
 //
-//   * BadRequestException
-//   The input you provided is invalid.
+//   - InternalServerException
+//     An internal service error occurred.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UntagResource
 func (c *CustomerProfiles) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3440,14 +3440,13 @@ const opUpdateDomain = "UpdateDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainRequest method.
+//	req, resp := client.UpdateDomainRequest(params)
 //
-//    // Example sending a request using the UpdateDomainRequest method.
-//    req, resp := client.UpdateDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UpdateDomain
 func (c *CustomerProfiles) UpdateDomainRequest(input *UpdateDomainInput) (req *request.Request, output *UpdateDomainOutput) {
@@ -3489,20 +3488,21 @@ func (c *CustomerProfiles) UpdateDomainRequest(input *UpdateDomainInput) (req *r
 // API operation UpdateDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UpdateDomain
 func (c *CustomerProfiles) UpdateDomain(input *UpdateDomainInput) (*UpdateDomainOutput, error) {
@@ -3542,14 +3542,13 @@ const opUpdateProfile = "UpdateProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateProfileRequest method.
+//	req, resp := client.UpdateProfileRequest(params)
 //
-//    // Example sending a request using the UpdateProfileRequest method.
-//    req, resp := client.UpdateProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UpdateProfile
 func (c *CustomerProfiles) UpdateProfileRequest(input *UpdateProfileInput) (req *request.Request, output *UpdateProfileOutput) {
@@ -3585,20 +3584,21 @@ func (c *CustomerProfiles) UpdateProfileRequest(input *UpdateProfileInput) (req 
 // API operation UpdateProfile for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input you provided is invalid.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - BadRequestException
+//     The input you provided is invalid.
 //
-//   * ResourceNotFoundException
-//   The requested resource does not exist, or access was denied.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ThrottlingException
-//   You exceeded the maximum number of requests.
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
 //
-//   * InternalServerException
-//   An internal service error occurred.
+//   - ThrottlingException
+//     You exceeded the maximum number of requests.
+//
+//   - InternalServerException
+//     An internal service error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/customer-profiles-2020-08-15/UpdateProfile
 func (c *CustomerProfiles) UpdateProfile(input *UpdateProfileInput) (*UpdateProfileOutput, error) {

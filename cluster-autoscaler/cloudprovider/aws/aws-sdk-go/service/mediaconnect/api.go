@@ -28,14 +28,13 @@ const opAddFlowMediaStreams = "AddFlowMediaStreams"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddFlowMediaStreamsRequest method.
+//	req, resp := client.AddFlowMediaStreamsRequest(params)
 //
-//    // Example sending a request using the AddFlowMediaStreamsRequest method.
-//    req, resp := client.AddFlowMediaStreamsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowMediaStreams
 func (c *MediaConnect) AddFlowMediaStreamsRequest(input *AddFlowMediaStreamsInput) (req *request.Request, output *AddFlowMediaStreamsOutput) {
@@ -68,35 +67,36 @@ func (c *MediaConnect) AddFlowMediaStreamsRequest(input *AddFlowMediaStreamsInpu
 // API operation AddFlowMediaStreams for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowMediaStreams
 func (c *MediaConnect) AddFlowMediaStreams(input *AddFlowMediaStreamsInput) (*AddFlowMediaStreamsOutput, error) {
@@ -136,14 +136,13 @@ const opAddFlowOutputs = "AddFlowOutputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddFlowOutputsRequest method.
+//	req, resp := client.AddFlowOutputsRequest(params)
 //
-//    // Example sending a request using the AddFlowOutputsRequest method.
-//    req, resp := client.AddFlowOutputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowOutputs
 func (c *MediaConnect) AddFlowOutputsRequest(input *AddFlowOutputsInput) (req *request.Request, output *AddFlowOutputsOutput) {
@@ -174,40 +173,41 @@ func (c *MediaConnect) AddFlowOutputsRequest(input *AddFlowOutputsInput) (req *r
 // API operation AddFlowOutputs for usage and error information.
 //
 // Returned Error Types:
-//   * AddFlowOutputs420Exception
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - AddFlowOutputs420Exception
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowOutputs
 func (c *MediaConnect) AddFlowOutputs(input *AddFlowOutputsInput) (*AddFlowOutputsOutput, error) {
@@ -247,14 +247,13 @@ const opAddFlowSources = "AddFlowSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddFlowSourcesRequest method.
+//	req, resp := client.AddFlowSourcesRequest(params)
 //
-//    // Example sending a request using the AddFlowSourcesRequest method.
-//    req, resp := client.AddFlowSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowSources
 func (c *MediaConnect) AddFlowSourcesRequest(input *AddFlowSourcesInput) (req *request.Request, output *AddFlowSourcesOutput) {
@@ -275,7 +274,7 @@ func (c *MediaConnect) AddFlowSourcesRequest(input *AddFlowSourcesInput) (req *r
 
 // AddFlowSources API operation for AWS MediaConnect.
 //
-// Adds Sources to flow
+// # Adds Sources to flow
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -285,35 +284,36 @@ func (c *MediaConnect) AddFlowSourcesRequest(input *AddFlowSourcesInput) (req *r
 // API operation AddFlowSources for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowSources
 func (c *MediaConnect) AddFlowSources(input *AddFlowSourcesInput) (*AddFlowSourcesOutput, error) {
@@ -353,14 +353,13 @@ const opAddFlowVpcInterfaces = "AddFlowVpcInterfaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddFlowVpcInterfacesRequest method.
+//	req, resp := client.AddFlowVpcInterfacesRequest(params)
 //
-//    // Example sending a request using the AddFlowVpcInterfacesRequest method.
-//    req, resp := client.AddFlowVpcInterfacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowVpcInterfaces
 func (c *MediaConnect) AddFlowVpcInterfacesRequest(input *AddFlowVpcInterfacesInput) (req *request.Request, output *AddFlowVpcInterfacesOutput) {
@@ -381,7 +380,7 @@ func (c *MediaConnect) AddFlowVpcInterfacesRequest(input *AddFlowVpcInterfacesIn
 
 // AddFlowVpcInterfaces API operation for AWS MediaConnect.
 //
-// Adds VPC interfaces to flow
+// # Adds VPC interfaces to flow
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -391,35 +390,36 @@ func (c *MediaConnect) AddFlowVpcInterfacesRequest(input *AddFlowVpcInterfacesIn
 // API operation AddFlowVpcInterfaces for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddFlowVpcInterfaces
 func (c *MediaConnect) AddFlowVpcInterfaces(input *AddFlowVpcInterfacesInput) (*AddFlowVpcInterfacesOutput, error) {
@@ -459,14 +459,13 @@ const opCreateFlow = "CreateFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFlowRequest method.
+//	req, resp := client.CreateFlowRequest(params)
 //
-//    // Example sending a request using the CreateFlowRequest method.
-//    req, resp := client.CreateFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateFlow
 func (c *MediaConnect) CreateFlowRequest(input *CreateFlowInput) (req *request.Request, output *CreateFlowOutput) {
@@ -498,35 +497,36 @@ func (c *MediaConnect) CreateFlowRequest(input *CreateFlowInput) (req *request.R
 // API operation CreateFlow for usage and error information.
 //
 // Returned Error Types:
-//   * CreateFlow420Exception
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - CreateFlow420Exception
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateFlow
 func (c *MediaConnect) CreateFlow(input *CreateFlowInput) (*CreateFlowOutput, error) {
@@ -566,14 +566,13 @@ const opDeleteFlow = "DeleteFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFlowRequest method.
+//	req, resp := client.DeleteFlowRequest(params)
 //
-//    // Example sending a request using the DeleteFlowRequest method.
-//    req, resp := client.DeleteFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteFlow
 func (c *MediaConnect) DeleteFlowRequest(input *DeleteFlowInput) (req *request.Request, output *DeleteFlowOutput) {
@@ -604,35 +603,36 @@ func (c *MediaConnect) DeleteFlowRequest(input *DeleteFlowInput) (req *request.R
 // API operation DeleteFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteFlow
 func (c *MediaConnect) DeleteFlow(input *DeleteFlowInput) (*DeleteFlowOutput, error) {
@@ -672,14 +672,13 @@ const opDescribeFlow = "DescribeFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFlowRequest method.
+//	req, resp := client.DescribeFlowRequest(params)
 //
-//    // Example sending a request using the DescribeFlowRequest method.
-//    req, resp := client.DescribeFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeFlow
 func (c *MediaConnect) DescribeFlowRequest(input *DescribeFlowInput) (req *request.Request, output *DescribeFlowOutput) {
@@ -712,35 +711,36 @@ func (c *MediaConnect) DescribeFlowRequest(input *DescribeFlowInput) (req *reque
 // API operation DescribeFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeFlow
 func (c *MediaConnect) DescribeFlow(input *DescribeFlowInput) (*DescribeFlowOutput, error) {
@@ -780,14 +780,13 @@ const opDescribeOffering = "DescribeOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOfferingRequest method.
+//	req, resp := client.DescribeOfferingRequest(params)
 //
-//    // Example sending a request using the DescribeOfferingRequest method.
-//    req, resp := client.DescribeOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeOffering
 func (c *MediaConnect) DescribeOfferingRequest(input *DescribeOfferingInput) (req *request.Request, output *DescribeOfferingOutput) {
@@ -819,30 +818,31 @@ func (c *MediaConnect) DescribeOfferingRequest(input *DescribeOfferingInput) (re
 // API operation DescribeOffering for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeOffering
 func (c *MediaConnect) DescribeOffering(input *DescribeOfferingInput) (*DescribeOfferingOutput, error) {
@@ -882,14 +882,13 @@ const opDescribeReservation = "DescribeReservation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservationRequest method.
+//	req, resp := client.DescribeReservationRequest(params)
 //
-//    // Example sending a request using the DescribeReservationRequest method.
-//    req, resp := client.DescribeReservationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeReservation
 func (c *MediaConnect) DescribeReservationRequest(input *DescribeReservationInput) (req *request.Request, output *DescribeReservationOutput) {
@@ -922,30 +921,31 @@ func (c *MediaConnect) DescribeReservationRequest(input *DescribeReservationInpu
 // API operation DescribeReservation for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeReservation
 func (c *MediaConnect) DescribeReservation(input *DescribeReservationInput) (*DescribeReservationOutput, error) {
@@ -985,14 +985,13 @@ const opGrantFlowEntitlements = "GrantFlowEntitlements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GrantFlowEntitlementsRequest method.
+//	req, resp := client.GrantFlowEntitlementsRequest(params)
 //
-//    // Example sending a request using the GrantFlowEntitlementsRequest method.
-//    req, resp := client.GrantFlowEntitlementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/GrantFlowEntitlements
 func (c *MediaConnect) GrantFlowEntitlementsRequest(input *GrantFlowEntitlementsInput) (req *request.Request, output *GrantFlowEntitlementsOutput) {
@@ -1023,40 +1022,41 @@ func (c *MediaConnect) GrantFlowEntitlementsRequest(input *GrantFlowEntitlements
 // API operation GrantFlowEntitlements for usage and error information.
 //
 // Returned Error Types:
-//   * GrantFlowEntitlements420Exception
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - GrantFlowEntitlements420Exception
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/GrantFlowEntitlements
 func (c *MediaConnect) GrantFlowEntitlements(input *GrantFlowEntitlementsInput) (*GrantFlowEntitlementsOutput, error) {
@@ -1096,14 +1096,13 @@ const opListEntitlements = "ListEntitlements"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitlementsRequest method.
+//	req, resp := client.ListEntitlementsRequest(params)
 //
-//    // Example sending a request using the ListEntitlementsRequest method.
-//    req, resp := client.ListEntitlementsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListEntitlements
 func (c *MediaConnect) ListEntitlementsRequest(input *ListEntitlementsInput) (req *request.Request, output *ListEntitlementsOutput) {
@@ -1141,25 +1140,26 @@ func (c *MediaConnect) ListEntitlementsRequest(input *ListEntitlementsInput) (re
 // API operation ListEntitlements for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListEntitlements
 func (c *MediaConnect) ListEntitlements(input *ListEntitlementsInput) (*ListEntitlementsOutput, error) {
@@ -1191,15 +1191,14 @@ func (c *MediaConnect) ListEntitlementsWithContext(ctx aws.Context, input *ListE
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntitlements operation.
-//    pageNum := 0
-//    err := client.ListEntitlementsPages(params,
-//        func(page *mediaconnect.ListEntitlementsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntitlements operation.
+//	pageNum := 0
+//	err := client.ListEntitlementsPages(params,
+//	    func(page *mediaconnect.ListEntitlementsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaConnect) ListEntitlementsPages(input *ListEntitlementsInput, fn func(*ListEntitlementsOutput, bool) bool) error {
 	return c.ListEntitlementsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1251,14 +1250,13 @@ const opListFlows = "ListFlows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFlowsRequest method.
+//	req, resp := client.ListFlowsRequest(params)
 //
-//    // Example sending a request using the ListFlowsRequest method.
-//    req, resp := client.ListFlowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListFlows
 func (c *MediaConnect) ListFlowsRequest(input *ListFlowsInput) (req *request.Request, output *ListFlowsOutput) {
@@ -1296,25 +1294,26 @@ func (c *MediaConnect) ListFlowsRequest(input *ListFlowsInput) (req *request.Req
 // API operation ListFlows for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListFlows
 func (c *MediaConnect) ListFlows(input *ListFlowsInput) (*ListFlowsOutput, error) {
@@ -1346,15 +1345,14 @@ func (c *MediaConnect) ListFlowsWithContext(ctx aws.Context, input *ListFlowsInp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListFlows operation.
-//    pageNum := 0
-//    err := client.ListFlowsPages(params,
-//        func(page *mediaconnect.ListFlowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListFlows operation.
+//	pageNum := 0
+//	err := client.ListFlowsPages(params,
+//	    func(page *mediaconnect.ListFlowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaConnect) ListFlowsPages(input *ListFlowsInput, fn func(*ListFlowsOutput, bool) bool) error {
 	return c.ListFlowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1406,14 +1404,13 @@ const opListOfferings = "ListOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOfferingsRequest method.
+//	req, resp := client.ListOfferingsRequest(params)
 //
-//    // Example sending a request using the ListOfferingsRequest method.
-//    req, resp := client.ListOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListOfferings
 func (c *MediaConnect) ListOfferingsRequest(input *ListOfferingsInput) (req *request.Request, output *ListOfferingsOutput) {
@@ -1453,25 +1450,26 @@ func (c *MediaConnect) ListOfferingsRequest(input *ListOfferingsInput) (req *req
 // API operation ListOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListOfferings
 func (c *MediaConnect) ListOfferings(input *ListOfferingsInput) (*ListOfferingsOutput, error) {
@@ -1503,15 +1501,14 @@ func (c *MediaConnect) ListOfferingsWithContext(ctx aws.Context, input *ListOffe
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListOfferings operation.
-//    pageNum := 0
-//    err := client.ListOfferingsPages(params,
-//        func(page *mediaconnect.ListOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListOfferings operation.
+//	pageNum := 0
+//	err := client.ListOfferingsPages(params,
+//	    func(page *mediaconnect.ListOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaConnect) ListOfferingsPages(input *ListOfferingsInput, fn func(*ListOfferingsOutput, bool) bool) error {
 	return c.ListOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1563,14 +1560,13 @@ const opListReservations = "ListReservations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReservationsRequest method.
+//	req, resp := client.ListReservationsRequest(params)
 //
-//    // Example sending a request using the ListReservationsRequest method.
-//    req, resp := client.ListReservationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListReservations
 func (c *MediaConnect) ListReservationsRequest(input *ListReservationsInput) (req *request.Request, output *ListReservationsOutput) {
@@ -1609,25 +1605,26 @@ func (c *MediaConnect) ListReservationsRequest(input *ListReservationsInput) (re
 // API operation ListReservations for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListReservations
 func (c *MediaConnect) ListReservations(input *ListReservationsInput) (*ListReservationsOutput, error) {
@@ -1659,15 +1656,14 @@ func (c *MediaConnect) ListReservationsWithContext(ctx aws.Context, input *ListR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReservations operation.
-//    pageNum := 0
-//    err := client.ListReservationsPages(params,
-//        func(page *mediaconnect.ListReservationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReservations operation.
+//	pageNum := 0
+//	err := client.ListReservationsPages(params,
+//	    func(page *mediaconnect.ListReservationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaConnect) ListReservationsPages(input *ListReservationsInput, fn func(*ListReservationsOutput, bool) bool) error {
 	return c.ListReservationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1719,14 +1715,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListTagsForResource
 func (c *MediaConnect) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1747,7 +1742,7 @@ func (c *MediaConnect) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 
 // ListTagsForResource API operation for AWS MediaConnect.
 //
-// List all tags on an AWS Elemental MediaConnect resource
+// # List all tags on an AWS Elemental MediaConnect resource
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1757,20 +1752,21 @@ func (c *MediaConnect) ListTagsForResourceRequest(input *ListTagsForResourceInpu
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListTagsForResource
 func (c *MediaConnect) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1810,14 +1806,13 @@ const opPurchaseOffering = "PurchaseOffering"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseOfferingRequest method.
+//	req, resp := client.PurchaseOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseOfferingRequest method.
-//    req, resp := client.PurchaseOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/PurchaseOffering
 func (c *MediaConnect) PurchaseOfferingRequest(input *PurchaseOfferingInput) (req *request.Request, output *PurchaseOfferingOutput) {
@@ -1849,35 +1844,36 @@ func (c *MediaConnect) PurchaseOfferingRequest(input *PurchaseOfferingInput) (re
 // API operation PurchaseOffering for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/PurchaseOffering
 func (c *MediaConnect) PurchaseOffering(input *PurchaseOfferingInput) (*PurchaseOfferingOutput, error) {
@@ -1917,14 +1913,13 @@ const opRemoveFlowMediaStream = "RemoveFlowMediaStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveFlowMediaStreamRequest method.
+//	req, resp := client.RemoveFlowMediaStreamRequest(params)
 //
-//    // Example sending a request using the RemoveFlowMediaStreamRequest method.
-//    req, resp := client.RemoveFlowMediaStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowMediaStream
 func (c *MediaConnect) RemoveFlowMediaStreamRequest(input *RemoveFlowMediaStreamInput) (req *request.Request, output *RemoveFlowMediaStreamOutput) {
@@ -1956,35 +1951,36 @@ func (c *MediaConnect) RemoveFlowMediaStreamRequest(input *RemoveFlowMediaStream
 // API operation RemoveFlowMediaStream for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowMediaStream
 func (c *MediaConnect) RemoveFlowMediaStream(input *RemoveFlowMediaStreamInput) (*RemoveFlowMediaStreamOutput, error) {
@@ -2024,14 +2020,13 @@ const opRemoveFlowOutput = "RemoveFlowOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveFlowOutputRequest method.
+//	req, resp := client.RemoveFlowOutputRequest(params)
 //
-//    // Example sending a request using the RemoveFlowOutputRequest method.
-//    req, resp := client.RemoveFlowOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowOutput
 func (c *MediaConnect) RemoveFlowOutputRequest(input *RemoveFlowOutputInput) (req *request.Request, output *RemoveFlowOutputOutput) {
@@ -2066,35 +2061,36 @@ func (c *MediaConnect) RemoveFlowOutputRequest(input *RemoveFlowOutputInput) (re
 // API operation RemoveFlowOutput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowOutput
 func (c *MediaConnect) RemoveFlowOutput(input *RemoveFlowOutputInput) (*RemoveFlowOutputOutput, error) {
@@ -2134,14 +2130,13 @@ const opRemoveFlowSource = "RemoveFlowSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveFlowSourceRequest method.
+//	req, resp := client.RemoveFlowSourceRequest(params)
 //
-//    // Example sending a request using the RemoveFlowSourceRequest method.
-//    req, resp := client.RemoveFlowSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowSource
 func (c *MediaConnect) RemoveFlowSourceRequest(input *RemoveFlowSourceInput) (req *request.Request, output *RemoveFlowSourceOutput) {
@@ -2173,35 +2168,36 @@ func (c *MediaConnect) RemoveFlowSourceRequest(input *RemoveFlowSourceInput) (re
 // API operation RemoveFlowSource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowSource
 func (c *MediaConnect) RemoveFlowSource(input *RemoveFlowSourceInput) (*RemoveFlowSourceOutput, error) {
@@ -2241,14 +2237,13 @@ const opRemoveFlowVpcInterface = "RemoveFlowVpcInterface"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveFlowVpcInterfaceRequest method.
+//	req, resp := client.RemoveFlowVpcInterfaceRequest(params)
 //
-//    // Example sending a request using the RemoveFlowVpcInterfaceRequest method.
-//    req, resp := client.RemoveFlowVpcInterfaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowVpcInterface
 func (c *MediaConnect) RemoveFlowVpcInterfaceRequest(input *RemoveFlowVpcInterfaceInput) (req *request.Request, output *RemoveFlowVpcInterfaceOutput) {
@@ -2282,35 +2277,36 @@ func (c *MediaConnect) RemoveFlowVpcInterfaceRequest(input *RemoveFlowVpcInterfa
 // API operation RemoveFlowVpcInterface for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveFlowVpcInterface
 func (c *MediaConnect) RemoveFlowVpcInterface(input *RemoveFlowVpcInterfaceInput) (*RemoveFlowVpcInterfaceOutput, error) {
@@ -2350,14 +2346,13 @@ const opRevokeFlowEntitlement = "RevokeFlowEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RevokeFlowEntitlementRequest method.
+//	req, resp := client.RevokeFlowEntitlementRequest(params)
 //
-//    // Example sending a request using the RevokeFlowEntitlementRequest method.
-//    req, resp := client.RevokeFlowEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RevokeFlowEntitlement
 func (c *MediaConnect) RevokeFlowEntitlementRequest(input *RevokeFlowEntitlementInput) (req *request.Request, output *RevokeFlowEntitlementOutput) {
@@ -2389,35 +2384,36 @@ func (c *MediaConnect) RevokeFlowEntitlementRequest(input *RevokeFlowEntitlement
 // API operation RevokeFlowEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RevokeFlowEntitlement
 func (c *MediaConnect) RevokeFlowEntitlement(input *RevokeFlowEntitlementInput) (*RevokeFlowEntitlementOutput, error) {
@@ -2457,14 +2453,13 @@ const opStartFlow = "StartFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartFlowRequest method.
+//	req, resp := client.StartFlowRequest(params)
 //
-//    // Example sending a request using the StartFlowRequest method.
-//    req, resp := client.StartFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/StartFlow
 func (c *MediaConnect) StartFlowRequest(input *StartFlowInput) (req *request.Request, output *StartFlowOutput) {
@@ -2495,35 +2490,36 @@ func (c *MediaConnect) StartFlowRequest(input *StartFlowInput) (req *request.Req
 // API operation StartFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/StartFlow
 func (c *MediaConnect) StartFlow(input *StartFlowInput) (*StartFlowOutput, error) {
@@ -2563,14 +2559,13 @@ const opStopFlow = "StopFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopFlowRequest method.
+//	req, resp := client.StopFlowRequest(params)
 //
-//    // Example sending a request using the StopFlowRequest method.
-//    req, resp := client.StopFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/StopFlow
 func (c *MediaConnect) StopFlowRequest(input *StopFlowInput) (req *request.Request, output *StopFlowOutput) {
@@ -2601,35 +2596,36 @@ func (c *MediaConnect) StopFlowRequest(input *StopFlowInput) (req *request.Reque
 // API operation StopFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/StopFlow
 func (c *MediaConnect) StopFlow(input *StopFlowInput) (*StopFlowOutput, error) {
@@ -2669,14 +2665,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/TagResource
 func (c *MediaConnect) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2711,20 +2706,21 @@ func (c *MediaConnect) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/TagResource
 func (c *MediaConnect) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2764,14 +2760,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UntagResource
 func (c *MediaConnect) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2803,20 +2798,21 @@ func (c *MediaConnect) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UntagResource
 func (c *MediaConnect) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2856,14 +2852,13 @@ const opUpdateFlow = "UpdateFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowRequest method.
+//	req, resp := client.UpdateFlowRequest(params)
 //
-//    // Example sending a request using the UpdateFlowRequest method.
-//    req, resp := client.UpdateFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlow
 func (c *MediaConnect) UpdateFlowRequest(input *UpdateFlowInput) (req *request.Request, output *UpdateFlowOutput) {
@@ -2884,7 +2879,7 @@ func (c *MediaConnect) UpdateFlowRequest(input *UpdateFlowInput) (req *request.R
 
 // UpdateFlow API operation for AWS MediaConnect.
 //
-// Updates flow
+// # Updates flow
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2894,35 +2889,36 @@ func (c *MediaConnect) UpdateFlowRequest(input *UpdateFlowInput) (req *request.R
 // API operation UpdateFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlow
 func (c *MediaConnect) UpdateFlow(input *UpdateFlowInput) (*UpdateFlowOutput, error) {
@@ -2962,14 +2958,13 @@ const opUpdateFlowEntitlement = "UpdateFlowEntitlement"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowEntitlementRequest method.
+//	req, resp := client.UpdateFlowEntitlementRequest(params)
 //
-//    // Example sending a request using the UpdateFlowEntitlementRequest method.
-//    req, resp := client.UpdateFlowEntitlementRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowEntitlement
 func (c *MediaConnect) UpdateFlowEntitlementRequest(input *UpdateFlowEntitlementInput) (req *request.Request, output *UpdateFlowEntitlementOutput) {
@@ -3002,35 +2997,36 @@ func (c *MediaConnect) UpdateFlowEntitlementRequest(input *UpdateFlowEntitlement
 // API operation UpdateFlowEntitlement for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowEntitlement
 func (c *MediaConnect) UpdateFlowEntitlement(input *UpdateFlowEntitlementInput) (*UpdateFlowEntitlementOutput, error) {
@@ -3070,14 +3066,13 @@ const opUpdateFlowMediaStream = "UpdateFlowMediaStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowMediaStreamRequest method.
+//	req, resp := client.UpdateFlowMediaStreamRequest(params)
 //
-//    // Example sending a request using the UpdateFlowMediaStreamRequest method.
-//    req, resp := client.UpdateFlowMediaStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowMediaStream
 func (c *MediaConnect) UpdateFlowMediaStreamRequest(input *UpdateFlowMediaStreamInput) (req *request.Request, output *UpdateFlowMediaStreamOutput) {
@@ -3108,35 +3103,36 @@ func (c *MediaConnect) UpdateFlowMediaStreamRequest(input *UpdateFlowMediaStream
 // API operation UpdateFlowMediaStream for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowMediaStream
 func (c *MediaConnect) UpdateFlowMediaStream(input *UpdateFlowMediaStreamInput) (*UpdateFlowMediaStreamOutput, error) {
@@ -3176,14 +3172,13 @@ const opUpdateFlowOutput = "UpdateFlowOutput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowOutputRequest method.
+//	req, resp := client.UpdateFlowOutputRequest(params)
 //
-//    // Example sending a request using the UpdateFlowOutputRequest method.
-//    req, resp := client.UpdateFlowOutputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowOutput
 func (c *MediaConnect) UpdateFlowOutputRequest(input *UpdateFlowOutputInput) (req *request.Request, output *UpdateFlowOutputOutput) {
@@ -3214,35 +3209,36 @@ func (c *MediaConnect) UpdateFlowOutputRequest(input *UpdateFlowOutputInput) (re
 // API operation UpdateFlowOutput for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowOutput
 func (c *MediaConnect) UpdateFlowOutput(input *UpdateFlowOutputInput) (*UpdateFlowOutputOutput, error) {
@@ -3282,14 +3278,13 @@ const opUpdateFlowSource = "UpdateFlowSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFlowSourceRequest method.
+//	req, resp := client.UpdateFlowSourceRequest(params)
 //
-//    // Example sending a request using the UpdateFlowSourceRequest method.
-//    req, resp := client.UpdateFlowSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowSource
 func (c *MediaConnect) UpdateFlowSourceRequest(input *UpdateFlowSourceInput) (req *request.Request, output *UpdateFlowSourceOutput) {
@@ -3320,35 +3315,36 @@ func (c *MediaConnect) UpdateFlowSourceRequest(input *UpdateFlowSourceInput) (re
 // API operation UpdateFlowSource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
 //
-//   * InternalServerErrorException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ForbiddenException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * NotFoundException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * ServiceUnavailableException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
-//   * TooManyRequestsException
-//   Exception raised by AWS Elemental MediaConnect. See the error message and
-//   documentation for the operation for more information on the cause of this
-//   exception.
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateFlowSource
 func (c *MediaConnect) UpdateFlowSource(input *UpdateFlowSourceInput) (*UpdateFlowSourceOutput, error) {

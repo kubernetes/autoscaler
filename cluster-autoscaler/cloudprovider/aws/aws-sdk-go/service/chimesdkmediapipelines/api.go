@@ -29,14 +29,13 @@ const opCreateMediaCapturePipeline = "CreateMediaCapturePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMediaCapturePipelineRequest method.
+//	req, resp := client.CreateMediaCapturePipelineRequest(params)
 //
-//    // Example sending a request using the CreateMediaCapturePipelineRequest method.
-//    req, resp := client.CreateMediaCapturePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/CreateMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) CreateMediaCapturePipelineRequest(input *CreateMediaCapturePipelineInput) (req *request.Request, output *CreateMediaCapturePipelineOutput) {
@@ -67,26 +66,27 @@ func (c *ChimeSDKMediaPipelines) CreateMediaCapturePipelineRequest(input *Create
 // API operation CreateMediaCapturePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/CreateMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) CreateMediaCapturePipeline(input *CreateMediaCapturePipelineInput) (*CreateMediaCapturePipelineOutput, error) {
@@ -126,14 +126,13 @@ const opDeleteMediaCapturePipeline = "DeleteMediaCapturePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMediaCapturePipelineRequest method.
+//	req, resp := client.DeleteMediaCapturePipelineRequest(params)
 //
-//    // Example sending a request using the DeleteMediaCapturePipelineRequest method.
-//    req, resp := client.DeleteMediaCapturePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/DeleteMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) DeleteMediaCapturePipelineRequest(input *DeleteMediaCapturePipelineInput) (req *request.Request, output *DeleteMediaCapturePipelineOutput) {
@@ -165,26 +164,27 @@ func (c *ChimeSDKMediaPipelines) DeleteMediaCapturePipelineRequest(input *Delete
 // API operation DeleteMediaCapturePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/DeleteMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) DeleteMediaCapturePipeline(input *DeleteMediaCapturePipelineInput) (*DeleteMediaCapturePipelineOutput, error) {
@@ -224,14 +224,13 @@ const opGetMediaCapturePipeline = "GetMediaCapturePipeline"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMediaCapturePipelineRequest method.
+//	req, resp := client.GetMediaCapturePipelineRequest(params)
 //
-//    // Example sending a request using the GetMediaCapturePipelineRequest method.
-//    req, resp := client.GetMediaCapturePipelineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/GetMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) GetMediaCapturePipelineRequest(input *GetMediaCapturePipelineInput) (req *request.Request, output *GetMediaCapturePipelineOutput) {
@@ -262,26 +261,27 @@ func (c *ChimeSDKMediaPipelines) GetMediaCapturePipelineRequest(input *GetMediaC
 // API operation GetMediaCapturePipeline for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/GetMediaCapturePipeline
 func (c *ChimeSDKMediaPipelines) GetMediaCapturePipeline(input *GetMediaCapturePipelineInput) (*GetMediaCapturePipelineOutput, error) {
@@ -321,14 +321,13 @@ const opListMediaCapturePipelines = "ListMediaCapturePipelines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMediaCapturePipelinesRequest method.
+//	req, resp := client.ListMediaCapturePipelinesRequest(params)
 //
-//    // Example sending a request using the ListMediaCapturePipelinesRequest method.
-//    req, resp := client.ListMediaCapturePipelinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/ListMediaCapturePipelines
 func (c *ChimeSDKMediaPipelines) ListMediaCapturePipelinesRequest(input *ListMediaCapturePipelinesInput) (req *request.Request, output *ListMediaCapturePipelinesOutput) {
@@ -365,26 +364,27 @@ func (c *ChimeSDKMediaPipelines) ListMediaCapturePipelinesRequest(input *ListMed
 // API operation ListMediaCapturePipelines for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/ListMediaCapturePipelines
 func (c *ChimeSDKMediaPipelines) ListMediaCapturePipelines(input *ListMediaCapturePipelinesInput) (*ListMediaCapturePipelinesOutput, error) {
@@ -416,15 +416,14 @@ func (c *ChimeSDKMediaPipelines) ListMediaCapturePipelinesWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMediaCapturePipelines operation.
-//    pageNum := 0
-//    err := client.ListMediaCapturePipelinesPages(params,
-//        func(page *chimesdkmediapipelines.ListMediaCapturePipelinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMediaCapturePipelines operation.
+//	pageNum := 0
+//	err := client.ListMediaCapturePipelinesPages(params,
+//	    func(page *chimesdkmediapipelines.ListMediaCapturePipelinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMediaPipelines) ListMediaCapturePipelinesPages(input *ListMediaCapturePipelinesInput, fn func(*ListMediaCapturePipelinesOutput, bool) bool) error {
 	return c.ListMediaCapturePipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -476,14 +475,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/ListTagsForResource
 func (c *ChimeSDKMediaPipelines) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -514,26 +512,27 @@ func (c *ChimeSDKMediaPipelines) ListTagsForResourceRequest(input *ListTagsForRe
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/ListTagsForResource
 func (c *ChimeSDKMediaPipelines) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -573,14 +572,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/TagResource
 func (c *ChimeSDKMediaPipelines) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -613,26 +611,27 @@ func (c *ChimeSDKMediaPipelines) TagResourceRequest(input *TagResourceInput) (re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/TagResource
 func (c *ChimeSDKMediaPipelines) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -672,14 +671,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/UntagResource
 func (c *ChimeSDKMediaPipelines) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -712,26 +710,27 @@ func (c *ChimeSDKMediaPipelines) UntagResourceRequest(input *UntagResourceInput)
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-media-pipelines-2021-07-15/UntagResource
 func (c *ChimeSDKMediaPipelines) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

@@ -11,7 +11,7 @@ import (
 
 // RemoveDrgRouteRulesRequest wrapper for the RemoveDrgRouteRules operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/RemoveDrgRouteRules.go.html to see an example of how to use RemoveDrgRouteRulesRequest.
 type RemoveDrgRouteRulesRequest struct {

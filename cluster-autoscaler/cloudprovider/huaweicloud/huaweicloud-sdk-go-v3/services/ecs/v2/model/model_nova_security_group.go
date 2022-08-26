@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-//
 type NovaSecurityGroup struct {
 	// 安全组描述信息，长度0-255
 

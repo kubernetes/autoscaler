@@ -15,7 +15,7 @@
 // (IDE) Toolkits, and command line tools that enable you to access the API,
 // go to Tools for Amazon Web Services (http://aws.amazon.com/tools/).
 //
-// Endpoints
+// # Endpoints
 //
 // For a list of region-specific endpoints that AWS Elastic Beanstalk supports,
 // go to Regions and Endpoints (https://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region)
@@ -26,7 +26,7 @@
 // See elasticbeanstalk package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/elasticbeanstalk/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Elastic Beanstalk with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

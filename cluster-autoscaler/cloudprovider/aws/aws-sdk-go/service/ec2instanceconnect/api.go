@@ -27,14 +27,13 @@ const opSendSSHPublicKey = "SendSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendSSHPublicKeyRequest method.
+//	req, resp := client.SendSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the SendSSHPublicKeyRequest method.
-//    req, resp := client.SendSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSSHPublicKey
 func (c *EC2InstanceConnect) SendSSHPublicKeyRequest(input *SendSSHPublicKeyInput) (req *request.Request, output *SendSSHPublicKeyOutput) {
@@ -68,29 +67,30 @@ func (c *EC2InstanceConnect) SendSSHPublicKeyRequest(input *SendSSHPublicKeyInpu
 // API operation SendSSHPublicKey for usage and error information.
 //
 // Returned Error Types:
-//   * AuthException
-//   Either your AWS credentials are not valid or you do not have access to the
-//   EC2 instance.
 //
-//   * InvalidArgsException
-//   One of the parameters is not valid.
+//   - AuthException
+//     Either your AWS credentials are not valid or you do not have access to the
+//     EC2 instance.
 //
-//   * ServiceException
-//   The service encountered an error. Follow the instructions in the error message
-//   and try again.
+//   - InvalidArgsException
+//     One of the parameters is not valid.
 //
-//   * ThrottlingException
-//   The requests were made too frequently and have been throttled. Wait a while
-//   and try again. To increase the limit on your request frequency, contact AWS
-//   Support.
+//   - ServiceException
+//     The service encountered an error. Follow the instructions in the error message
+//     and try again.
 //
-//   * EC2InstanceNotFoundException
-//   The specified instance was not found.
+//   - ThrottlingException
+//     The requests were made too frequently and have been throttled. Wait a while
+//     and try again. To increase the limit on your request frequency, contact AWS
+//     Support.
 //
-//   * EC2InstanceStateInvalidException
-//   Unable to connect because the instance is not in a valid state. Connecting
-//   to a stopped or terminated instance is not supported. If the instance is
-//   stopped, start your instance, and try to connect again.
+//   - EC2InstanceNotFoundException
+//     The specified instance was not found.
+//
+//   - EC2InstanceStateInvalidException
+//     Unable to connect because the instance is not in a valid state. Connecting
+//     to a stopped or terminated instance is not supported. If the instance is
+//     stopped, start your instance, and try to connect again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSSHPublicKey
 func (c *EC2InstanceConnect) SendSSHPublicKey(input *SendSSHPublicKeyInput) (*SendSSHPublicKeyOutput, error) {
@@ -130,14 +130,13 @@ const opSendSerialConsoleSSHPublicKey = "SendSerialConsoleSSHPublicKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendSerialConsoleSSHPublicKeyRequest method.
+//	req, resp := client.SendSerialConsoleSSHPublicKeyRequest(params)
 //
-//    // Example sending a request using the SendSerialConsoleSSHPublicKeyRequest method.
-//    req, resp := client.SendSerialConsoleSSHPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSerialConsoleSSHPublicKey
 func (c *EC2InstanceConnect) SendSerialConsoleSSHPublicKeyRequest(input *SendSerialConsoleSSHPublicKeyInput) (req *request.Request, output *SendSerialConsoleSSHPublicKeyOutput) {
@@ -171,46 +170,47 @@ func (c *EC2InstanceConnect) SendSerialConsoleSSHPublicKeyRequest(input *SendSer
 // API operation SendSerialConsoleSSHPublicKey for usage and error information.
 //
 // Returned Error Types:
-//   * AuthException
-//   Either your AWS credentials are not valid or you do not have access to the
-//   EC2 instance.
 //
-//   * SerialConsoleAccessDisabledException
-//   Your account is not authorized to use the EC2 Serial Console. To authorize
-//   your account, run the EnableSerialConsoleAccess API. For more information,
-//   see EnableSerialConsoleAccess (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_EnableSerialConsoleAccess.html)
-//   in the Amazon EC2 API Reference.
+//   - AuthException
+//     Either your AWS credentials are not valid or you do not have access to the
+//     EC2 instance.
 //
-//   * InvalidArgsException
-//   One of the parameters is not valid.
+//   - SerialConsoleAccessDisabledException
+//     Your account is not authorized to use the EC2 Serial Console. To authorize
+//     your account, run the EnableSerialConsoleAccess API. For more information,
+//     see EnableSerialConsoleAccess (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_EnableSerialConsoleAccess.html)
+//     in the Amazon EC2 API Reference.
 //
-//   * ServiceException
-//   The service encountered an error. Follow the instructions in the error message
-//   and try again.
+//   - InvalidArgsException
+//     One of the parameters is not valid.
 //
-//   * ThrottlingException
-//   The requests were made too frequently and have been throttled. Wait a while
-//   and try again. To increase the limit on your request frequency, contact AWS
-//   Support.
+//   - ServiceException
+//     The service encountered an error. Follow the instructions in the error message
+//     and try again.
 //
-//   * EC2InstanceNotFoundException
-//   The specified instance was not found.
+//   - ThrottlingException
+//     The requests were made too frequently and have been throttled. Wait a while
+//     and try again. To increase the limit on your request frequency, contact AWS
+//     Support.
 //
-//   * EC2InstanceTypeInvalidException
-//   The instance type is not supported for connecting via the serial console.
-//   Only Nitro instance types are currently supported.
+//   - EC2InstanceNotFoundException
+//     The specified instance was not found.
 //
-//   * SerialConsoleSessionLimitExceededException
-//   The instance currently has 1 active serial console session. Only 1 session
-//   is supported at a time.
+//   - EC2InstanceTypeInvalidException
+//     The instance type is not supported for connecting via the serial console.
+//     Only Nitro instance types are currently supported.
 //
-//   * SerialConsoleSessionUnavailableException
-//   Unable to start a serial console session. Please try again.
+//   - SerialConsoleSessionLimitExceededException
+//     The instance currently has 1 active serial console session. Only 1 session
+//     is supported at a time.
 //
-//   * EC2InstanceStateInvalidException
-//   Unable to connect because the instance is not in a valid state. Connecting
-//   to a stopped or terminated instance is not supported. If the instance is
-//   stopped, start your instance, and try to connect again.
+//   - SerialConsoleSessionUnavailableException
+//     Unable to start a serial console session. Please try again.
+//
+//   - EC2InstanceStateInvalidException
+//     Unable to connect because the instance is not in a valid state. Connecting
+//     to a stopped or terminated instance is not supported. If the instance is
+//     stopped, start your instance, and try to connect again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSerialConsoleSSHPublicKey
 func (c *EC2InstanceConnect) SendSerialConsoleSSHPublicKey(input *SendSerialConsoleSSHPublicKeyInput) (*SendSerialConsoleSSHPublicKeyOutput, error) {

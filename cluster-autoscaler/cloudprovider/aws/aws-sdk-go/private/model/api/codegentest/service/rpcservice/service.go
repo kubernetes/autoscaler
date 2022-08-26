@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a RPCService client from just a session.
-//     svc := rpcservice.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a RPCService client with additional configuration
-//     svc := rpcservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a RPCService client from just a session.
+//	svc := rpcservice.New(mySession)
+//
+//	// Create a RPCService client with additional configuration
+//	svc := rpcservice.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *RPCService {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

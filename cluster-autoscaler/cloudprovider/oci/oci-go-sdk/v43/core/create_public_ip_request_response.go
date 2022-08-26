@@ -11,7 +11,7 @@ import (
 
 // CreatePublicIpRequest wrapper for the CreatePublicIp operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/CreatePublicIp.go.html to see an example of how to use CreatePublicIpRequest.
 type CreatePublicIpRequest struct {

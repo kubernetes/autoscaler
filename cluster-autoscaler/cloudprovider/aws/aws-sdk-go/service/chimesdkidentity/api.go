@@ -29,14 +29,13 @@ const opCreateAppInstance = "CreateAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceRequest method.
+//	req, resp := client.CreateAppInstanceRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceRequest method.
-//    req, resp := client.CreateAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstance
 func (c *ChimeSDKIdentity) CreateAppInstanceRequest(input *CreateAppInstanceInput) (req *request.Request, output *CreateAppInstanceOutput) {
@@ -71,30 +70,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceRequest(input *CreateAppInstanceInpu
 // API operation CreateAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstance
 func (c *ChimeSDKIdentity) CreateAppInstance(input *CreateAppInstanceInput) (*CreateAppInstanceOutput, error) {
@@ -134,14 +134,13 @@ const opCreateAppInstanceAdmin = "CreateAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceAdminRequest method.
+//	req, resp := client.CreateAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceAdminRequest method.
-//    req, resp := client.CreateAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceAdmin
 func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanceAdminInput) (req *request.Request, output *CreateAppInstanceAdminOutput) {
@@ -165,9 +164,9 @@ func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanc
 // Promotes an AppInstanceUser to an AppInstanceAdmin. The promoted user can
 // perform the following actions.
 //
-//    * ChannelModerator actions across all channels in the AppInstance.
+//   - ChannelModerator actions across all channels in the AppInstance.
 //
-//    * DeleteChannelMessage actions.
+//   - DeleteChannelMessage actions.
 //
 // Only an AppInstanceUser can be promoted to an AppInstanceAdmin role.
 //
@@ -179,30 +178,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanc
 // API operation CreateAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceAdmin
 func (c *ChimeSDKIdentity) CreateAppInstanceAdmin(input *CreateAppInstanceAdminInput) (*CreateAppInstanceAdminOutput, error) {
@@ -242,14 +242,13 @@ const opCreateAppInstanceUser = "CreateAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceUserRequest method.
+//	req, resp := client.CreateAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceUserRequest method.
-//    req, resp := client.CreateAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceUser
 func (c *ChimeSDKIdentity) CreateAppInstanceUserRequest(input *CreateAppInstanceUserInput) (req *request.Request, output *CreateAppInstanceUserOutput) {
@@ -281,30 +280,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceUserRequest(input *CreateAppInstance
 // API operation CreateAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceUser
 func (c *ChimeSDKIdentity) CreateAppInstanceUser(input *CreateAppInstanceUserInput) (*CreateAppInstanceUserOutput, error) {
@@ -344,14 +344,13 @@ const opDeleteAppInstance = "DeleteAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceRequest method.
+//	req, resp := client.DeleteAppInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceRequest method.
-//    req, resp := client.DeleteAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstance
 func (c *ChimeSDKIdentity) DeleteAppInstanceRequest(input *DeleteAppInstanceInput) (req *request.Request, output *DeleteAppInstanceOutput) {
@@ -383,26 +382,27 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceRequest(input *DeleteAppInstanceInpu
 // API operation DeleteAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstance
 func (c *ChimeSDKIdentity) DeleteAppInstance(input *DeleteAppInstanceInput) (*DeleteAppInstanceOutput, error) {
@@ -442,14 +442,13 @@ const opDeleteAppInstanceAdmin = "DeleteAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceAdminRequest method.
+//	req, resp := client.DeleteAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceAdminRequest method.
-//    req, resp := client.DeleteAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceAdmin
 func (c *ChimeSDKIdentity) DeleteAppInstanceAdminRequest(input *DeleteAppInstanceAdminInput) (req *request.Request, output *DeleteAppInstanceAdminOutput) {
@@ -482,30 +481,31 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceAdminRequest(input *DeleteAppInstanc
 // API operation DeleteAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceAdmin
 func (c *ChimeSDKIdentity) DeleteAppInstanceAdmin(input *DeleteAppInstanceAdminInput) (*DeleteAppInstanceAdminOutput, error) {
@@ -545,14 +545,13 @@ const opDeleteAppInstanceUser = "DeleteAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceUserRequest method.
+//	req, resp := client.DeleteAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceUserRequest method.
-//    req, resp := client.DeleteAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceUser
 func (c *ChimeSDKIdentity) DeleteAppInstanceUserRequest(input *DeleteAppInstanceUserInput) (req *request.Request, output *DeleteAppInstanceUserOutput) {
@@ -584,30 +583,31 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceUserRequest(input *DeleteAppInstance
 // API operation DeleteAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceUser
 func (c *ChimeSDKIdentity) DeleteAppInstanceUser(input *DeleteAppInstanceUserInput) (*DeleteAppInstanceUserOutput, error) {
@@ -647,14 +647,13 @@ const opDeregisterAppInstanceUserEndpoint = "DeregisterAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterAppInstanceUserEndpointRequest method.
+//	req, resp := client.DeregisterAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the DeregisterAppInstanceUserEndpointRequest method.
-//    req, resp := client.DeregisterAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeregisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpointRequest(input *DeregisterAppInstanceUserEndpointInput) (req *request.Request, output *DeregisterAppInstanceUserEndpointOutput) {
@@ -686,23 +685,24 @@ func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpointRequest(input *Dereg
 // API operation DeregisterAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeregisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpoint(input *DeregisterAppInstanceUserEndpointInput) (*DeregisterAppInstanceUserEndpointOutput, error) {
@@ -742,14 +742,13 @@ const opDescribeAppInstance = "DescribeAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceRequest method.
+//	req, resp := client.DescribeAppInstanceRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceRequest method.
-//    req, resp := client.DescribeAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstance
 func (c *ChimeSDKIdentity) DescribeAppInstanceRequest(input *DescribeAppInstanceInput) (req *request.Request, output *DescribeAppInstanceOutput) {
@@ -780,23 +779,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceRequest(input *DescribeAppInstance
 // API operation DescribeAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstance
 func (c *ChimeSDKIdentity) DescribeAppInstance(input *DescribeAppInstanceInput) (*DescribeAppInstanceOutput, error) {
@@ -836,14 +836,13 @@ const opDescribeAppInstanceAdmin = "DescribeAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceAdminRequest method.
+//	req, resp := client.DescribeAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceAdminRequest method.
-//    req, resp := client.DescribeAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceAdmin
 func (c *ChimeSDKIdentity) DescribeAppInstanceAdminRequest(input *DescribeAppInstanceAdminInput) (req *request.Request, output *DescribeAppInstanceAdminOutput) {
@@ -874,23 +873,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceAdminRequest(input *DescribeAppIns
 // API operation DescribeAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceAdmin
 func (c *ChimeSDKIdentity) DescribeAppInstanceAdmin(input *DescribeAppInstanceAdminInput) (*DescribeAppInstanceAdminOutput, error) {
@@ -930,14 +930,13 @@ const opDescribeAppInstanceUser = "DescribeAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceUserRequest method.
+//	req, resp := client.DescribeAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceUserRequest method.
-//    req, resp := client.DescribeAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUser
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserRequest(input *DescribeAppInstanceUserInput) (req *request.Request, output *DescribeAppInstanceUserOutput) {
@@ -968,23 +967,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceUserRequest(input *DescribeAppInst
 // API operation DescribeAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUser
 func (c *ChimeSDKIdentity) DescribeAppInstanceUser(input *DescribeAppInstanceUserInput) (*DescribeAppInstanceUserOutput, error) {
@@ -1024,14 +1024,13 @@ const opDescribeAppInstanceUserEndpoint = "DescribeAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceUserEndpointRequest method.
+//	req, resp := client.DescribeAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceUserEndpointRequest method.
-//    req, resp := client.DescribeAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpointRequest(input *DescribeAppInstanceUserEndpointInput) (req *request.Request, output *DescribeAppInstanceUserEndpointOutput) {
@@ -1062,23 +1061,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpointRequest(input *Describ
 // API operation DescribeAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpoint(input *DescribeAppInstanceUserEndpointInput) (*DescribeAppInstanceUserEndpointOutput, error) {
@@ -1118,14 +1118,13 @@ const opGetAppInstanceRetentionSettings = "GetAppInstanceRetentionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppInstanceRetentionSettingsRequest method.
+//	req, resp := client.GetAppInstanceRetentionSettingsRequest(params)
 //
-//    // Example sending a request using the GetAppInstanceRetentionSettingsRequest method.
-//    req, resp := client.GetAppInstanceRetentionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/GetAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettingsRequest(input *GetAppInstanceRetentionSettingsInput) (req *request.Request, output *GetAppInstanceRetentionSettingsOutput) {
@@ -1156,23 +1155,24 @@ func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettingsRequest(input *GetAppI
 // API operation GetAppInstanceRetentionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/GetAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettings(input *GetAppInstanceRetentionSettingsInput) (*GetAppInstanceRetentionSettingsOutput, error) {
@@ -1212,14 +1212,13 @@ const opListAppInstanceAdmins = "ListAppInstanceAdmins"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceAdminsRequest method.
+//	req, resp := client.ListAppInstanceAdminsRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceAdminsRequest method.
-//    req, resp := client.ListAppInstanceAdminsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceAdmins
 func (c *ChimeSDKIdentity) ListAppInstanceAdminsRequest(input *ListAppInstanceAdminsInput) (req *request.Request, output *ListAppInstanceAdminsOutput) {
@@ -1256,26 +1255,27 @@ func (c *ChimeSDKIdentity) ListAppInstanceAdminsRequest(input *ListAppInstanceAd
 // API operation ListAppInstanceAdmins for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceAdmins
 func (c *ChimeSDKIdentity) ListAppInstanceAdmins(input *ListAppInstanceAdminsInput) (*ListAppInstanceAdminsOutput, error) {
@@ -1307,15 +1307,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceAdminsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceAdmins operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceAdminsPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceAdminsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceAdmins operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceAdminsPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceAdminsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceAdminsPages(input *ListAppInstanceAdminsInput, fn func(*ListAppInstanceAdminsOutput, bool) bool) error {
 	return c.ListAppInstanceAdminsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1367,14 +1366,13 @@ const opListAppInstanceUserEndpoints = "ListAppInstanceUserEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceUserEndpointsRequest method.
+//	req, resp := client.ListAppInstanceUserEndpointsRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceUserEndpointsRequest method.
-//    req, resp := client.ListAppInstanceUserEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUserEndpoints
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsRequest(input *ListAppInstanceUserEndpointsInput) (req *request.Request, output *ListAppInstanceUserEndpointsOutput) {
@@ -1411,23 +1409,24 @@ func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsRequest(input *ListAppIns
 // API operation ListAppInstanceUserEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUserEndpoints
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpoints(input *ListAppInstanceUserEndpointsInput) (*ListAppInstanceUserEndpointsOutput, error) {
@@ -1459,15 +1458,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceUserEndpoints operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceUserEndpointsPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceUserEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceUserEndpoints operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceUserEndpointsPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceUserEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsPages(input *ListAppInstanceUserEndpointsInput, fn func(*ListAppInstanceUserEndpointsOutput, bool) bool) error {
 	return c.ListAppInstanceUserEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1519,14 +1517,13 @@ const opListAppInstanceUsers = "ListAppInstanceUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceUsersRequest method.
+//	req, resp := client.ListAppInstanceUsersRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceUsersRequest method.
-//    req, resp := client.ListAppInstanceUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUsers
 func (c *ChimeSDKIdentity) ListAppInstanceUsersRequest(input *ListAppInstanceUsersInput) (req *request.Request, output *ListAppInstanceUsersOutput) {
@@ -1563,23 +1560,24 @@ func (c *ChimeSDKIdentity) ListAppInstanceUsersRequest(input *ListAppInstanceUse
 // API operation ListAppInstanceUsers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUsers
 func (c *ChimeSDKIdentity) ListAppInstanceUsers(input *ListAppInstanceUsersInput) (*ListAppInstanceUsersOutput, error) {
@@ -1611,15 +1609,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceUsersWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceUsers operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceUsersPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceUsers operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceUsersPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceUsersPages(input *ListAppInstanceUsersInput, fn func(*ListAppInstanceUsersOutput, bool) bool) error {
 	return c.ListAppInstanceUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1671,14 +1668,13 @@ const opListAppInstances = "ListAppInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstancesRequest method.
+//	req, resp := client.ListAppInstancesRequest(params)
 //
-//    // Example sending a request using the ListAppInstancesRequest method.
-//    req, resp := client.ListAppInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstances
 func (c *ChimeSDKIdentity) ListAppInstancesRequest(input *ListAppInstancesInput) (req *request.Request, output *ListAppInstancesOutput) {
@@ -1715,23 +1711,24 @@ func (c *ChimeSDKIdentity) ListAppInstancesRequest(input *ListAppInstancesInput)
 // API operation ListAppInstances for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstances
 func (c *ChimeSDKIdentity) ListAppInstances(input *ListAppInstancesInput) (*ListAppInstancesOutput, error) {
@@ -1763,15 +1760,14 @@ func (c *ChimeSDKIdentity) ListAppInstancesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstances operation.
-//    pageNum := 0
-//    err := client.ListAppInstancesPages(params,
-//        func(page *chimesdkidentity.ListAppInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstances operation.
+//	pageNum := 0
+//	err := client.ListAppInstancesPages(params,
+//	    func(page *chimesdkidentity.ListAppInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstancesPages(input *ListAppInstancesInput, fn func(*ListAppInstancesOutput, bool) bool) error {
 	return c.ListAppInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1823,14 +1819,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListTagsForResource
 func (c *ChimeSDKIdentity) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1861,23 +1856,24 @@ func (c *ChimeSDKIdentity) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListTagsForResource
 func (c *ChimeSDKIdentity) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1917,14 +1913,13 @@ const opPutAppInstanceRetentionSettings = "PutAppInstanceRetentionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAppInstanceRetentionSettingsRequest method.
+//	req, resp := client.PutAppInstanceRetentionSettingsRequest(params)
 //
-//    // Example sending a request using the PutAppInstanceRetentionSettingsRequest method.
-//    req, resp := client.PutAppInstanceRetentionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettingsRequest(input *PutAppInstanceRetentionSettingsInput) (req *request.Request, output *PutAppInstanceRetentionSettingsOutput) {
@@ -1955,23 +1950,24 @@ func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettingsRequest(input *PutAppI
 // API operation PutAppInstanceRetentionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettings(input *PutAppInstanceRetentionSettingsInput) (*PutAppInstanceRetentionSettingsOutput, error) {
@@ -2011,14 +2007,13 @@ const opRegisterAppInstanceUserEndpoint = "RegisterAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterAppInstanceUserEndpointRequest method.
+//	req, resp := client.RegisterAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the RegisterAppInstanceUserEndpointRequest method.
-//    req, resp := client.RegisterAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/RegisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpointRequest(input *RegisterAppInstanceUserEndpointInput) (req *request.Request, output *RegisterAppInstanceUserEndpointOutput) {
@@ -2051,30 +2046,31 @@ func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpointRequest(input *Registe
 // API operation RegisterAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/RegisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpoint(input *RegisterAppInstanceUserEndpointInput) (*RegisterAppInstanceUserEndpointOutput, error) {
@@ -2114,14 +2110,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/TagResource
 func (c *ChimeSDKIdentity) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2153,26 +2148,27 @@ func (c *ChimeSDKIdentity) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/TagResource
 func (c *ChimeSDKIdentity) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2212,14 +2208,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UntagResource
 func (c *ChimeSDKIdentity) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2251,23 +2246,24 @@ func (c *ChimeSDKIdentity) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UntagResource
 func (c *ChimeSDKIdentity) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2307,14 +2303,13 @@ const opUpdateAppInstance = "UpdateAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceRequest method.
+//	req, resp := client.UpdateAppInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceRequest method.
-//    req, resp := client.UpdateAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstance
 func (c *ChimeSDKIdentity) UpdateAppInstanceRequest(input *UpdateAppInstanceInput) (req *request.Request, output *UpdateAppInstanceOutput) {
@@ -2345,27 +2340,28 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceRequest(input *UpdateAppInstanceInpu
 // API operation UpdateAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstance
 func (c *ChimeSDKIdentity) UpdateAppInstance(input *UpdateAppInstanceInput) (*UpdateAppInstanceOutput, error) {
@@ -2405,14 +2401,13 @@ const opUpdateAppInstanceUser = "UpdateAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceUserRequest method.
+//	req, resp := client.UpdateAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceUserRequest method.
-//    req, resp := client.UpdateAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUser
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserRequest(input *UpdateAppInstanceUserInput) (req *request.Request, output *UpdateAppInstanceUserOutput) {
@@ -2443,30 +2438,31 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceUserRequest(input *UpdateAppInstance
 // API operation UpdateAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUser
 func (c *ChimeSDKIdentity) UpdateAppInstanceUser(input *UpdateAppInstanceUserInput) (*UpdateAppInstanceUserOutput, error) {
@@ -2506,14 +2502,13 @@ const opUpdateAppInstanceUserEndpoint = "UpdateAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceUserEndpointRequest method.
+//	req, resp := client.UpdateAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceUserEndpointRequest method.
-//    req, resp := client.UpdateAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpointRequest(input *UpdateAppInstanceUserEndpointInput) (req *request.Request, output *UpdateAppInstanceUserEndpointOutput) {
@@ -2545,27 +2540,28 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpointRequest(input *UpdateApp
 // API operation UpdateAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpoint(input *UpdateAppInstanceUserEndpointInput) (*UpdateAppInstanceUserEndpointOutput, error) {
@@ -4583,19 +4579,19 @@ func (s *EndpointAttributes) SetVoipDeviceToken(v string) *EndpointAttributes {
 // A read-only field that represents the state of an AppInstanceUserEndpoint.
 // Supported values:
 //
-//    * ACTIVE: The AppInstanceUserEndpoint is active and able to receive messages.
-//    When ACTIVE, the EndpointStatusReason remains empty.
+//   - ACTIVE: The AppInstanceUserEndpoint is active and able to receive messages.
+//     When ACTIVE, the EndpointStatusReason remains empty.
 //
-//    * INACTIVE: The AppInstanceUserEndpoint is inactive and can't receive
-//    message. When INACTIVE, the corresponding reason will be conveyed through
-//    EndpointStatusReason.
+//   - INACTIVE: The AppInstanceUserEndpoint is inactive and can't receive
+//     message. When INACTIVE, the corresponding reason will be conveyed through
+//     EndpointStatusReason.
 //
-//    * INVALID_DEVICE_TOKEN indicates that an AppInstanceUserEndpoint is INACTIVE
-//    due to invalid device token
+//   - INVALID_DEVICE_TOKEN indicates that an AppInstanceUserEndpoint is INACTIVE
+//     due to invalid device token
 //
-//    * INVALID_PINPOINT_ARN indicates that an AppInstanceUserEndpoint is INACTIVE
-//    due to an invalid pinpoint ARN that was input through the ResourceArn
-//    field.
+//   - INVALID_PINPOINT_ARN indicates that an AppInstanceUserEndpoint is INACTIVE
+//     due to an invalid pinpoint ARN that was input through the ResourceArn
+//     field.
 type EndpointState struct {
 	_ struct{} `type:"structure"`
 

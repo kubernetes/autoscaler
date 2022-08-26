@@ -35,7 +35,7 @@ type ProfileProvider struct {
 // profile path :
 //  1. The value of the environment variable TENCENTCLOUD_CREDENTIALS_FILE
 //  2. linux: ~/.tencentcloud/credentials
-// 	  windows: \c:\Users\NAME\.tencentcloud\credentials
+//     windows: \c:\Users\NAME\.tencentcloud\credentials
 func DefaultProfileProvider() *ProfileProvider {
 	return &ProfileProvider{}
 }

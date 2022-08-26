@@ -64,7 +64,7 @@ func (m *nodesourceoption) UnmarshalPolymorphicJSON(data []byte) (interface{}, e
 	}
 }
 
-//GetSourceName returns SourceName
+// GetSourceName returns SourceName
 func (m nodesourceoption) GetSourceName() *string {
 	return m.SourceName
 }

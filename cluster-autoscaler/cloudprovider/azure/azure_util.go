@@ -91,9 +91,9 @@ var (
 	azureResourceGroupNameRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/(?:.*)`)
 )
 
-//AzUtil consists of utility functions which utilizes clients to different services.
-//Since they span across various clients they cannot be fitted into individual client structs
-//so adding them here.
+// AzUtil consists of utility functions which utilizes clients to different services.
+// Since they span across various clients they cannot be fitted into individual client structs
+// so adding them here.
 type AzUtil struct {
 	manager *AzureManager
 }

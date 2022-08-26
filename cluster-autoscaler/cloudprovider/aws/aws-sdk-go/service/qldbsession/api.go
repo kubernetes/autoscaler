@@ -27,14 +27,13 @@ const opSendCommand = "SendCommand"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendCommandRequest method.
+//	req, resp := client.SendCommandRequest(params)
 //
-//    // Example sending a request using the SendCommandRequest method.
-//    req, resp := client.SendCommandRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/qldb-session-2019-07-11/SendCommand
 func (c *QLDBSession) SendCommandRequest(input *SendCommandInput) (req *request.Request, output *SendCommandOutput) {
@@ -60,17 +59,17 @@ func (c *QLDBSession) SendCommandRequest(input *SendCommandInput) (req *request.
 // Instead of interacting directly with this API, we recommend using the QLDB
 // driver or the QLDB shell to execute data transactions on a ledger.
 //
-//    * If you are working with an AWS SDK, use the QLDB driver. The driver
-//    provides a high-level abstraction layer above this QLDB Session data plane
-//    and manages SendCommand API calls for you. For information and a list
-//    of supported programming languages, see Getting started with the driver
-//    (https://docs.aws.amazon.com/qldb/latest/developerguide/getting-started-driver.html)
-//    in the Amazon QLDB Developer Guide.
+//   - If you are working with an AWS SDK, use the QLDB driver. The driver
+//     provides a high-level abstraction layer above this QLDB Session data plane
+//     and manages SendCommand API calls for you. For information and a list
+//     of supported programming languages, see Getting started with the driver
+//     (https://docs.aws.amazon.com/qldb/latest/developerguide/getting-started-driver.html)
+//     in the Amazon QLDB Developer Guide.
 //
-//    * If you are working with the AWS Command Line Interface (AWS CLI), use
-//    the QLDB shell. The shell is a command line interface that uses the QLDB
-//    driver to interact with a ledger. For information, see Accessing Amazon
-//    QLDB using the QLDB shell (https://docs.aws.amazon.com/qldb/latest/developerguide/data-shell.html).
+//   - If you are working with the AWS Command Line Interface (AWS CLI), use
+//     the QLDB shell. The shell is a command line interface that uses the QLDB
+//     driver to interact with a ledger. For information, see Accessing Amazon
+//     QLDB using the QLDB shell (https://docs.aws.amazon.com/qldb/latest/developerguide/data-shell.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -80,25 +79,26 @@ func (c *QLDBSession) SendCommandRequest(input *SendCommandInput) (req *request.
 // API operation SendCommand for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Returned if the request is malformed or contains an error such as an invalid
-//   parameter value or a missing required parameter.
 //
-//   * InvalidSessionException
-//   Returned if the session doesn't exist anymore because it timed out or expired.
+//   - BadRequestException
+//     Returned if the request is malformed or contains an error such as an invalid
+//     parameter value or a missing required parameter.
 //
-//   * OccConflictException
-//   Returned when a transaction cannot be written to the journal due to a failure
-//   in the verification phase of optimistic concurrency control (OCC).
+//   - InvalidSessionException
+//     Returned if the session doesn't exist anymore because it timed out or expired.
 //
-//   * RateExceededException
-//   Returned when the rate of requests exceeds the allowed throughput.
+//   - OccConflictException
+//     Returned when a transaction cannot be written to the journal due to a failure
+//     in the verification phase of optimistic concurrency control (OCC).
 //
-//   * LimitExceededException
-//   Returned if a resource limit such as number of active sessions is exceeded.
+//   - RateExceededException
+//     Returned when the rate of requests exceeds the allowed throughput.
 //
-//   * CapacityExceededException
-//   Returned when the request exceeds the processing capacity of the ledger.
+//   - LimitExceededException
+//     Returned if a resource limit such as number of active sessions is exceeded.
+//
+//   - CapacityExceededException
+//     Returned when the request exceeds the processing capacity of the ledger.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/qldb-session-2019-07-11/SendCommand
 func (c *QLDBSession) SendCommand(input *SendCommandInput) (*SendCommandOutput, error) {

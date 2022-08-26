@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a SSOAdmin client from just a session.
-//     svc := ssoadmin.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a SSOAdmin client with additional configuration
-//     svc := ssoadmin.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a SSOAdmin client from just a session.
+//	svc := ssoadmin.New(mySession)
+//
+//	// Create a SSOAdmin client with additional configuration
+//	svc := ssoadmin.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *SSOAdmin {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

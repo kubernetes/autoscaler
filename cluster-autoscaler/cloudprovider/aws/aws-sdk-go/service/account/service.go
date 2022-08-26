@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Account client from just a session.
-//     svc := account.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Account client with additional configuration
-//     svc := account.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Account client from just a session.
+//	svc := account.New(mySession)
+//
+//	// Create a Account client with additional configuration
+//	svc := account.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Account {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

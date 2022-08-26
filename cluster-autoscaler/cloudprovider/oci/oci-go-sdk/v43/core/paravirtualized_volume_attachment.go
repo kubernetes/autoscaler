@@ -72,72 +72,72 @@ type ParavirtualizedVolumeAttachment struct {
 	IscsiLoginState VolumeAttachmentIscsiLoginStateEnum `mandatory:"false" json:"iscsiLoginState,omitempty"`
 }
 
-//GetAvailabilityDomain returns AvailabilityDomain
+// GetAvailabilityDomain returns AvailabilityDomain
 func (m ParavirtualizedVolumeAttachment) GetAvailabilityDomain() *string {
 	return m.AvailabilityDomain
 }
 
-//GetCompartmentId returns CompartmentId
+// GetCompartmentId returns CompartmentId
 func (m ParavirtualizedVolumeAttachment) GetCompartmentId() *string {
 	return m.CompartmentId
 }
 
-//GetDevice returns Device
+// GetDevice returns Device
 func (m ParavirtualizedVolumeAttachment) GetDevice() *string {
 	return m.Device
 }
 
-//GetDisplayName returns DisplayName
+// GetDisplayName returns DisplayName
 func (m ParavirtualizedVolumeAttachment) GetDisplayName() *string {
 	return m.DisplayName
 }
 
-//GetId returns Id
+// GetId returns Id
 func (m ParavirtualizedVolumeAttachment) GetId() *string {
 	return m.Id
 }
 
-//GetInstanceId returns InstanceId
+// GetInstanceId returns InstanceId
 func (m ParavirtualizedVolumeAttachment) GetInstanceId() *string {
 	return m.InstanceId
 }
 
-//GetIsReadOnly returns IsReadOnly
+// GetIsReadOnly returns IsReadOnly
 func (m ParavirtualizedVolumeAttachment) GetIsReadOnly() *bool {
 	return m.IsReadOnly
 }
 
-//GetIsShareable returns IsShareable
+// GetIsShareable returns IsShareable
 func (m ParavirtualizedVolumeAttachment) GetIsShareable() *bool {
 	return m.IsShareable
 }
 
-//GetLifecycleState returns LifecycleState
+// GetLifecycleState returns LifecycleState
 func (m ParavirtualizedVolumeAttachment) GetLifecycleState() VolumeAttachmentLifecycleStateEnum {
 	return m.LifecycleState
 }
 
-//GetTimeCreated returns TimeCreated
+// GetTimeCreated returns TimeCreated
 func (m ParavirtualizedVolumeAttachment) GetTimeCreated() *common.SDKTime {
 	return m.TimeCreated
 }
 
-//GetVolumeId returns VolumeId
+// GetVolumeId returns VolumeId
 func (m ParavirtualizedVolumeAttachment) GetVolumeId() *string {
 	return m.VolumeId
 }
 
-//GetIsPvEncryptionInTransitEnabled returns IsPvEncryptionInTransitEnabled
+// GetIsPvEncryptionInTransitEnabled returns IsPvEncryptionInTransitEnabled
 func (m ParavirtualizedVolumeAttachment) GetIsPvEncryptionInTransitEnabled() *bool {
 	return m.IsPvEncryptionInTransitEnabled
 }
 
-//GetIsMultipath returns IsMultipath
+// GetIsMultipath returns IsMultipath
 func (m ParavirtualizedVolumeAttachment) GetIsMultipath() *bool {
 	return m.IsMultipath
 }
 
-//GetIscsiLoginState returns IscsiLoginState
+// GetIscsiLoginState returns IscsiLoginState
 func (m ParavirtualizedVolumeAttachment) GetIscsiLoginState() VolumeAttachmentIscsiLoginStateEnum {
 	return m.IscsiLoginState
 }

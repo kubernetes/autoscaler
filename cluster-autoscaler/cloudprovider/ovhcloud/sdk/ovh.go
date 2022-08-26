@@ -420,7 +420,7 @@ func (c *Client) CallAPI(method, path string, reqBody, result interface{}, query
 // - full serialized request body
 // - server current time (takes time delta into account)
 //
-// Context is used by http.Client to handle context cancelation
+// # Context is used by http.Client to handle context cancelation
 //
 // Call will automatically assemble the target url from the endpoint
 // configured in the client instance and the path argument. If the reqBody

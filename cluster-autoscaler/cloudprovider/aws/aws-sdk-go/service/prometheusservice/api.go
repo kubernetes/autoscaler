@@ -29,14 +29,13 @@ const opCreateAlertManagerDefinition = "CreateAlertManagerDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAlertManagerDefinitionRequest method.
+//	req, resp := client.CreateAlertManagerDefinitionRequest(params)
 //
-//    // Example sending a request using the CreateAlertManagerDefinitionRequest method.
-//    req, resp := client.CreateAlertManagerDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateAlertManagerDefinition
 func (c *PrometheusService) CreateAlertManagerDefinitionRequest(input *CreateAlertManagerDefinitionInput) (req *request.Request, output *CreateAlertManagerDefinitionOutput) {
@@ -67,26 +66,27 @@ func (c *PrometheusService) CreateAlertManagerDefinitionRequest(input *CreateAle
 // API operation CreateAlertManagerDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateAlertManagerDefinition
 func (c *PrometheusService) CreateAlertManagerDefinition(input *CreateAlertManagerDefinitionInput) (*CreateAlertManagerDefinitionOutput, error) {
@@ -126,14 +126,13 @@ const opCreateRuleGroupsNamespace = "CreateRuleGroupsNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRuleGroupsNamespaceRequest method.
+//	req, resp := client.CreateRuleGroupsNamespaceRequest(params)
 //
-//    // Example sending a request using the CreateRuleGroupsNamespaceRequest method.
-//    req, resp := client.CreateRuleGroupsNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateRuleGroupsNamespace
 func (c *PrometheusService) CreateRuleGroupsNamespaceRequest(input *CreateRuleGroupsNamespaceInput) (req *request.Request, output *CreateRuleGroupsNamespaceOutput) {
@@ -164,26 +163,27 @@ func (c *PrometheusService) CreateRuleGroupsNamespaceRequest(input *CreateRuleGr
 // API operation CreateRuleGroupsNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateRuleGroupsNamespace
 func (c *PrometheusService) CreateRuleGroupsNamespace(input *CreateRuleGroupsNamespaceInput) (*CreateRuleGroupsNamespaceOutput, error) {
@@ -223,14 +223,13 @@ const opCreateWorkspace = "CreateWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateWorkspaceRequest method.
+//	req, resp := client.CreateWorkspaceRequest(params)
 //
-//    // Example sending a request using the CreateWorkspaceRequest method.
-//    req, resp := client.CreateWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateWorkspace
 func (c *PrometheusService) CreateWorkspaceRequest(input *CreateWorkspaceInput) (req *request.Request, output *CreateWorkspaceOutput) {
@@ -261,23 +260,24 @@ func (c *PrometheusService) CreateWorkspaceRequest(input *CreateWorkspaceInput) 
 // API operation CreateWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateWorkspace
 func (c *PrometheusService) CreateWorkspace(input *CreateWorkspaceInput) (*CreateWorkspaceOutput, error) {
@@ -317,14 +317,13 @@ const opDeleteAlertManagerDefinition = "DeleteAlertManagerDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAlertManagerDefinitionRequest method.
+//	req, resp := client.DeleteAlertManagerDefinitionRequest(params)
 //
-//    // Example sending a request using the DeleteAlertManagerDefinitionRequest method.
-//    req, resp := client.DeleteAlertManagerDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteAlertManagerDefinition
 func (c *PrometheusService) DeleteAlertManagerDefinitionRequest(input *DeleteAlertManagerDefinitionInput) (req *request.Request, output *DeleteAlertManagerDefinitionOutput) {
@@ -356,23 +355,24 @@ func (c *PrometheusService) DeleteAlertManagerDefinitionRequest(input *DeleteAle
 // API operation DeleteAlertManagerDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteAlertManagerDefinition
 func (c *PrometheusService) DeleteAlertManagerDefinition(input *DeleteAlertManagerDefinitionInput) (*DeleteAlertManagerDefinitionOutput, error) {
@@ -412,14 +412,13 @@ const opDeleteRuleGroupsNamespace = "DeleteRuleGroupsNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRuleGroupsNamespaceRequest method.
+//	req, resp := client.DeleteRuleGroupsNamespaceRequest(params)
 //
-//    // Example sending a request using the DeleteRuleGroupsNamespaceRequest method.
-//    req, resp := client.DeleteRuleGroupsNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteRuleGroupsNamespace
 func (c *PrometheusService) DeleteRuleGroupsNamespaceRequest(input *DeleteRuleGroupsNamespaceInput) (req *request.Request, output *DeleteRuleGroupsNamespaceOutput) {
@@ -451,23 +450,24 @@ func (c *PrometheusService) DeleteRuleGroupsNamespaceRequest(input *DeleteRuleGr
 // API operation DeleteRuleGroupsNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteRuleGroupsNamespace
 func (c *PrometheusService) DeleteRuleGroupsNamespace(input *DeleteRuleGroupsNamespaceInput) (*DeleteRuleGroupsNamespaceOutput, error) {
@@ -507,14 +507,13 @@ const opDeleteWorkspace = "DeleteWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteWorkspaceRequest method.
+//	req, resp := client.DeleteWorkspaceRequest(params)
 //
-//    // Example sending a request using the DeleteWorkspaceRequest method.
-//    req, resp := client.DeleteWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteWorkspace
 func (c *PrometheusService) DeleteWorkspaceRequest(input *DeleteWorkspaceInput) (req *request.Request, output *DeleteWorkspaceOutput) {
@@ -546,23 +545,24 @@ func (c *PrometheusService) DeleteWorkspaceRequest(input *DeleteWorkspaceInput) 
 // API operation DeleteWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteWorkspace
 func (c *PrometheusService) DeleteWorkspace(input *DeleteWorkspaceInput) (*DeleteWorkspaceOutput, error) {
@@ -602,14 +602,13 @@ const opDescribeAlertManagerDefinition = "DescribeAlertManagerDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlertManagerDefinitionRequest method.
+//	req, resp := client.DescribeAlertManagerDefinitionRequest(params)
 //
-//    // Example sending a request using the DescribeAlertManagerDefinitionRequest method.
-//    req, resp := client.DescribeAlertManagerDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeAlertManagerDefinition
 func (c *PrometheusService) DescribeAlertManagerDefinitionRequest(input *DescribeAlertManagerDefinitionInput) (req *request.Request, output *DescribeAlertManagerDefinitionOutput) {
@@ -640,20 +639,21 @@ func (c *PrometheusService) DescribeAlertManagerDefinitionRequest(input *Describ
 // API operation DescribeAlertManagerDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeAlertManagerDefinition
 func (c *PrometheusService) DescribeAlertManagerDefinition(input *DescribeAlertManagerDefinitionInput) (*DescribeAlertManagerDefinitionOutput, error) {
@@ -693,14 +693,13 @@ const opDescribeRuleGroupsNamespace = "DescribeRuleGroupsNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRuleGroupsNamespaceRequest method.
+//	req, resp := client.DescribeRuleGroupsNamespaceRequest(params)
 //
-//    // Example sending a request using the DescribeRuleGroupsNamespaceRequest method.
-//    req, resp := client.DescribeRuleGroupsNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeRuleGroupsNamespace
 func (c *PrometheusService) DescribeRuleGroupsNamespaceRequest(input *DescribeRuleGroupsNamespaceInput) (req *request.Request, output *DescribeRuleGroupsNamespaceOutput) {
@@ -731,20 +730,21 @@ func (c *PrometheusService) DescribeRuleGroupsNamespaceRequest(input *DescribeRu
 // API operation DescribeRuleGroupsNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeRuleGroupsNamespace
 func (c *PrometheusService) DescribeRuleGroupsNamespace(input *DescribeRuleGroupsNamespaceInput) (*DescribeRuleGroupsNamespaceOutput, error) {
@@ -784,14 +784,13 @@ const opDescribeWorkspace = "DescribeWorkspace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeWorkspaceRequest method.
+//	req, resp := client.DescribeWorkspaceRequest(params)
 //
-//    // Example sending a request using the DescribeWorkspaceRequest method.
-//    req, resp := client.DescribeWorkspaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeWorkspace
 func (c *PrometheusService) DescribeWorkspaceRequest(input *DescribeWorkspaceInput) (req *request.Request, output *DescribeWorkspaceOutput) {
@@ -822,20 +821,21 @@ func (c *PrometheusService) DescribeWorkspaceRequest(input *DescribeWorkspaceInp
 // API operation DescribeWorkspace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeWorkspace
 func (c *PrometheusService) DescribeWorkspace(input *DescribeWorkspaceInput) (*DescribeWorkspaceOutput, error) {
@@ -875,14 +875,13 @@ const opListRuleGroupsNamespaces = "ListRuleGroupsNamespaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRuleGroupsNamespacesRequest method.
+//	req, resp := client.ListRuleGroupsNamespacesRequest(params)
 //
-//    // Example sending a request using the ListRuleGroupsNamespacesRequest method.
-//    req, resp := client.ListRuleGroupsNamespacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListRuleGroupsNamespaces
 func (c *PrometheusService) ListRuleGroupsNamespacesRequest(input *ListRuleGroupsNamespacesInput) (req *request.Request, output *ListRuleGroupsNamespacesOutput) {
@@ -919,20 +918,21 @@ func (c *PrometheusService) ListRuleGroupsNamespacesRequest(input *ListRuleGroup
 // API operation ListRuleGroupsNamespaces for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListRuleGroupsNamespaces
 func (c *PrometheusService) ListRuleGroupsNamespaces(input *ListRuleGroupsNamespacesInput) (*ListRuleGroupsNamespacesOutput, error) {
@@ -964,15 +964,14 @@ func (c *PrometheusService) ListRuleGroupsNamespacesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRuleGroupsNamespaces operation.
-//    pageNum := 0
-//    err := client.ListRuleGroupsNamespacesPages(params,
-//        func(page *prometheusservice.ListRuleGroupsNamespacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRuleGroupsNamespaces operation.
+//	pageNum := 0
+//	err := client.ListRuleGroupsNamespacesPages(params,
+//	    func(page *prometheusservice.ListRuleGroupsNamespacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PrometheusService) ListRuleGroupsNamespacesPages(input *ListRuleGroupsNamespacesInput, fn func(*ListRuleGroupsNamespacesOutput, bool) bool) error {
 	return c.ListRuleGroupsNamespacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1024,14 +1023,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListTagsForResource
 func (c *PrometheusService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1062,20 +1060,21 @@ func (c *PrometheusService) ListTagsForResourceRequest(input *ListTagsForResourc
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListTagsForResource
 func (c *PrometheusService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1115,14 +1114,13 @@ const opListWorkspaces = "ListWorkspaces"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListWorkspacesRequest method.
+//	req, resp := client.ListWorkspacesRequest(params)
 //
-//    // Example sending a request using the ListWorkspacesRequest method.
-//    req, resp := client.ListWorkspacesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListWorkspaces
 func (c *PrometheusService) ListWorkspacesRequest(input *ListWorkspacesInput) (req *request.Request, output *ListWorkspacesOutput) {
@@ -1159,17 +1157,18 @@ func (c *PrometheusService) ListWorkspacesRequest(input *ListWorkspacesInput) (r
 // API operation ListWorkspaces for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListWorkspaces
 func (c *PrometheusService) ListWorkspaces(input *ListWorkspacesInput) (*ListWorkspacesOutput, error) {
@@ -1201,15 +1200,14 @@ func (c *PrometheusService) ListWorkspacesWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListWorkspaces operation.
-//    pageNum := 0
-//    err := client.ListWorkspacesPages(params,
-//        func(page *prometheusservice.ListWorkspacesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListWorkspaces operation.
+//	pageNum := 0
+//	err := client.ListWorkspacesPages(params,
+//	    func(page *prometheusservice.ListWorkspacesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *PrometheusService) ListWorkspacesPages(input *ListWorkspacesInput, fn func(*ListWorkspacesOutput, bool) bool) error {
 	return c.ListWorkspacesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1261,14 +1259,13 @@ const opPutAlertManagerDefinition = "PutAlertManagerDefinition"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAlertManagerDefinitionRequest method.
+//	req, resp := client.PutAlertManagerDefinitionRequest(params)
 //
-//    // Example sending a request using the PutAlertManagerDefinitionRequest method.
-//    req, resp := client.PutAlertManagerDefinitionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/PutAlertManagerDefinition
 func (c *PrometheusService) PutAlertManagerDefinitionRequest(input *PutAlertManagerDefinitionInput) (req *request.Request, output *PutAlertManagerDefinitionOutput) {
@@ -1299,26 +1296,27 @@ func (c *PrometheusService) PutAlertManagerDefinitionRequest(input *PutAlertMana
 // API operation PutAlertManagerDefinition for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/PutAlertManagerDefinition
 func (c *PrometheusService) PutAlertManagerDefinition(input *PutAlertManagerDefinitionInput) (*PutAlertManagerDefinitionOutput, error) {
@@ -1358,14 +1356,13 @@ const opPutRuleGroupsNamespace = "PutRuleGroupsNamespace"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutRuleGroupsNamespaceRequest method.
+//	req, resp := client.PutRuleGroupsNamespaceRequest(params)
 //
-//    // Example sending a request using the PutRuleGroupsNamespaceRequest method.
-//    req, resp := client.PutRuleGroupsNamespaceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/PutRuleGroupsNamespace
 func (c *PrometheusService) PutRuleGroupsNamespaceRequest(input *PutRuleGroupsNamespaceInput) (req *request.Request, output *PutRuleGroupsNamespaceOutput) {
@@ -1396,26 +1393,27 @@ func (c *PrometheusService) PutRuleGroupsNamespaceRequest(input *PutRuleGroupsNa
 // API operation PutRuleGroupsNamespace for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/PutRuleGroupsNamespace
 func (c *PrometheusService) PutRuleGroupsNamespace(input *PutRuleGroupsNamespaceInput) (*PutRuleGroupsNamespaceOutput, error) {
@@ -1455,14 +1453,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/TagResource
 func (c *PrometheusService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1494,20 +1491,21 @@ func (c *PrometheusService) TagResourceRequest(input *TagResourceInput) (req *re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/TagResource
 func (c *PrometheusService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1547,14 +1545,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UntagResource
 func (c *PrometheusService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1586,20 +1583,21 @@ func (c *PrometheusService) UntagResourceRequest(input *UntagResourceInput) (req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UntagResource
 func (c *PrometheusService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1639,14 +1637,13 @@ const opUpdateWorkspaceAlias = "UpdateWorkspaceAlias"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateWorkspaceAliasRequest method.
+//	req, resp := client.UpdateWorkspaceAliasRequest(params)
 //
-//    // Example sending a request using the UpdateWorkspaceAliasRequest method.
-//    req, resp := client.UpdateWorkspaceAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UpdateWorkspaceAlias
 func (c *PrometheusService) UpdateWorkspaceAliasRequest(input *UpdateWorkspaceAliasInput) (req *request.Request, output *UpdateWorkspaceAliasOutput) {
@@ -1678,26 +1675,27 @@ func (c *PrometheusService) UpdateWorkspaceAliasRequest(input *UpdateWorkspaceAl
 // API operation UpdateWorkspaceAlias for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   Request was denied due to request throttling.
 //
-//   * ConflictException
-//   Updating or deleting a resource can cause an inconsistent state.
+//   - ThrottlingException
+//     Request was denied due to request throttling.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by an AWS service.
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
 //
-//   * ResourceNotFoundException
-//   Request references a resource which does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
 //
-//   * AccessDeniedException
-//   User does not have sufficient access to perform this action.
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
 //
-//   * InternalServerException
-//   Unexpected error during processing of request.
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
 //
-//   * ServiceQuotaExceededException
-//   Request would cause a service quota to be exceeded.
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UpdateWorkspaceAlias
 func (c *PrometheusService) UpdateWorkspaceAlias(input *UpdateWorkspaceAliasInput) (*UpdateWorkspaceAliasOutput, error) {

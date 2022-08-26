@@ -29,14 +29,13 @@ const opAssociateAlias = "AssociateAlias2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateAliasRequest method.
+//	req, resp := client.AssociateAliasRequest(params)
 //
-//    // Example sending a request using the AssociateAliasRequest method.
-//    req, resp := client.AssociateAliasRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/AssociateAlias
 func (c *CloudFront) AssociateAliasRequest(input *AssociateAliasInput) (req *request.Request, output *AssociateAliasOutput) {
@@ -81,20 +80,21 @@ func (c *CloudFront) AssociateAliasRequest(input *AssociateAliasInput) (req *req
 // API operation AssociateAlias for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/AssociateAlias
 func (c *CloudFront) AssociateAlias(input *AssociateAliasInput) (*AssociateAliasOutput, error) {
@@ -134,14 +134,13 @@ const opCreateCachePolicy = "CreateCachePolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCachePolicyRequest method.
+//	req, resp := client.CreateCachePolicyRequest(params)
 //
-//    // Example sending a request using the CreateCachePolicyRequest method.
-//    req, resp := client.CreateCachePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateCachePolicy
 func (c *CloudFront) CreateCachePolicyRequest(input *CreateCachePolicyInput) (req *request.Request, output *CreateCachePolicyOutput) {
@@ -168,13 +167,13 @@ func (c *CloudFront) CreateCachePolicyRequest(input *CreateCachePolicyInput) (re
 // When it’s attached to a cache behavior, the cache policy determines the
 // following:
 //
-//    * The values that CloudFront includes in the cache key. These values can
-//    include HTTP headers, cookies, and URL query strings. CloudFront uses
-//    the cache key to find an object in its cache that it can return to the
-//    viewer.
+//   - The values that CloudFront includes in the cache key. These values can
+//     include HTTP headers, cookies, and URL query strings. CloudFront uses
+//     the cache key to find an object in its cache that it can return to the
+//     viewer.
 //
-//    * The default, minimum, and maximum time to live (TTL) values that you
-//    want objects to stay in the CloudFront cache.
+//   - The default, minimum, and maximum time to live (TTL) values that you
+//     want objects to stay in the CloudFront cache.
 //
 // The headers, cookies, and query strings that are included in the cache key
 // are automatically included in requests that CloudFront sends to the origin.
@@ -194,38 +193,39 @@ func (c *CloudFront) CreateCachePolicyRequest(input *CreateCachePolicyInput) (re
 // API operation CreateCachePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeCachePolicyAlreadyExists "CachePolicyAlreadyExists"
-//   A cache policy with this name already exists. You must provide a unique name.
-//   To modify an existing cache policy, use UpdateCachePolicy.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyCachePolicies "TooManyCachePolicies"
-//   You have reached the maximum number of cache policies for this Amazon Web
-//   Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeCachePolicyAlreadyExists "CachePolicyAlreadyExists"
+//     A cache policy with this name already exists. You must provide a unique name.
+//     To modify an existing cache policy, use UpdateCachePolicy.
 //
-//   * ErrCodeTooManyHeadersInCachePolicy "TooManyHeadersInCachePolicy"
-//   The number of headers in the cache policy exceeds the maximum. For more information,
-//   see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCachePolicies "TooManyCachePolicies"
+//     You have reached the maximum number of cache policies for this Amazon Web
+//     Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyCookiesInCachePolicy "TooManyCookiesInCachePolicy"
-//   The number of cookies in the cache policy exceeds the maximum. For more information,
-//   see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyHeadersInCachePolicy "TooManyHeadersInCachePolicy"
+//     The number of headers in the cache policy exceeds the maximum. For more information,
+//     see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyQueryStringsInCachePolicy "TooManyQueryStringsInCachePolicy"
-//   The number of query strings in the cache policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCookiesInCachePolicy "TooManyCookiesInCachePolicy"
+//     The number of cookies in the cache policy exceeds the maximum. For more information,
+//     see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeTooManyQueryStringsInCachePolicy "TooManyQueryStringsInCachePolicy"
+//     The number of query strings in the cache policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateCachePolicy
 func (c *CloudFront) CreateCachePolicy(input *CreateCachePolicyInput) (*CreateCachePolicyOutput, error) {
@@ -265,14 +265,13 @@ const opCreateCloudFrontOriginAccessIdentity = "CreateCloudFrontOriginAccessIden
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCloudFrontOriginAccessIdentityRequest method.
+//	req, resp := client.CreateCloudFrontOriginAccessIdentityRequest(params)
 //
-//    // Example sending a request using the CreateCloudFrontOriginAccessIdentityRequest method.
-//    req, resp := client.CreateCloudFrontOriginAccessIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateCloudFrontOriginAccessIdentity
 func (c *CloudFront) CreateCloudFrontOriginAccessIdentityRequest(input *CreateCloudFrontOriginAccessIdentityInput) (req *request.Request, output *CreateCloudFrontOriginAccessIdentityOutput) {
@@ -308,25 +307,26 @@ func (c *CloudFront) CreateCloudFrontOriginAccessIdentityRequest(input *CreateCl
 // API operation CreateCloudFrontOriginAccessIdentity for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeOriginAccessIdentityAlreadyExists "CloudFrontOriginAccessIdentityAlreadyExists"
-//   If the CallerReference is a value you already sent in a previous request
-//   to create an identity but the content of the CloudFrontOriginAccessIdentityConfig
-//   is different from the original request, CloudFront returns a CloudFrontOriginAccessIdentityAlreadyExists
-//   error.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeOriginAccessIdentityAlreadyExists "CloudFrontOriginAccessIdentityAlreadyExists"
+//     If the CallerReference is a value you already sent in a previous request
+//     to create an identity but the content of the CloudFrontOriginAccessIdentityConfig
+//     is different from the original request, CloudFront returns a CloudFrontOriginAccessIdentityAlreadyExists
+//     error.
 //
-//   * ErrCodeTooManyCloudFrontOriginAccessIdentities "TooManyCloudFrontOriginAccessIdentities"
-//   Processing your request would cause you to exceed the maximum number of origin
-//   access identities allowed.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeTooManyCloudFrontOriginAccessIdentities "TooManyCloudFrontOriginAccessIdentities"
+//     Processing your request would cause you to exceed the maximum number of origin
+//     access identities allowed.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateCloudFrontOriginAccessIdentity
 func (c *CloudFront) CreateCloudFrontOriginAccessIdentity(input *CreateCloudFrontOriginAccessIdentityInput) (*CreateCloudFrontOriginAccessIdentityOutput, error) {
@@ -366,14 +366,13 @@ const opCreateDistribution = "CreateDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDistributionRequest method.
+//	req, resp := client.CreateDistributionRequest(params)
 //
-//    // Example sending a request using the CreateDistributionRequest method.
-//    req, resp := client.CreateDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateDistribution
 func (c *CloudFront) CreateDistributionRequest(input *CreateDistributionInput) (req *request.Request, output *CreateDistributionOutput) {
@@ -416,220 +415,221 @@ func (c *CloudFront) CreateDistributionRequest(input *CreateDistributionInput) (
 // API operation CreateDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeDistributionAlreadyExists "DistributionAlreadyExists"
-//   The caller reference you attempted to create the distribution with is associated
-//   with another distribution.
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidOrigin "InvalidOrigin"
-//   The Amazon S3 origin server specified does not refer to a valid Amazon S3
-//   bucket.
+//   - ErrCodeDistributionAlreadyExists "DistributionAlreadyExists"
+//     The caller reference you attempted to create the distribution with is associated
+//     with another distribution.
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidOrigin "InvalidOrigin"
+//     The Amazon S3 origin server specified does not refer to a valid Amazon S3
+//     bucket.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
-//   A viewer certificate specified is not valid.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
 //
-//   * ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
-//   The minimum protocol version specified is not valid.
+//   - ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
+//     A viewer certificate specified is not valid.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
+//     The minimum protocol version specified is not valid.
 //
-//   * ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeTooManyDistributions "TooManyDistributions"
-//   Processing your request would cause you to exceed the maximum number of distributions
-//   allowed.
+//   - ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
-//   The default root object file name is too big or contains an invalid character.
+//   - ErrCodeTooManyDistributions "TooManyDistributions"
+//     Processing your request would cause you to exceed the maximum number of distributions
+//     allowed.
 //
-//   * ErrCodeInvalidRelativePath "InvalidRelativePath"
-//   The relative path is too big, is not URL-encoded, or does not begin with
-//   a slash (/).
+//   - ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
+//     The default root object file name is too big or contains an invalid character.
 //
-//   * ErrCodeInvalidErrorCode "InvalidErrorCode"
-//   An invalid error code was specified.
+//   - ErrCodeInvalidRelativePath "InvalidRelativePath"
+//     The relative path is too big, is not URL-encoded, or does not begin with
+//     a slash (/).
 //
-//   * ErrCodeInvalidResponseCode "InvalidResponseCode"
-//   A response code is not valid.
+//   - ErrCodeInvalidErrorCode "InvalidErrorCode"
+//     An invalid error code was specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidResponseCode "InvalidResponseCode"
+//     A response code is not valid.
 //
-//   * ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
-//   This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
-//   protocol in your request, or omit the RequiredProtocols element from your
-//   distribution configuration.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchOrigin "NoSuchOrigin"
-//   No origin exists with the specified Origin Id.
+//   - ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
+//     This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
+//     protocol in your request, or omit the RequiredProtocols element from your
+//     distribution configuration.
 //
-//   * ErrCodeTooManyOrigins "TooManyOrigins"
-//   You cannot create more origins for the distribution.
+//   - ErrCodeNoSuchOrigin "NoSuchOrigin"
+//     No origin exists with the specified Origin Id.
 //
-//   * ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
-//   Processing your request would cause you to exceed the maximum number of origin
-//   groups allowed.
+//   - ErrCodeTooManyOrigins "TooManyOrigins"
+//     You cannot create more origins for the distribution.
 //
-//   * ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
-//   You cannot create more cache behaviors for the distribution.
+//   - ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
+//     Processing your request would cause you to exceed the maximum number of origin
+//     groups allowed.
 //
-//   * ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
-//   Your request contains more cookie names in the whitelist than are allowed
-//   per cache behavior.
+//   - ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
+//     You cannot create more cache behaviors for the distribution.
 //
-//   * ErrCodeInvalidForwardCookies "InvalidForwardCookies"
-//   Your request contains forward cookies option which doesn't match with the
-//   expectation for the whitelisted list of cookie names. Either list of cookie
-//   names has been specified when not allowed or list of cookie names is missing
-//   when expected.
+//   - ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
+//     Your request contains more cookie names in the whitelist than are allowed
+//     per cache behavior.
 //
-//   * ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
-//   Your request contains too many headers in forwarded values.
+//   - ErrCodeInvalidForwardCookies "InvalidForwardCookies"
+//     Your request contains forward cookies option which doesn't match with the
+//     expectation for the whitelisted list of cookie names. Either list of cookie
+//     names has been specified when not allowed or list of cookie names is missing
+//     when expected.
 //
-//   * ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
-//   The headers specified are not valid for an Amazon S3 origin.
+//   - ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
+//     Your request contains too many headers in forwarded values.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
+//     The headers specified are not valid for an Amazon S3 origin.
 //
-//   * ErrCodeTooManyCertificates "TooManyCertificates"
-//   You cannot create anymore custom SSL/TLS certificates.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidLocationCode "InvalidLocationCode"
-//   The location code specified is not valid.
+//   - ErrCodeTooManyCertificates "TooManyCertificates"
+//     You cannot create anymore custom SSL/TLS certificates.
 //
-//   * ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
-//   The specified geo restriction parameter is not valid.
+//   - ErrCodeInvalidLocationCode "InvalidLocationCode"
+//     The location code specified is not valid.
 //
-//   * ErrCodeInvalidProtocolSettings "InvalidProtocolSettings"
-//   You cannot specify SSLv3 as the minimum protocol version if you only want
-//   to support only clients that support Server Name Indication (SNI).
+//   - ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
+//     The specified geo restriction parameter is not valid.
 //
-//   * ErrCodeInvalidTTLOrder "InvalidTTLOrder"
-//   The TTL order specified is not valid.
+//   - ErrCodeInvalidProtocolSettings "InvalidProtocolSettings"
+//     You cannot specify SSLv3 as the minimum protocol version if you only want
+//     to support only clients that support Server Name Indication (SNI).
 //
-//   * ErrCodeInvalidWebACLId "InvalidWebACLId"
-//   A web ACL ID specified is not valid. To specify a web ACL created using the
-//   latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
-//   To specify a web ACL created using WAF Classic, use the ACL ID, for example
-//   473e64fd-f30b-4765-81a0-62ad96dd167a.
+//   - ErrCodeInvalidTTLOrder "InvalidTTLOrder"
+//     The TTL order specified is not valid.
 //
-//   * ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
-//   Your request contains too many origin custom headers.
+//   - ErrCodeInvalidWebACLId "InvalidWebACLId"
+//     A web ACL ID specified is not valid. To specify a web ACL created using the
+//     latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
+//     To specify a web ACL created using WAF Classic, use the ACL ID, for example
+//     473e64fd-f30b-4765-81a0-62ad96dd167a.
 //
-//   * ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
-//   Your request contains too many query string parameters.
+//   - ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
+//     Your request contains too many origin custom headers.
 //
-//   * ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
-//   The query string parameters specified are not valid.
+//   - ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
+//     Your request contains too many query string parameters.
 //
-//   * ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
-//   Processing your request would cause the maximum number of distributions with
-//   Lambda@Edge function associations per owner to be exceeded.
+//   - ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
+//     The query string parameters specified are not valid.
 //
-//   * ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
-//   The maximum number of distributions have been associated with the specified
-//   Lambda@Edge function.
+//   - ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
+//     Processing your request would cause the maximum number of distributions with
+//     Lambda@Edge function associations per owner to be exceeded.
 //
-//   * ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
-//   Your request contains more Lambda@Edge function associations than are allowed
-//   per distribution.
+//   - ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
+//     The maximum number of distributions have been associated with the specified
+//     Lambda@Edge function.
 //
-//   * ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
-//   The specified Lambda@Edge function association is invalid.
+//   - ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
+//     Your request contains more Lambda@Edge function associations than are allowed
+//     per distribution.
 //
-//   * ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
-//   You have reached the maximum number of distributions that are associated
-//   with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
+//     The specified Lambda@Edge function association is invalid.
 //
-//   * ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
-//   You have reached the maximum number of CloudFront function associations for
-//   this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
+//     You have reached the maximum number of distributions that are associated
+//     with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
-//   A CloudFront function association is invalid.
+//   - ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
+//     You have reached the maximum number of CloudFront function associations for
+//     this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
-//   The read timeout specified for the origin is not valid.
+//   - ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
+//     A CloudFront function association is invalid.
 //
-//   * ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
-//   The keep alive timeout specified for the origin is not valid.
+//   - ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
+//     The read timeout specified for the origin is not valid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
+//     The keep alive timeout specified for the origin is not valid.
 //
-//   * ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
-//   The specified configuration for field-level encryption can't be associated
-//   with the specified cache behavior.
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
-//   The maximum number of distributions have been associated with the specified
-//   configuration for field-level encryption.
+//   - ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
+//     The specified configuration for field-level encryption can't be associated
+//     with the specified cache behavior.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
+//     The maximum number of distributions have been associated with the specified
+//     configuration for field-level encryption.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
-//   The maximum number of distributions have been associated with the specified
-//   cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
+//     The maximum number of distributions have been associated with the specified
+//     cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   response headers policy.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     response headers policy.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
-//   The number of distributions that reference this key group is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
-//   The number of key groups referenced by this distribution is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
+//     The number of distributions that reference this key group is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
-//   The specified key group does not exist.
+//   - ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
+//     The number of key groups referenced by this distribution is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
+//   - ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
+//     The specified key group does not exist.
 //
-//   * ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
-//   The specified real-time log configuration belongs to a different Amazon Web
-//   Services account.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
+//
+//   - ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
+//     The specified real-time log configuration belongs to a different Amazon Web
+//     Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateDistribution
 func (c *CloudFront) CreateDistribution(input *CreateDistributionInput) (*CreateDistributionOutput, error) {
@@ -669,14 +669,13 @@ const opCreateDistributionWithTags = "CreateDistributionWithTags2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDistributionWithTagsRequest method.
+//	req, resp := client.CreateDistributionWithTagsRequest(params)
 //
-//    // Example sending a request using the CreateDistributionWithTagsRequest method.
-//    req, resp := client.CreateDistributionWithTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateDistributionWithTags
 func (c *CloudFront) CreateDistributionWithTagsRequest(input *CreateDistributionWithTagsInput) (req *request.Request, output *CreateDistributionWithTagsOutput) {
@@ -707,223 +706,224 @@ func (c *CloudFront) CreateDistributionWithTagsRequest(input *CreateDistribution
 // API operation CreateDistributionWithTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeDistributionAlreadyExists "DistributionAlreadyExists"
-//   The caller reference you attempted to create the distribution with is associated
-//   with another distribution.
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidOrigin "InvalidOrigin"
-//   The Amazon S3 origin server specified does not refer to a valid Amazon S3
-//   bucket.
+//   - ErrCodeDistributionAlreadyExists "DistributionAlreadyExists"
+//     The caller reference you attempted to create the distribution with is associated
+//     with another distribution.
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidOrigin "InvalidOrigin"
+//     The Amazon S3 origin server specified does not refer to a valid Amazon S3
+//     bucket.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
-//   A viewer certificate specified is not valid.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
 //
-//   * ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
-//   The minimum protocol version specified is not valid.
+//   - ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
+//     A viewer certificate specified is not valid.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
+//     The minimum protocol version specified is not valid.
 //
-//   * ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeTooManyDistributions "TooManyDistributions"
-//   Processing your request would cause you to exceed the maximum number of distributions
-//   allowed.
+//   - ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
-//   The default root object file name is too big or contains an invalid character.
+//   - ErrCodeTooManyDistributions "TooManyDistributions"
+//     Processing your request would cause you to exceed the maximum number of distributions
+//     allowed.
 //
-//   * ErrCodeInvalidRelativePath "InvalidRelativePath"
-//   The relative path is too big, is not URL-encoded, or does not begin with
-//   a slash (/).
+//   - ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
+//     The default root object file name is too big or contains an invalid character.
 //
-//   * ErrCodeInvalidErrorCode "InvalidErrorCode"
-//   An invalid error code was specified.
+//   - ErrCodeInvalidRelativePath "InvalidRelativePath"
+//     The relative path is too big, is not URL-encoded, or does not begin with
+//     a slash (/).
 //
-//   * ErrCodeInvalidResponseCode "InvalidResponseCode"
-//   A response code is not valid.
+//   - ErrCodeInvalidErrorCode "InvalidErrorCode"
+//     An invalid error code was specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidResponseCode "InvalidResponseCode"
+//     A response code is not valid.
 //
-//   * ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
-//   This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
-//   protocol in your request, or omit the RequiredProtocols element from your
-//   distribution configuration.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchOrigin "NoSuchOrigin"
-//   No origin exists with the specified Origin Id.
+//   - ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
+//     This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
+//     protocol in your request, or omit the RequiredProtocols element from your
+//     distribution configuration.
 //
-//   * ErrCodeTooManyOrigins "TooManyOrigins"
-//   You cannot create more origins for the distribution.
+//   - ErrCodeNoSuchOrigin "NoSuchOrigin"
+//     No origin exists with the specified Origin Id.
 //
-//   * ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
-//   Processing your request would cause you to exceed the maximum number of origin
-//   groups allowed.
+//   - ErrCodeTooManyOrigins "TooManyOrigins"
+//     You cannot create more origins for the distribution.
 //
-//   * ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
-//   You cannot create more cache behaviors for the distribution.
+//   - ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
+//     Processing your request would cause you to exceed the maximum number of origin
+//     groups allowed.
 //
-//   * ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
-//   Your request contains more cookie names in the whitelist than are allowed
-//   per cache behavior.
+//   - ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
+//     You cannot create more cache behaviors for the distribution.
 //
-//   * ErrCodeInvalidForwardCookies "InvalidForwardCookies"
-//   Your request contains forward cookies option which doesn't match with the
-//   expectation for the whitelisted list of cookie names. Either list of cookie
-//   names has been specified when not allowed or list of cookie names is missing
-//   when expected.
+//   - ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
+//     Your request contains more cookie names in the whitelist than are allowed
+//     per cache behavior.
 //
-//   * ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
-//   Your request contains too many headers in forwarded values.
+//   - ErrCodeInvalidForwardCookies "InvalidForwardCookies"
+//     Your request contains forward cookies option which doesn't match with the
+//     expectation for the whitelisted list of cookie names. Either list of cookie
+//     names has been specified when not allowed or list of cookie names is missing
+//     when expected.
 //
-//   * ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
-//   The headers specified are not valid for an Amazon S3 origin.
+//   - ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
+//     Your request contains too many headers in forwarded values.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
+//     The headers specified are not valid for an Amazon S3 origin.
 //
-//   * ErrCodeTooManyCertificates "TooManyCertificates"
-//   You cannot create anymore custom SSL/TLS certificates.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidLocationCode "InvalidLocationCode"
-//   The location code specified is not valid.
+//   - ErrCodeTooManyCertificates "TooManyCertificates"
+//     You cannot create anymore custom SSL/TLS certificates.
 //
-//   * ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
-//   The specified geo restriction parameter is not valid.
+//   - ErrCodeInvalidLocationCode "InvalidLocationCode"
+//     The location code specified is not valid.
 //
-//   * ErrCodeInvalidProtocolSettings "InvalidProtocolSettings"
-//   You cannot specify SSLv3 as the minimum protocol version if you only want
-//   to support only clients that support Server Name Indication (SNI).
+//   - ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
+//     The specified geo restriction parameter is not valid.
 //
-//   * ErrCodeInvalidTTLOrder "InvalidTTLOrder"
-//   The TTL order specified is not valid.
+//   - ErrCodeInvalidProtocolSettings "InvalidProtocolSettings"
+//     You cannot specify SSLv3 as the minimum protocol version if you only want
+//     to support only clients that support Server Name Indication (SNI).
 //
-//   * ErrCodeInvalidWebACLId "InvalidWebACLId"
-//   A web ACL ID specified is not valid. To specify a web ACL created using the
-//   latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
-//   To specify a web ACL created using WAF Classic, use the ACL ID, for example
-//   473e64fd-f30b-4765-81a0-62ad96dd167a.
+//   - ErrCodeInvalidTTLOrder "InvalidTTLOrder"
+//     The TTL order specified is not valid.
 //
-//   * ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
-//   Your request contains too many origin custom headers.
+//   - ErrCodeInvalidWebACLId "InvalidWebACLId"
+//     A web ACL ID specified is not valid. To specify a web ACL created using the
+//     latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
+//     To specify a web ACL created using WAF Classic, use the ACL ID, for example
+//     473e64fd-f30b-4765-81a0-62ad96dd167a.
 //
-//   * ErrCodeInvalidTagging "InvalidTagging"
-//   The tagging specified is not valid.
+//   - ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
+//     Your request contains too many origin custom headers.
 //
-//   * ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
-//   Your request contains too many query string parameters.
+//   - ErrCodeInvalidTagging "InvalidTagging"
+//     The tagging specified is not valid.
 //
-//   * ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
-//   The query string parameters specified are not valid.
+//   - ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
+//     Your request contains too many query string parameters.
 //
-//   * ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
-//   Processing your request would cause the maximum number of distributions with
-//   Lambda@Edge function associations per owner to be exceeded.
+//   - ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
+//     The query string parameters specified are not valid.
 //
-//   * ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
-//   The maximum number of distributions have been associated with the specified
-//   Lambda@Edge function.
+//   - ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
+//     Processing your request would cause the maximum number of distributions with
+//     Lambda@Edge function associations per owner to be exceeded.
 //
-//   * ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
-//   Your request contains more Lambda@Edge function associations than are allowed
-//   per distribution.
+//   - ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
+//     The maximum number of distributions have been associated with the specified
+//     Lambda@Edge function.
 //
-//   * ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
-//   The specified Lambda@Edge function association is invalid.
+//   - ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
+//     Your request contains more Lambda@Edge function associations than are allowed
+//     per distribution.
 //
-//   * ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
-//   You have reached the maximum number of distributions that are associated
-//   with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
+//     The specified Lambda@Edge function association is invalid.
 //
-//   * ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
-//   You have reached the maximum number of CloudFront function associations for
-//   this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
+//     You have reached the maximum number of distributions that are associated
+//     with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
-//   A CloudFront function association is invalid.
+//   - ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
+//     You have reached the maximum number of CloudFront function associations for
+//     this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
-//   The read timeout specified for the origin is not valid.
+//   - ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
+//     A CloudFront function association is invalid.
 //
-//   * ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
-//   The keep alive timeout specified for the origin is not valid.
+//   - ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
+//     The read timeout specified for the origin is not valid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
+//     The keep alive timeout specified for the origin is not valid.
 //
-//   * ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
-//   The specified configuration for field-level encryption can't be associated
-//   with the specified cache behavior.
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
-//   The maximum number of distributions have been associated with the specified
-//   configuration for field-level encryption.
+//   - ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
+//     The specified configuration for field-level encryption can't be associated
+//     with the specified cache behavior.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
+//     The maximum number of distributions have been associated with the specified
+//     configuration for field-level encryption.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
-//   The maximum number of distributions have been associated with the specified
-//   cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
+//     The maximum number of distributions have been associated with the specified
+//     cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   response headers policy.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     response headers policy.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
-//   The number of distributions that reference this key group is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
-//   The number of key groups referenced by this distribution is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
+//     The number of distributions that reference this key group is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
-//   The specified key group does not exist.
+//   - ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
+//     The number of key groups referenced by this distribution is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
+//   - ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
+//     The specified key group does not exist.
 //
-//   * ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
-//   The specified real-time log configuration belongs to a different Amazon Web
-//   Services account.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
+//
+//   - ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
+//     The specified real-time log configuration belongs to a different Amazon Web
+//     Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateDistributionWithTags
 func (c *CloudFront) CreateDistributionWithTags(input *CreateDistributionWithTagsInput) (*CreateDistributionWithTagsOutput, error) {
@@ -963,14 +963,13 @@ const opCreateFieldLevelEncryptionConfig = "CreateFieldLevelEncryptionConfig2020
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFieldLevelEncryptionConfigRequest method.
+//	req, resp := client.CreateFieldLevelEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the CreateFieldLevelEncryptionConfigRequest method.
-//    req, resp := client.CreateFieldLevelEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFieldLevelEncryptionConfig
 func (c *CloudFront) CreateFieldLevelEncryptionConfigRequest(input *CreateFieldLevelEncryptionConfigInput) (req *request.Request, output *CreateFieldLevelEncryptionConfigOutput) {
@@ -1001,32 +1000,33 @@ func (c *CloudFront) CreateFieldLevelEncryptionConfigRequest(input *CreateFieldL
 // API operation CreateFieldLevelEncryptionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeFieldLevelEncryptionConfigAlreadyExists "FieldLevelEncryptionConfigAlreadyExists"
-//   The specified configuration for field-level encryption already exists.
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionConfigs "TooManyFieldLevelEncryptionConfigs"
-//   The maximum number of configurations for field-level encryption have been
-//   created.
+//   - ErrCodeFieldLevelEncryptionConfigAlreadyExists "FieldLevelEncryptionConfigAlreadyExists"
+//     The specified configuration for field-level encryption already exists.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionQueryArgProfiles "TooManyFieldLevelEncryptionQueryArgProfiles"
-//   The maximum number of query arg profiles for field-level encryption have
-//   been created.
+//   - ErrCodeTooManyFieldLevelEncryptionConfigs "TooManyFieldLevelEncryptionConfigs"
+//     The maximum number of configurations for field-level encryption have been
+//     created.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionContentTypeProfiles "TooManyFieldLevelEncryptionContentTypeProfiles"
-//   The maximum number of content type profiles for field-level encryption have
-//   been created.
+//   - ErrCodeTooManyFieldLevelEncryptionQueryArgProfiles "TooManyFieldLevelEncryptionQueryArgProfiles"
+//     The maximum number of query arg profiles for field-level encryption have
+//     been created.
 //
-//   * ErrCodeQueryArgProfileEmpty "QueryArgProfileEmpty"
-//   No profile specified for the field-level encryption query argument.
+//   - ErrCodeTooManyFieldLevelEncryptionContentTypeProfiles "TooManyFieldLevelEncryptionContentTypeProfiles"
+//     The maximum number of content type profiles for field-level encryption have
+//     been created.
+//
+//   - ErrCodeQueryArgProfileEmpty "QueryArgProfileEmpty"
+//     No profile specified for the field-level encryption query argument.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFieldLevelEncryptionConfig
 func (c *CloudFront) CreateFieldLevelEncryptionConfig(input *CreateFieldLevelEncryptionConfigInput) (*CreateFieldLevelEncryptionConfigOutput, error) {
@@ -1066,14 +1066,13 @@ const opCreateFieldLevelEncryptionProfile = "CreateFieldLevelEncryptionProfile20
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFieldLevelEncryptionProfileRequest method.
+//	req, resp := client.CreateFieldLevelEncryptionProfileRequest(params)
 //
-//    // Example sending a request using the CreateFieldLevelEncryptionProfileRequest method.
-//    req, resp := client.CreateFieldLevelEncryptionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFieldLevelEncryptionProfile
 func (c *CloudFront) CreateFieldLevelEncryptionProfileRequest(input *CreateFieldLevelEncryptionProfileInput) (req *request.Request, output *CreateFieldLevelEncryptionProfileOutput) {
@@ -1104,31 +1103,32 @@ func (c *CloudFront) CreateFieldLevelEncryptionProfileRequest(input *CreateField
 // API operation CreateFieldLevelEncryptionProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeFieldLevelEncryptionProfileAlreadyExists "FieldLevelEncryptionProfileAlreadyExists"
-//   The specified profile for field-level encryption already exists.
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
 //
-//   * ErrCodeFieldLevelEncryptionProfileSizeExceeded "FieldLevelEncryptionProfileSizeExceeded"
-//   The maximum size of a profile for field-level encryption was exceeded.
+//   - ErrCodeFieldLevelEncryptionProfileAlreadyExists "FieldLevelEncryptionProfileAlreadyExists"
+//     The specified profile for field-level encryption already exists.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionProfiles "TooManyFieldLevelEncryptionProfiles"
-//   The maximum number of profiles for field-level encryption have been created.
+//   - ErrCodeFieldLevelEncryptionProfileSizeExceeded "FieldLevelEncryptionProfileSizeExceeded"
+//     The maximum size of a profile for field-level encryption was exceeded.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionEncryptionEntities "TooManyFieldLevelEncryptionEncryptionEntities"
-//   The maximum number of encryption entities for field-level encryption have
-//   been created.
+//   - ErrCodeTooManyFieldLevelEncryptionProfiles "TooManyFieldLevelEncryptionProfiles"
+//     The maximum number of profiles for field-level encryption have been created.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionFieldPatterns "TooManyFieldLevelEncryptionFieldPatterns"
-//   The maximum number of field patterns for field-level encryption have been
-//   created.
+//   - ErrCodeTooManyFieldLevelEncryptionEncryptionEntities "TooManyFieldLevelEncryptionEncryptionEntities"
+//     The maximum number of encryption entities for field-level encryption have
+//     been created.
+//
+//   - ErrCodeTooManyFieldLevelEncryptionFieldPatterns "TooManyFieldLevelEncryptionFieldPatterns"
+//     The maximum number of field patterns for field-level encryption have been
+//     created.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFieldLevelEncryptionProfile
 func (c *CloudFront) CreateFieldLevelEncryptionProfile(input *CreateFieldLevelEncryptionProfileInput) (*CreateFieldLevelEncryptionProfileOutput, error) {
@@ -1168,14 +1168,13 @@ const opCreateFunction = "CreateFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateFunctionRequest method.
+//	req, resp := client.CreateFunctionRequest(params)
 //
-//    // Example sending a request using the CreateFunctionRequest method.
-//    req, resp := client.CreateFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFunction
 func (c *CloudFront) CreateFunctionRequest(input *CreateFunctionInput) (req *request.Request, output *CreateFunctionOutput) {
@@ -1218,25 +1217,26 @@ func (c *CloudFront) CreateFunctionRequest(input *CreateFunctionInput) (req *req
 // API operation CreateFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyFunctions "TooManyFunctions"
-//   You have reached the maximum number of CloudFront functions for this Amazon
-//   Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeFunctionAlreadyExists "FunctionAlreadyExists"
-//   A function with the same name already exists in this Amazon Web Services
-//   account. To create a function, you must provide a unique name. To update
-//   an existing function, use UpdateFunction.
+//   - ErrCodeTooManyFunctions "TooManyFunctions"
+//     You have reached the maximum number of CloudFront functions for this Amazon
+//     Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeFunctionSizeLimitExceeded "FunctionSizeLimitExceeded"
-//   The function is too large. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeFunctionAlreadyExists "FunctionAlreadyExists"
+//     A function with the same name already exists in this Amazon Web Services
+//     account. To create a function, you must provide a unique name. To update
+//     an existing function, use UpdateFunction.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeFunctionSizeLimitExceeded "FunctionSizeLimitExceeded"
+//     The function is too large. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateFunction
 func (c *CloudFront) CreateFunction(input *CreateFunctionInput) (*CreateFunctionOutput, error) {
@@ -1276,14 +1276,13 @@ const opCreateInvalidation = "CreateInvalidation2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInvalidationRequest method.
+//	req, resp := client.CreateInvalidationRequest(params)
 //
-//    // Example sending a request using the CreateInvalidationRequest method.
-//    req, resp := client.CreateInvalidationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateInvalidation
 func (c *CloudFront) CreateInvalidationRequest(input *CreateInvalidationInput) (req *request.Request, output *CreateInvalidationOutput) {
@@ -1314,28 +1313,29 @@ func (c *CloudFront) CreateInvalidationRequest(input *CreateInvalidationInput) (
 // API operation CreateInvalidation for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeBatchTooLarge "BatchTooLarge"
-//   Invalidation batch specified is too large.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
 //
-//   * ErrCodeTooManyInvalidationsInProgress "TooManyInvalidationsInProgress"
-//   You have exceeded the maximum number of allowable InProgress invalidation
-//   batch requests, or invalidation objects.
+//   - ErrCodeBatchTooLarge "BatchTooLarge"
+//     Invalidation batch specified is too large.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeTooManyInvalidationsInProgress "TooManyInvalidationsInProgress"
+//     You have exceeded the maximum number of allowable InProgress invalidation
+//     batch requests, or invalidation objects.
+//
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateInvalidation
 func (c *CloudFront) CreateInvalidation(input *CreateInvalidationInput) (*CreateInvalidationOutput, error) {
@@ -1375,14 +1375,13 @@ const opCreateKeyGroup = "CreateKeyGroup2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKeyGroupRequest method.
+//	req, resp := client.CreateKeyGroupRequest(params)
 //
-//    // Example sending a request using the CreateKeyGroupRequest method.
-//    req, resp := client.CreateKeyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateKeyGroup
 func (c *CloudFront) CreateKeyGroupRequest(input *CreateKeyGroupInput) (req *request.Request, output *CreateKeyGroupOutput) {
@@ -1424,22 +1423,23 @@ func (c *CloudFront) CreateKeyGroupRequest(input *CreateKeyGroupInput) (req *req
 // API operation CreateKeyGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeKeyGroupAlreadyExists "KeyGroupAlreadyExists"
-//   A key group with this name already exists. You must provide a unique name.
-//   To modify an existing key group, use UpdateKeyGroup.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyKeyGroups "TooManyKeyGroups"
-//   You have reached the maximum number of key groups for this Amazon Web Services
-//   account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeKeyGroupAlreadyExists "KeyGroupAlreadyExists"
+//     A key group with this name already exists. You must provide a unique name.
+//     To modify an existing key group, use UpdateKeyGroup.
 //
-//   * ErrCodeTooManyPublicKeysInKeyGroup "TooManyPublicKeysInKeyGroup"
-//   The number of public keys in this key group is more than the maximum allowed.
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyKeyGroups "TooManyKeyGroups"
+//     You have reached the maximum number of key groups for this Amazon Web Services
+//     account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeTooManyPublicKeysInKeyGroup "TooManyPublicKeysInKeyGroup"
+//     The number of public keys in this key group is more than the maximum allowed.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateKeyGroup
 func (c *CloudFront) CreateKeyGroup(input *CreateKeyGroupInput) (*CreateKeyGroupOutput, error) {
@@ -1479,14 +1479,13 @@ const opCreateMonitoringSubscription = "CreateMonitoringSubscription2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMonitoringSubscriptionRequest method.
+//	req, resp := client.CreateMonitoringSubscriptionRequest(params)
 //
-//    // Example sending a request using the CreateMonitoringSubscriptionRequest method.
-//    req, resp := client.CreateMonitoringSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateMonitoringSubscription
 func (c *CloudFront) CreateMonitoringSubscriptionRequest(input *CreateMonitoringSubscriptionInput) (req *request.Request, output *CreateMonitoringSubscriptionOutput) {
@@ -1522,14 +1521,15 @@ func (c *CloudFront) CreateMonitoringSubscriptionRequest(input *CreateMonitoring
 // API operation CreateMonitoringSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateMonitoringSubscription
 func (c *CloudFront) CreateMonitoringSubscription(input *CreateMonitoringSubscriptionInput) (*CreateMonitoringSubscriptionOutput, error) {
@@ -1569,14 +1569,13 @@ const opCreateOriginRequestPolicy = "CreateOriginRequestPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateOriginRequestPolicyRequest method.
+//	req, resp := client.CreateOriginRequestPolicyRequest(params)
 //
-//    // Example sending a request using the CreateOriginRequestPolicyRequest method.
-//    req, resp := client.CreateOriginRequestPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateOriginRequestPolicy
 func (c *CloudFront) CreateOriginRequestPolicyRequest(input *CreateOriginRequestPolicyInput) (req *request.Request, output *CreateOriginRequestPolicyOutput) {
@@ -1605,16 +1604,16 @@ func (c *CloudFront) CreateOriginRequestPolicyRequest(input *CreateOriginRequest
 // sends to the origin. Each request that CloudFront sends to the origin includes
 // the following:
 //
-//    * The request body and the URL path (without the domain name) from the
-//    viewer request.
+//   - The request body and the URL path (without the domain name) from the
+//     viewer request.
 //
-//    * The headers that CloudFront automatically includes in every origin request,
-//    including Host, User-Agent, and X-Amz-Cf-Id.
+//   - The headers that CloudFront automatically includes in every origin request,
+//     including Host, User-Agent, and X-Amz-Cf-Id.
 //
-//    * All HTTP headers, cookies, and URL query strings that are specified
-//    in the cache policy or the origin request policy. These can include items
-//    from the viewer request and, in the case of headers, additional ones that
-//    are added by CloudFront.
+//   - All HTTP headers, cookies, and URL query strings that are specified
+//     in the cache policy or the origin request policy. These can include items
+//     from the viewer request and, in the case of headers, additional ones that
+//     are added by CloudFront.
 //
 // CloudFront sends a request when it can’t find a valid object in its cache
 // that matches the request. If you want to send values to the origin and also
@@ -1632,38 +1631,39 @@ func (c *CloudFront) CreateOriginRequestPolicyRequest(input *CreateOriginRequest
 // API operation CreateOriginRequestPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeOriginRequestPolicyAlreadyExists "OriginRequestPolicyAlreadyExists"
-//   An origin request policy with this name already exists. You must provide
-//   a unique name. To modify an existing origin request policy, use UpdateOriginRequestPolicy.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyOriginRequestPolicies "TooManyOriginRequestPolicies"
-//   You have reached the maximum number of origin request policies for this Amazon
-//   Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeOriginRequestPolicyAlreadyExists "OriginRequestPolicyAlreadyExists"
+//     An origin request policy with this name already exists. You must provide
+//     a unique name. To modify an existing origin request policy, use UpdateOriginRequestPolicy.
 //
-//   * ErrCodeTooManyHeadersInOriginRequestPolicy "TooManyHeadersInOriginRequestPolicy"
-//   The number of headers in the origin request policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyOriginRequestPolicies "TooManyOriginRequestPolicies"
+//     You have reached the maximum number of origin request policies for this Amazon
+//     Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyCookiesInOriginRequestPolicy "TooManyCookiesInOriginRequestPolicy"
-//   The number of cookies in the origin request policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyHeadersInOriginRequestPolicy "TooManyHeadersInOriginRequestPolicy"
+//     The number of headers in the origin request policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyQueryStringsInOriginRequestPolicy "TooManyQueryStringsInOriginRequestPolicy"
-//   The number of query strings in the origin request policy exceeds the maximum.
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCookiesInOriginRequestPolicy "TooManyCookiesInOriginRequestPolicy"
+//     The number of cookies in the origin request policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeTooManyQueryStringsInOriginRequestPolicy "TooManyQueryStringsInOriginRequestPolicy"
+//     The number of query strings in the origin request policy exceeds the maximum.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateOriginRequestPolicy
 func (c *CloudFront) CreateOriginRequestPolicy(input *CreateOriginRequestPolicyInput) (*CreateOriginRequestPolicyOutput, error) {
@@ -1703,14 +1703,13 @@ const opCreatePublicKey = "CreatePublicKey2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePublicKeyRequest method.
+//	req, resp := client.CreatePublicKeyRequest(params)
 //
-//    // Example sending a request using the CreatePublicKeyRequest method.
-//    req, resp := client.CreatePublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreatePublicKey
 func (c *CloudFront) CreatePublicKeyRequest(input *CreatePublicKeyInput) (req *request.Request, output *CreatePublicKeyOutput) {
@@ -1743,15 +1742,16 @@ func (c *CloudFront) CreatePublicKeyRequest(input *CreatePublicKeyInput) (req *r
 // API operation CreatePublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodePublicKeyAlreadyExists "PublicKeyAlreadyExists"
-//   The specified public key already exists.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodePublicKeyAlreadyExists "PublicKeyAlreadyExists"
+//     The specified public key already exists.
 //
-//   * ErrCodeTooManyPublicKeys "TooManyPublicKeys"
-//   The maximum number of public keys for field-level encryption have been created.
-//   To create a new public key, delete one of the existing keys.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeTooManyPublicKeys "TooManyPublicKeys"
+//     The maximum number of public keys for field-level encryption have been created.
+//     To create a new public key, delete one of the existing keys.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreatePublicKey
 func (c *CloudFront) CreatePublicKey(input *CreatePublicKeyInput) (*CreatePublicKeyOutput, error) {
@@ -1791,14 +1791,13 @@ const opCreateRealtimeLogConfig = "CreateRealtimeLogConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRealtimeLogConfigRequest method.
+//	req, resp := client.CreateRealtimeLogConfigRequest(params)
 //
-//    // Example sending a request using the CreateRealtimeLogConfigRequest method.
-//    req, resp := client.CreateRealtimeLogConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateRealtimeLogConfig
 func (c *CloudFront) CreateRealtimeLogConfigRequest(input *CreateRealtimeLogConfigInput) (req *request.Request, output *CreateRealtimeLogConfigOutput) {
@@ -1837,20 +1836,21 @@ func (c *CloudFront) CreateRealtimeLogConfigRequest(input *CreateRealtimeLogConf
 // API operation CreateRealtimeLogConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeRealtimeLogConfigAlreadyExists "RealtimeLogConfigAlreadyExists"
-//   A real-time log configuration with this name already exists. You must provide
-//   a unique name. To modify an existing real-time log configuration, use UpdateRealtimeLogConfig.
 //
-//   * ErrCodeTooManyRealtimeLogConfigs "TooManyRealtimeLogConfigs"
-//   You have reached the maximum number of real-time log configurations for this
-//   Amazon Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeRealtimeLogConfigAlreadyExists "RealtimeLogConfigAlreadyExists"
+//     A real-time log configuration with this name already exists. You must provide
+//     a unique name. To modify an existing real-time log configuration, use UpdateRealtimeLogConfig.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeTooManyRealtimeLogConfigs "TooManyRealtimeLogConfigs"
+//     You have reached the maximum number of real-time log configurations for this
+//     Amazon Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateRealtimeLogConfig
 func (c *CloudFront) CreateRealtimeLogConfig(input *CreateRealtimeLogConfigInput) (*CreateRealtimeLogConfigOutput, error) {
@@ -1890,14 +1890,13 @@ const opCreateResponseHeadersPolicy = "CreateResponseHeadersPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResponseHeadersPolicyRequest method.
+//	req, resp := client.CreateResponseHeadersPolicyRequest(params)
 //
-//    // Example sending a request using the CreateResponseHeadersPolicyRequest method.
-//    req, resp := client.CreateResponseHeadersPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateResponseHeadersPolicy
 func (c *CloudFront) CreateResponseHeadersPolicyRequest(input *CreateResponseHeadersPolicyInput) (req *request.Request, output *CreateResponseHeadersPolicyOutput) {
@@ -1938,38 +1937,39 @@ func (c *CloudFront) CreateResponseHeadersPolicyRequest(input *CreateResponseHea
 // API operation CreateResponseHeadersPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeResponseHeadersPolicyAlreadyExists "ResponseHeadersPolicyAlreadyExists"
-//   A response headers policy with this name already exists. You must provide
-//   a unique name. To modify an existing response headers policy, use UpdateResponseHeadersPolicy.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyResponseHeadersPolicies "TooManyResponseHeadersPolicies"
-//   You have reached the maximum number of response headers policies for this
-//   Amazon Web Services account.
+//   - ErrCodeResponseHeadersPolicyAlreadyExists "ResponseHeadersPolicyAlreadyExists"
+//     A response headers policy with this name already exists. You must provide
+//     a unique name. To modify an existing response headers policy, use UpdateResponseHeadersPolicy.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyResponseHeadersPolicies "TooManyResponseHeadersPolicies"
+//     You have reached the maximum number of response headers policies for this
+//     Amazon Web Services account.
 //
-//   * ErrCodeTooManyCustomHeadersInResponseHeadersPolicy "TooManyCustomHeadersInResponseHeadersPolicy"
-//   The number of custom headers in the response headers policy exceeds the maximum.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCustomHeadersInResponseHeadersPolicy "TooManyCustomHeadersInResponseHeadersPolicy"
+//     The number of custom headers in the response headers policy exceeds the maximum.
 //
-//   * ErrCodeTooLongCSPInResponseHeadersPolicy "TooLongCSPInResponseHeadersPolicy"
-//   The length of the Content-Security-Policy header value in the response headers
-//   policy exceeds the maximum.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooLongCSPInResponseHeadersPolicy "TooLongCSPInResponseHeadersPolicy"
+//     The length of the Content-Security-Policy header value in the response headers
+//     policy exceeds the maximum.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateResponseHeadersPolicy
 func (c *CloudFront) CreateResponseHeadersPolicy(input *CreateResponseHeadersPolicyInput) (*CreateResponseHeadersPolicyOutput, error) {
@@ -2009,14 +2009,13 @@ const opCreateStreamingDistribution = "CreateStreamingDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingDistributionRequest method.
+//	req, resp := client.CreateStreamingDistributionRequest(params)
 //
-//    // Example sending a request using the CreateStreamingDistributionRequest method.
-//    req, resp := client.CreateStreamingDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateStreamingDistribution
 func (c *CloudFront) CreateStreamingDistributionRequest(input *CreateStreamingDistributionInput) (req *request.Request, output *CreateStreamingDistributionOutput) {
@@ -2050,45 +2049,46 @@ func (c *CloudFront) CreateStreamingDistributionRequest(input *CreateStreamingDi
 // API operation CreateStreamingDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeStreamingDistributionAlreadyExists "StreamingDistributionAlreadyExists"
-//   The caller reference you attempted to create the streaming distribution with
-//   is associated with another distribution
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidOrigin "InvalidOrigin"
-//   The Amazon S3 origin server specified does not refer to a valid Amazon S3
-//   bucket.
+//   - ErrCodeStreamingDistributionAlreadyExists "StreamingDistributionAlreadyExists"
+//     The caller reference you attempted to create the streaming distribution with
+//     is associated with another distribution
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidOrigin "InvalidOrigin"
+//     The Amazon S3 origin server specified does not refer to a valid Amazon S3
+//     bucket.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
 //
-//   * ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeTooManyStreamingDistributions "TooManyStreamingDistributions"
-//   Processing your request would cause you to exceed the maximum number of streaming
-//   distributions allowed.
+//   - ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeTooManyStreamingDistributions "TooManyStreamingDistributions"
+//     Processing your request would cause you to exceed the maximum number of streaming
+//     distributions allowed.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateStreamingDistribution
 func (c *CloudFront) CreateStreamingDistribution(input *CreateStreamingDistributionInput) (*CreateStreamingDistributionOutput, error) {
@@ -2128,14 +2128,13 @@ const opCreateStreamingDistributionWithTags = "CreateStreamingDistributionWithTa
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStreamingDistributionWithTagsRequest method.
+//	req, resp := client.CreateStreamingDistributionWithTagsRequest(params)
 //
-//    // Example sending a request using the CreateStreamingDistributionWithTagsRequest method.
-//    req, resp := client.CreateStreamingDistributionWithTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateStreamingDistributionWithTags
 func (c *CloudFront) CreateStreamingDistributionWithTagsRequest(input *CreateStreamingDistributionWithTagsInput) (req *request.Request, output *CreateStreamingDistributionWithTagsOutput) {
@@ -2169,48 +2168,49 @@ func (c *CloudFront) CreateStreamingDistributionWithTagsRequest(input *CreateStr
 // API operation CreateStreamingDistributionWithTags for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeStreamingDistributionAlreadyExists "StreamingDistributionAlreadyExists"
-//   The caller reference you attempted to create the streaming distribution with
-//   is associated with another distribution
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidOrigin "InvalidOrigin"
-//   The Amazon S3 origin server specified does not refer to a valid Amazon S3
-//   bucket.
+//   - ErrCodeStreamingDistributionAlreadyExists "StreamingDistributionAlreadyExists"
+//     The caller reference you attempted to create the streaming distribution with
+//     is associated with another distribution
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidOrigin "InvalidOrigin"
+//     The Amazon S3 origin server specified does not refer to a valid Amazon S3
+//     bucket.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
 //
-//   * ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodeTooManyStreamingDistributions "TooManyStreamingDistributions"
-//   Processing your request would cause you to exceed the maximum number of streaming
-//   distributions allowed.
+//   - ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeTooManyStreamingDistributions "TooManyStreamingDistributions"
+//     Processing your request would cause you to exceed the maximum number of streaming
+//     distributions allowed.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeInvalidTagging "InvalidTagging"
-//   The tagging specified is not valid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
+//
+//   - ErrCodeInvalidTagging "InvalidTagging"
+//     The tagging specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/CreateStreamingDistributionWithTags
 func (c *CloudFront) CreateStreamingDistributionWithTags(input *CreateStreamingDistributionWithTagsInput) (*CreateStreamingDistributionWithTagsOutput, error) {
@@ -2250,14 +2250,13 @@ const opDeleteCachePolicy = "DeleteCachePolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCachePolicyRequest method.
+//	req, resp := client.DeleteCachePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteCachePolicyRequest method.
-//    req, resp := client.DeleteCachePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteCachePolicy
 func (c *CloudFront) DeleteCachePolicyRequest(input *DeleteCachePolicyInput) (req *request.Request, output *DeleteCachePolicyOutput) {
@@ -2296,24 +2295,25 @@ func (c *CloudFront) DeleteCachePolicyRequest(input *DeleteCachePolicyInput) (re
 // API operation DeleteCachePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeIllegalDelete "IllegalDelete"
-//   You cannot delete a managed policy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeCachePolicyInUse "CachePolicyInUse"
-//   Cannot delete the cache policy because it is attached to one or more cache
-//   behaviors.
+//   - ErrCodeIllegalDelete "IllegalDelete"
+//     You cannot delete a managed policy.
+//
+//   - ErrCodeCachePolicyInUse "CachePolicyInUse"
+//     Cannot delete the cache policy because it is attached to one or more cache
+//     behaviors.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteCachePolicy
 func (c *CloudFront) DeleteCachePolicy(input *DeleteCachePolicyInput) (*DeleteCachePolicyOutput, error) {
@@ -2353,14 +2353,13 @@ const opDeleteCloudFrontOriginAccessIdentity = "DeleteCloudFrontOriginAccessIden
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCloudFrontOriginAccessIdentityRequest method.
+//	req, resp := client.DeleteCloudFrontOriginAccessIdentityRequest(params)
 //
-//    // Example sending a request using the DeleteCloudFrontOriginAccessIdentityRequest method.
-//    req, resp := client.DeleteCloudFrontOriginAccessIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteCloudFrontOriginAccessIdentity
 func (c *CloudFront) DeleteCloudFrontOriginAccessIdentityRequest(input *DeleteCloudFrontOriginAccessIdentityInput) (req *request.Request, output *DeleteCloudFrontOriginAccessIdentityOutput) {
@@ -2392,20 +2391,21 @@ func (c *CloudFront) DeleteCloudFrontOriginAccessIdentityRequest(input *DeleteCl
 // API operation DeleteCloudFrontOriginAccessIdentity for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
-//   The specified origin access identity does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
+//     The specified origin access identity does not exist.
 //
-//   * ErrCodeOriginAccessIdentityInUse "CloudFrontOriginAccessIdentityInUse"
-//   The Origin Access Identity specified is already in use.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeOriginAccessIdentityInUse "CloudFrontOriginAccessIdentityInUse"
+//     The Origin Access Identity specified is already in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteCloudFrontOriginAccessIdentity
 func (c *CloudFront) DeleteCloudFrontOriginAccessIdentity(input *DeleteCloudFrontOriginAccessIdentityInput) (*DeleteCloudFrontOriginAccessIdentityOutput, error) {
@@ -2445,14 +2445,13 @@ const opDeleteDistribution = "DeleteDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDistributionRequest method.
+//	req, resp := client.DeleteDistributionRequest(params)
 //
-//    // Example sending a request using the DeleteDistributionRequest method.
-//    req, resp := client.DeleteDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteDistribution
 func (c *CloudFront) DeleteDistributionRequest(input *DeleteDistributionInput) (req *request.Request, output *DeleteDistributionOutput) {
@@ -2484,21 +2483,22 @@ func (c *CloudFront) DeleteDistributionRequest(input *DeleteDistributionInput) (
 // API operation DeleteDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeDistributionNotDisabled "DistributionNotDisabled"
-//   The specified CloudFront distribution is not disabled. You must disable the
-//   distribution before you can delete it.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeDistributionNotDisabled "DistributionNotDisabled"
+//     The specified CloudFront distribution is not disabled. You must disable the
+//     distribution before you can delete it.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteDistribution
 func (c *CloudFront) DeleteDistribution(input *DeleteDistributionInput) (*DeleteDistributionOutput, error) {
@@ -2538,14 +2538,13 @@ const opDeleteFieldLevelEncryptionConfig = "DeleteFieldLevelEncryptionConfig2020
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFieldLevelEncryptionConfigRequest method.
+//	req, resp := client.DeleteFieldLevelEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the DeleteFieldLevelEncryptionConfigRequest method.
-//    req, resp := client.DeleteFieldLevelEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFieldLevelEncryptionConfig
 func (c *CloudFront) DeleteFieldLevelEncryptionConfigRequest(input *DeleteFieldLevelEncryptionConfigInput) (req *request.Request, output *DeleteFieldLevelEncryptionConfigOutput) {
@@ -2577,20 +2576,21 @@ func (c *CloudFront) DeleteFieldLevelEncryptionConfigRequest(input *DeleteFieldL
 // API operation DeleteFieldLevelEncryptionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
-//   * ErrCodeFieldLevelEncryptionConfigInUse "FieldLevelEncryptionConfigInUse"
-//   The specified configuration for field-level encryption is in use.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeFieldLevelEncryptionConfigInUse "FieldLevelEncryptionConfigInUse"
+//     The specified configuration for field-level encryption is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFieldLevelEncryptionConfig
 func (c *CloudFront) DeleteFieldLevelEncryptionConfig(input *DeleteFieldLevelEncryptionConfigInput) (*DeleteFieldLevelEncryptionConfigOutput, error) {
@@ -2630,14 +2630,13 @@ const opDeleteFieldLevelEncryptionProfile = "DeleteFieldLevelEncryptionProfile20
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFieldLevelEncryptionProfileRequest method.
+//	req, resp := client.DeleteFieldLevelEncryptionProfileRequest(params)
 //
-//    // Example sending a request using the DeleteFieldLevelEncryptionProfileRequest method.
-//    req, resp := client.DeleteFieldLevelEncryptionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFieldLevelEncryptionProfile
 func (c *CloudFront) DeleteFieldLevelEncryptionProfileRequest(input *DeleteFieldLevelEncryptionProfileInput) (req *request.Request, output *DeleteFieldLevelEncryptionProfileOutput) {
@@ -2669,20 +2668,21 @@ func (c *CloudFront) DeleteFieldLevelEncryptionProfileRequest(input *DeleteField
 // API operation DeleteFieldLevelEncryptionProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
-//   * ErrCodeFieldLevelEncryptionProfileInUse "FieldLevelEncryptionProfileInUse"
-//   The specified profile for field-level encryption is in use.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeFieldLevelEncryptionProfileInUse "FieldLevelEncryptionProfileInUse"
+//     The specified profile for field-level encryption is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFieldLevelEncryptionProfile
 func (c *CloudFront) DeleteFieldLevelEncryptionProfile(input *DeleteFieldLevelEncryptionProfileInput) (*DeleteFieldLevelEncryptionProfileOutput, error) {
@@ -2722,14 +2722,13 @@ const opDeleteFunction = "DeleteFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteFunctionRequest method.
+//	req, resp := client.DeleteFunctionRequest(params)
 //
-//    // Example sending a request using the DeleteFunctionRequest method.
-//    req, resp := client.DeleteFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFunction
 func (c *CloudFront) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request.Request, output *DeleteFunctionOutput) {
@@ -2768,20 +2767,21 @@ func (c *CloudFront) DeleteFunctionRequest(input *DeleteFunctionInput) (req *req
 // API operation DeleteFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeFunctionInUse "FunctionInUse"
-//   Cannot delete the function because it’s attached to one or more cache behaviors.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeFunctionInUse "FunctionInUse"
+//     Cannot delete the function because it’s attached to one or more cache behaviors.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteFunction
 func (c *CloudFront) DeleteFunction(input *DeleteFunctionInput) (*DeleteFunctionOutput, error) {
@@ -2821,14 +2821,13 @@ const opDeleteKeyGroup = "DeleteKeyGroup2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKeyGroupRequest method.
+//	req, resp := client.DeleteKeyGroupRequest(params)
 //
-//    // Example sending a request using the DeleteKeyGroupRequest method.
-//    req, resp := client.DeleteKeyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteKeyGroup
 func (c *CloudFront) DeleteKeyGroupRequest(input *DeleteKeyGroupInput) (req *request.Request, output *DeleteKeyGroupOutput) {
@@ -2868,17 +2867,18 @@ func (c *CloudFront) DeleteKeyGroupRequest(input *DeleteKeyGroupInput) (req *req
 // API operation DeleteKeyGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
-//   * ErrCodeResourceInUse "ResourceInUse"
-//   Cannot delete this resource because it is in use.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeResourceInUse "ResourceInUse"
+//     Cannot delete this resource because it is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteKeyGroup
 func (c *CloudFront) DeleteKeyGroup(input *DeleteKeyGroupInput) (*DeleteKeyGroupOutput, error) {
@@ -2918,14 +2918,13 @@ const opDeleteMonitoringSubscription = "DeleteMonitoringSubscription2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMonitoringSubscriptionRequest method.
+//	req, resp := client.DeleteMonitoringSubscriptionRequest(params)
 //
-//    // Example sending a request using the DeleteMonitoringSubscriptionRequest method.
-//    req, resp := client.DeleteMonitoringSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteMonitoringSubscription
 func (c *CloudFront) DeleteMonitoringSubscriptionRequest(input *DeleteMonitoringSubscriptionInput) (req *request.Request, output *DeleteMonitoringSubscriptionOutput) {
@@ -2957,14 +2956,15 @@ func (c *CloudFront) DeleteMonitoringSubscriptionRequest(input *DeleteMonitoring
 // API operation DeleteMonitoringSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteMonitoringSubscription
 func (c *CloudFront) DeleteMonitoringSubscription(input *DeleteMonitoringSubscriptionInput) (*DeleteMonitoringSubscriptionOutput, error) {
@@ -3004,14 +3004,13 @@ const opDeleteOriginRequestPolicy = "DeleteOriginRequestPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOriginRequestPolicyRequest method.
+//	req, resp := client.DeleteOriginRequestPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteOriginRequestPolicyRequest method.
-//    req, resp := client.DeleteOriginRequestPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteOriginRequestPolicy
 func (c *CloudFront) DeleteOriginRequestPolicyRequest(input *DeleteOriginRequestPolicyInput) (req *request.Request, output *DeleteOriginRequestPolicyOutput) {
@@ -3051,24 +3050,25 @@ func (c *CloudFront) DeleteOriginRequestPolicyRequest(input *DeleteOriginRequest
 // API operation DeleteOriginRequestPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeIllegalDelete "IllegalDelete"
-//   You cannot delete a managed policy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeOriginRequestPolicyInUse "OriginRequestPolicyInUse"
-//   Cannot delete the origin request policy because it is attached to one or
-//   more cache behaviors.
+//   - ErrCodeIllegalDelete "IllegalDelete"
+//     You cannot delete a managed policy.
+//
+//   - ErrCodeOriginRequestPolicyInUse "OriginRequestPolicyInUse"
+//     Cannot delete the origin request policy because it is attached to one or
+//     more cache behaviors.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteOriginRequestPolicy
 func (c *CloudFront) DeleteOriginRequestPolicy(input *DeleteOriginRequestPolicyInput) (*DeleteOriginRequestPolicyOutput, error) {
@@ -3108,14 +3108,13 @@ const opDeletePublicKey = "DeletePublicKey2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePublicKeyRequest method.
+//	req, resp := client.DeletePublicKeyRequest(params)
 //
-//    // Example sending a request using the DeletePublicKeyRequest method.
-//    req, resp := client.DeletePublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeletePublicKey
 func (c *CloudFront) DeletePublicKeyRequest(input *DeletePublicKeyInput) (req *request.Request, output *DeletePublicKeyOutput) {
@@ -3147,20 +3146,21 @@ func (c *CloudFront) DeletePublicKeyRequest(input *DeletePublicKeyInput) (req *r
 // API operation DeletePublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodePublicKeyInUse "PublicKeyInUse"
-//   The specified public key is in use.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodePublicKeyInUse "PublicKeyInUse"
+//     The specified public key is in use.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
+//
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeletePublicKey
 func (c *CloudFront) DeletePublicKey(input *DeletePublicKeyInput) (*DeletePublicKeyOutput, error) {
@@ -3200,14 +3200,13 @@ const opDeleteRealtimeLogConfig = "DeleteRealtimeLogConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRealtimeLogConfigRequest method.
+//	req, resp := client.DeleteRealtimeLogConfigRequest(params)
 //
-//    // Example sending a request using the DeleteRealtimeLogConfigRequest method.
-//    req, resp := client.DeleteRealtimeLogConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteRealtimeLogConfig
 func (c *CloudFront) DeleteRealtimeLogConfigRequest(input *DeleteRealtimeLogConfigInput) (req *request.Request, output *DeleteRealtimeLogConfigOutput) {
@@ -3248,18 +3247,19 @@ func (c *CloudFront) DeleteRealtimeLogConfigRequest(input *DeleteRealtimeLogConf
 // API operation DeleteRealtimeLogConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
 //
-//   * ErrCodeRealtimeLogConfigInUse "RealtimeLogConfigInUse"
-//   Cannot delete the real-time log configuration because it is attached to one
-//   or more cache behaviors.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeRealtimeLogConfigInUse "RealtimeLogConfigInUse"
+//     Cannot delete the real-time log configuration because it is attached to one
+//     or more cache behaviors.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteRealtimeLogConfig
 func (c *CloudFront) DeleteRealtimeLogConfig(input *DeleteRealtimeLogConfigInput) (*DeleteRealtimeLogConfigOutput, error) {
@@ -3299,14 +3299,13 @@ const opDeleteResponseHeadersPolicy = "DeleteResponseHeadersPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResponseHeadersPolicyRequest method.
+//	req, resp := client.DeleteResponseHeadersPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResponseHeadersPolicyRequest method.
-//    req, resp := client.DeleteResponseHeadersPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteResponseHeadersPolicy
 func (c *CloudFront) DeleteResponseHeadersPolicyRequest(input *DeleteResponseHeadersPolicyInput) (req *request.Request, output *DeleteResponseHeadersPolicyOutput) {
@@ -3346,24 +3345,25 @@ func (c *CloudFront) DeleteResponseHeadersPolicyRequest(input *DeleteResponseHea
 // API operation DeleteResponseHeadersPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   * ErrCodeIllegalDelete "IllegalDelete"
-//   You cannot delete a managed policy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeResponseHeadersPolicyInUse "ResponseHeadersPolicyInUse"
-//   Cannot delete the response headers policy because it is attached to one or
-//   more cache behaviors in a CloudFront distribution.
+//   - ErrCodeIllegalDelete "IllegalDelete"
+//     You cannot delete a managed policy.
+//
+//   - ErrCodeResponseHeadersPolicyInUse "ResponseHeadersPolicyInUse"
+//     Cannot delete the response headers policy because it is attached to one or
+//     more cache behaviors in a CloudFront distribution.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteResponseHeadersPolicy
 func (c *CloudFront) DeleteResponseHeadersPolicy(input *DeleteResponseHeadersPolicyInput) (*DeleteResponseHeadersPolicyOutput, error) {
@@ -3403,14 +3403,13 @@ const opDeleteStreamingDistribution = "DeleteStreamingDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStreamingDistributionRequest method.
+//	req, resp := client.DeleteStreamingDistributionRequest(params)
 //
-//    // Example sending a request using the DeleteStreamingDistributionRequest method.
-//    req, resp := client.DeleteStreamingDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteStreamingDistribution
 func (c *CloudFront) DeleteStreamingDistributionRequest(input *DeleteStreamingDistributionInput) (req *request.Request, output *DeleteStreamingDistributionOutput) {
@@ -3477,21 +3476,22 @@ func (c *CloudFront) DeleteStreamingDistributionRequest(input *DeleteStreamingDi
 // API operation DeleteStreamingDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeStreamingDistributionNotDisabled "StreamingDistributionNotDisabled"
-//   The specified CloudFront distribution is not disabled. You must disable the
-//   distribution before you can delete it.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeStreamingDistributionNotDisabled "StreamingDistributionNotDisabled"
+//     The specified CloudFront distribution is not disabled. You must disable the
+//     distribution before you can delete it.
 //
-//   * ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
-//   The specified streaming distribution does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
+//     The specified streaming distribution does not exist.
+//
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DeleteStreamingDistribution
 func (c *CloudFront) DeleteStreamingDistribution(input *DeleteStreamingDistributionInput) (*DeleteStreamingDistributionOutput, error) {
@@ -3531,14 +3531,13 @@ const opDescribeFunction = "DescribeFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeFunctionRequest method.
+//	req, resp := client.DescribeFunctionRequest(params)
 //
-//    // Example sending a request using the DescribeFunctionRequest method.
-//    req, resp := client.DescribeFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DescribeFunction
 func (c *CloudFront) DescribeFunctionRequest(input *DescribeFunctionInput) (req *request.Request, output *DescribeFunctionOutput) {
@@ -3574,11 +3573,12 @@ func (c *CloudFront) DescribeFunctionRequest(input *DescribeFunctionInput) (req 
 // API operation DescribeFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/DescribeFunction
 func (c *CloudFront) DescribeFunction(input *DescribeFunctionInput) (*DescribeFunctionOutput, error) {
@@ -3618,14 +3618,13 @@ const opGetCachePolicy = "GetCachePolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCachePolicyRequest method.
+//	req, resp := client.GetCachePolicyRequest(params)
 //
-//    // Example sending a request using the GetCachePolicyRequest method.
-//    req, resp := client.GetCachePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCachePolicy
 func (c *CloudFront) GetCachePolicyRequest(input *GetCachePolicyInput) (req *request.Request, output *GetCachePolicyOutput) {
@@ -3648,9 +3647,9 @@ func (c *CloudFront) GetCachePolicyRequest(input *GetCachePolicyInput) (req *req
 //
 // Gets a cache policy, including the following metadata:
 //
-//    * The policy’s identifier.
+//   - The policy’s identifier.
 //
-//    * The date and time when the policy was last modified.
+//   - The date and time when the policy was last modified.
 //
 // To get a cache policy, you must provide the policy’s identifier. If the
 // cache policy is attached to a distribution’s cache behavior, you can get
@@ -3666,11 +3665,12 @@ func (c *CloudFront) GetCachePolicyRequest(input *GetCachePolicyInput) (req *req
 // API operation GetCachePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCachePolicy
 func (c *CloudFront) GetCachePolicy(input *GetCachePolicyInput) (*GetCachePolicyOutput, error) {
@@ -3710,14 +3710,13 @@ const opGetCachePolicyConfig = "GetCachePolicyConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCachePolicyConfigRequest method.
+//	req, resp := client.GetCachePolicyConfigRequest(params)
 //
-//    // Example sending a request using the GetCachePolicyConfigRequest method.
-//    req, resp := client.GetCachePolicyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCachePolicyConfig
 func (c *CloudFront) GetCachePolicyConfigRequest(input *GetCachePolicyConfigInput) (req *request.Request, output *GetCachePolicyConfigOutput) {
@@ -3754,11 +3753,12 @@ func (c *CloudFront) GetCachePolicyConfigRequest(input *GetCachePolicyConfigInpu
 // API operation GetCachePolicyConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCachePolicyConfig
 func (c *CloudFront) GetCachePolicyConfig(input *GetCachePolicyConfigInput) (*GetCachePolicyConfigOutput, error) {
@@ -3798,14 +3798,13 @@ const opGetCloudFrontOriginAccessIdentity = "GetCloudFrontOriginAccessIdentity20
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCloudFrontOriginAccessIdentityRequest method.
+//	req, resp := client.GetCloudFrontOriginAccessIdentityRequest(params)
 //
-//    // Example sending a request using the GetCloudFrontOriginAccessIdentityRequest method.
-//    req, resp := client.GetCloudFrontOriginAccessIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCloudFrontOriginAccessIdentity
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityRequest(input *GetCloudFrontOriginAccessIdentityInput) (req *request.Request, output *GetCloudFrontOriginAccessIdentityOutput) {
@@ -3836,11 +3835,12 @@ func (c *CloudFront) GetCloudFrontOriginAccessIdentityRequest(input *GetCloudFro
 // API operation GetCloudFrontOriginAccessIdentity for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
-//   The specified origin access identity does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
+//     The specified origin access identity does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCloudFrontOriginAccessIdentity
 func (c *CloudFront) GetCloudFrontOriginAccessIdentity(input *GetCloudFrontOriginAccessIdentityInput) (*GetCloudFrontOriginAccessIdentityOutput, error) {
@@ -3880,14 +3880,13 @@ const opGetCloudFrontOriginAccessIdentityConfig = "GetCloudFrontOriginAccessIden
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCloudFrontOriginAccessIdentityConfigRequest method.
+//	req, resp := client.GetCloudFrontOriginAccessIdentityConfigRequest(params)
 //
-//    // Example sending a request using the GetCloudFrontOriginAccessIdentityConfigRequest method.
-//    req, resp := client.GetCloudFrontOriginAccessIdentityConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCloudFrontOriginAccessIdentityConfig
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfigRequest(input *GetCloudFrontOriginAccessIdentityConfigInput) (req *request.Request, output *GetCloudFrontOriginAccessIdentityConfigOutput) {
@@ -3918,11 +3917,12 @@ func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfigRequest(input *GetCl
 // API operation GetCloudFrontOriginAccessIdentityConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
-//   The specified origin access identity does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
+//     The specified origin access identity does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetCloudFrontOriginAccessIdentityConfig
 func (c *CloudFront) GetCloudFrontOriginAccessIdentityConfig(input *GetCloudFrontOriginAccessIdentityConfigInput) (*GetCloudFrontOriginAccessIdentityConfigOutput, error) {
@@ -3962,14 +3962,13 @@ const opGetDistribution = "GetDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDistributionRequest method.
+//	req, resp := client.GetDistributionRequest(params)
 //
-//    // Example sending a request using the GetDistributionRequest method.
-//    req, resp := client.GetDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetDistribution
 func (c *CloudFront) GetDistributionRequest(input *GetDistributionInput) (req *request.Request, output *GetDistributionOutput) {
@@ -4000,11 +3999,12 @@ func (c *CloudFront) GetDistributionRequest(input *GetDistributionInput) (req *r
 // API operation GetDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetDistribution
 func (c *CloudFront) GetDistribution(input *GetDistributionInput) (*GetDistributionOutput, error) {
@@ -4044,14 +4044,13 @@ const opGetDistributionConfig = "GetDistributionConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDistributionConfigRequest method.
+//	req, resp := client.GetDistributionConfigRequest(params)
 //
-//    // Example sending a request using the GetDistributionConfigRequest method.
-//    req, resp := client.GetDistributionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetDistributionConfig
 func (c *CloudFront) GetDistributionConfigRequest(input *GetDistributionConfigInput) (req *request.Request, output *GetDistributionConfigOutput) {
@@ -4082,11 +4081,12 @@ func (c *CloudFront) GetDistributionConfigRequest(input *GetDistributionConfigIn
 // API operation GetDistributionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetDistributionConfig
 func (c *CloudFront) GetDistributionConfig(input *GetDistributionConfigInput) (*GetDistributionConfigOutput, error) {
@@ -4126,14 +4126,13 @@ const opGetFieldLevelEncryption = "GetFieldLevelEncryption2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFieldLevelEncryptionRequest method.
+//	req, resp := client.GetFieldLevelEncryptionRequest(params)
 //
-//    // Example sending a request using the GetFieldLevelEncryptionRequest method.
-//    req, resp := client.GetFieldLevelEncryptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryption
 func (c *CloudFront) GetFieldLevelEncryptionRequest(input *GetFieldLevelEncryptionInput) (req *request.Request, output *GetFieldLevelEncryptionOutput) {
@@ -4164,11 +4163,12 @@ func (c *CloudFront) GetFieldLevelEncryptionRequest(input *GetFieldLevelEncrypti
 // API operation GetFieldLevelEncryption for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryption
 func (c *CloudFront) GetFieldLevelEncryption(input *GetFieldLevelEncryptionInput) (*GetFieldLevelEncryptionOutput, error) {
@@ -4208,14 +4208,13 @@ const opGetFieldLevelEncryptionConfig = "GetFieldLevelEncryptionConfig2020_05_31
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFieldLevelEncryptionConfigRequest method.
+//	req, resp := client.GetFieldLevelEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the GetFieldLevelEncryptionConfigRequest method.
-//    req, resp := client.GetFieldLevelEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionConfig
 func (c *CloudFront) GetFieldLevelEncryptionConfigRequest(input *GetFieldLevelEncryptionConfigInput) (req *request.Request, output *GetFieldLevelEncryptionConfigOutput) {
@@ -4246,11 +4245,12 @@ func (c *CloudFront) GetFieldLevelEncryptionConfigRequest(input *GetFieldLevelEn
 // API operation GetFieldLevelEncryptionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionConfig
 func (c *CloudFront) GetFieldLevelEncryptionConfig(input *GetFieldLevelEncryptionConfigInput) (*GetFieldLevelEncryptionConfigOutput, error) {
@@ -4290,14 +4290,13 @@ const opGetFieldLevelEncryptionProfile = "GetFieldLevelEncryptionProfile2020_05_
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFieldLevelEncryptionProfileRequest method.
+//	req, resp := client.GetFieldLevelEncryptionProfileRequest(params)
 //
-//    // Example sending a request using the GetFieldLevelEncryptionProfileRequest method.
-//    req, resp := client.GetFieldLevelEncryptionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionProfile
 func (c *CloudFront) GetFieldLevelEncryptionProfileRequest(input *GetFieldLevelEncryptionProfileInput) (req *request.Request, output *GetFieldLevelEncryptionProfileOutput) {
@@ -4328,11 +4327,12 @@ func (c *CloudFront) GetFieldLevelEncryptionProfileRequest(input *GetFieldLevelE
 // API operation GetFieldLevelEncryptionProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionProfile
 func (c *CloudFront) GetFieldLevelEncryptionProfile(input *GetFieldLevelEncryptionProfileInput) (*GetFieldLevelEncryptionProfileOutput, error) {
@@ -4372,14 +4372,13 @@ const opGetFieldLevelEncryptionProfileConfig = "GetFieldLevelEncryptionProfileCo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFieldLevelEncryptionProfileConfigRequest method.
+//	req, resp := client.GetFieldLevelEncryptionProfileConfigRequest(params)
 //
-//    // Example sending a request using the GetFieldLevelEncryptionProfileConfigRequest method.
-//    req, resp := client.GetFieldLevelEncryptionProfileConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionProfileConfig
 func (c *CloudFront) GetFieldLevelEncryptionProfileConfigRequest(input *GetFieldLevelEncryptionProfileConfigInput) (req *request.Request, output *GetFieldLevelEncryptionProfileConfigOutput) {
@@ -4410,11 +4409,12 @@ func (c *CloudFront) GetFieldLevelEncryptionProfileConfigRequest(input *GetField
 // API operation GetFieldLevelEncryptionProfileConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFieldLevelEncryptionProfileConfig
 func (c *CloudFront) GetFieldLevelEncryptionProfileConfig(input *GetFieldLevelEncryptionProfileConfigInput) (*GetFieldLevelEncryptionProfileConfigOutput, error) {
@@ -4454,14 +4454,13 @@ const opGetFunction = "GetFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetFunctionRequest method.
+//	req, resp := client.GetFunctionRequest(params)
 //
-//    // Example sending a request using the GetFunctionRequest method.
-//    req, resp := client.GetFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFunction
 func (c *CloudFront) GetFunctionRequest(input *GetFunctionInput) (req *request.Request, output *GetFunctionOutput) {
@@ -4496,11 +4495,12 @@ func (c *CloudFront) GetFunctionRequest(input *GetFunctionInput) (req *request.R
 // API operation GetFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetFunction
 func (c *CloudFront) GetFunction(input *GetFunctionInput) (*GetFunctionOutput, error) {
@@ -4540,14 +4540,13 @@ const opGetInvalidation = "GetInvalidation2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInvalidationRequest method.
+//	req, resp := client.GetInvalidationRequest(params)
 //
-//    // Example sending a request using the GetInvalidationRequest method.
-//    req, resp := client.GetInvalidationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetInvalidation
 func (c *CloudFront) GetInvalidationRequest(input *GetInvalidationInput) (req *request.Request, output *GetInvalidationOutput) {
@@ -4578,14 +4577,15 @@ func (c *CloudFront) GetInvalidationRequest(input *GetInvalidationInput) (req *r
 // API operation GetInvalidation for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchInvalidation "NoSuchInvalidation"
-//   The specified invalidation does not exist.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeNoSuchInvalidation "NoSuchInvalidation"
+//     The specified invalidation does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetInvalidation
 func (c *CloudFront) GetInvalidation(input *GetInvalidationInput) (*GetInvalidationOutput, error) {
@@ -4625,14 +4625,13 @@ const opGetKeyGroup = "GetKeyGroup2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetKeyGroupRequest method.
+//	req, resp := client.GetKeyGroupRequest(params)
 //
-//    // Example sending a request using the GetKeyGroupRequest method.
-//    req, resp := client.GetKeyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetKeyGroup
 func (c *CloudFront) GetKeyGroupRequest(input *GetKeyGroupInput) (req *request.Request, output *GetKeyGroupOutput) {
@@ -4670,8 +4669,8 @@ func (c *CloudFront) GetKeyGroupRequest(input *GetKeyGroupInput) (req *request.R
 // API operation GetKeyGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetKeyGroup
 func (c *CloudFront) GetKeyGroup(input *GetKeyGroupInput) (*GetKeyGroupOutput, error) {
@@ -4711,14 +4710,13 @@ const opGetKeyGroupConfig = "GetKeyGroupConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetKeyGroupConfigRequest method.
+//	req, resp := client.GetKeyGroupConfigRequest(params)
 //
-//    // Example sending a request using the GetKeyGroupConfigRequest method.
-//    req, resp := client.GetKeyGroupConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetKeyGroupConfig
 func (c *CloudFront) GetKeyGroupConfigRequest(input *GetKeyGroupConfigInput) (req *request.Request, output *GetKeyGroupConfigOutput) {
@@ -4755,8 +4753,8 @@ func (c *CloudFront) GetKeyGroupConfigRequest(input *GetKeyGroupConfigInput) (re
 // API operation GetKeyGroupConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetKeyGroupConfig
 func (c *CloudFront) GetKeyGroupConfig(input *GetKeyGroupConfigInput) (*GetKeyGroupConfigOutput, error) {
@@ -4796,14 +4794,13 @@ const opGetMonitoringSubscription = "GetMonitoringSubscription2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMonitoringSubscriptionRequest method.
+//	req, resp := client.GetMonitoringSubscriptionRequest(params)
 //
-//    // Example sending a request using the GetMonitoringSubscriptionRequest method.
-//    req, resp := client.GetMonitoringSubscriptionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetMonitoringSubscription
 func (c *CloudFront) GetMonitoringSubscriptionRequest(input *GetMonitoringSubscriptionInput) (req *request.Request, output *GetMonitoringSubscriptionOutput) {
@@ -4835,14 +4832,15 @@ func (c *CloudFront) GetMonitoringSubscriptionRequest(input *GetMonitoringSubscr
 // API operation GetMonitoringSubscription for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetMonitoringSubscription
 func (c *CloudFront) GetMonitoringSubscription(input *GetMonitoringSubscriptionInput) (*GetMonitoringSubscriptionOutput, error) {
@@ -4882,14 +4880,13 @@ const opGetOriginRequestPolicy = "GetOriginRequestPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetOriginRequestPolicyRequest method.
+//	req, resp := client.GetOriginRequestPolicyRequest(params)
 //
-//    // Example sending a request using the GetOriginRequestPolicyRequest method.
-//    req, resp := client.GetOriginRequestPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetOriginRequestPolicy
 func (c *CloudFront) GetOriginRequestPolicyRequest(input *GetOriginRequestPolicyInput) (req *request.Request, output *GetOriginRequestPolicyOutput) {
@@ -4912,9 +4909,9 @@ func (c *CloudFront) GetOriginRequestPolicyRequest(input *GetOriginRequestPolicy
 //
 // Gets an origin request policy, including the following metadata:
 //
-//    * The policy’s identifier.
+//   - The policy’s identifier.
 //
-//    * The date and time when the policy was last modified.
+//   - The date and time when the policy was last modified.
 //
 // To get an origin request policy, you must provide the policy’s identifier.
 // If the origin request policy is attached to a distribution’s cache behavior,
@@ -4930,11 +4927,12 @@ func (c *CloudFront) GetOriginRequestPolicyRequest(input *GetOriginRequestPolicy
 // API operation GetOriginRequestPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetOriginRequestPolicy
 func (c *CloudFront) GetOriginRequestPolicy(input *GetOriginRequestPolicyInput) (*GetOriginRequestPolicyOutput, error) {
@@ -4974,14 +4972,13 @@ const opGetOriginRequestPolicyConfig = "GetOriginRequestPolicyConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetOriginRequestPolicyConfigRequest method.
+//	req, resp := client.GetOriginRequestPolicyConfigRequest(params)
 //
-//    // Example sending a request using the GetOriginRequestPolicyConfigRequest method.
-//    req, resp := client.GetOriginRequestPolicyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetOriginRequestPolicyConfig
 func (c *CloudFront) GetOriginRequestPolicyConfigRequest(input *GetOriginRequestPolicyConfigInput) (req *request.Request, output *GetOriginRequestPolicyConfigOutput) {
@@ -5018,11 +5015,12 @@ func (c *CloudFront) GetOriginRequestPolicyConfigRequest(input *GetOriginRequest
 // API operation GetOriginRequestPolicyConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetOriginRequestPolicyConfig
 func (c *CloudFront) GetOriginRequestPolicyConfig(input *GetOriginRequestPolicyConfigInput) (*GetOriginRequestPolicyConfigOutput, error) {
@@ -5062,14 +5060,13 @@ const opGetPublicKey = "GetPublicKey2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPublicKeyRequest method.
+//	req, resp := client.GetPublicKeyRequest(params)
 //
-//    // Example sending a request using the GetPublicKeyRequest method.
-//    req, resp := client.GetPublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetPublicKey
 func (c *CloudFront) GetPublicKeyRequest(input *GetPublicKeyInput) (req *request.Request, output *GetPublicKeyOutput) {
@@ -5100,11 +5097,12 @@ func (c *CloudFront) GetPublicKeyRequest(input *GetPublicKeyInput) (req *request
 // API operation GetPublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetPublicKey
 func (c *CloudFront) GetPublicKey(input *GetPublicKeyInput) (*GetPublicKeyOutput, error) {
@@ -5144,14 +5142,13 @@ const opGetPublicKeyConfig = "GetPublicKeyConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPublicKeyConfigRequest method.
+//	req, resp := client.GetPublicKeyConfigRequest(params)
 //
-//    // Example sending a request using the GetPublicKeyConfigRequest method.
-//    req, resp := client.GetPublicKeyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetPublicKeyConfig
 func (c *CloudFront) GetPublicKeyConfigRequest(input *GetPublicKeyConfigInput) (req *request.Request, output *GetPublicKeyConfigOutput) {
@@ -5182,11 +5179,12 @@ func (c *CloudFront) GetPublicKeyConfigRequest(input *GetPublicKeyConfigInput) (
 // API operation GetPublicKeyConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetPublicKeyConfig
 func (c *CloudFront) GetPublicKeyConfig(input *GetPublicKeyConfigInput) (*GetPublicKeyConfigOutput, error) {
@@ -5226,14 +5224,13 @@ const opGetRealtimeLogConfig = "GetRealtimeLogConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRealtimeLogConfigRequest method.
+//	req, resp := client.GetRealtimeLogConfigRequest(params)
 //
-//    // Example sending a request using the GetRealtimeLogConfigRequest method.
-//    req, resp := client.GetRealtimeLogConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetRealtimeLogConfig
 func (c *CloudFront) GetRealtimeLogConfigRequest(input *GetRealtimeLogConfigInput) (req *request.Request, output *GetRealtimeLogConfigOutput) {
@@ -5269,14 +5266,15 @@ func (c *CloudFront) GetRealtimeLogConfigRequest(input *GetRealtimeLogConfigInpu
 // API operation GetRealtimeLogConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetRealtimeLogConfig
 func (c *CloudFront) GetRealtimeLogConfig(input *GetRealtimeLogConfigInput) (*GetRealtimeLogConfigOutput, error) {
@@ -5316,14 +5314,13 @@ const opGetResponseHeadersPolicy = "GetResponseHeadersPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResponseHeadersPolicyRequest method.
+//	req, resp := client.GetResponseHeadersPolicyRequest(params)
 //
-//    // Example sending a request using the GetResponseHeadersPolicyRequest method.
-//    req, resp := client.GetResponseHeadersPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetResponseHeadersPolicy
 func (c *CloudFront) GetResponseHeadersPolicyRequest(input *GetResponseHeadersPolicyInput) (req *request.Request, output *GetResponseHeadersPolicyOutput) {
@@ -5361,11 +5358,12 @@ func (c *CloudFront) GetResponseHeadersPolicyRequest(input *GetResponseHeadersPo
 // API operation GetResponseHeadersPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetResponseHeadersPolicy
 func (c *CloudFront) GetResponseHeadersPolicy(input *GetResponseHeadersPolicyInput) (*GetResponseHeadersPolicyOutput, error) {
@@ -5405,14 +5403,13 @@ const opGetResponseHeadersPolicyConfig = "GetResponseHeadersPolicyConfig2020_05_
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResponseHeadersPolicyConfigRequest method.
+//	req, resp := client.GetResponseHeadersPolicyConfigRequest(params)
 //
-//    // Example sending a request using the GetResponseHeadersPolicyConfigRequest method.
-//    req, resp := client.GetResponseHeadersPolicyConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetResponseHeadersPolicyConfig
 func (c *CloudFront) GetResponseHeadersPolicyConfigRequest(input *GetResponseHeadersPolicyConfigInput) (req *request.Request, output *GetResponseHeadersPolicyConfigOutput) {
@@ -5449,11 +5446,12 @@ func (c *CloudFront) GetResponseHeadersPolicyConfigRequest(input *GetResponseHea
 // API operation GetResponseHeadersPolicyConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetResponseHeadersPolicyConfig
 func (c *CloudFront) GetResponseHeadersPolicyConfig(input *GetResponseHeadersPolicyConfigInput) (*GetResponseHeadersPolicyConfigOutput, error) {
@@ -5493,14 +5491,13 @@ const opGetStreamingDistribution = "GetStreamingDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamingDistributionRequest method.
+//	req, resp := client.GetStreamingDistributionRequest(params)
 //
-//    // Example sending a request using the GetStreamingDistributionRequest method.
-//    req, resp := client.GetStreamingDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetStreamingDistribution
 func (c *CloudFront) GetStreamingDistributionRequest(input *GetStreamingDistributionInput) (req *request.Request, output *GetStreamingDistributionOutput) {
@@ -5532,11 +5529,12 @@ func (c *CloudFront) GetStreamingDistributionRequest(input *GetStreamingDistribu
 // API operation GetStreamingDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
-//   The specified streaming distribution does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
+//     The specified streaming distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetStreamingDistribution
 func (c *CloudFront) GetStreamingDistribution(input *GetStreamingDistributionInput) (*GetStreamingDistributionOutput, error) {
@@ -5576,14 +5574,13 @@ const opGetStreamingDistributionConfig = "GetStreamingDistributionConfig2020_05_
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStreamingDistributionConfigRequest method.
+//	req, resp := client.GetStreamingDistributionConfigRequest(params)
 //
-//    // Example sending a request using the GetStreamingDistributionConfigRequest method.
-//    req, resp := client.GetStreamingDistributionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetStreamingDistributionConfig
 func (c *CloudFront) GetStreamingDistributionConfigRequest(input *GetStreamingDistributionConfigInput) (req *request.Request, output *GetStreamingDistributionConfigOutput) {
@@ -5614,11 +5611,12 @@ func (c *CloudFront) GetStreamingDistributionConfigRequest(input *GetStreamingDi
 // API operation GetStreamingDistributionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
-//   The specified streaming distribution does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
+//     The specified streaming distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/GetStreamingDistributionConfig
 func (c *CloudFront) GetStreamingDistributionConfig(input *GetStreamingDistributionConfigInput) (*GetStreamingDistributionConfigOutput, error) {
@@ -5658,14 +5656,13 @@ const opListCachePolicies = "ListCachePolicies2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCachePoliciesRequest method.
+//	req, resp := client.ListCachePoliciesRequest(params)
 //
-//    // Example sending a request using the ListCachePoliciesRequest method.
-//    req, resp := client.ListCachePoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListCachePolicies
 func (c *CloudFront) ListCachePoliciesRequest(input *ListCachePoliciesInput) (req *request.Request, output *ListCachePoliciesOutput) {
@@ -5706,14 +5703,15 @@ func (c *CloudFront) ListCachePoliciesRequest(input *ListCachePoliciesInput) (re
 // API operation ListCachePolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
+//
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListCachePolicies
 func (c *CloudFront) ListCachePolicies(input *ListCachePoliciesInput) (*ListCachePoliciesOutput, error) {
@@ -5753,14 +5751,13 @@ const opListCloudFrontOriginAccessIdentities = "ListCloudFrontOriginAccessIdenti
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCloudFrontOriginAccessIdentitiesRequest method.
+//	req, resp := client.ListCloudFrontOriginAccessIdentitiesRequest(params)
 //
-//    // Example sending a request using the ListCloudFrontOriginAccessIdentitiesRequest method.
-//    req, resp := client.ListCloudFrontOriginAccessIdentitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListCloudFrontOriginAccessIdentities
 func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesRequest(input *ListCloudFrontOriginAccessIdentitiesInput) (req *request.Request, output *ListCloudFrontOriginAccessIdentitiesOutput) {
@@ -5797,8 +5794,8 @@ func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesRequest(input *ListClou
 // API operation ListCloudFrontOriginAccessIdentities for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListCloudFrontOriginAccessIdentities
 func (c *CloudFront) ListCloudFrontOriginAccessIdentities(input *ListCloudFrontOriginAccessIdentitiesInput) (*ListCloudFrontOriginAccessIdentitiesOutput, error) {
@@ -5830,15 +5827,14 @@ func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesWithContext(ctx aws.Con
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCloudFrontOriginAccessIdentities operation.
-//    pageNum := 0
-//    err := client.ListCloudFrontOriginAccessIdentitiesPages(params,
-//        func(page *cloudfront.ListCloudFrontOriginAccessIdentitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCloudFrontOriginAccessIdentities operation.
+//	pageNum := 0
+//	err := client.ListCloudFrontOriginAccessIdentitiesPages(params,
+//	    func(page *cloudfront.ListCloudFrontOriginAccessIdentitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudFront) ListCloudFrontOriginAccessIdentitiesPages(input *ListCloudFrontOriginAccessIdentitiesInput, fn func(*ListCloudFrontOriginAccessIdentitiesOutput, bool) bool) error {
 	return c.ListCloudFrontOriginAccessIdentitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5890,14 +5886,13 @@ const opListConflictingAliases = "ListConflictingAliases2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConflictingAliasesRequest method.
+//	req, resp := client.ListConflictingAliasesRequest(params)
 //
-//    // Example sending a request using the ListConflictingAliasesRequest method.
-//    req, resp := client.ListConflictingAliasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListConflictingAliases
 func (c *CloudFront) ListConflictingAliasesRequest(input *ListConflictingAliasesInput) (req *request.Request, output *ListConflictingAliasesOutput) {
@@ -5954,11 +5949,12 @@ func (c *CloudFront) ListConflictingAliasesRequest(input *ListConflictingAliases
 // API operation ListConflictingAliases for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListConflictingAliases
 func (c *CloudFront) ListConflictingAliases(input *ListConflictingAliasesInput) (*ListConflictingAliasesOutput, error) {
@@ -5998,14 +5994,13 @@ const opListDistributions = "ListDistributions2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsRequest method.
+//	req, resp := client.ListDistributionsRequest(params)
 //
-//    // Example sending a request using the ListDistributionsRequest method.
-//    req, resp := client.ListDistributionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributions
 func (c *CloudFront) ListDistributionsRequest(input *ListDistributionsInput) (req *request.Request, output *ListDistributionsOutput) {
@@ -6042,8 +6037,8 @@ func (c *CloudFront) ListDistributionsRequest(input *ListDistributionsInput) (re
 // API operation ListDistributions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributions
 func (c *CloudFront) ListDistributions(input *ListDistributionsInput) (*ListDistributionsOutput, error) {
@@ -6075,15 +6070,14 @@ func (c *CloudFront) ListDistributionsWithContext(ctx aws.Context, input *ListDi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDistributions operation.
-//    pageNum := 0
-//    err := client.ListDistributionsPages(params,
-//        func(page *cloudfront.ListDistributionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDistributions operation.
+//	pageNum := 0
+//	err := client.ListDistributionsPages(params,
+//	    func(page *cloudfront.ListDistributionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudFront) ListDistributionsPages(input *ListDistributionsInput, fn func(*ListDistributionsOutput, bool) bool) error {
 	return c.ListDistributionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -6135,14 +6129,13 @@ const opListDistributionsByCachePolicyId = "ListDistributionsByCachePolicyId2020
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByCachePolicyIdRequest method.
+//	req, resp := client.ListDistributionsByCachePolicyIdRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByCachePolicyIdRequest method.
-//    req, resp := client.ListDistributionsByCachePolicyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByCachePolicyId
 func (c *CloudFront) ListDistributionsByCachePolicyIdRequest(input *ListDistributionsByCachePolicyIdInput) (req *request.Request, output *ListDistributionsByCachePolicyIdOutput) {
@@ -6180,14 +6173,15 @@ func (c *CloudFront) ListDistributionsByCachePolicyIdRequest(input *ListDistribu
 // API operation ListDistributionsByCachePolicyId for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByCachePolicyId
 func (c *CloudFront) ListDistributionsByCachePolicyId(input *ListDistributionsByCachePolicyIdInput) (*ListDistributionsByCachePolicyIdOutput, error) {
@@ -6227,14 +6221,13 @@ const opListDistributionsByKeyGroup = "ListDistributionsByKeyGroup2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByKeyGroupRequest method.
+//	req, resp := client.ListDistributionsByKeyGroupRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByKeyGroupRequest method.
-//    req, resp := client.ListDistributionsByKeyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByKeyGroup
 func (c *CloudFront) ListDistributionsByKeyGroupRequest(input *ListDistributionsByKeyGroupInput) (req *request.Request, output *ListDistributionsByKeyGroupOutput) {
@@ -6272,11 +6265,12 @@ func (c *CloudFront) ListDistributionsByKeyGroupRequest(input *ListDistributions
 // API operation ListDistributionsByKeyGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
+//
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByKeyGroup
 func (c *CloudFront) ListDistributionsByKeyGroup(input *ListDistributionsByKeyGroupInput) (*ListDistributionsByKeyGroupOutput, error) {
@@ -6316,14 +6310,13 @@ const opListDistributionsByOriginRequestPolicyId = "ListDistributionsByOriginReq
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByOriginRequestPolicyIdRequest method.
+//	req, resp := client.ListDistributionsByOriginRequestPolicyIdRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByOriginRequestPolicyIdRequest method.
-//    req, resp := client.ListDistributionsByOriginRequestPolicyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByOriginRequestPolicyId
 func (c *CloudFront) ListDistributionsByOriginRequestPolicyIdRequest(input *ListDistributionsByOriginRequestPolicyIdInput) (req *request.Request, output *ListDistributionsByOriginRequestPolicyIdOutput) {
@@ -6361,14 +6354,15 @@ func (c *CloudFront) ListDistributionsByOriginRequestPolicyIdRequest(input *List
 // API operation ListDistributionsByOriginRequestPolicyId for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByOriginRequestPolicyId
 func (c *CloudFront) ListDistributionsByOriginRequestPolicyId(input *ListDistributionsByOriginRequestPolicyIdInput) (*ListDistributionsByOriginRequestPolicyIdOutput, error) {
@@ -6408,14 +6402,13 @@ const opListDistributionsByRealtimeLogConfig = "ListDistributionsByRealtimeLogCo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByRealtimeLogConfigRequest method.
+//	req, resp := client.ListDistributionsByRealtimeLogConfigRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByRealtimeLogConfigRequest method.
-//    req, resp := client.ListDistributionsByRealtimeLogConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByRealtimeLogConfig
 func (c *CloudFront) ListDistributionsByRealtimeLogConfigRequest(input *ListDistributionsByRealtimeLogConfigInput) (req *request.Request, output *ListDistributionsByRealtimeLogConfigOutput) {
@@ -6458,8 +6451,8 @@ func (c *CloudFront) ListDistributionsByRealtimeLogConfigRequest(input *ListDist
 // API operation ListDistributionsByRealtimeLogConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByRealtimeLogConfig
 func (c *CloudFront) ListDistributionsByRealtimeLogConfig(input *ListDistributionsByRealtimeLogConfigInput) (*ListDistributionsByRealtimeLogConfigOutput, error) {
@@ -6499,14 +6492,13 @@ const opListDistributionsByResponseHeadersPolicyId = "ListDistributionsByRespons
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByResponseHeadersPolicyIdRequest method.
+//	req, resp := client.ListDistributionsByResponseHeadersPolicyIdRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByResponseHeadersPolicyIdRequest method.
-//    req, resp := client.ListDistributionsByResponseHeadersPolicyIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByResponseHeadersPolicyId
 func (c *CloudFront) ListDistributionsByResponseHeadersPolicyIdRequest(input *ListDistributionsByResponseHeadersPolicyIdInput) (req *request.Request, output *ListDistributionsByResponseHeadersPolicyIdOutput) {
@@ -6544,14 +6536,15 @@ func (c *CloudFront) ListDistributionsByResponseHeadersPolicyIdRequest(input *Li
 // API operation ListDistributionsByResponseHeadersPolicyId for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByResponseHeadersPolicyId
 func (c *CloudFront) ListDistributionsByResponseHeadersPolicyId(input *ListDistributionsByResponseHeadersPolicyIdInput) (*ListDistributionsByResponseHeadersPolicyIdOutput, error) {
@@ -6591,14 +6584,13 @@ const opListDistributionsByWebACLId = "ListDistributionsByWebACLId2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDistributionsByWebACLIdRequest method.
+//	req, resp := client.ListDistributionsByWebACLIdRequest(params)
 //
-//    // Example sending a request using the ListDistributionsByWebACLIdRequest method.
-//    req, resp := client.ListDistributionsByWebACLIdRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByWebACLId
 func (c *CloudFront) ListDistributionsByWebACLIdRequest(input *ListDistributionsByWebACLIdInput) (req *request.Request, output *ListDistributionsByWebACLIdOutput) {
@@ -6629,14 +6621,15 @@ func (c *CloudFront) ListDistributionsByWebACLIdRequest(input *ListDistributions
 // API operation ListDistributionsByWebACLId for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeInvalidWebACLId "InvalidWebACLId"
-//   A web ACL ID specified is not valid. To specify a web ACL created using the
-//   latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
-//   To specify a web ACL created using WAF Classic, use the ACL ID, for example
-//   473e64fd-f30b-4765-81a0-62ad96dd167a.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeInvalidWebACLId "InvalidWebACLId"
+//     A web ACL ID specified is not valid. To specify a web ACL created using the
+//     latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
+//     To specify a web ACL created using WAF Classic, use the ACL ID, for example
+//     473e64fd-f30b-4765-81a0-62ad96dd167a.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListDistributionsByWebACLId
 func (c *CloudFront) ListDistributionsByWebACLId(input *ListDistributionsByWebACLIdInput) (*ListDistributionsByWebACLIdOutput, error) {
@@ -6676,14 +6669,13 @@ const opListFieldLevelEncryptionConfigs = "ListFieldLevelEncryptionConfigs2020_0
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFieldLevelEncryptionConfigsRequest method.
+//	req, resp := client.ListFieldLevelEncryptionConfigsRequest(params)
 //
-//    // Example sending a request using the ListFieldLevelEncryptionConfigsRequest method.
-//    req, resp := client.ListFieldLevelEncryptionConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFieldLevelEncryptionConfigs
 func (c *CloudFront) ListFieldLevelEncryptionConfigsRequest(input *ListFieldLevelEncryptionConfigsInput) (req *request.Request, output *ListFieldLevelEncryptionConfigsOutput) {
@@ -6715,8 +6707,8 @@ func (c *CloudFront) ListFieldLevelEncryptionConfigsRequest(input *ListFieldLeve
 // API operation ListFieldLevelEncryptionConfigs for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFieldLevelEncryptionConfigs
 func (c *CloudFront) ListFieldLevelEncryptionConfigs(input *ListFieldLevelEncryptionConfigsInput) (*ListFieldLevelEncryptionConfigsOutput, error) {
@@ -6756,14 +6748,13 @@ const opListFieldLevelEncryptionProfiles = "ListFieldLevelEncryptionProfiles2020
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFieldLevelEncryptionProfilesRequest method.
+//	req, resp := client.ListFieldLevelEncryptionProfilesRequest(params)
 //
-//    // Example sending a request using the ListFieldLevelEncryptionProfilesRequest method.
-//    req, resp := client.ListFieldLevelEncryptionProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFieldLevelEncryptionProfiles
 func (c *CloudFront) ListFieldLevelEncryptionProfilesRequest(input *ListFieldLevelEncryptionProfilesInput) (req *request.Request, output *ListFieldLevelEncryptionProfilesOutput) {
@@ -6795,8 +6786,8 @@ func (c *CloudFront) ListFieldLevelEncryptionProfilesRequest(input *ListFieldLev
 // API operation ListFieldLevelEncryptionProfiles for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFieldLevelEncryptionProfiles
 func (c *CloudFront) ListFieldLevelEncryptionProfiles(input *ListFieldLevelEncryptionProfilesInput) (*ListFieldLevelEncryptionProfilesOutput, error) {
@@ -6836,14 +6827,13 @@ const opListFunctions = "ListFunctions2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListFunctionsRequest method.
+//	req, resp := client.ListFunctionsRequest(params)
 //
-//    // Example sending a request using the ListFunctionsRequest method.
-//    req, resp := client.ListFunctionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFunctions
 func (c *CloudFront) ListFunctionsRequest(input *ListFunctionsInput) (req *request.Request, output *ListFunctionsOutput) {
@@ -6883,11 +6873,12 @@ func (c *CloudFront) ListFunctionsRequest(input *ListFunctionsInput) (req *reque
 // API operation ListFunctions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListFunctions
 func (c *CloudFront) ListFunctions(input *ListFunctionsInput) (*ListFunctionsOutput, error) {
@@ -6927,14 +6918,13 @@ const opListInvalidations = "ListInvalidations2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInvalidationsRequest method.
+//	req, resp := client.ListInvalidationsRequest(params)
 //
-//    // Example sending a request using the ListInvalidationsRequest method.
-//    req, resp := client.ListInvalidationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListInvalidations
 func (c *CloudFront) ListInvalidationsRequest(input *ListInvalidationsInput) (req *request.Request, output *ListInvalidationsOutput) {
@@ -6971,14 +6961,15 @@ func (c *CloudFront) ListInvalidationsRequest(input *ListInvalidationsInput) (re
 // API operation ListInvalidations for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListInvalidations
 func (c *CloudFront) ListInvalidations(input *ListInvalidationsInput) (*ListInvalidationsOutput, error) {
@@ -7010,15 +7001,14 @@ func (c *CloudFront) ListInvalidationsWithContext(ctx aws.Context, input *ListIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListInvalidations operation.
-//    pageNum := 0
-//    err := client.ListInvalidationsPages(params,
-//        func(page *cloudfront.ListInvalidationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListInvalidations operation.
+//	pageNum := 0
+//	err := client.ListInvalidationsPages(params,
+//	    func(page *cloudfront.ListInvalidationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudFront) ListInvalidationsPages(input *ListInvalidationsInput, fn func(*ListInvalidationsOutput, bool) bool) error {
 	return c.ListInvalidationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7070,14 +7060,13 @@ const opListKeyGroups = "ListKeyGroups2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKeyGroupsRequest method.
+//	req, resp := client.ListKeyGroupsRequest(params)
 //
-//    // Example sending a request using the ListKeyGroupsRequest method.
-//    req, resp := client.ListKeyGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListKeyGroups
 func (c *CloudFront) ListKeyGroupsRequest(input *ListKeyGroupsInput) (req *request.Request, output *ListKeyGroupsOutput) {
@@ -7114,8 +7103,8 @@ func (c *CloudFront) ListKeyGroupsRequest(input *ListKeyGroupsInput) (req *reque
 // API operation ListKeyGroups for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListKeyGroups
 func (c *CloudFront) ListKeyGroups(input *ListKeyGroupsInput) (*ListKeyGroupsOutput, error) {
@@ -7155,14 +7144,13 @@ const opListOriginRequestPolicies = "ListOriginRequestPolicies2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListOriginRequestPoliciesRequest method.
+//	req, resp := client.ListOriginRequestPoliciesRequest(params)
 //
-//    // Example sending a request using the ListOriginRequestPoliciesRequest method.
-//    req, resp := client.ListOriginRequestPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListOriginRequestPolicies
 func (c *CloudFront) ListOriginRequestPoliciesRequest(input *ListOriginRequestPoliciesInput) (req *request.Request, output *ListOriginRequestPoliciesOutput) {
@@ -7203,14 +7191,15 @@ func (c *CloudFront) ListOriginRequestPoliciesRequest(input *ListOriginRequestPo
 // API operation ListOriginRequestPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
+//
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListOriginRequestPolicies
 func (c *CloudFront) ListOriginRequestPolicies(input *ListOriginRequestPoliciesInput) (*ListOriginRequestPoliciesOutput, error) {
@@ -7250,14 +7239,13 @@ const opListPublicKeys = "ListPublicKeys2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPublicKeysRequest method.
+//	req, resp := client.ListPublicKeysRequest(params)
 //
-//    // Example sending a request using the ListPublicKeysRequest method.
-//    req, resp := client.ListPublicKeysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListPublicKeys
 func (c *CloudFront) ListPublicKeysRequest(input *ListPublicKeysInput) (req *request.Request, output *ListPublicKeysOutput) {
@@ -7288,8 +7276,8 @@ func (c *CloudFront) ListPublicKeysRequest(input *ListPublicKeysInput) (req *req
 // API operation ListPublicKeys for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListPublicKeys
 func (c *CloudFront) ListPublicKeys(input *ListPublicKeysInput) (*ListPublicKeysOutput, error) {
@@ -7329,14 +7317,13 @@ const opListRealtimeLogConfigs = "ListRealtimeLogConfigs2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRealtimeLogConfigsRequest method.
+//	req, resp := client.ListRealtimeLogConfigsRequest(params)
 //
-//    // Example sending a request using the ListRealtimeLogConfigsRequest method.
-//    req, resp := client.ListRealtimeLogConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListRealtimeLogConfigs
 func (c *CloudFront) ListRealtimeLogConfigsRequest(input *ListRealtimeLogConfigsInput) (req *request.Request, output *ListRealtimeLogConfigsOutput) {
@@ -7373,14 +7360,15 @@ func (c *CloudFront) ListRealtimeLogConfigsRequest(input *ListRealtimeLogConfigs
 // API operation ListRealtimeLogConfigs for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
+//
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListRealtimeLogConfigs
 func (c *CloudFront) ListRealtimeLogConfigs(input *ListRealtimeLogConfigsInput) (*ListRealtimeLogConfigsOutput, error) {
@@ -7420,14 +7408,13 @@ const opListResponseHeadersPolicies = "ListResponseHeadersPolicies2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResponseHeadersPoliciesRequest method.
+//	req, resp := client.ListResponseHeadersPoliciesRequest(params)
 //
-//    // Example sending a request using the ListResponseHeadersPoliciesRequest method.
-//    req, resp := client.ListResponseHeadersPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListResponseHeadersPolicies
 func (c *CloudFront) ListResponseHeadersPoliciesRequest(input *ListResponseHeadersPoliciesInput) (req *request.Request, output *ListResponseHeadersPoliciesOutput) {
@@ -7468,14 +7455,15 @@ func (c *CloudFront) ListResponseHeadersPoliciesRequest(input *ListResponseHeade
 // API operation ListResponseHeadersPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
+//
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListResponseHeadersPolicies
 func (c *CloudFront) ListResponseHeadersPolicies(input *ListResponseHeadersPoliciesInput) (*ListResponseHeadersPoliciesOutput, error) {
@@ -7515,14 +7503,13 @@ const opListStreamingDistributions = "ListStreamingDistributions2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStreamingDistributionsRequest method.
+//	req, resp := client.ListStreamingDistributionsRequest(params)
 //
-//    // Example sending a request using the ListStreamingDistributionsRequest method.
-//    req, resp := client.ListStreamingDistributionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListStreamingDistributions
 func (c *CloudFront) ListStreamingDistributionsRequest(input *ListStreamingDistributionsInput) (req *request.Request, output *ListStreamingDistributionsOutput) {
@@ -7559,8 +7546,8 @@ func (c *CloudFront) ListStreamingDistributionsRequest(input *ListStreamingDistr
 // API operation ListStreamingDistributions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListStreamingDistributions
 func (c *CloudFront) ListStreamingDistributions(input *ListStreamingDistributionsInput) (*ListStreamingDistributionsOutput, error) {
@@ -7592,15 +7579,14 @@ func (c *CloudFront) ListStreamingDistributionsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStreamingDistributions operation.
-//    pageNum := 0
-//    err := client.ListStreamingDistributionsPages(params,
-//        func(page *cloudfront.ListStreamingDistributionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStreamingDistributions operation.
+//	pageNum := 0
+//	err := client.ListStreamingDistributionsPages(params,
+//	    func(page *cloudfront.ListStreamingDistributionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *CloudFront) ListStreamingDistributionsPages(input *ListStreamingDistributionsInput, fn func(*ListStreamingDistributionsOutput, bool) bool) error {
 	return c.ListStreamingDistributionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -7652,14 +7638,13 @@ const opListTagsForResource = "ListTagsForResource2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListTagsForResource
 func (c *CloudFront) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -7690,17 +7675,18 @@ func (c *CloudFront) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidTagging "InvalidTagging"
-//   The tagging specified is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeInvalidTagging "InvalidTagging"
+//     The tagging specified is not valid.
+//
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/ListTagsForResource
 func (c *CloudFront) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -7740,14 +7726,13 @@ const opPublishFunction = "PublishFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PublishFunctionRequest method.
+//	req, resp := client.PublishFunctionRequest(params)
 //
-//    // Example sending a request using the PublishFunctionRequest method.
-//    req, resp := client.PublishFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/PublishFunction
 func (c *CloudFront) PublishFunctionRequest(input *PublishFunctionInput) (req *request.Request, output *PublishFunctionOutput) {
@@ -7787,20 +7772,21 @@ func (c *CloudFront) PublishFunctionRequest(input *PublishFunctionInput) (req *r
 // API operation PublishFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/PublishFunction
 func (c *CloudFront) PublishFunction(input *PublishFunctionInput) (*PublishFunctionOutput, error) {
@@ -7840,14 +7826,13 @@ const opTagResource = "TagResource2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/TagResource
 func (c *CloudFront) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -7879,17 +7864,18 @@ func (c *CloudFront) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidTagging "InvalidTagging"
-//   The tagging specified is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeInvalidTagging "InvalidTagging"
+//     The tagging specified is not valid.
+//
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/TagResource
 func (c *CloudFront) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -7929,14 +7915,13 @@ const opTestFunction = "TestFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestFunctionRequest method.
+//	req, resp := client.TestFunctionRequest(params)
 //
-//    // Example sending a request using the TestFunctionRequest method.
-//    req, resp := client.TestFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/TestFunction
 func (c *CloudFront) TestFunctionRequest(input *TestFunctionInput) (req *request.Request, output *TestFunctionOutput) {
@@ -7979,20 +7964,21 @@ func (c *CloudFront) TestFunctionRequest(input *TestFunctionInput) (req *request
 // API operation TestFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeTestFunctionFailed "TestFunctionFailed"
-//   The CloudFront function failed.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeTestFunctionFailed "TestFunctionFailed"
+//     The CloudFront function failed.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/TestFunction
 func (c *CloudFront) TestFunction(input *TestFunctionInput) (*TestFunctionOutput, error) {
@@ -8032,14 +8018,13 @@ const opUntagResource = "UntagResource2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UntagResource
 func (c *CloudFront) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -8071,17 +8056,18 @@ func (c *CloudFront) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidTagging "InvalidTagging"
-//   The tagging specified is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeInvalidTagging "InvalidTagging"
+//     The tagging specified is not valid.
+//
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UntagResource
 func (c *CloudFront) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -8121,14 +8107,13 @@ const opUpdateCachePolicy = "UpdateCachePolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCachePolicyRequest method.
+//	req, resp := client.UpdateCachePolicyRequest(params)
 //
-//    // Example sending a request using the UpdateCachePolicyRequest method.
-//    req, resp := client.UpdateCachePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateCachePolicy
 func (c *CloudFront) UpdateCachePolicyRequest(input *UpdateCachePolicyInput) (req *request.Request, output *UpdateCachePolicyOutput) {
@@ -8171,45 +8156,46 @@ func (c *CloudFront) UpdateCachePolicyRequest(input *UpdateCachePolicyInput) (re
 // API operation UpdateCachePolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeCachePolicyAlreadyExists "CachePolicyAlreadyExists"
-//   A cache policy with this name already exists. You must provide a unique name.
-//   To modify an existing cache policy, use UpdateCachePolicy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeTooManyHeadersInCachePolicy "TooManyHeadersInCachePolicy"
-//   The number of headers in the cache policy exceeds the maximum. For more information,
-//   see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeCachePolicyAlreadyExists "CachePolicyAlreadyExists"
+//     A cache policy with this name already exists. You must provide a unique name.
+//     To modify an existing cache policy, use UpdateCachePolicy.
 //
-//   * ErrCodeTooManyCookiesInCachePolicy "TooManyCookiesInCachePolicy"
-//   The number of cookies in the cache policy exceeds the maximum. For more information,
-//   see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyHeadersInCachePolicy "TooManyHeadersInCachePolicy"
+//     The number of headers in the cache policy exceeds the maximum. For more information,
+//     see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyQueryStringsInCachePolicy "TooManyQueryStringsInCachePolicy"
-//   The number of query strings in the cache policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCookiesInCachePolicy "TooManyCookiesInCachePolicy"
+//     The number of cookies in the cache policy exceeds the maximum. For more information,
+//     see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeTooManyQueryStringsInCachePolicy "TooManyQueryStringsInCachePolicy"
+//     The number of query strings in the cache policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateCachePolicy
 func (c *CloudFront) UpdateCachePolicy(input *UpdateCachePolicyInput) (*UpdateCachePolicyOutput, error) {
@@ -8249,14 +8235,13 @@ const opUpdateCloudFrontOriginAccessIdentity = "UpdateCloudFrontOriginAccessIden
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCloudFrontOriginAccessIdentityRequest method.
+//	req, resp := client.UpdateCloudFrontOriginAccessIdentityRequest(params)
 //
-//    // Example sending a request using the UpdateCloudFrontOriginAccessIdentityRequest method.
-//    req, resp := client.UpdateCloudFrontOriginAccessIdentityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateCloudFrontOriginAccessIdentity
 func (c *CloudFront) UpdateCloudFrontOriginAccessIdentityRequest(input *UpdateCloudFrontOriginAccessIdentityInput) (req *request.Request, output *UpdateCloudFrontOriginAccessIdentityOutput) {
@@ -8287,30 +8272,31 @@ func (c *CloudFront) UpdateCloudFrontOriginAccessIdentityRequest(input *UpdateCl
 // API operation UpdateCloudFrontOriginAccessIdentity for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
-//   The specified origin access identity does not exist.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchCloudFrontOriginAccessIdentity "NoSuchCloudFrontOriginAccessIdentity"
+//     The specified origin access identity does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateCloudFrontOriginAccessIdentity
 func (c *CloudFront) UpdateCloudFrontOriginAccessIdentity(input *UpdateCloudFrontOriginAccessIdentityInput) (*UpdateCloudFrontOriginAccessIdentityOutput, error) {
@@ -8350,14 +8336,13 @@ const opUpdateDistribution = "UpdateDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDistributionRequest method.
+//	req, resp := client.UpdateDistributionRequest(params)
 //
-//    // Example sending a request using the UpdateDistributionRequest method.
-//    req, resp := client.UpdateDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateDistribution
 func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (req *request.Request, output *UpdateDistributionOutput) {
@@ -8396,7 +8381,7 @@ func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (
 // instead, see Creating a Distribution (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-creating-console.html)
 // in the Amazon CloudFront Developer Guide.
 //
-// To update a web distribution using the CloudFront API
+// # To update a web distribution using the CloudFront API
 //
 // Submit a GetDistributionConfig (https://docs.aws.amazon.com/cloudfront/latest/APIReference/API_GetDistributionConfig.html)
 // request to get the current configuration and an Etag header for the distribution.
@@ -8408,33 +8393,33 @@ func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (
 //
 // When you edit the XML file, be aware of the following:
 //
-//    * You must strip out the ETag parameter that is returned.
+//   - You must strip out the ETag parameter that is returned.
 //
-//    * Additional fields are required when you update a distribution. There
-//    may be fields included in the XML file for features that you haven't configured
-//    for your distribution. This is expected and required to successfully update
-//    the distribution.
+//   - Additional fields are required when you update a distribution. There
+//     may be fields included in the XML file for features that you haven't configured
+//     for your distribution. This is expected and required to successfully update
+//     the distribution.
 //
-//    * You can't change the value of CallerReference. If you try to change
-//    this value, CloudFront returns an IllegalUpdate error.
+//   - You can't change the value of CallerReference. If you try to change
+//     this value, CloudFront returns an IllegalUpdate error.
 //
-//    * The new configuration replaces the existing configuration; the values
-//    that you specify in an UpdateDistribution request are not merged into
-//    your existing configuration. When you add, delete, or replace values in
-//    an element that allows multiple values (for example, CNAME), you must
-//    specify all of the values that you want to appear in the updated distribution.
-//    In addition, you must update the corresponding Quantity element.
+//   - The new configuration replaces the existing configuration; the values
+//     that you specify in an UpdateDistribution request are not merged into
+//     your existing configuration. When you add, delete, or replace values in
+//     an element that allows multiple values (for example, CNAME), you must
+//     specify all of the values that you want to appear in the updated distribution.
+//     In addition, you must update the corresponding Quantity element.
 //
 // Submit an UpdateDistribution request to update the configuration for your
 // distribution:
 //
-//    * In the request body, include the XML document that you updated in Step
-//    2. The request body must include an XML document with a DistributionConfig
-//    element.
+//   - In the request body, include the XML document that you updated in Step
+//     2. The request body must include an XML document with a DistributionConfig
+//     element.
 //
-//    * Set the value of the HTTP If-Match header to the value of the ETag header
-//    that CloudFront returned when you submitted the GetDistributionConfig
-//    request in Step 1.
+//   - Set the value of the HTTP If-Match header to the value of the ETag header
+//     that CloudFront returned when you submitted the GetDistributionConfig
+//     request in Step 1.
 //
 // Review the response to the UpdateDistribution request to confirm that the
 // configuration was successfully updated.
@@ -8451,216 +8436,217 @@ func (c *CloudFront) UpdateDistributionRequest(input *UpdateDistributionInput) (
 // API operation UpdateDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchDistribution "NoSuchDistribution"
-//   The specified distribution does not exist.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchDistribution "NoSuchDistribution"
+//     The specified distribution does not exist.
 //
-//   * ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
-//   The default root object file name is too big or contains an invalid character.
+//   - ErrCodeTooManyDistributionCNAMEs "TooManyDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidRelativePath "InvalidRelativePath"
-//   The relative path is too big, is not URL-encoded, or does not begin with
-//   a slash (/).
+//   - ErrCodeInvalidDefaultRootObject "InvalidDefaultRootObject"
+//     The default root object file name is too big or contains an invalid character.
 //
-//   * ErrCodeInvalidErrorCode "InvalidErrorCode"
-//   An invalid error code was specified.
+//   - ErrCodeInvalidRelativePath "InvalidRelativePath"
+//     The relative path is too big, is not URL-encoded, or does not begin with
+//     a slash (/).
 //
-//   * ErrCodeInvalidResponseCode "InvalidResponseCode"
-//   A response code is not valid.
+//   - ErrCodeInvalidErrorCode "InvalidErrorCode"
+//     An invalid error code was specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInvalidResponseCode "InvalidResponseCode"
+//     A response code is not valid.
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
-//   A viewer certificate specified is not valid.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
 //
-//   * ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
-//   The minimum protocol version specified is not valid.
+//   - ErrCodeInvalidViewerCertificate "InvalidViewerCertificate"
+//     A viewer certificate specified is not valid.
 //
-//   * ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
-//   This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
-//   protocol in your request, or omit the RequiredProtocols element from your
-//   distribution configuration.
+//   - ErrCodeInvalidMinimumProtocolVersion "InvalidMinimumProtocolVersion"
+//     The minimum protocol version specified is not valid.
 //
-//   * ErrCodeNoSuchOrigin "NoSuchOrigin"
-//   No origin exists with the specified Origin Id.
+//   - ErrCodeInvalidRequiredProtocol "InvalidRequiredProtocol"
+//     This operation requires the HTTPS protocol. Ensure that you specify the HTTPS
+//     protocol in your request, or omit the RequiredProtocols element from your
+//     distribution configuration.
 //
-//   * ErrCodeTooManyOrigins "TooManyOrigins"
-//   You cannot create more origins for the distribution.
+//   - ErrCodeNoSuchOrigin "NoSuchOrigin"
+//     No origin exists with the specified Origin Id.
 //
-//   * ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
-//   Processing your request would cause you to exceed the maximum number of origin
-//   groups allowed.
+//   - ErrCodeTooManyOrigins "TooManyOrigins"
+//     You cannot create more origins for the distribution.
 //
-//   * ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
-//   You cannot create more cache behaviors for the distribution.
+//   - ErrCodeTooManyOriginGroupsPerDistribution "TooManyOriginGroupsPerDistribution"
+//     Processing your request would cause you to exceed the maximum number of origin
+//     groups allowed.
 //
-//   * ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
-//   Your request contains more cookie names in the whitelist than are allowed
-//   per cache behavior.
+//   - ErrCodeTooManyCacheBehaviors "TooManyCacheBehaviors"
+//     You cannot create more cache behaviors for the distribution.
 //
-//   * ErrCodeInvalidForwardCookies "InvalidForwardCookies"
-//   Your request contains forward cookies option which doesn't match with the
-//   expectation for the whitelisted list of cookie names. Either list of cookie
-//   names has been specified when not allowed or list of cookie names is missing
-//   when expected.
+//   - ErrCodeTooManyCookieNamesInWhiteList "TooManyCookieNamesInWhiteList"
+//     Your request contains more cookie names in the whitelist than are allowed
+//     per cache behavior.
 //
-//   * ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
-//   Your request contains too many headers in forwarded values.
+//   - ErrCodeInvalidForwardCookies "InvalidForwardCookies"
+//     Your request contains forward cookies option which doesn't match with the
+//     expectation for the whitelisted list of cookie names. Either list of cookie
+//     names has been specified when not allowed or list of cookie names is missing
+//     when expected.
 //
-//   * ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
-//   The headers specified are not valid for an Amazon S3 origin.
+//   - ErrCodeTooManyHeadersInForwardedValues "TooManyHeadersInForwardedValues"
+//     Your request contains too many headers in forwarded values.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeInvalidHeadersForS3Origin "InvalidHeadersForS3Origin"
+//     The headers specified are not valid for an Amazon S3 origin.
 //
-//   * ErrCodeTooManyCertificates "TooManyCertificates"
-//   You cannot create anymore custom SSL/TLS certificates.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidLocationCode "InvalidLocationCode"
-//   The location code specified is not valid.
+//   - ErrCodeTooManyCertificates "TooManyCertificates"
+//     You cannot create anymore custom SSL/TLS certificates.
 //
-//   * ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
-//   The specified geo restriction parameter is not valid.
+//   - ErrCodeInvalidLocationCode "InvalidLocationCode"
+//     The location code specified is not valid.
 //
-//   * ErrCodeInvalidTTLOrder "InvalidTTLOrder"
-//   The TTL order specified is not valid.
+//   - ErrCodeInvalidGeoRestrictionParameter "InvalidGeoRestrictionParameter"
+//     The specified geo restriction parameter is not valid.
 //
-//   * ErrCodeInvalidWebACLId "InvalidWebACLId"
-//   A web ACL ID specified is not valid. To specify a web ACL created using the
-//   latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
-//   To specify a web ACL created using WAF Classic, use the ACL ID, for example
-//   473e64fd-f30b-4765-81a0-62ad96dd167a.
+//   - ErrCodeInvalidTTLOrder "InvalidTTLOrder"
+//     The TTL order specified is not valid.
 //
-//   * ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
-//   Your request contains too many origin custom headers.
+//   - ErrCodeInvalidWebACLId "InvalidWebACLId"
+//     A web ACL ID specified is not valid. To specify a web ACL created using the
+//     latest version of WAF, use the ACL ARN, for example arn:aws:wafv2:us-east-1:123456789012:global/webacl/ExampleWebACL/473e64fd-f30b-4765-81a0-62ad96dd167a.
+//     To specify a web ACL created using WAF Classic, use the ACL ID, for example
+//     473e64fd-f30b-4765-81a0-62ad96dd167a.
 //
-//   * ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
-//   Your request contains too many query string parameters.
+//   - ErrCodeTooManyOriginCustomHeaders "TooManyOriginCustomHeaders"
+//     Your request contains too many origin custom headers.
 //
-//   * ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
-//   The query string parameters specified are not valid.
+//   - ErrCodeTooManyQueryStringParameters "TooManyQueryStringParameters"
+//     Your request contains too many query string parameters.
 //
-//   * ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
-//   Processing your request would cause the maximum number of distributions with
-//   Lambda@Edge function associations per owner to be exceeded.
+//   - ErrCodeInvalidQueryStringParameters "InvalidQueryStringParameters"
+//     The query string parameters specified are not valid.
 //
-//   * ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
-//   The maximum number of distributions have been associated with the specified
-//   Lambda@Edge function.
+//   - ErrCodeTooManyDistributionsWithLambdaAssociations "TooManyDistributionsWithLambdaAssociations"
+//     Processing your request would cause the maximum number of distributions with
+//     Lambda@Edge function associations per owner to be exceeded.
 //
-//   * ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
-//   Your request contains more Lambda@Edge function associations than are allowed
-//   per distribution.
+//   - ErrCodeTooManyDistributionsWithSingleFunctionARN "TooManyDistributionsWithSingleFunctionARN"
+//     The maximum number of distributions have been associated with the specified
+//     Lambda@Edge function.
 //
-//   * ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
-//   The specified Lambda@Edge function association is invalid.
+//   - ErrCodeTooManyLambdaFunctionAssociations "TooManyLambdaFunctionAssociations"
+//     Your request contains more Lambda@Edge function associations than are allowed
+//     per distribution.
 //
-//   * ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
-//   You have reached the maximum number of distributions that are associated
-//   with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeInvalidLambdaFunctionAssociation "InvalidLambdaFunctionAssociation"
+//     The specified Lambda@Edge function association is invalid.
 //
-//   * ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
-//   You have reached the maximum number of CloudFront function associations for
-//   this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsWithFunctionAssociations "TooManyDistributionsWithFunctionAssociations"
+//     You have reached the maximum number of distributions that are associated
+//     with a CloudFront function. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
-//   A CloudFront function association is invalid.
+//   - ErrCodeTooManyFunctionAssociations "TooManyFunctionAssociations"
+//     You have reached the maximum number of CloudFront function associations for
+//     this distribution. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
-//   The read timeout specified for the origin is not valid.
+//   - ErrCodeInvalidFunctionAssociation "InvalidFunctionAssociation"
+//     A CloudFront function association is invalid.
 //
-//   * ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
-//   The keep alive timeout specified for the origin is not valid.
+//   - ErrCodeInvalidOriginReadTimeout "InvalidOriginReadTimeout"
+//     The read timeout specified for the origin is not valid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeInvalidOriginKeepaliveTimeout "InvalidOriginKeepaliveTimeout"
+//     The keep alive timeout specified for the origin is not valid.
 //
-//   * ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
-//   The specified configuration for field-level encryption can't be associated
-//   with the specified cache behavior.
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
-//   The maximum number of distributions have been associated with the specified
-//   configuration for field-level encryption.
+//   - ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
+//     The specified configuration for field-level encryption can't be associated
+//     with the specified cache behavior.
 //
-//   * ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
-//   The cache policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToFieldLevelEncryptionConfig "TooManyDistributionsAssociatedToFieldLevelEncryptionConfig"
+//     The maximum number of distributions have been associated with the specified
+//     configuration for field-level encryption.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
-//   The maximum number of distributions have been associated with the specified
-//   cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchCachePolicy "NoSuchCachePolicy"
+//     The cache policy does not exist.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeTooManyDistributionsAssociatedToCachePolicy "TooManyDistributionsAssociatedToCachePolicy"
+//     The maximum number of distributions have been associated with the specified
+//     cache policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   response headers policy.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToResponseHeadersPolicy "TooManyDistributionsAssociatedToResponseHeadersPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     response headers policy.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
-//   The maximum number of distributions have been associated with the specified
-//   origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
-//   The number of distributions that reference this key group is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy "TooManyDistributionsAssociatedToOriginRequestPolicy"
+//     The maximum number of distributions have been associated with the specified
+//     origin request policy. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
-//   The number of key groups referenced by this distribution is more than the
-//   maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyDistributionsAssociatedToKeyGroup "TooManyDistributionsAssociatedToKeyGroup"
+//     The number of distributions that reference this key group is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
-//   The specified key group does not exist.
+//   - ErrCodeTooManyKeyGroupsAssociatedToDistribution "TooManyKeyGroupsAssociatedToDistribution"
+//     The number of key groups referenced by this distribution is more than the
+//     maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
+//   - ErrCodeTrustedKeyGroupDoesNotExist "TrustedKeyGroupDoesNotExist"
+//     The specified key group does not exist.
 //
-//   * ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
-//   The specified real-time log configuration belongs to a different Amazon Web
-//   Services account.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
+//
+//   - ErrCodeRealtimeLogConfigOwnerMismatch "RealtimeLogConfigOwnerMismatch"
+//     The specified real-time log configuration belongs to a different Amazon Web
+//     Services account.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateDistribution
 func (c *CloudFront) UpdateDistribution(input *UpdateDistributionInput) (*UpdateDistributionOutput, error) {
@@ -8700,14 +8686,13 @@ const opUpdateFieldLevelEncryptionConfig = "UpdateFieldLevelEncryptionConfig2020
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFieldLevelEncryptionConfigRequest method.
+//	req, resp := client.UpdateFieldLevelEncryptionConfigRequest(params)
 //
-//    // Example sending a request using the UpdateFieldLevelEncryptionConfigRequest method.
-//    req, resp := client.UpdateFieldLevelEncryptionConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFieldLevelEncryptionConfig
 func (c *CloudFront) UpdateFieldLevelEncryptionConfigRequest(input *UpdateFieldLevelEncryptionConfigInput) (req *request.Request, output *UpdateFieldLevelEncryptionConfigOutput) {
@@ -8738,40 +8723,41 @@ func (c *CloudFront) UpdateFieldLevelEncryptionConfigRequest(input *UpdateFieldL
 // API operation UpdateFieldLevelEncryptionConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
-//   The specified configuration for field-level encryption doesn't exist.
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFieldLevelEncryptionConfig "NoSuchFieldLevelEncryptionConfig"
+//     The specified configuration for field-level encryption doesn't exist.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionQueryArgProfiles "TooManyFieldLevelEncryptionQueryArgProfiles"
-//   The maximum number of query arg profiles for field-level encryption have
-//   been created.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionContentTypeProfiles "TooManyFieldLevelEncryptionContentTypeProfiles"
-//   The maximum number of content type profiles for field-level encryption have
-//   been created.
+//   - ErrCodeTooManyFieldLevelEncryptionQueryArgProfiles "TooManyFieldLevelEncryptionQueryArgProfiles"
+//     The maximum number of query arg profiles for field-level encryption have
+//     been created.
 //
-//   * ErrCodeQueryArgProfileEmpty "QueryArgProfileEmpty"
-//   No profile specified for the field-level encryption query argument.
+//   - ErrCodeTooManyFieldLevelEncryptionContentTypeProfiles "TooManyFieldLevelEncryptionContentTypeProfiles"
+//     The maximum number of content type profiles for field-level encryption have
+//     been created.
+//
+//   - ErrCodeQueryArgProfileEmpty "QueryArgProfileEmpty"
+//     No profile specified for the field-level encryption query argument.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFieldLevelEncryptionConfig
 func (c *CloudFront) UpdateFieldLevelEncryptionConfig(input *UpdateFieldLevelEncryptionConfigInput) (*UpdateFieldLevelEncryptionConfigOutput, error) {
@@ -8811,14 +8797,13 @@ const opUpdateFieldLevelEncryptionProfile = "UpdateFieldLevelEncryptionProfile20
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFieldLevelEncryptionProfileRequest method.
+//	req, resp := client.UpdateFieldLevelEncryptionProfileRequest(params)
 //
-//    // Example sending a request using the UpdateFieldLevelEncryptionProfileRequest method.
-//    req, resp := client.UpdateFieldLevelEncryptionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFieldLevelEncryptionProfile
 func (c *CloudFront) UpdateFieldLevelEncryptionProfileRequest(input *UpdateFieldLevelEncryptionProfileInput) (req *request.Request, output *UpdateFieldLevelEncryptionProfileOutput) {
@@ -8849,43 +8834,44 @@ func (c *CloudFront) UpdateFieldLevelEncryptionProfileRequest(input *UpdateField
 // API operation UpdateFieldLevelEncryptionProfile for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeFieldLevelEncryptionProfileAlreadyExists "FieldLevelEncryptionProfileAlreadyExists"
-//   The specified profile for field-level encryption already exists.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeFieldLevelEncryptionProfileAlreadyExists "FieldLevelEncryptionProfileAlreadyExists"
+//     The specified profile for field-level encryption already exists.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
-//   The specified profile for field-level encryption doesn't exist.
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFieldLevelEncryptionProfile "NoSuchFieldLevelEncryptionProfile"
+//     The specified profile for field-level encryption doesn't exist.
 //
-//   * ErrCodeFieldLevelEncryptionProfileSizeExceeded "FieldLevelEncryptionProfileSizeExceeded"
-//   The maximum size of a profile for field-level encryption was exceeded.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionEncryptionEntities "TooManyFieldLevelEncryptionEncryptionEntities"
-//   The maximum number of encryption entities for field-level encryption have
-//   been created.
+//   - ErrCodeFieldLevelEncryptionProfileSizeExceeded "FieldLevelEncryptionProfileSizeExceeded"
+//     The maximum size of a profile for field-level encryption was exceeded.
 //
-//   * ErrCodeTooManyFieldLevelEncryptionFieldPatterns "TooManyFieldLevelEncryptionFieldPatterns"
-//   The maximum number of field patterns for field-level encryption have been
-//   created.
+//   - ErrCodeTooManyFieldLevelEncryptionEncryptionEntities "TooManyFieldLevelEncryptionEncryptionEntities"
+//     The maximum number of encryption entities for field-level encryption have
+//     been created.
+//
+//   - ErrCodeTooManyFieldLevelEncryptionFieldPatterns "TooManyFieldLevelEncryptionFieldPatterns"
+//     The maximum number of field patterns for field-level encryption have been
+//     created.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFieldLevelEncryptionProfile
 func (c *CloudFront) UpdateFieldLevelEncryptionProfile(input *UpdateFieldLevelEncryptionProfileInput) (*UpdateFieldLevelEncryptionProfileOutput, error) {
@@ -8925,14 +8911,13 @@ const opUpdateFunction = "UpdateFunction2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateFunctionRequest method.
+//	req, resp := client.UpdateFunctionRequest(params)
 //
-//    // Example sending a request using the UpdateFunctionRequest method.
-//    req, resp := client.UpdateFunctionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFunction
 func (c *CloudFront) UpdateFunctionRequest(input *UpdateFunctionInput) (req *request.Request, output *UpdateFunctionOutput) {
@@ -8970,24 +8955,25 @@ func (c *CloudFront) UpdateFunctionRequest(input *UpdateFunctionInput) (req *req
 // API operation UpdateFunction for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
-//   The function does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchFunctionExists "NoSuchFunctionExists"
+//     The function does not exist.
 //
-//   * ErrCodeFunctionSizeLimitExceeded "FunctionSizeLimitExceeded"
-//   The function is too large. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeUnsupportedOperation "UnsupportedOperation"
-//   This operation is not supported in this region.
+//   - ErrCodeFunctionSizeLimitExceeded "FunctionSizeLimitExceeded"
+//     The function is too large. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeUnsupportedOperation "UnsupportedOperation"
+//     This operation is not supported in this region.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateFunction
 func (c *CloudFront) UpdateFunction(input *UpdateFunctionInput) (*UpdateFunctionOutput, error) {
@@ -9027,14 +9013,13 @@ const opUpdateKeyGroup = "UpdateKeyGroup2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateKeyGroupRequest method.
+//	req, resp := client.UpdateKeyGroupRequest(params)
 //
-//    // Example sending a request using the UpdateKeyGroupRequest method.
-//    req, resp := client.UpdateKeyGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateKeyGroup
 func (c *CloudFront) UpdateKeyGroupRequest(input *UpdateKeyGroupInput) (req *request.Request, output *UpdateKeyGroupOutput) {
@@ -9077,26 +9062,27 @@ func (c *CloudFront) UpdateKeyGroupRequest(input *UpdateKeyGroupInput) (req *req
 // API operation UpdateKeyGroup for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchResource "NoSuchResource"
-//   A resource that was specified is not valid.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchResource "NoSuchResource"
+//     A resource that was specified is not valid.
 //
-//   * ErrCodeKeyGroupAlreadyExists "KeyGroupAlreadyExists"
-//   A key group with this name already exists. You must provide a unique name.
-//   To modify an existing key group, use UpdateKeyGroup.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeKeyGroupAlreadyExists "KeyGroupAlreadyExists"
+//     A key group with this name already exists. You must provide a unique name.
+//     To modify an existing key group, use UpdateKeyGroup.
 //
-//   * ErrCodeTooManyPublicKeysInKeyGroup "TooManyPublicKeysInKeyGroup"
-//   The number of public keys in this key group is more than the maximum allowed.
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeTooManyPublicKeysInKeyGroup "TooManyPublicKeysInKeyGroup"
+//     The number of public keys in this key group is more than the maximum allowed.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateKeyGroup
 func (c *CloudFront) UpdateKeyGroup(input *UpdateKeyGroupInput) (*UpdateKeyGroupOutput, error) {
@@ -9136,14 +9122,13 @@ const opUpdateOriginRequestPolicy = "UpdateOriginRequestPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateOriginRequestPolicyRequest method.
+//	req, resp := client.UpdateOriginRequestPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateOriginRequestPolicyRequest method.
-//    req, resp := client.UpdateOriginRequestPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateOriginRequestPolicy
 func (c *CloudFront) UpdateOriginRequestPolicyRequest(input *UpdateOriginRequestPolicyInput) (req *request.Request, output *UpdateOriginRequestPolicyOutput) {
@@ -9187,45 +9172,46 @@ func (c *CloudFront) UpdateOriginRequestPolicyRequest(input *UpdateOriginRequest
 // API operation UpdateOriginRequestPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
-//   The origin request policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchOriginRequestPolicy "NoSuchOriginRequestPolicy"
+//     The origin request policy does not exist.
 //
-//   * ErrCodeOriginRequestPolicyAlreadyExists "OriginRequestPolicyAlreadyExists"
-//   An origin request policy with this name already exists. You must provide
-//   a unique name. To modify an existing origin request policy, use UpdateOriginRequestPolicy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeTooManyHeadersInOriginRequestPolicy "TooManyHeadersInOriginRequestPolicy"
-//   The number of headers in the origin request policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeOriginRequestPolicyAlreadyExists "OriginRequestPolicyAlreadyExists"
+//     An origin request policy with this name already exists. You must provide
+//     a unique name. To modify an existing origin request policy, use UpdateOriginRequestPolicy.
 //
-//   * ErrCodeTooManyCookiesInOriginRequestPolicy "TooManyCookiesInOriginRequestPolicy"
-//   The number of cookies in the origin request policy exceeds the maximum. For
-//   more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyHeadersInOriginRequestPolicy "TooManyHeadersInOriginRequestPolicy"
+//     The number of headers in the origin request policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   * ErrCodeTooManyQueryStringsInOriginRequestPolicy "TooManyQueryStringsInOriginRequestPolicy"
-//   The number of query strings in the origin request policy exceeds the maximum.
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCookiesInOriginRequestPolicy "TooManyCookiesInOriginRequestPolicy"
+//     The number of cookies in the origin request policy exceeds the maximum. For
+//     more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//
+//   - ErrCodeTooManyQueryStringsInOriginRequestPolicy "TooManyQueryStringsInOriginRequestPolicy"
+//     The number of query strings in the origin request policy exceeds the maximum.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateOriginRequestPolicy
 func (c *CloudFront) UpdateOriginRequestPolicy(input *UpdateOriginRequestPolicyInput) (*UpdateOriginRequestPolicyOutput, error) {
@@ -9265,14 +9251,13 @@ const opUpdatePublicKey = "UpdatePublicKey2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePublicKeyRequest method.
+//	req, resp := client.UpdatePublicKeyRequest(params)
 //
-//    // Example sending a request using the UpdatePublicKeyRequest method.
-//    req, resp := client.UpdatePublicKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdatePublicKey
 func (c *CloudFront) UpdatePublicKeyRequest(input *UpdatePublicKeyInput) (req *request.Request, output *UpdatePublicKeyOutput) {
@@ -9304,26 +9289,27 @@ func (c *CloudFront) UpdatePublicKeyRequest(input *UpdatePublicKeyInput) (req *r
 // API operation UpdatePublicKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeCannotChangeImmutablePublicKeyFields "CannotChangeImmutablePublicKeyFields"
-//   You can't change the value of a public key.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeCannotChangeImmutablePublicKeyFields "CannotChangeImmutablePublicKeyFields"
+//     You can't change the value of a public key.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchPublicKey "NoSuchPublicKey"
-//   The specified public key doesn't exist.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchPublicKey "NoSuchPublicKey"
+//     The specified public key doesn't exist.
+//
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdatePublicKey
 func (c *CloudFront) UpdatePublicKey(input *UpdatePublicKeyInput) (*UpdatePublicKeyOutput, error) {
@@ -9363,14 +9349,13 @@ const opUpdateRealtimeLogConfig = "UpdateRealtimeLogConfig2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRealtimeLogConfigRequest method.
+//	req, resp := client.UpdateRealtimeLogConfigRequest(params)
 //
-//    // Example sending a request using the UpdateRealtimeLogConfigRequest method.
-//    req, resp := client.UpdateRealtimeLogConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateRealtimeLogConfig
 func (c *CloudFront) UpdateRealtimeLogConfigRequest(input *UpdateRealtimeLogConfigInput) (req *request.Request, output *UpdateRealtimeLogConfigOutput) {
@@ -9416,14 +9401,15 @@ func (c *CloudFront) UpdateRealtimeLogConfigRequest(input *UpdateRealtimeLogConf
 // API operation UpdateRealtimeLogConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
-//   The real-time log configuration does not exist.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeNoSuchRealtimeLogConfig "NoSuchRealtimeLogConfig"
+//     The real-time log configuration does not exist.
 //
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
+//
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateRealtimeLogConfig
 func (c *CloudFront) UpdateRealtimeLogConfig(input *UpdateRealtimeLogConfigInput) (*UpdateRealtimeLogConfigOutput, error) {
@@ -9463,14 +9449,13 @@ const opUpdateResponseHeadersPolicy = "UpdateResponseHeadersPolicy2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResponseHeadersPolicyRequest method.
+//	req, resp := client.UpdateResponseHeadersPolicyRequest(params)
 //
-//    // Example sending a request using the UpdateResponseHeadersPolicyRequest method.
-//    req, resp := client.UpdateResponseHeadersPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateResponseHeadersPolicy
 func (c *CloudFront) UpdateResponseHeadersPolicyRequest(input *UpdateResponseHeadersPolicyInput) (req *request.Request, output *UpdateResponseHeadersPolicyOutput) {
@@ -9514,43 +9499,44 @@ func (c *CloudFront) UpdateResponseHeadersPolicyRequest(input *UpdateResponseHea
 // API operation UpdateResponseHeadersPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
-//   The response headers policy does not exist.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchResponseHeadersPolicy "NoSuchResponseHeadersPolicy"
+//     The response headers policy does not exist.
 //
-//   * ErrCodeResponseHeadersPolicyAlreadyExists "ResponseHeadersPolicyAlreadyExists"
-//   A response headers policy with this name already exists. You must provide
-//   a unique name. To modify an existing response headers policy, use UpdateResponseHeadersPolicy.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeTooManyCustomHeadersInResponseHeadersPolicy "TooManyCustomHeadersInResponseHeadersPolicy"
-//   The number of custom headers in the response headers policy exceeds the maximum.
+//   - ErrCodeResponseHeadersPolicyAlreadyExists "ResponseHeadersPolicyAlreadyExists"
+//     A response headers policy with this name already exists. You must provide
+//     a unique name. To modify an existing response headers policy, use UpdateResponseHeadersPolicy.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooManyCustomHeadersInResponseHeadersPolicy "TooManyCustomHeadersInResponseHeadersPolicy"
+//     The number of custom headers in the response headers policy exceeds the maximum.
 //
-//   * ErrCodeTooLongCSPInResponseHeadersPolicy "TooLongCSPInResponseHeadersPolicy"
-//   The length of the Content-Security-Policy header value in the response headers
-//   policy exceeds the maximum.
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
-//   For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
-//   (formerly known as limits) in the Amazon CloudFront Developer Guide.
+//   - ErrCodeTooLongCSPInResponseHeadersPolicy "TooLongCSPInResponseHeadersPolicy"
+//     The length of the Content-Security-Policy header value in the response headers
+//     policy exceeds the maximum.
+//
+//     For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+//     (formerly known as limits) in the Amazon CloudFront Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateResponseHeadersPolicy
 func (c *CloudFront) UpdateResponseHeadersPolicy(input *UpdateResponseHeadersPolicyInput) (*UpdateResponseHeadersPolicyOutput, error) {
@@ -9590,14 +9576,13 @@ const opUpdateStreamingDistribution = "UpdateStreamingDistribution2020_05_31"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStreamingDistributionRequest method.
+//	req, resp := client.UpdateStreamingDistributionRequest(params)
 //
-//    // Example sending a request using the UpdateStreamingDistributionRequest method.
-//    req, resp := client.UpdateStreamingDistributionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateStreamingDistribution
 func (c *CloudFront) UpdateStreamingDistributionRequest(input *UpdateStreamingDistributionInput) (req *request.Request, output *UpdateStreamingDistributionOutput) {
@@ -9628,45 +9613,46 @@ func (c *CloudFront) UpdateStreamingDistributionRequest(input *UpdateStreamingDi
 // API operation UpdateStreamingDistribution for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeAccessDenied "AccessDenied"
-//   Access denied.
 //
-//   * ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
-//   The CNAME specified is already defined for CloudFront.
+//   - ErrCodeAccessDenied "AccessDenied"
+//     Access denied.
 //
-//   * ErrCodeIllegalUpdate "IllegalUpdate"
-//   The update contains modifications that are not allowed.
+//   - ErrCodeCNAMEAlreadyExists "CNAMEAlreadyExists"
+//     The CNAME specified is already defined for CloudFront.
 //
-//   * ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
-//   The If-Match version is missing or not valid.
+//   - ErrCodeIllegalUpdate "IllegalUpdate"
+//     The update contains modifications that are not allowed.
 //
-//   * ErrCodeMissingBody "MissingBody"
-//   This operation requires a body. Ensure that the body is present and the Content-Type
-//   header is set.
+//   - ErrCodeInvalidIfMatchVersion "InvalidIfMatchVersion"
+//     The If-Match version is missing or not valid.
 //
-//   * ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
-//   The specified streaming distribution does not exist.
+//   - ErrCodeMissingBody "MissingBody"
+//     This operation requires a body. Ensure that the body is present and the Content-Type
+//     header is set.
 //
-//   * ErrCodePreconditionFailed "PreconditionFailed"
-//   The precondition in one or more of the request fields evaluated to false.
+//   - ErrCodeNoSuchStreamingDistribution "NoSuchStreamingDistribution"
+//     The specified streaming distribution does not exist.
 //
-//   * ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
-//   Your request contains more CNAMEs than are allowed per distribution.
+//   - ErrCodePreconditionFailed "PreconditionFailed"
+//     The precondition in one or more of the request fields evaluated to false.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   An argument is invalid.
+//   - ErrCodeTooManyStreamingDistributionCNAMEs "TooManyStreamingDistributionCNAMEs"
+//     Your request contains more CNAMEs than are allowed per distribution.
 //
-//   * ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
-//   The origin access identity is not valid or doesn't exist.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     An argument is invalid.
 //
-//   * ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
-//   Your request contains more trusted signers than are allowed per distribution.
+//   - ErrCodeInvalidOriginAccessIdentity "InvalidOriginAccessIdentity"
+//     The origin access identity is not valid or doesn't exist.
 //
-//   * ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
-//   One or more of your trusted signers don't exist.
+//   - ErrCodeTooManyTrustedSigners "TooManyTrustedSigners"
+//     Your request contains more trusted signers than are allowed per distribution.
 //
-//   * ErrCodeInconsistentQuantities "InconsistentQuantities"
-//   The value of Quantity and the size of Items don't match.
+//   - ErrCodeTrustedSignerDoesNotExist "TrustedSignerDoesNotExist"
+//     One or more of your trusted signers don't exist.
+//
+//   - ErrCodeInconsistentQuantities "InconsistentQuantities"
+//     The value of Quantity and the size of Items don't match.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloudfront-2020-05-31/UpdateStreamingDistribution
 func (c *CloudFront) UpdateStreamingDistribution(input *UpdateStreamingDistributionInput) (*UpdateStreamingDistributionOutput, error) {
@@ -9940,12 +9926,12 @@ func (s *Aliases) SetQuantity(v int64) *Aliases {
 // forwards to your Amazon S3 bucket or your custom origin. There are three
 // choices:
 //
-//    * CloudFront forwards only GET and HEAD requests.
+//   - CloudFront forwards only GET and HEAD requests.
 //
-//    * CloudFront forwards only GET, HEAD, and OPTIONS requests.
+//   - CloudFront forwards only GET, HEAD, and OPTIONS requests.
 //
-//    * CloudFront forwards GET, HEAD, OPTIONS, PUT, PATCH, POST, and DELETE
-//    requests.
+//   - CloudFront forwards GET, HEAD, OPTIONS, PUT, PATCH, POST, and DELETE
+//     requests.
 //
 // If you pick the third choice, you may need to restrict access to your Amazon
 // S3 bucket or to your custom origin so users can't perform operations that
@@ -10633,13 +10619,13 @@ func (s *CacheBehaviors) SetQuantity(v int64) *CacheBehaviors {
 // When it’s attached to a cache behavior, the cache policy determines the
 // following:
 //
-//    * The values that CloudFront includes in the cache key. These values can
-//    include HTTP headers, cookies, and URL query strings. CloudFront uses
-//    the cache key to find an object in its cache that it can return to the
-//    viewer.
+//   - The values that CloudFront includes in the cache key. These values can
+//     include HTTP headers, cookies, and URL query strings. CloudFront uses
+//     the cache key to find an object in its cache that it can return to the
+//     viewer.
 //
-//    * The default, minimum, and maximum time to live (TTL) values that you
-//    want objects to stay in the CloudFront cache.
+//   - The default, minimum, and maximum time to live (TTL) values that you
+//     want objects to stay in the CloudFront cache.
 //
 // The headers, cookies, and query strings that are included in the cache key
 // are automatically included in requests that CloudFront sends to the origin.
@@ -10705,13 +10691,13 @@ func (s *CachePolicy) SetLastModifiedTime(v time.Time) *CachePolicy {
 //
 // This configuration determines the following:
 //
-//    * The values that CloudFront includes in the cache key. These values can
-//    include HTTP headers, cookies, and URL query strings. CloudFront uses
-//    the cache key to find an object in its cache that it can return to the
-//    viewer.
+//   - The values that CloudFront includes in the cache key. These values can
+//     include HTTP headers, cookies, and URL query strings. CloudFront uses
+//     the cache key to find an object in its cache that it can return to the
+//     viewer.
 //
-//    * The default, minimum, and maximum time to live (TTL) values that you
-//    want objects to stay in the CloudFront cache.
+//   - The default, minimum, and maximum time to live (TTL) values that you
+//     want objects to stay in the CloudFront cache.
 //
 // The headers, cookies, and query strings that are included in the cache key
 // are automatically included in requests that CloudFront sends to the origin.
@@ -11202,9 +11188,9 @@ func (s *CachePolicySummary) SetType(v string) *CachePolicySummary {
 // A complex type that controls whether CloudFront caches the response to requests
 // using the specified HTTP methods. There are two choices:
 //
-//    * CloudFront caches responses to GET and HEAD requests.
+//   - CloudFront caches responses to GET and HEAD requests.
 //
-//    * CloudFront caches responses to GET, HEAD, and OPTIONS requests.
+//   - CloudFront caches responses to GET, HEAD, and OPTIONS requests.
 //
 // If you pick the second choice for your Amazon S3 Origin, you may need to
 // forward Access-Control-Request-Method, Access-Control-Request-Headers, and
@@ -13476,10 +13462,10 @@ func (s *CreateStreamingDistributionWithTagsOutput) SetStreamingDistribution(v *
 
 // A complex type that controls:
 //
-//    * Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
-//    with custom error messages before returning the response to the viewer.
+//   - Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
+//     with custom error messages before returning the response to the viewer.
 //
-//    * How long CloudFront caches HTTP status codes in the 4xx and 5xx range.
+//   - How long CloudFront caches HTTP status codes in the 4xx and 5xx range.
 //
 // For more information about custom error pages, see Customizing Error Responses
 // (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html)
@@ -13605,10 +13591,10 @@ func (s *CustomErrorResponse) SetResponsePagePath(v string) *CustomErrorResponse
 
 // A complex type that controls:
 //
-//    * Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
-//    with custom error messages before returning the response to the viewer.
+//   - Whether CloudFront replaces HTTP status codes in the 4xx and 5xx range
+//     with custom error messages before returning the response to the viewer.
 //
-//    * How long CloudFront caches HTTP status codes in the 4xx and 5xx range.
+//   - How long CloudFront caches HTTP status codes in the 4xx and 5xx range.
 //
 // For more information about custom error pages, see Customizing Error Responses
 // (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html)
@@ -14444,7 +14430,7 @@ func (s DeleteCloudFrontOriginAccessIdentityOutput) GoString() string {
 //
 // To delete a web distribution using the CloudFront API:
 //
-// Disable the web distribution
+// # Disable the web distribution
 //
 // Submit a GET Distribution Config request to get the current configuration
 // and the Etag header for the distribution.
@@ -23147,14 +23133,14 @@ func (s *MonitoringSubscription) SetRealtimeMetricsSubscriptionConfig(v *Realtim
 // An origin is the location where content is stored, and from which CloudFront
 // gets content to serve to viewers. To specify an origin:
 //
-//    * Use S3OriginConfig to specify an Amazon S3 bucket that is not configured
-//    with static website hosting.
+//   - Use S3OriginConfig to specify an Amazon S3 bucket that is not configured
+//     with static website hosting.
 //
-//    * Use CustomOriginConfig to specify all other kinds of origins, including:
-//    An Amazon S3 bucket that is configured with static website hosting An
-//    Elastic Load Balancing load balancer An AWS Elemental MediaPackage endpoint
-//    An AWS Elemental MediaStore container Any other HTTP server, running on
-//    an Amazon EC2 instance or any other kind of host
+//   - Use CustomOriginConfig to specify all other kinds of origins, including:
+//     An Amazon S3 bucket that is configured with static website hosting An
+//     Elastic Load Balancing load balancer An AWS Elemental MediaPackage endpoint
+//     An AWS Elemental MediaStore container Any other HTTP server, running on
+//     an Amazon EC2 instance or any other kind of host
 //
 // For the current maximum number of origins that you can specify per distribution,
 // see General Quotas on Web Distributions (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html#limits-web-distributions)
@@ -24044,16 +24030,16 @@ func (s *OriginGroups) SetQuantity(v int64) *OriginGroups {
 // the values that CloudFront includes in requests that it sends to the origin.
 // Each request that CloudFront sends to the origin includes the following:
 //
-//    * The request body and the URL path (without the domain name) from the
-//    viewer request.
+//   - The request body and the URL path (without the domain name) from the
+//     viewer request.
 //
-//    * The headers that CloudFront automatically includes in every origin request,
-//    including Host, User-Agent, and X-Amz-Cf-Id.
+//   - The headers that CloudFront automatically includes in every origin request,
+//     including Host, User-Agent, and X-Amz-Cf-Id.
 //
-//    * All HTTP headers, cookies, and URL query strings that are specified
-//    in the cache policy or the origin request policy. These can include items
-//    from the viewer request and, in the case of headers, additional ones that
-//    are added by CloudFront.
+//   - All HTTP headers, cookies, and URL query strings that are specified
+//     in the cache policy or the origin request policy. These can include items
+//     from the viewer request and, in the case of headers, additional ones that
+//     are added by CloudFront.
 //
 // CloudFront sends a request when it can’t find an object in its cache that
 // matches the request. If you want to send values to the origin and also include
@@ -24119,16 +24105,16 @@ func (s *OriginRequestPolicy) SetOriginRequestPolicyConfig(v *OriginRequestPolic
 // that it sends to the origin. Each request that CloudFront sends to the origin
 // includes the following:
 //
-//    * The request body and the URL path (without the domain name) from the
-//    viewer request.
+//   - The request body and the URL path (without the domain name) from the
+//     viewer request.
 //
-//    * The headers that CloudFront automatically includes in every origin request,
-//    including Host, User-Agent, and X-Amz-Cf-Id.
+//   - The headers that CloudFront automatically includes in every origin request,
+//     including Host, User-Agent, and X-Amz-Cf-Id.
 //
-//    * All HTTP headers, cookies, and URL query strings that are specified
-//    in the cache policy or the origin request policy. These can include items
-//    from the viewer request and, in the case of headers, additional ones that
-//    are added by CloudFront.
+//   - All HTTP headers, cookies, and URL query strings that are specified
+//     in the cache policy or the origin request policy. These can include items
+//     from the viewer request and, in the case of headers, additional ones that
+//     are added by CloudFront.
 //
 // CloudFront sends a request when it can’t find an object in its cache that
 // matches the request. If you want to send values to the origin and also include
@@ -30739,25 +30725,25 @@ func (s *UpdateStreamingDistributionOutput) SetStreamingDistribution(v *Streamin
 // If the distribution uses Aliases (alternate domain names or CNAMEs), use
 // the fields in this type to specify the following settings:
 //
-//    * Which viewers the distribution accepts HTTPS connections from: only
-//    viewers that support server name indication (SNI) (https://en.wikipedia.org/wiki/Server_Name_Indication)
-//    (recommended), or all viewers including those that don’t support SNI.
-//    To accept HTTPS connections from only viewers that support SNI, set SSLSupportMethod
-//    to sni-only. This is recommended. Most browsers and clients support SNI.
-//    To accept HTTPS connections from all viewers, including those that don’t
-//    support SNI, set SSLSupportMethod to vip. This is not recommended, and
-//    results in additional monthly charges from CloudFront.
+//   - Which viewers the distribution accepts HTTPS connections from: only
+//     viewers that support server name indication (SNI) (https://en.wikipedia.org/wiki/Server_Name_Indication)
+//     (recommended), or all viewers including those that don’t support SNI.
+//     To accept HTTPS connections from only viewers that support SNI, set SSLSupportMethod
+//     to sni-only. This is recommended. Most browsers and clients support SNI.
+//     To accept HTTPS connections from all viewers, including those that don’t
+//     support SNI, set SSLSupportMethod to vip. This is not recommended, and
+//     results in additional monthly charges from CloudFront.
 //
-//    * The minimum SSL/TLS protocol version that the distribution can use to
-//    communicate with viewers. To specify a minimum version, choose a value
-//    for MinimumProtocolVersion. For more information, see Security Policy
-//    (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValues-security-policy)
-//    in the Amazon CloudFront Developer Guide.
+//   - The minimum SSL/TLS protocol version that the distribution can use to
+//     communicate with viewers. To specify a minimum version, choose a value
+//     for MinimumProtocolVersion. For more information, see Security Policy
+//     (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValues-security-policy)
+//     in the Amazon CloudFront Developer Guide.
 //
-//    * The location of the SSL/TLS certificate, Certificate Manager (ACM) (https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html)
-//    (recommended) or Identity and Access Management (IAM) (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html).
-//    You specify the location by setting a value in one of the following fields
-//    (not both): ACMCertificateArn IAMCertificateId
+//   - The location of the SSL/TLS certificate, Certificate Manager (ACM) (https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html)
+//     (recommended) or Identity and Access Management (IAM) (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_server-certs.html).
+//     You specify the location by setting a value in one of the following fields
+//     (not both): ACMCertificateArn IAMCertificateId
 //
 // All distributions support HTTPS connections from viewers. To require viewers
 // to use HTTPS only, or to redirect them from HTTP to HTTPS, use ViewerProtocolPolicy

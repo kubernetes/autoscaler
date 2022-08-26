@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Ground Station.
-//    func myFunc(svc groundstationiface.GroundStationAPI) bool {
-//        // Make svc.CancelContact request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Ground Station.
+//	func myFunc(svc groundstationiface.GroundStationAPI) bool {
+//	    // Make svc.CancelContact request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := groundstation.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := groundstation.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockGroundStationClient struct {
-//        groundstationiface.GroundStationAPI
-//    }
-//    func (m *mockGroundStationClient) CancelContact(input *groundstation.CancelContactInput) (*groundstation.CancelContactOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockGroundStationClient struct {
+//	    groundstationiface.GroundStationAPI
+//	}
+//	func (m *mockGroundStationClient) CancelContact(input *groundstation.CancelContactInput) (*groundstation.CancelContactOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockGroundStationClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockGroundStationClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

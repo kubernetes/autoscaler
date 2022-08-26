@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a FSx client from just a session.
-//     svc := fsx.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a FSx client with additional configuration
-//     svc := fsx.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a FSx client from just a session.
+//	svc := fsx.New(mySession)
+//
+//	// Create a FSx client with additional configuration
+//	svc := fsx.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *FSx {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

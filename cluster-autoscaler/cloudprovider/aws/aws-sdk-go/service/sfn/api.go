@@ -29,14 +29,13 @@ const opCreateActivity = "CreateActivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateActivityRequest method.
+//	req, resp := client.CreateActivityRequest(params)
 //
-//    // Example sending a request using the CreateActivityRequest method.
-//    req, resp := client.CreateActivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/CreateActivity
 func (c *SFN) CreateActivityRequest(input *CreateActivityInput) (req *request.Request, output *CreateActivityOutput) {
@@ -82,17 +81,18 @@ func (c *SFN) CreateActivityRequest(input *CreateActivityInput) (req *request.Re
 // API operation CreateActivity for usage and error information.
 //
 // Returned Error Types:
-//   * ActivityLimitExceeded
-//   The maximum number of activities has been reached. Existing activities must
-//   be deleted before a new activity can be created.
 //
-//   * InvalidName
-//   The provided name is invalid.
+//   - ActivityLimitExceeded
+//     The maximum number of activities has been reached. Existing activities must
+//     be deleted before a new activity can be created.
 //
-//   * TooManyTags
-//   You've exceeded the number of tags allowed for a resource. See the Limits
-//   Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
-//   in the AWS Step Functions Developer Guide.
+//   - InvalidName
+//     The provided name is invalid.
+//
+//   - TooManyTags
+//     You've exceeded the number of tags allowed for a resource. See the Limits
+//     Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
+//     in the AWS Step Functions Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/CreateActivity
 func (c *SFN) CreateActivity(input *CreateActivityInput) (*CreateActivityOutput, error) {
@@ -132,14 +132,13 @@ const opCreateStateMachine = "CreateStateMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStateMachineRequest method.
+//	req, resp := client.CreateStateMachineRequest(params)
 //
-//    // Example sending a request using the CreateStateMachineRequest method.
-//    req, resp := client.CreateStateMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/CreateStateMachine
 func (c *SFN) CreateStateMachineRequest(input *CreateStateMachineInput) (req *request.Request, output *CreateStateMachineOutput) {
@@ -186,38 +185,39 @@ func (c *SFN) CreateStateMachineRequest(input *CreateStateMachineInput) (req *re
 // API operation CreateStateMachine for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidDefinition
-//   The provided Amazon States Language definition is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidName
-//   The provided name is invalid.
+//   - InvalidDefinition
+//     The provided Amazon States Language definition is invalid.
 //
-//   * InvalidLoggingConfiguration
+//   - InvalidName
+//     The provided name is invalid.
 //
-//   * InvalidTracingConfiguration
-//   Your tracingConfiguration key does not match, or enabled has not been set
-//   to true or false.
+//   - InvalidLoggingConfiguration
 //
-//   * StateMachineAlreadyExists
-//   A state machine with the same name but a different definition or role ARN
-//   already exists.
+//   - InvalidTracingConfiguration
+//     Your tracingConfiguration key does not match, or enabled has not been set
+//     to true or false.
 //
-//   * StateMachineDeleting
-//   The specified state machine is being deleted.
+//   - StateMachineAlreadyExists
+//     A state machine with the same name but a different definition or role ARN
+//     already exists.
 //
-//   * StateMachineLimitExceeded
-//   The maximum number of state machines has been reached. Existing state machines
-//   must be deleted before a new state machine can be created.
+//   - StateMachineDeleting
+//     The specified state machine is being deleted.
 //
-//   * StateMachineTypeNotSupported
+//   - StateMachineLimitExceeded
+//     The maximum number of state machines has been reached. Existing state machines
+//     must be deleted before a new state machine can be created.
 //
-//   * TooManyTags
-//   You've exceeded the number of tags allowed for a resource. See the Limits
-//   Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
-//   in the AWS Step Functions Developer Guide.
+//   - StateMachineTypeNotSupported
+//
+//   - TooManyTags
+//     You've exceeded the number of tags allowed for a resource. See the Limits
+//     Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
+//     in the AWS Step Functions Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/CreateStateMachine
 func (c *SFN) CreateStateMachine(input *CreateStateMachineInput) (*CreateStateMachineOutput, error) {
@@ -257,14 +257,13 @@ const opDeleteActivity = "DeleteActivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteActivityRequest method.
+//	req, resp := client.DeleteActivityRequest(params)
 //
-//    // Example sending a request using the DeleteActivityRequest method.
-//    req, resp := client.DeleteActivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DeleteActivity
 func (c *SFN) DeleteActivityRequest(input *DeleteActivityInput) (req *request.Request, output *DeleteActivityOutput) {
@@ -296,8 +295,8 @@ func (c *SFN) DeleteActivityRequest(input *DeleteActivityInput) (req *request.Re
 // API operation DeleteActivity for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DeleteActivity
 func (c *SFN) DeleteActivity(input *DeleteActivityInput) (*DeleteActivityOutput, error) {
@@ -337,14 +336,13 @@ const opDeleteStateMachine = "DeleteStateMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStateMachineRequest method.
+//	req, resp := client.DeleteStateMachineRequest(params)
 //
-//    // Example sending a request using the DeleteStateMachineRequest method.
-//    req, resp := client.DeleteStateMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DeleteStateMachine
 func (c *SFN) DeleteStateMachineRequest(input *DeleteStateMachineInput) (req *request.Request, output *DeleteStateMachineOutput) {
@@ -381,8 +379,8 @@ func (c *SFN) DeleteStateMachineRequest(input *DeleteStateMachineInput) (req *re
 // API operation DeleteStateMachine for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DeleteStateMachine
 func (c *SFN) DeleteStateMachine(input *DeleteStateMachineInput) (*DeleteStateMachineOutput, error) {
@@ -422,14 +420,13 @@ const opDescribeActivity = "DescribeActivity"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeActivityRequest method.
+//	req, resp := client.DescribeActivityRequest(params)
 //
-//    // Example sending a request using the DescribeActivityRequest method.
-//    req, resp := client.DescribeActivityRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeActivity
 func (c *SFN) DescribeActivityRequest(input *DescribeActivityInput) (req *request.Request, output *DescribeActivityOutput) {
@@ -463,11 +460,12 @@ func (c *SFN) DescribeActivityRequest(input *DescribeActivityInput) (req *reques
 // API operation DescribeActivity for usage and error information.
 //
 // Returned Error Types:
-//   * ActivityDoesNotExist
-//   The specified activity does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ActivityDoesNotExist
+//     The specified activity does not exist.
+//
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeActivity
 func (c *SFN) DescribeActivity(input *DescribeActivityInput) (*DescribeActivityOutput, error) {
@@ -507,14 +505,13 @@ const opDescribeExecution = "DescribeExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeExecutionRequest method.
+//	req, resp := client.DescribeExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeExecutionRequest method.
-//    req, resp := client.DescribeExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeExecution
 func (c *SFN) DescribeExecutionRequest(input *DescribeExecutionInput) (req *request.Request, output *DescribeExecutionOutput) {
@@ -550,11 +547,12 @@ func (c *SFN) DescribeExecutionRequest(input *DescribeExecutionInput) (req *requ
 // API operation DescribeExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ExecutionDoesNotExist
-//   The specified execution does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ExecutionDoesNotExist
+//     The specified execution does not exist.
+//
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeExecution
 func (c *SFN) DescribeExecution(input *DescribeExecutionInput) (*DescribeExecutionOutput, error) {
@@ -594,14 +592,13 @@ const opDescribeStateMachine = "DescribeStateMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStateMachineRequest method.
+//	req, resp := client.DescribeStateMachineRequest(params)
 //
-//    // Example sending a request using the DescribeStateMachineRequest method.
-//    req, resp := client.DescribeStateMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeStateMachine
 func (c *SFN) DescribeStateMachineRequest(input *DescribeStateMachineInput) (req *request.Request, output *DescribeStateMachineOutput) {
@@ -635,11 +632,12 @@ func (c *SFN) DescribeStateMachineRequest(input *DescribeStateMachineInput) (req
 // API operation DescribeStateMachine for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * StateMachineDoesNotExist
-//   The specified state machine does not exist.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
+//
+//   - StateMachineDoesNotExist
+//     The specified state machine does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeStateMachine
 func (c *SFN) DescribeStateMachine(input *DescribeStateMachineInput) (*DescribeStateMachineOutput, error) {
@@ -679,14 +677,13 @@ const opDescribeStateMachineForExecution = "DescribeStateMachineForExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeStateMachineForExecutionRequest method.
+//	req, resp := client.DescribeStateMachineForExecutionRequest(params)
 //
-//    // Example sending a request using the DescribeStateMachineForExecutionRequest method.
-//    req, resp := client.DescribeStateMachineForExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeStateMachineForExecution
 func (c *SFN) DescribeStateMachineForExecutionRequest(input *DescribeStateMachineForExecutionInput) (req *request.Request, output *DescribeStateMachineForExecutionOutput) {
@@ -722,11 +719,12 @@ func (c *SFN) DescribeStateMachineForExecutionRequest(input *DescribeStateMachin
 // API operation DescribeStateMachineForExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ExecutionDoesNotExist
-//   The specified execution does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ExecutionDoesNotExist
+//     The specified execution does not exist.
+//
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/DescribeStateMachineForExecution
 func (c *SFN) DescribeStateMachineForExecution(input *DescribeStateMachineForExecutionInput) (*DescribeStateMachineForExecutionOutput, error) {
@@ -766,14 +764,13 @@ const opGetActivityTask = "GetActivityTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetActivityTaskRequest method.
+//	req, resp := client.GetActivityTaskRequest(params)
 //
-//    // Example sending a request using the GetActivityTaskRequest method.
-//    req, resp := client.GetActivityTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/GetActivityTask
 func (c *SFN) GetActivityTaskRequest(input *GetActivityTaskInput) (req *request.Request, output *GetActivityTaskOutput) {
@@ -817,15 +814,16 @@ func (c *SFN) GetActivityTaskRequest(input *GetActivityTaskInput) (req *request.
 // API operation GetActivityTask for usage and error information.
 //
 // Returned Error Types:
-//   * ActivityDoesNotExist
-//   The specified activity does not exist.
 //
-//   * ActivityWorkerLimitExceeded
-//   The maximum number of workers concurrently polling for activity tasks has
-//   been reached.
+//   - ActivityDoesNotExist
+//     The specified activity does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ActivityWorkerLimitExceeded
+//     The maximum number of workers concurrently polling for activity tasks has
+//     been reached.
+//
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/GetActivityTask
 func (c *SFN) GetActivityTask(input *GetActivityTaskInput) (*GetActivityTaskOutput, error) {
@@ -865,14 +863,13 @@ const opGetExecutionHistory = "GetExecutionHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExecutionHistoryRequest method.
+//	req, resp := client.GetExecutionHistoryRequest(params)
 //
-//    // Example sending a request using the GetExecutionHistoryRequest method.
-//    req, resp := client.GetExecutionHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/GetExecutionHistory
 func (c *SFN) GetExecutionHistoryRequest(input *GetExecutionHistoryInput) (req *request.Request, output *GetExecutionHistoryOutput) {
@@ -919,14 +916,15 @@ func (c *SFN) GetExecutionHistoryRequest(input *GetExecutionHistoryInput) (req *
 // API operation GetExecutionHistory for usage and error information.
 //
 // Returned Error Types:
-//   * ExecutionDoesNotExist
-//   The specified execution does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ExecutionDoesNotExist
+//     The specified execution does not exist.
 //
-//   * InvalidToken
-//   The provided token is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
+//
+//   - InvalidToken
+//     The provided token is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/GetExecutionHistory
 func (c *SFN) GetExecutionHistory(input *GetExecutionHistoryInput) (*GetExecutionHistoryOutput, error) {
@@ -958,15 +956,14 @@ func (c *SFN) GetExecutionHistoryWithContext(ctx aws.Context, input *GetExecutio
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetExecutionHistory operation.
-//    pageNum := 0
-//    err := client.GetExecutionHistoryPages(params,
-//        func(page *sfn.GetExecutionHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetExecutionHistory operation.
+//	pageNum := 0
+//	err := client.GetExecutionHistoryPages(params,
+//	    func(page *sfn.GetExecutionHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SFN) GetExecutionHistoryPages(input *GetExecutionHistoryInput, fn func(*GetExecutionHistoryOutput, bool) bool) error {
 	return c.GetExecutionHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1018,14 +1015,13 @@ const opListActivities = "ListActivities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListActivitiesRequest method.
+//	req, resp := client.ListActivitiesRequest(params)
 //
-//    // Example sending a request using the ListActivitiesRequest method.
-//    req, resp := client.ListActivitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListActivities
 func (c *SFN) ListActivitiesRequest(input *ListActivitiesInput) (req *request.Request, output *ListActivitiesOutput) {
@@ -1071,8 +1067,8 @@ func (c *SFN) ListActivitiesRequest(input *ListActivitiesInput) (req *request.Re
 // API operation ListActivities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidToken
-//   The provided token is invalid.
+//   - InvalidToken
+//     The provided token is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListActivities
 func (c *SFN) ListActivities(input *ListActivitiesInput) (*ListActivitiesOutput, error) {
@@ -1104,15 +1100,14 @@ func (c *SFN) ListActivitiesWithContext(ctx aws.Context, input *ListActivitiesIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListActivities operation.
-//    pageNum := 0
-//    err := client.ListActivitiesPages(params,
-//        func(page *sfn.ListActivitiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListActivities operation.
+//	pageNum := 0
+//	err := client.ListActivitiesPages(params,
+//	    func(page *sfn.ListActivitiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SFN) ListActivitiesPages(input *ListActivitiesInput, fn func(*ListActivitiesOutput, bool) bool) error {
 	return c.ListActivitiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1164,14 +1159,13 @@ const opListExecutions = "ListExecutions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListExecutionsRequest method.
+//	req, resp := client.ListExecutionsRequest(params)
 //
-//    // Example sending a request using the ListExecutionsRequest method.
-//    req, resp := client.ListExecutionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListExecutions
 func (c *SFN) ListExecutionsRequest(input *ListExecutionsInput) (req *request.Request, output *ListExecutionsOutput) {
@@ -1220,16 +1214,17 @@ func (c *SFN) ListExecutionsRequest(input *ListExecutionsInput) (req *request.Re
 // API operation ListExecutions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidToken
-//   The provided token is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * StateMachineDoesNotExist
-//   The specified state machine does not exist.
+//   - InvalidToken
+//     The provided token is invalid.
 //
-//   * StateMachineTypeNotSupported
+//   - StateMachineDoesNotExist
+//     The specified state machine does not exist.
+//
+//   - StateMachineTypeNotSupported
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListExecutions
 func (c *SFN) ListExecutions(input *ListExecutionsInput) (*ListExecutionsOutput, error) {
@@ -1261,15 +1256,14 @@ func (c *SFN) ListExecutionsWithContext(ctx aws.Context, input *ListExecutionsIn
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListExecutions operation.
-//    pageNum := 0
-//    err := client.ListExecutionsPages(params,
-//        func(page *sfn.ListExecutionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListExecutions operation.
+//	pageNum := 0
+//	err := client.ListExecutionsPages(params,
+//	    func(page *sfn.ListExecutionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SFN) ListExecutionsPages(input *ListExecutionsInput, fn func(*ListExecutionsOutput, bool) bool) error {
 	return c.ListExecutionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1321,14 +1315,13 @@ const opListStateMachines = "ListStateMachines"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListStateMachinesRequest method.
+//	req, resp := client.ListStateMachinesRequest(params)
 //
-//    // Example sending a request using the ListStateMachinesRequest method.
-//    req, resp := client.ListStateMachinesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListStateMachines
 func (c *SFN) ListStateMachinesRequest(input *ListStateMachinesInput) (req *request.Request, output *ListStateMachinesOutput) {
@@ -1374,8 +1367,8 @@ func (c *SFN) ListStateMachinesRequest(input *ListStateMachinesInput) (req *requ
 // API operation ListStateMachines for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidToken
-//   The provided token is invalid.
+//   - InvalidToken
+//     The provided token is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListStateMachines
 func (c *SFN) ListStateMachines(input *ListStateMachinesInput) (*ListStateMachinesOutput, error) {
@@ -1407,15 +1400,14 @@ func (c *SFN) ListStateMachinesWithContext(ctx aws.Context, input *ListStateMach
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListStateMachines operation.
-//    pageNum := 0
-//    err := client.ListStateMachinesPages(params,
-//        func(page *sfn.ListStateMachinesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListStateMachines operation.
+//	pageNum := 0
+//	err := client.ListStateMachinesPages(params,
+//	    func(page *sfn.ListStateMachinesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *SFN) ListStateMachinesPages(input *ListStateMachinesInput, fn func(*ListStateMachinesOutput, bool) bool) error {
 	return c.ListStateMachinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1467,14 +1459,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListTagsForResource
 func (c *SFN) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1508,12 +1499,13 @@ func (c *SFN) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * ResourceNotFound
-//   Could not find the referenced resource. Only state machine and activity ARNs
-//   are supported.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
+//
+//   - ResourceNotFound
+//     Could not find the referenced resource. Only state machine and activity ARNs
+//     are supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/ListTagsForResource
 func (c *SFN) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1553,14 +1545,13 @@ const opSendTaskFailure = "SendTaskFailure"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendTaskFailureRequest method.
+//	req, resp := client.SendTaskFailureRequest(params)
 //
-//    // Example sending a request using the SendTaskFailureRequest method.
-//    req, resp := client.SendTaskFailureRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskFailure
 func (c *SFN) SendTaskFailureRequest(input *SendTaskFailureInput) (req *request.Request, output *SendTaskFailureOutput) {
@@ -1593,12 +1584,13 @@ func (c *SFN) SendTaskFailureRequest(input *SendTaskFailureInput) (req *request.
 // API operation SendTaskFailure for usage and error information.
 //
 // Returned Error Types:
-//   * TaskDoesNotExist
 //
-//   * InvalidToken
-//   The provided token is invalid.
+//   - TaskDoesNotExist
 //
-//   * TaskTimedOut
+//   - InvalidToken
+//     The provided token is invalid.
+//
+//   - TaskTimedOut
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskFailure
 func (c *SFN) SendTaskFailure(input *SendTaskFailureInput) (*SendTaskFailureOutput, error) {
@@ -1638,14 +1630,13 @@ const opSendTaskHeartbeat = "SendTaskHeartbeat"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendTaskHeartbeatRequest method.
+//	req, resp := client.SendTaskHeartbeatRequest(params)
 //
-//    // Example sending a request using the SendTaskHeartbeatRequest method.
-//    req, resp := client.SendTaskHeartbeatRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskHeartbeat
 func (c *SFN) SendTaskHeartbeatRequest(input *SendTaskHeartbeatInput) (req *request.Request, output *SendTaskHeartbeatOutput) {
@@ -1691,12 +1682,13 @@ func (c *SFN) SendTaskHeartbeatRequest(input *SendTaskHeartbeatInput) (req *requ
 // API operation SendTaskHeartbeat for usage and error information.
 //
 // Returned Error Types:
-//   * TaskDoesNotExist
 //
-//   * InvalidToken
-//   The provided token is invalid.
+//   - TaskDoesNotExist
 //
-//   * TaskTimedOut
+//   - InvalidToken
+//     The provided token is invalid.
+//
+//   - TaskTimedOut
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskHeartbeat
 func (c *SFN) SendTaskHeartbeat(input *SendTaskHeartbeatInput) (*SendTaskHeartbeatOutput, error) {
@@ -1736,14 +1728,13 @@ const opSendTaskSuccess = "SendTaskSuccess"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendTaskSuccessRequest method.
+//	req, resp := client.SendTaskSuccessRequest(params)
 //
-//    // Example sending a request using the SendTaskSuccessRequest method.
-//    req, resp := client.SendTaskSuccessRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskSuccess
 func (c *SFN) SendTaskSuccessRequest(input *SendTaskSuccessInput) (req *request.Request, output *SendTaskSuccessOutput) {
@@ -1776,15 +1767,16 @@ func (c *SFN) SendTaskSuccessRequest(input *SendTaskSuccessInput) (req *request.
 // API operation SendTaskSuccess for usage and error information.
 //
 // Returned Error Types:
-//   * TaskDoesNotExist
 //
-//   * InvalidOutput
-//   The provided JSON output data is invalid.
+//   - TaskDoesNotExist
 //
-//   * InvalidToken
-//   The provided token is invalid.
+//   - InvalidOutput
+//     The provided JSON output data is invalid.
 //
-//   * TaskTimedOut
+//   - InvalidToken
+//     The provided token is invalid.
+//
+//   - TaskTimedOut
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/SendTaskSuccess
 func (c *SFN) SendTaskSuccess(input *SendTaskSuccessInput) (*SendTaskSuccessOutput, error) {
@@ -1824,14 +1816,13 @@ const opStartExecution = "StartExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartExecutionRequest method.
+//	req, resp := client.StartExecutionRequest(params)
 //
-//    // Example sending a request using the StartExecutionRequest method.
-//    req, resp := client.StartExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StartExecution
 func (c *SFN) StartExecutionRequest(input *StartExecutionInput) (req *request.Request, output *StartExecutionOutput) {
@@ -1868,29 +1859,30 @@ func (c *SFN) StartExecutionRequest(input *StartExecutionInput) (req *request.Re
 // API operation StartExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ExecutionLimitExceeded
-//   The maximum number of running executions has been reached. Running executions
-//   must end or be stopped before a new execution can be started.
 //
-//   * ExecutionAlreadyExists
-//   The execution has the same name as another execution (but a different input).
+//   - ExecutionLimitExceeded
+//     The maximum number of running executions has been reached. Running executions
+//     must end or be stopped before a new execution can be started.
 //
-//   Executions with the same name and input are considered idempotent.
+//   - ExecutionAlreadyExists
+//     The execution has the same name as another execution (but a different input).
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//     Executions with the same name and input are considered idempotent.
 //
-//   * InvalidExecutionInput
-//   The provided JSON input data is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidName
-//   The provided name is invalid.
+//   - InvalidExecutionInput
+//     The provided JSON input data is invalid.
 //
-//   * StateMachineDoesNotExist
-//   The specified state machine does not exist.
+//   - InvalidName
+//     The provided name is invalid.
 //
-//   * StateMachineDeleting
-//   The specified state machine is being deleted.
+//   - StateMachineDoesNotExist
+//     The specified state machine does not exist.
+//
+//   - StateMachineDeleting
+//     The specified state machine is being deleted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StartExecution
 func (c *SFN) StartExecution(input *StartExecutionInput) (*StartExecutionOutput, error) {
@@ -1930,14 +1922,13 @@ const opStartSyncExecution = "StartSyncExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSyncExecutionRequest method.
+//	req, resp := client.StartSyncExecutionRequest(params)
 //
-//    // Example sending a request using the StartSyncExecutionRequest method.
-//    req, resp := client.StartSyncExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StartSyncExecution
 func (c *SFN) StartSyncExecutionRequest(input *StartSyncExecutionInput) (req *request.Request, output *StartSyncExecutionOutput) {
@@ -1970,22 +1961,23 @@ func (c *SFN) StartSyncExecutionRequest(input *StartSyncExecutionInput) (req *re
 // API operation StartSyncExecution for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidExecutionInput
-//   The provided JSON input data is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidName
-//   The provided name is invalid.
+//   - InvalidExecutionInput
+//     The provided JSON input data is invalid.
 //
-//   * StateMachineDoesNotExist
-//   The specified state machine does not exist.
+//   - InvalidName
+//     The provided name is invalid.
 //
-//   * StateMachineDeleting
-//   The specified state machine is being deleted.
+//   - StateMachineDoesNotExist
+//     The specified state machine does not exist.
 //
-//   * StateMachineTypeNotSupported
+//   - StateMachineDeleting
+//     The specified state machine is being deleted.
+//
+//   - StateMachineTypeNotSupported
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StartSyncExecution
 func (c *SFN) StartSyncExecution(input *StartSyncExecutionInput) (*StartSyncExecutionOutput, error) {
@@ -2025,14 +2017,13 @@ const opStopExecution = "StopExecution"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopExecutionRequest method.
+//	req, resp := client.StopExecutionRequest(params)
 //
-//    // Example sending a request using the StopExecutionRequest method.
-//    req, resp := client.StopExecutionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StopExecution
 func (c *SFN) StopExecutionRequest(input *StopExecutionInput) (req *request.Request, output *StopExecutionOutput) {
@@ -2065,11 +2056,12 @@ func (c *SFN) StopExecutionRequest(input *StopExecutionInput) (req *request.Requ
 // API operation StopExecution for usage and error information.
 //
 // Returned Error Types:
-//   * ExecutionDoesNotExist
-//   The specified execution does not exist.
 //
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
+//   - ExecutionDoesNotExist
+//     The specified execution does not exist.
+//
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/StopExecution
 func (c *SFN) StopExecution(input *StopExecutionInput) (*StopExecutionOutput, error) {
@@ -2109,14 +2101,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/TagResource
 func (c *SFN) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2156,17 +2147,18 @@ func (c *SFN) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * ResourceNotFound
-//   Could not find the referenced resource. Only state machine and activity ARNs
-//   are supported.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * TooManyTags
-//   You've exceeded the number of tags allowed for a resource. See the Limits
-//   Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
-//   in the AWS Step Functions Developer Guide.
+//   - ResourceNotFound
+//     Could not find the referenced resource. Only state machine and activity ARNs
+//     are supported.
+//
+//   - TooManyTags
+//     You've exceeded the number of tags allowed for a resource. See the Limits
+//     Topic (https://docs.aws.amazon.com/step-functions/latest/dg/limits.html)
+//     in the AWS Step Functions Developer Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/TagResource
 func (c *SFN) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2206,14 +2198,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/UntagResource
 func (c *SFN) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2235,7 +2226,7 @@ func (c *SFN) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 
 // UntagResource API operation for AWS Step Functions.
 //
-// Remove a tag from a Step Functions resource
+// # Remove a tag from a Step Functions resource
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2245,12 +2236,13 @@ func (c *SFN) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * ResourceNotFound
-//   Could not find the referenced resource. Only state machine and activity ARNs
-//   are supported.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
+//
+//   - ResourceNotFound
+//     Could not find the referenced resource. Only state machine and activity ARNs
+//     are supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/UntagResource
 func (c *SFN) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2290,14 +2282,13 @@ const opUpdateStateMachine = "UpdateStateMachine"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStateMachineRequest method.
+//	req, resp := client.UpdateStateMachineRequest(params)
 //
-//    // Example sending a request using the UpdateStateMachineRequest method.
-//    req, resp := client.UpdateStateMachineRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/UpdateStateMachine
 func (c *SFN) UpdateStateMachineRequest(input *UpdateStateMachineInput) (req *request.Request, output *UpdateStateMachineOutput) {
@@ -2335,27 +2326,28 @@ func (c *SFN) UpdateStateMachineRequest(input *UpdateStateMachineInput) (req *re
 // API operation UpdateStateMachine for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArn
-//   The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidDefinition
-//   The provided Amazon States Language definition is invalid.
+//   - InvalidArn
+//     The provided Amazon Resource Name (ARN) is invalid.
 //
-//   * InvalidLoggingConfiguration
+//   - InvalidDefinition
+//     The provided Amazon States Language definition is invalid.
 //
-//   * InvalidTracingConfiguration
-//   Your tracingConfiguration key does not match, or enabled has not been set
-//   to true or false.
+//   - InvalidLoggingConfiguration
 //
-//   * MissingRequiredParameter
-//   Request is missing a required parameter. This error occurs if both definition
-//   and roleArn are not specified.
+//   - InvalidTracingConfiguration
+//     Your tracingConfiguration key does not match, or enabled has not been set
+//     to true or false.
 //
-//   * StateMachineDeleting
-//   The specified state machine is being deleted.
+//   - MissingRequiredParameter
+//     Request is missing a required parameter. This error occurs if both definition
+//     and roleArn are not specified.
 //
-//   * StateMachineDoesNotExist
-//   The specified state machine does not exist.
+//   - StateMachineDeleting
+//     The specified state machine is being deleted.
+//
+//   - StateMachineDoesNotExist
+//     The specified state machine does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23/UpdateStateMachine
 func (c *SFN) UpdateStateMachine(input *UpdateStateMachineInput) (*UpdateStateMachineOutput, error) {

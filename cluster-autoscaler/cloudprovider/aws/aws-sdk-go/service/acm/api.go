@@ -29,14 +29,13 @@ const opAddTagsToCertificate = "AddTagsToCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsToCertificateRequest method.
+//	req, resp := client.AddTagsToCertificateRequest(params)
 //
-//    // Example sending a request using the AddTagsToCertificateRequest method.
-//    req, resp := client.AddTagsToCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/AddTagsToCertificate
 func (c *ACM) AddTagsToCertificateRequest(input *AddTagsToCertificateInput) (req *request.Request, output *AddTagsToCertificateOutput) {
@@ -85,28 +84,29 @@ func (c *ACM) AddTagsToCertificateRequest(input *AddTagsToCertificateInput) (req
 // API operation AddTagsToCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidTagException
-//   One or both of the values that make up the key-value pair is not valid. For
-//   example, you cannot specify a tag value that begins with aws:.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * TooManyTagsException
-//   The request contains too many tags. Try the request again with fewer tags.
+//   - InvalidTagException
+//     One or both of the values that make up the key-value pair is not valid. For
+//     example, you cannot specify a tag value that begins with aws:.
 //
-//   * TagPolicyException
-//   A specified tag did not comply with an existing tag policy and was rejected.
+//   - TooManyTagsException
+//     The request contains too many tags. Try the request again with fewer tags.
 //
-//   * InvalidParameterException
-//   An input parameter was invalid.
+//   - TagPolicyException
+//     A specified tag did not comply with an existing tag policy and was rejected.
 //
-//   * ThrottlingException
-//   The request was denied because it exceeded a quota.
+//   - InvalidParameterException
+//     An input parameter was invalid.
+//
+//   - ThrottlingException
+//     The request was denied because it exceeded a quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/AddTagsToCertificate
 func (c *ACM) AddTagsToCertificate(input *AddTagsToCertificateInput) (*AddTagsToCertificateOutput, error) {
@@ -146,14 +146,13 @@ const opDeleteCertificate = "DeleteCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCertificateRequest method.
+//	req, resp := client.DeleteCertificateRequest(params)
 //
-//    // Example sending a request using the DeleteCertificateRequest method.
-//    req, resp := client.DeleteCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/DeleteCertificate
 func (c *ACM) DeleteCertificateRequest(input *DeleteCertificateInput) (req *request.Request, output *DeleteCertificateOutput) {
@@ -193,16 +192,17 @@ func (c *ACM) DeleteCertificateRequest(input *DeleteCertificateInput) (req *requ
 // API operation DeleteCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * ResourceInUseException
-//   The certificate is in use by another Amazon Web Services service in the caller's
-//   account. Remove the association and try again.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceInUseException
+//     The certificate is in use by another Amazon Web Services service in the caller's
+//     account. Remove the association and try again.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/DeleteCertificate
 func (c *ACM) DeleteCertificate(input *DeleteCertificateInput) (*DeleteCertificateOutput, error) {
@@ -242,14 +242,13 @@ const opDescribeCertificate = "DescribeCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCertificateRequest method.
+//	req, resp := client.DescribeCertificateRequest(params)
 //
-//    // Example sending a request using the DescribeCertificateRequest method.
-//    req, resp := client.DescribeCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/DescribeCertificate
 func (c *ACM) DescribeCertificateRequest(input *DescribeCertificateInput) (req *request.Request, output *DescribeCertificateOutput) {
@@ -280,12 +279,13 @@ func (c *ACM) DescribeCertificateRequest(input *DescribeCertificateInput) (req *
 // API operation DescribeCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/DescribeCertificate
 func (c *ACM) DescribeCertificate(input *DescribeCertificateInput) (*DescribeCertificateOutput, error) {
@@ -325,14 +325,13 @@ const opExportCertificate = "ExportCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportCertificateRequest method.
+//	req, resp := client.ExportCertificateRequest(params)
 //
-//    // Example sending a request using the ExportCertificateRequest method.
-//    req, resp := client.ExportCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ExportCertificate
 func (c *ACM) ExportCertificateRequest(input *ExportCertificateInput) (req *request.Request, output *ExportCertificateOutput) {
@@ -370,16 +369,17 @@ func (c *ACM) ExportCertificateRequest(input *ExportCertificateInput) (req *requ
 // API operation ExportCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * RequestInProgressException
-//   The certificate request is in process and the certificate in your account
-//   has not yet been issued.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - RequestInProgressException
+//     The certificate request is in process and the certificate in your account
+//     has not yet been issued.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ExportCertificate
 func (c *ACM) ExportCertificate(input *ExportCertificateInput) (*ExportCertificateOutput, error) {
@@ -419,14 +419,13 @@ const opGetAccountConfiguration = "GetAccountConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountConfigurationRequest method.
+//	req, resp := client.GetAccountConfigurationRequest(params)
 //
-//    // Example sending a request using the GetAccountConfigurationRequest method.
-//    req, resp := client.GetAccountConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/GetAccountConfiguration
 func (c *ACM) GetAccountConfigurationRequest(input *GetAccountConfigurationInput) (req *request.Request, output *GetAccountConfigurationOutput) {
@@ -458,11 +457,12 @@ func (c *ACM) GetAccountConfigurationRequest(input *GetAccountConfigurationInput
 // API operation GetAccountConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * AccessDeniedException
-//   You do not have access required to perform this action.
 //
-//   * ThrottlingException
-//   The request was denied because it exceeded a quota.
+//   - AccessDeniedException
+//     You do not have access required to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied because it exceeded a quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/GetAccountConfiguration
 func (c *ACM) GetAccountConfiguration(input *GetAccountConfigurationInput) (*GetAccountConfigurationOutput, error) {
@@ -502,14 +502,13 @@ const opGetCertificate = "GetCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCertificateRequest method.
+//	req, resp := client.GetCertificateRequest(params)
 //
-//    // Example sending a request using the GetCertificateRequest method.
-//    req, resp := client.GetCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/GetCertificate
 func (c *ACM) GetCertificateRequest(input *GetCertificateInput) (req *request.Request, output *GetCertificateOutput) {
@@ -544,16 +543,17 @@ func (c *ACM) GetCertificateRequest(input *GetCertificateInput) (req *request.Re
 // API operation GetCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * RequestInProgressException
-//   The certificate request is in process and the certificate in your account
-//   has not yet been issued.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - RequestInProgressException
+//     The certificate request is in process and the certificate in your account
+//     has not yet been issued.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/GetCertificate
 func (c *ACM) GetCertificate(input *GetCertificateInput) (*GetCertificateOutput, error) {
@@ -593,14 +593,13 @@ const opImportCertificate = "ImportCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportCertificateRequest method.
+//	req, resp := client.ImportCertificateRequest(params)
 //
-//    // Example sending a request using the ImportCertificateRequest method.
-//    req, resp := client.ImportCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ImportCertificate
 func (c *ACM) ImportCertificateRequest(input *ImportCertificateInput) (req *request.Request, output *ImportCertificateOutput) {
@@ -636,46 +635,46 @@ func (c *ACM) ImportCertificateRequest(input *ImportCertificateInput) (req *requ
 //
 // Note the following guidelines when importing third party certificates:
 //
-//    * You must enter the private key that matches the certificate you are
-//    importing.
+//   - You must enter the private key that matches the certificate you are
+//     importing.
 //
-//    * The private key must be unencrypted. You cannot import a private key
-//    that is protected by a password or a passphrase.
+//   - The private key must be unencrypted. You cannot import a private key
+//     that is protected by a password or a passphrase.
 //
-//    * The private key must be no larger than 5 KB (5,120 bytes).
+//   - The private key must be no larger than 5 KB (5,120 bytes).
 //
-//    * If the certificate you are importing is not self-signed, you must enter
-//    its certificate chain.
+//   - If the certificate you are importing is not self-signed, you must enter
+//     its certificate chain.
 //
-//    * If a certificate chain is included, the issuer must be the subject of
-//    one of the certificates in the chain.
+//   - If a certificate chain is included, the issuer must be the subject of
+//     one of the certificates in the chain.
 //
-//    * The certificate, private key, and certificate chain must be PEM-encoded.
+//   - The certificate, private key, and certificate chain must be PEM-encoded.
 //
-//    * The current time must be between the Not Before and Not After certificate
-//    fields.
+//   - The current time must be between the Not Before and Not After certificate
+//     fields.
 //
-//    * The Issuer field must not be empty.
+//   - The Issuer field must not be empty.
 //
-//    * The OCSP authority URL, if present, must not exceed 1000 characters.
+//   - The OCSP authority URL, if present, must not exceed 1000 characters.
 //
-//    * To import a new certificate, omit the CertificateArn argument. Include
-//    this argument only when you want to replace a previously imported certificate.
+//   - To import a new certificate, omit the CertificateArn argument. Include
+//     this argument only when you want to replace a previously imported certificate.
 //
-//    * When you import a certificate by using the CLI, you must specify the
-//    certificate, the certificate chain, and the private key by their file
-//    names preceded by fileb://. For example, you can specify a certificate
-//    saved in the C:\temp folder as fileb://C:\temp\certificate_to_import.pem.
-//    If you are making an HTTP or HTTPS Query request, include these arguments
-//    as BLOBs.
+//   - When you import a certificate by using the CLI, you must specify the
+//     certificate, the certificate chain, and the private key by their file
+//     names preceded by fileb://. For example, you can specify a certificate
+//     saved in the C:\temp folder as fileb://C:\temp\certificate_to_import.pem.
+//     If you are making an HTTP or HTTPS Query request, include these arguments
+//     as BLOBs.
 //
-//    * When you import a certificate by using an SDK, you must specify the
-//    certificate, the certificate chain, and the private key files in the manner
-//    required by the programming language you're using.
+//   - When you import a certificate by using an SDK, you must specify the
+//     certificate, the certificate chain, and the private key files in the manner
+//     required by the programming language you're using.
 //
-//    * The cryptographic algorithm of an imported certificate must match the
-//    algorithm of the signing CA. For example, if the signing CA key type is
-//    RSA, then the certificate key type must also be RSA.
+//   - The cryptographic algorithm of an imported certificate must match the
+//     algorithm of the signing CA. For example, if the signing CA key type is
+//     RSA, then the certificate key type must also be RSA.
 //
 // This operation returns the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 // of the imported certificate.
@@ -688,28 +687,29 @@ func (c *ACM) ImportCertificateRequest(input *ImportCertificateInput) (req *requ
 // API operation ImportCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * LimitExceededException
-//   An ACM quota has been exceeded.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidTagException
-//   One or both of the values that make up the key-value pair is not valid. For
-//   example, you cannot specify a tag value that begins with aws:.
+//   - LimitExceededException
+//     An ACM quota has been exceeded.
 //
-//   * TooManyTagsException
-//   The request contains too many tags. Try the request again with fewer tags.
+//   - InvalidTagException
+//     One or both of the values that make up the key-value pair is not valid. For
+//     example, you cannot specify a tag value that begins with aws:.
 //
-//   * TagPolicyException
-//   A specified tag did not comply with an existing tag policy and was rejected.
+//   - TooManyTagsException
+//     The request contains too many tags. Try the request again with fewer tags.
 //
-//   * InvalidParameterException
-//   An input parameter was invalid.
+//   - TagPolicyException
+//     A specified tag did not comply with an existing tag policy and was rejected.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidParameterException
+//     An input parameter was invalid.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ImportCertificate
 func (c *ACM) ImportCertificate(input *ImportCertificateInput) (*ImportCertificateOutput, error) {
@@ -749,14 +749,13 @@ const opListCertificates = "ListCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCertificatesRequest method.
+//	req, resp := client.ListCertificatesRequest(params)
 //
-//    // Example sending a request using the ListCertificatesRequest method.
-//    req, resp := client.ListCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListCertificates
 func (c *ACM) ListCertificatesRequest(input *ListCertificatesInput) (req *request.Request, output *ListCertificatesOutput) {
@@ -796,8 +795,8 @@ func (c *ACM) ListCertificatesRequest(input *ListCertificatesInput) (req *reques
 // API operation ListCertificates for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidArgsException
-//   One or more of of request parameters specified is not valid.
+//   - InvalidArgsException
+//     One or more of of request parameters specified is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListCertificates
 func (c *ACM) ListCertificates(input *ListCertificatesInput) (*ListCertificatesOutput, error) {
@@ -829,15 +828,14 @@ func (c *ACM) ListCertificatesWithContext(ctx aws.Context, input *ListCertificat
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCertificates operation.
-//    pageNum := 0
-//    err := client.ListCertificatesPages(params,
-//        func(page *acm.ListCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCertificates operation.
+//	pageNum := 0
+//	err := client.ListCertificatesPages(params,
+//	    func(page *acm.ListCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ACM) ListCertificatesPages(input *ListCertificatesInput, fn func(*ListCertificatesOutput, bool) bool) error {
 	return c.ListCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -889,14 +887,13 @@ const opListTagsForCertificate = "ListTagsForCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForCertificateRequest method.
+//	req, resp := client.ListTagsForCertificateRequest(params)
 //
-//    // Example sending a request using the ListTagsForCertificateRequest method.
-//    req, resp := client.ListTagsForCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListTagsForCertificate
 func (c *ACM) ListTagsForCertificateRequest(input *ListTagsForCertificateInput) (req *request.Request, output *ListTagsForCertificateOutput) {
@@ -930,12 +927,13 @@ func (c *ACM) ListTagsForCertificateRequest(input *ListTagsForCertificateInput) 
 // API operation ListTagsForCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListTagsForCertificate
 func (c *ACM) ListTagsForCertificate(input *ListTagsForCertificateInput) (*ListTagsForCertificateOutput, error) {
@@ -975,14 +973,13 @@ const opPutAccountConfiguration = "PutAccountConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAccountConfigurationRequest method.
+//	req, resp := client.PutAccountConfigurationRequest(params)
 //
-//    // Example sending a request using the PutAccountConfigurationRequest method.
-//    req, resp := client.PutAccountConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/PutAccountConfiguration
 func (c *ACM) PutAccountConfigurationRequest(input *PutAccountConfigurationInput) (req *request.Request, output *PutAccountConfigurationOutput) {
@@ -1020,19 +1017,20 @@ func (c *ACM) PutAccountConfigurationRequest(input *PutAccountConfigurationInput
 // API operation PutAccountConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The supplied input failed to satisfy constraints of an Amazon Web Services
-//   service.
 //
-//   * ThrottlingException
-//   The request was denied because it exceeded a quota.
+//   - ValidationException
+//     The supplied input failed to satisfy constraints of an Amazon Web Services
+//     service.
 //
-//   * AccessDeniedException
-//   You do not have access required to perform this action.
+//   - ThrottlingException
+//     The request was denied because it exceeded a quota.
 //
-//   * ConflictException
-//   You are trying to update a resource or configuration that is already being
-//   created or updated. Wait for the previous operation to finish and try again.
+//   - AccessDeniedException
+//     You do not have access required to perform this action.
+//
+//   - ConflictException
+//     You are trying to update a resource or configuration that is already being
+//     created or updated. Wait for the previous operation to finish and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/PutAccountConfiguration
 func (c *ACM) PutAccountConfiguration(input *PutAccountConfigurationInput) (*PutAccountConfigurationOutput, error) {
@@ -1072,14 +1070,13 @@ const opRemoveTagsFromCertificate = "RemoveTagsFromCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsFromCertificateRequest method.
+//	req, resp := client.RemoveTagsFromCertificateRequest(params)
 //
-//    // Example sending a request using the RemoveTagsFromCertificateRequest method.
-//    req, resp := client.RemoveTagsFromCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RemoveTagsFromCertificate
 func (c *ACM) RemoveTagsFromCertificateRequest(input *RemoveTagsFromCertificateInput) (req *request.Request, output *RemoveTagsFromCertificateOutput) {
@@ -1118,25 +1115,26 @@ func (c *ACM) RemoveTagsFromCertificateRequest(input *RemoveTagsFromCertificateI
 // API operation RemoveTagsFromCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidTagException
-//   One or both of the values that make up the key-value pair is not valid. For
-//   example, you cannot specify a tag value that begins with aws:.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * TagPolicyException
-//   A specified tag did not comply with an existing tag policy and was rejected.
+//   - InvalidTagException
+//     One or both of the values that make up the key-value pair is not valid. For
+//     example, you cannot specify a tag value that begins with aws:.
 //
-//   * InvalidParameterException
-//   An input parameter was invalid.
+//   - TagPolicyException
+//     A specified tag did not comply with an existing tag policy and was rejected.
 //
-//   * ThrottlingException
-//   The request was denied because it exceeded a quota.
+//   - InvalidParameterException
+//     An input parameter was invalid.
+//
+//   - ThrottlingException
+//     The request was denied because it exceeded a quota.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RemoveTagsFromCertificate
 func (c *ACM) RemoveTagsFromCertificate(input *RemoveTagsFromCertificateInput) (*RemoveTagsFromCertificateOutput, error) {
@@ -1176,14 +1174,13 @@ const opRenewCertificate = "RenewCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RenewCertificateRequest method.
+//	req, resp := client.RenewCertificateRequest(params)
 //
-//    // Example sending a request using the RenewCertificateRequest method.
-//    req, resp := client.RenewCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RenewCertificate
 func (c *ACM) RenewCertificateRequest(input *RenewCertificateInput) (req *request.Request, output *RenewCertificateOutput) {
@@ -1220,12 +1217,13 @@ func (c *ACM) RenewCertificateRequest(input *RenewCertificateInput) (req *reques
 // API operation RenewCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RenewCertificate
 func (c *ACM) RenewCertificate(input *RenewCertificateInput) (*RenewCertificateOutput, error) {
@@ -1265,14 +1263,13 @@ const opRequestCertificate = "RequestCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RequestCertificateRequest method.
+//	req, resp := client.RequestCertificateRequest(params)
 //
-//    // Example sending a request using the RequestCertificateRequest method.
-//    req, resp := client.RequestCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RequestCertificate
 func (c *ACM) RequestCertificateRequest(input *RequestCertificateInput) (req *request.Request, output *RequestCertificateOutput) {
@@ -1319,27 +1316,28 @@ func (c *ACM) RequestCertificateRequest(input *RequestCertificateInput) (req *re
 // API operation RequestCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   An ACM quota has been exceeded.
 //
-//   * InvalidDomainValidationOptionsException
-//   One or more values in the DomainValidationOption structure is incorrect.
+//   - LimitExceededException
+//     An ACM quota has been exceeded.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidDomainValidationOptionsException
+//     One or more values in the DomainValidationOption structure is incorrect.
 //
-//   * InvalidTagException
-//   One or both of the values that make up the key-value pair is not valid. For
-//   example, you cannot specify a tag value that begins with aws:.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
-//   * TooManyTagsException
-//   The request contains too many tags. Try the request again with fewer tags.
+//   - InvalidTagException
+//     One or both of the values that make up the key-value pair is not valid. For
+//     example, you cannot specify a tag value that begins with aws:.
 //
-//   * TagPolicyException
-//   A specified tag did not comply with an existing tag policy and was rejected.
+//   - TooManyTagsException
+//     The request contains too many tags. Try the request again with fewer tags.
 //
-//   * InvalidParameterException
-//   An input parameter was invalid.
+//   - TagPolicyException
+//     A specified tag did not comply with an existing tag policy and was rejected.
+//
+//   - InvalidParameterException
+//     An input parameter was invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/RequestCertificate
 func (c *ACM) RequestCertificate(input *RequestCertificateInput) (*RequestCertificateOutput, error) {
@@ -1379,14 +1377,13 @@ const opResendValidationEmail = "ResendValidationEmail"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResendValidationEmailRequest method.
+//	req, resp := client.ResendValidationEmailRequest(params)
 //
-//    // Example sending a request using the ResendValidationEmailRequest method.
-//    req, resp := client.ResendValidationEmailRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ResendValidationEmail
 func (c *ACM) ResendValidationEmailRequest(input *ResendValidationEmailInput) (req *request.Request, output *ResendValidationEmailOutput) {
@@ -1428,18 +1425,19 @@ func (c *ACM) ResendValidationEmailRequest(input *ResendValidationEmailInput) (r
 // API operation ResendValidationEmail for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * InvalidStateException
-//   Processing has reached an invalid state.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidStateException
+//     Processing has reached an invalid state.
 //
-//   * InvalidDomainValidationOptionsException
-//   One or more values in the DomainValidationOption structure is incorrect.
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//
+//   - InvalidDomainValidationOptionsException
+//     One or more values in the DomainValidationOption structure is incorrect.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ResendValidationEmail
 func (c *ACM) ResendValidationEmail(input *ResendValidationEmailInput) (*ResendValidationEmailOutput, error) {
@@ -1479,14 +1477,13 @@ const opUpdateCertificateOptions = "UpdateCertificateOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCertificateOptionsRequest method.
+//	req, resp := client.UpdateCertificateOptionsRequest(params)
 //
-//    // Example sending a request using the UpdateCertificateOptionsRequest method.
-//    req, resp := client.UpdateCertificateOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/UpdateCertificateOptions
 func (c *ACM) UpdateCertificateOptionsRequest(input *UpdateCertificateOptionsInput) (req *request.Request, output *UpdateCertificateOptionsOutput) {
@@ -1521,18 +1518,19 @@ func (c *ACM) UpdateCertificateOptionsRequest(input *UpdateCertificateOptionsInp
 // API operation UpdateCertificateOptions for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified certificate cannot be found in the caller's account or the
-//   caller's account cannot be found.
 //
-//   * LimitExceededException
-//   An ACM quota has been exceeded.
+//   - ResourceNotFoundException
+//     The specified certificate cannot be found in the caller's account or the
+//     caller's account cannot be found.
 //
-//   * InvalidStateException
-//   Processing has reached an invalid state.
+//   - LimitExceededException
+//     An ACM quota has been exceeded.
 //
-//   * InvalidArnException
-//   The requested Amazon Resource Name (ARN) does not refer to an existing resource.
+//   - InvalidStateException
+//     Processing has reached an invalid state.
+//
+//   - InvalidArnException
+//     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/UpdateCertificateOptions
 func (c *ACM) UpdateCertificateOptions(input *UpdateCertificateOptionsInput) (*UpdateCertificateOptionsOutput, error) {

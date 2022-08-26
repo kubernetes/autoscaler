@@ -34,17 +34,17 @@ type VcnTopology struct {
 	VcnId *string `mandatory:"false" json:"vcnId"`
 }
 
-//GetEntities returns Entities
+// GetEntities returns Entities
 func (m VcnTopology) GetEntities() []interface{} {
 	return m.Entities
 }
 
-//GetRelationships returns Relationships
+// GetRelationships returns Relationships
 func (m VcnTopology) GetRelationships() []TopologyEntityRelationship {
 	return m.Relationships
 }
 
-//GetTimeCreated returns TimeCreated
+// GetTimeCreated returns TimeCreated
 func (m VcnTopology) GetTimeCreated() *common.SDKTime {
 	return m.TimeCreated
 }

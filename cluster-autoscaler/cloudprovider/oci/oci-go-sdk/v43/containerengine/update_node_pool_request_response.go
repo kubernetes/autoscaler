@@ -11,7 +11,7 @@ import (
 
 // UpdateNodePoolRequest wrapper for the UpdateNodePool operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/containerengine/UpdateNodePool.go.html to see an example of how to use UpdateNodePoolRequest.
 type UpdateNodePoolRequest struct {

@@ -29,14 +29,13 @@ const opCreateParallelData = "CreateParallelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateParallelDataRequest method.
+//	req, resp := client.CreateParallelDataRequest(params)
 //
-//    // Example sending a request using the CreateParallelDataRequest method.
-//    req, resp := client.CreateParallelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/CreateParallelData
 func (c *Translate) CreateParallelDataRequest(input *CreateParallelDataInput) (req *request.Request, output *CreateParallelDataOutput) {
@@ -70,27 +69,28 @@ func (c *Translate) CreateParallelDataRequest(input *CreateParallelDataInput) (r
 // API operation CreateParallelData for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * LimitExceededException
-//   The specified limit has been exceeded. Review your request and retry it with
-//   a quantity below the stated limit.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - LimitExceededException
+//     The specified limit has been exceeded. Review your request and retry it with
+//     a quantity below the stated limit.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/CreateParallelData
 func (c *Translate) CreateParallelData(input *CreateParallelDataInput) (*CreateParallelDataOutput, error) {
@@ -130,14 +130,13 @@ const opDeleteParallelData = "DeleteParallelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteParallelDataRequest method.
+//	req, resp := client.DeleteParallelDataRequest(params)
 //
-//    // Example sending a request using the DeleteParallelDataRequest method.
-//    req, resp := client.DeleteParallelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DeleteParallelData
 func (c *Translate) DeleteParallelDataRequest(input *DeleteParallelDataInput) (req *request.Request, output *DeleteParallelDataOutput) {
@@ -168,21 +167,22 @@ func (c *Translate) DeleteParallelDataRequest(input *DeleteParallelDataInput) (r
 // API operation DeleteParallelData for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
 //
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DeleteParallelData
 func (c *Translate) DeleteParallelData(input *DeleteParallelDataInput) (*DeleteParallelDataOutput, error) {
@@ -222,14 +222,13 @@ const opDeleteTerminology = "DeleteTerminology"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTerminologyRequest method.
+//	req, resp := client.DeleteTerminologyRequest(params)
 //
-//    // Example sending a request using the DeleteTerminologyRequest method.
-//    req, resp := client.DeleteTerminologyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DeleteTerminology
 func (c *Translate) DeleteTerminologyRequest(input *DeleteTerminologyInput) (req *request.Request, output *DeleteTerminologyOutput) {
@@ -261,21 +260,22 @@ func (c *Translate) DeleteTerminologyRequest(input *DeleteTerminologyInput) (req
 // API operation DeleteTerminology for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DeleteTerminology
 func (c *Translate) DeleteTerminology(input *DeleteTerminologyInput) (*DeleteTerminologyOutput, error) {
@@ -315,14 +315,13 @@ const opDescribeTextTranslationJob = "DescribeTextTranslationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTextTranslationJobRequest method.
+//	req, resp := client.DescribeTextTranslationJobRequest(params)
 //
-//    // Example sending a request using the DescribeTextTranslationJobRequest method.
-//    req, resp := client.DescribeTextTranslationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DescribeTextTranslationJob
 func (c *Translate) DescribeTextTranslationJobRequest(input *DescribeTextTranslationJobInput) (req *request.Request, output *DescribeTextTranslationJobOutput) {
@@ -355,17 +354,18 @@ func (c *Translate) DescribeTextTranslationJobRequest(input *DescribeTextTransla
 // API operation DescribeTextTranslationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/DescribeTextTranslationJob
 func (c *Translate) DescribeTextTranslationJob(input *DescribeTextTranslationJobInput) (*DescribeTextTranslationJobOutput, error) {
@@ -405,14 +405,13 @@ const opGetParallelData = "GetParallelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetParallelDataRequest method.
+//	req, resp := client.GetParallelDataRequest(params)
 //
-//    // Example sending a request using the GetParallelDataRequest method.
-//    req, resp := client.GetParallelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/GetParallelData
 func (c *Translate) GetParallelDataRequest(input *GetParallelDataInput) (req *request.Request, output *GetParallelDataOutput) {
@@ -443,21 +442,22 @@ func (c *Translate) GetParallelDataRequest(input *GetParallelDataInput) (req *re
 // API operation GetParallelData for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
 //
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/GetParallelData
 func (c *Translate) GetParallelData(input *GetParallelDataInput) (*GetParallelDataOutput, error) {
@@ -497,14 +497,13 @@ const opGetTerminology = "GetTerminology"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTerminologyRequest method.
+//	req, resp := client.GetTerminologyRequest(params)
 //
-//    // Example sending a request using the GetTerminologyRequest method.
-//    req, resp := client.GetTerminologyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/GetTerminology
 func (c *Translate) GetTerminologyRequest(input *GetTerminologyInput) (req *request.Request, output *GetTerminologyOutput) {
@@ -535,21 +534,22 @@ func (c *Translate) GetTerminologyRequest(input *GetTerminologyInput) (req *requ
 // API operation GetTerminology for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
 //
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/GetTerminology
 func (c *Translate) GetTerminology(input *GetTerminologyInput) (*GetTerminologyOutput, error) {
@@ -589,14 +589,13 @@ const opImportTerminology = "ImportTerminology"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportTerminologyRequest method.
+//	req, resp := client.ImportTerminologyRequest(params)
 //
-//    // Example sending a request using the ImportTerminologyRequest method.
-//    req, resp := client.ImportTerminologyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ImportTerminology
 func (c *Translate) ImportTerminologyRequest(input *ImportTerminologyInput) (req *request.Request, output *ImportTerminologyOutput) {
@@ -636,20 +635,21 @@ func (c *Translate) ImportTerminologyRequest(input *ImportTerminologyInput) (req
 // API operation ImportTerminology for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
 //
-//   * LimitExceededException
-//   The specified limit has been exceeded. Review your request and retry it with
-//   a quantity below the stated limit.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - LimitExceededException
+//     The specified limit has been exceeded. Review your request and retry it with
+//     a quantity below the stated limit.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ImportTerminology
 func (c *Translate) ImportTerminology(input *ImportTerminologyInput) (*ImportTerminologyOutput, error) {
@@ -689,14 +689,13 @@ const opListParallelData = "ListParallelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListParallelDataRequest method.
+//	req, resp := client.ListParallelDataRequest(params)
 //
-//    // Example sending a request using the ListParallelDataRequest method.
-//    req, resp := client.ListParallelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListParallelData
 func (c *Translate) ListParallelDataRequest(input *ListParallelDataInput) (req *request.Request, output *ListParallelDataOutput) {
@@ -733,16 +732,17 @@ func (c *Translate) ListParallelDataRequest(input *ListParallelDataInput) (req *
 // API operation ListParallelData for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListParallelData
 func (c *Translate) ListParallelData(input *ListParallelDataInput) (*ListParallelDataOutput, error) {
@@ -774,15 +774,14 @@ func (c *Translate) ListParallelDataWithContext(ctx aws.Context, input *ListPara
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListParallelData operation.
-//    pageNum := 0
-//    err := client.ListParallelDataPages(params,
-//        func(page *translate.ListParallelDataOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListParallelData operation.
+//	pageNum := 0
+//	err := client.ListParallelDataPages(params,
+//	    func(page *translate.ListParallelDataOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Translate) ListParallelDataPages(input *ListParallelDataInput, fn func(*ListParallelDataOutput, bool) bool) error {
 	return c.ListParallelDataPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -834,14 +833,13 @@ const opListTerminologies = "ListTerminologies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTerminologiesRequest method.
+//	req, resp := client.ListTerminologiesRequest(params)
 //
-//    // Example sending a request using the ListTerminologiesRequest method.
-//    req, resp := client.ListTerminologiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListTerminologies
 func (c *Translate) ListTerminologiesRequest(input *ListTerminologiesInput) (req *request.Request, output *ListTerminologiesOutput) {
@@ -878,16 +876,17 @@ func (c *Translate) ListTerminologiesRequest(input *ListTerminologiesInput) (req
 // API operation ListTerminologies for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListTerminologies
 func (c *Translate) ListTerminologies(input *ListTerminologiesInput) (*ListTerminologiesOutput, error) {
@@ -919,15 +918,14 @@ func (c *Translate) ListTerminologiesWithContext(ctx aws.Context, input *ListTer
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTerminologies operation.
-//    pageNum := 0
-//    err := client.ListTerminologiesPages(params,
-//        func(page *translate.ListTerminologiesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTerminologies operation.
+//	pageNum := 0
+//	err := client.ListTerminologiesPages(params,
+//	    func(page *translate.ListTerminologiesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Translate) ListTerminologiesPages(input *ListTerminologiesInput, fn func(*ListTerminologiesOutput, bool) bool) error {
 	return c.ListTerminologiesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -979,14 +977,13 @@ const opListTextTranslationJobs = "ListTextTranslationJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTextTranslationJobsRequest method.
+//	req, resp := client.ListTextTranslationJobsRequest(params)
 //
-//    // Example sending a request using the ListTextTranslationJobsRequest method.
-//    req, resp := client.ListTextTranslationJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListTextTranslationJobs
 func (c *Translate) ListTextTranslationJobsRequest(input *ListTextTranslationJobsInput) (req *request.Request, output *ListTextTranslationJobsOutput) {
@@ -1023,19 +1020,20 @@ func (c *Translate) ListTextTranslationJobsRequest(input *ListTextTranslationJob
 // API operation ListTextTranslationJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/ListTextTranslationJobs
 func (c *Translate) ListTextTranslationJobs(input *ListTextTranslationJobsInput) (*ListTextTranslationJobsOutput, error) {
@@ -1067,15 +1065,14 @@ func (c *Translate) ListTextTranslationJobsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTextTranslationJobs operation.
-//    pageNum := 0
-//    err := client.ListTextTranslationJobsPages(params,
-//        func(page *translate.ListTextTranslationJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTextTranslationJobs operation.
+//	pageNum := 0
+//	err := client.ListTextTranslationJobsPages(params,
+//	    func(page *translate.ListTextTranslationJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Translate) ListTextTranslationJobsPages(input *ListTextTranslationJobsInput, fn func(*ListTextTranslationJobsOutput, bool) bool) error {
 	return c.ListTextTranslationJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1127,14 +1124,13 @@ const opStartTextTranslationJob = "StartTextTranslationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTextTranslationJobRequest method.
+//	req, resp := client.StartTextTranslationJobRequest(params)
 //
-//    // Example sending a request using the StartTextTranslationJobRequest method.
-//    req, resp := client.StartTextTranslationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/StartTextTranslationJob
 func (c *Translate) StartTextTranslationJobRequest(input *StartTextTranslationJobInput) (req *request.Request, output *StartTextTranslationJobOutput) {
@@ -1174,29 +1170,30 @@ func (c *Translate) StartTextTranslationJobRequest(input *StartTextTranslationJo
 // API operation StartTextTranslationJob for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
 //
-//   * UnsupportedLanguagePairException
-//   Amazon Translate does not support translation from the language of the source
-//   text into the requested target language. For more information, see how-to-error-msg.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - UnsupportedLanguagePairException
+//     Amazon Translate does not support translation from the language of the source
+//     text into the requested target language. For more information, see how-to-error-msg.
 //
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/StartTextTranslationJob
 func (c *Translate) StartTextTranslationJob(input *StartTextTranslationJobInput) (*StartTextTranslationJobOutput, error) {
@@ -1236,14 +1233,13 @@ const opStopTextTranslationJob = "StopTextTranslationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopTextTranslationJobRequest method.
+//	req, resp := client.StopTextTranslationJobRequest(params)
 //
-//    // Example sending a request using the StopTextTranslationJobRequest method.
-//    req, resp := client.StopTextTranslationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/StopTextTranslationJob
 func (c *Translate) StopTextTranslationJobRequest(input *StopTextTranslationJobInput) (req *request.Request, output *StopTextTranslationJobOutput) {
@@ -1283,17 +1279,18 @@ func (c *Translate) StopTextTranslationJobRequest(input *StopTextTranslationJobI
 // API operation StopTextTranslationJob for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/StopTextTranslationJob
 func (c *Translate) StopTextTranslationJob(input *StopTextTranslationJobInput) (*StopTextTranslationJobOutput, error) {
@@ -1333,14 +1330,13 @@ const opText = "TranslateText"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TextRequest method.
+//	req, resp := client.TextRequest(params)
 //
-//    // Example sending a request using the TextRequest method.
-//    req, resp := client.TextRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/Text
 func (c *Translate) TextRequest(input *TextInput) (req *request.Request, output *TextOutput) {
@@ -1372,40 +1368,41 @@ func (c *Translate) TextRequest(input *TextInput) (req *request.Request, output 
 // API operation Text for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
-//   * UnsupportedLanguagePairException
-//   Amazon Translate does not support translation from the language of the source
-//   text into the requested target language. For more information, see how-to-error-msg.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * DetectedLanguageLowConfidenceException
-//   The confidence that Amazon Comprehend accurately detected the source language
-//   is low. If a low confidence level is acceptable for your application, you
-//   can use the language in the exception to call Amazon Translate again. For
-//   more information, see the DetectDominantLanguage (https://docs.aws.amazon.com/comprehend/latest/dg/API_DetectDominantLanguage.html)
-//   operation in the Amazon Comprehend Developer Guide.
+//   - UnsupportedLanguagePairException
+//     Amazon Translate does not support translation from the language of the source
+//     text into the requested target language. For more information, see how-to-error-msg.
 //
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
+//   - DetectedLanguageLowConfidenceException
+//     The confidence that Amazon Comprehend accurately detected the source language
+//     is low. If a low confidence level is acceptable for your application, you
+//     can use the language in the exception to call Amazon Translate again. For
+//     more information, see the DetectDominantLanguage (https://docs.aws.amazon.com/comprehend/latest/dg/API_DetectDominantLanguage.html)
+//     operation in the Amazon Comprehend Developer Guide.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
 //
-//   * ServiceUnavailableException
-//   The Amazon Translate service is temporarily unavailable. Please wait a bit
-//   and then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
+//
+//   - ServiceUnavailableException
+//     The Amazon Translate service is temporarily unavailable. Please wait a bit
+//     and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/Text
 func (c *Translate) Text(input *TextInput) (*TextOutput, error) {
@@ -1445,14 +1442,13 @@ const opUpdateParallelData = "UpdateParallelData"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateParallelDataRequest method.
+//	req, resp := client.UpdateParallelDataRequest(params)
 //
-//    // Example sending a request using the UpdateParallelDataRequest method.
-//    req, resp := client.UpdateParallelDataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/UpdateParallelData
 func (c *Translate) UpdateParallelDataRequest(input *UpdateParallelDataInput) (req *request.Request, output *UpdateParallelDataOutput) {
@@ -1484,36 +1480,37 @@ func (c *Translate) UpdateParallelDataRequest(input *UpdateParallelDataInput) (r
 // API operation UpdateParallelData for usage and error information.
 //
 // Returned Error Types:
-//   * ConcurrentModificationException
-//   Another modification is being made. That modification must complete before
-//   you can make your change.
 //
-//   * InvalidParameterValueException
-//   The value of the parameter is invalid. Review the value of the parameter
-//   you are using to correct it, and then retry your operation.
+//   - ConcurrentModificationException
+//     Another modification is being made. That modification must complete before
+//     you can make your change.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - InvalidParameterValueException
+//     The value of the parameter is invalid. Review the value of the parameter
+//     you are using to correct it, and then retry your operation.
 //
-//   * LimitExceededException
-//   The specified limit has been exceeded. Review your request and retry it with
-//   a quantity below the stated limit.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again.
+//   - LimitExceededException
+//     The specified limit has been exceeded. Review your request and retry it with
+//     a quantity below the stated limit.
 //
-//   * ConflictException
-//   There was a conflict processing the request. Try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again.
 //
-//   * ResourceNotFoundException
-//   The resource you are looking for has not been found. Review the resource
-//   you're looking for and see if a different resource will accomplish your needs
-//   before retrying the revised request.
+//   - ConflictException
+//     There was a conflict processing the request. Try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource you are looking for has not been found. Review the resource
+//     you're looking for and see if a different resource will accomplish your needs
+//     before retrying the revised request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/translate-2017-07-01/UpdateParallelData
 func (c *Translate) UpdateParallelData(input *UpdateParallelDataInput) (*UpdateParallelDataOutput, error) {

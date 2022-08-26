@@ -29,14 +29,13 @@ const opAssociateChannelFlow = "AssociateChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateChannelFlowRequest method.
+//	req, resp := client.AssociateChannelFlowRequest(params)
 //
-//    // Example sending a request using the AssociateChannelFlowRequest method.
-//    req, resp := client.AssociateChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/AssociateChannelFlow
 func (c *ChimeSDKMessaging) AssociateChannelFlowRequest(input *AssociateChannelFlowInput) (req *request.Request, output *AssociateChannelFlowOutput) {
@@ -74,30 +73,31 @@ func (c *ChimeSDKMessaging) AssociateChannelFlowRequest(input *AssociateChannelF
 // API operation AssociateChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/AssociateChannelFlow
 func (c *ChimeSDKMessaging) AssociateChannelFlow(input *AssociateChannelFlowInput) (*AssociateChannelFlowOutput, error) {
@@ -137,14 +137,13 @@ const opBatchCreateChannelMembership = "BatchCreateChannelMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchCreateChannelMembershipRequest method.
+//	req, resp := client.BatchCreateChannelMembershipRequest(params)
 //
-//    // Example sending a request using the BatchCreateChannelMembershipRequest method.
-//    req, resp := client.BatchCreateChannelMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/BatchCreateChannelMembership
 func (c *ChimeSDKMessaging) BatchCreateChannelMembershipRequest(input *BatchCreateChannelMembershipInput) (req *request.Request, output *BatchCreateChannelMembershipOutput) {
@@ -175,23 +174,24 @@ func (c *ChimeSDKMessaging) BatchCreateChannelMembershipRequest(input *BatchCrea
 // API operation BatchCreateChannelMembership for usage and error information.
 //
 // Returned Error Types:
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/BatchCreateChannelMembership
 func (c *ChimeSDKMessaging) BatchCreateChannelMembership(input *BatchCreateChannelMembershipInput) (*BatchCreateChannelMembershipOutput, error) {
@@ -231,14 +231,13 @@ const opChannelFlowCallback = "ChannelFlowCallback"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ChannelFlowCallbackRequest method.
+//	req, resp := client.ChannelFlowCallbackRequest(params)
 //
-//    // Example sending a request using the ChannelFlowCallbackRequest method.
-//    req, resp := client.ChannelFlowCallbackRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ChannelFlowCallback
 func (c *ChimeSDKMessaging) ChannelFlowCallbackRequest(input *ChannelFlowCallbackInput) (req *request.Request, output *ChannelFlowCallbackOutput) {
@@ -264,11 +263,11 @@ func (c *ChimeSDKMessaging) ChannelFlowCallbackRequest(input *ChannelFlowCallbac
 //
 // You can return one of the following processing responses:
 //
-//    * Update message content or metadata
+//   - Update message content or metadata
 //
-//    * Deny a message
+//   - Deny a message
 //
-//    * Make no changes to the message
+//   - Make no changes to the message
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -278,27 +277,28 @@ func (c *ChimeSDKMessaging) ChannelFlowCallbackRequest(input *ChannelFlowCallbac
 // API operation ChannelFlowCallback for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ChannelFlowCallback
 func (c *ChimeSDKMessaging) ChannelFlowCallback(input *ChannelFlowCallbackInput) (*ChannelFlowCallbackOutput, error) {
@@ -338,14 +338,13 @@ const opCreateChannel = "CreateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelRequest method.
+//	req, resp := client.CreateChannelRequest(params)
 //
-//    // Example sending a request using the CreateChannelRequest method.
-//    req, resp := client.CreateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannel
 func (c *ChimeSDKMessaging) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
@@ -381,30 +380,31 @@ func (c *ChimeSDKMessaging) CreateChannelRequest(input *CreateChannelInput) (req
 // API operation CreateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannel
 func (c *ChimeSDKMessaging) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, error) {
@@ -444,14 +444,13 @@ const opCreateChannelBan = "CreateChannelBan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelBanRequest method.
+//	req, resp := client.CreateChannelBanRequest(params)
 //
-//    // Example sending a request using the CreateChannelBanRequest method.
-//    req, resp := client.CreateChannelBanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelBan
 func (c *ChimeSDKMessaging) CreateChannelBanRequest(input *CreateChannelBanInput) (req *request.Request, output *CreateChannelBanOutput) {
@@ -490,30 +489,31 @@ func (c *ChimeSDKMessaging) CreateChannelBanRequest(input *CreateChannelBanInput
 // API operation CreateChannelBan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelBan
 func (c *ChimeSDKMessaging) CreateChannelBan(input *CreateChannelBanInput) (*CreateChannelBanOutput, error) {
@@ -553,14 +553,13 @@ const opCreateChannelFlow = "CreateChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelFlowRequest method.
+//	req, resp := client.CreateChannelFlowRequest(params)
 //
-//    // Example sending a request using the CreateChannelFlowRequest method.
-//    req, resp := client.CreateChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelFlow
 func (c *ChimeSDKMessaging) CreateChannelFlowRequest(input *CreateChannelFlowInput) (req *request.Request, output *CreateChannelFlowOutput) {
@@ -589,11 +588,11 @@ func (c *ChimeSDKMessaging) CreateChannelFlowRequest(input *CreateChannelFlowInp
 //
 // Channel flows process the following items:
 //
-// New and updated messages
+// # New and updated messages
 //
 // Persistent and non-persistent messages
 //
-// The Standard message type
+// # The Standard message type
 //
 // Channel flows don't process Control or System messages. For more information
 // about the message types provided by Chime SDK Messaging, refer to Message
@@ -608,30 +607,31 @@ func (c *ChimeSDKMessaging) CreateChannelFlowRequest(input *CreateChannelFlowInp
 // API operation CreateChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelFlow
 func (c *ChimeSDKMessaging) CreateChannelFlow(input *CreateChannelFlowInput) (*CreateChannelFlowOutput, error) {
@@ -671,14 +671,13 @@ const opCreateChannelMembership = "CreateChannelMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelMembershipRequest method.
+//	req, resp := client.CreateChannelMembershipRequest(params)
 //
-//    // Example sending a request using the CreateChannelMembershipRequest method.
-//    req, resp := client.CreateChannelMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelMembership
 func (c *ChimeSDKMessaging) CreateChannelMembershipRequest(input *CreateChannelMembershipInput) (req *request.Request, output *CreateChannelMembershipOutput) {
@@ -702,22 +701,22 @@ func (c *ChimeSDKMessaging) CreateChannelMembershipRequest(input *CreateChannelM
 // Adds a user to a channel. The InvitedBy field in ChannelMembership is derived
 // from the request header. A channel member can:
 //
-//    * List messages
+//   - List messages
 //
-//    * Send messages
+//   - Send messages
 //
-//    * Receive messages
+//   - Receive messages
 //
-//    * Edit their own messages
+//   - Edit their own messages
 //
-//    * Leave the channel
+//   - Leave the channel
 //
 // Privacy settings impact this action as follows:
 //
-//    * Public Channels: You do not need to be a member to list messages, but
-//    you must be a member to send messages.
+//   - Public Channels: You do not need to be a member to list messages, but
+//     you must be a member to send messages.
 //
-//    * Private Channels: You must be a member to list or send messages.
+//   - Private Channels: You must be a member to list or send messages.
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
@@ -730,30 +729,31 @@ func (c *ChimeSDKMessaging) CreateChannelMembershipRequest(input *CreateChannelM
 // API operation CreateChannelMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelMembership
 func (c *ChimeSDKMessaging) CreateChannelMembership(input *CreateChannelMembershipInput) (*CreateChannelMembershipOutput, error) {
@@ -793,14 +793,13 @@ const opCreateChannelModerator = "CreateChannelModerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateChannelModeratorRequest method.
+//	req, resp := client.CreateChannelModeratorRequest(params)
 //
-//    // Example sending a request using the CreateChannelModeratorRequest method.
-//    req, resp := client.CreateChannelModeratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelModerator
 func (c *ChimeSDKMessaging) CreateChannelModeratorRequest(input *CreateChannelModeratorInput) (req *request.Request, output *CreateChannelModeratorOutput) {
@@ -823,15 +822,15 @@ func (c *ChimeSDKMessaging) CreateChannelModeratorRequest(input *CreateChannelMo
 //
 // Creates a new ChannelModerator. A channel moderator can:
 //
-//    * Add and remove other members of the channel.
+//   - Add and remove other members of the channel.
 //
-//    * Add and remove other moderators of the channel.
+//   - Add and remove other moderators of the channel.
 //
-//    * Add and remove user bans for the channel.
+//   - Add and remove user bans for the channel.
 //
-//    * Redact messages in the channel.
+//   - Redact messages in the channel.
 //
-//    * List messages in the channel.
+//   - List messages in the channel.
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
@@ -844,30 +843,31 @@ func (c *ChimeSDKMessaging) CreateChannelModeratorRequest(input *CreateChannelMo
 // API operation CreateChannelModerator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/CreateChannelModerator
 func (c *ChimeSDKMessaging) CreateChannelModerator(input *CreateChannelModeratorInput) (*CreateChannelModeratorOutput, error) {
@@ -907,14 +907,13 @@ const opDeleteChannel = "DeleteChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelRequest method.
+//	req, resp := client.DeleteChannelRequest(params)
 //
-//    // Example sending a request using the DeleteChannelRequest method.
-//    req, resp := client.DeleteChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannel
 func (c *ChimeSDKMessaging) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
@@ -950,23 +949,24 @@ func (c *ChimeSDKMessaging) DeleteChannelRequest(input *DeleteChannelInput) (req
 // API operation DeleteChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannel
 func (c *ChimeSDKMessaging) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, error) {
@@ -1006,14 +1006,13 @@ const opDeleteChannelBan = "DeleteChannelBan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelBanRequest method.
+//	req, resp := client.DeleteChannelBanRequest(params)
 //
-//    // Example sending a request using the DeleteChannelBanRequest method.
-//    req, resp := client.DeleteChannelBanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelBan
 func (c *ChimeSDKMessaging) DeleteChannelBanRequest(input *DeleteChannelBanInput) (req *request.Request, output *DeleteChannelBanOutput) {
@@ -1048,23 +1047,24 @@ func (c *ChimeSDKMessaging) DeleteChannelBanRequest(input *DeleteChannelBanInput
 // API operation DeleteChannelBan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelBan
 func (c *ChimeSDKMessaging) DeleteChannelBan(input *DeleteChannelBanInput) (*DeleteChannelBanOutput, error) {
@@ -1104,14 +1104,13 @@ const opDeleteChannelFlow = "DeleteChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelFlowRequest method.
+//	req, resp := client.DeleteChannelFlowRequest(params)
 //
-//    // Example sending a request using the DeleteChannelFlowRequest method.
-//    req, resp := client.DeleteChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelFlow
 func (c *ChimeSDKMessaging) DeleteChannelFlowRequest(input *DeleteChannelFlowInput) (req *request.Request, output *DeleteChannelFlowOutput) {
@@ -1148,27 +1147,28 @@ func (c *ChimeSDKMessaging) DeleteChannelFlowRequest(input *DeleteChannelFlowInp
 // API operation DeleteChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelFlow
 func (c *ChimeSDKMessaging) DeleteChannelFlow(input *DeleteChannelFlowInput) (*DeleteChannelFlowOutput, error) {
@@ -1208,14 +1208,13 @@ const opDeleteChannelMembership = "DeleteChannelMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelMembershipRequest method.
+//	req, resp := client.DeleteChannelMembershipRequest(params)
 //
-//    // Example sending a request using the DeleteChannelMembershipRequest method.
-//    req, resp := client.DeleteChannelMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelMembership
 func (c *ChimeSDKMessaging) DeleteChannelMembershipRequest(input *DeleteChannelMembershipInput) (req *request.Request, output *DeleteChannelMembershipOutput) {
@@ -1250,27 +1249,28 @@ func (c *ChimeSDKMessaging) DeleteChannelMembershipRequest(input *DeleteChannelM
 // API operation DeleteChannelMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelMembership
 func (c *ChimeSDKMessaging) DeleteChannelMembership(input *DeleteChannelMembershipInput) (*DeleteChannelMembershipOutput, error) {
@@ -1310,14 +1310,13 @@ const opDeleteChannelMessage = "DeleteChannelMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelMessageRequest method.
+//	req, resp := client.DeleteChannelMessageRequest(params)
 //
-//    // Example sending a request using the DeleteChannelMessageRequest method.
-//    req, resp := client.DeleteChannelMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelMessage
 func (c *ChimeSDKMessaging) DeleteChannelMessageRequest(input *DeleteChannelMessageInput) (req *request.Request, output *DeleteChannelMessageOutput) {
@@ -1354,23 +1353,24 @@ func (c *ChimeSDKMessaging) DeleteChannelMessageRequest(input *DeleteChannelMess
 // API operation DeleteChannelMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelMessage
 func (c *ChimeSDKMessaging) DeleteChannelMessage(input *DeleteChannelMessageInput) (*DeleteChannelMessageOutput, error) {
@@ -1410,14 +1410,13 @@ const opDeleteChannelModerator = "DeleteChannelModerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteChannelModeratorRequest method.
+//	req, resp := client.DeleteChannelModeratorRequest(params)
 //
-//    // Example sending a request using the DeleteChannelModeratorRequest method.
-//    req, resp := client.DeleteChannelModeratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelModerator
 func (c *ChimeSDKMessaging) DeleteChannelModeratorRequest(input *DeleteChannelModeratorInput) (req *request.Request, output *DeleteChannelModeratorOutput) {
@@ -1452,23 +1451,24 @@ func (c *ChimeSDKMessaging) DeleteChannelModeratorRequest(input *DeleteChannelMo
 // API operation DeleteChannelModerator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DeleteChannelModerator
 func (c *ChimeSDKMessaging) DeleteChannelModerator(input *DeleteChannelModeratorInput) (*DeleteChannelModeratorOutput, error) {
@@ -1508,14 +1508,13 @@ const opDescribeChannel = "DescribeChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelRequest method.
+//	req, resp := client.DescribeChannelRequest(params)
 //
-//    // Example sending a request using the DescribeChannelRequest method.
-//    req, resp := client.DescribeChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannel
 func (c *ChimeSDKMessaging) DescribeChannelRequest(input *DescribeChannelInput) (req *request.Request, output *DescribeChannelOutput) {
@@ -1549,23 +1548,24 @@ func (c *ChimeSDKMessaging) DescribeChannelRequest(input *DescribeChannelInput) 
 // API operation DescribeChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannel
 func (c *ChimeSDKMessaging) DescribeChannel(input *DescribeChannelInput) (*DescribeChannelOutput, error) {
@@ -1605,14 +1605,13 @@ const opDescribeChannelBan = "DescribeChannelBan"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelBanRequest method.
+//	req, resp := client.DescribeChannelBanRequest(params)
 //
-//    // Example sending a request using the DescribeChannelBanRequest method.
-//    req, resp := client.DescribeChannelBanRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelBan
 func (c *ChimeSDKMessaging) DescribeChannelBanRequest(input *DescribeChannelBanInput) (req *request.Request, output *DescribeChannelBanOutput) {
@@ -1646,26 +1645,27 @@ func (c *ChimeSDKMessaging) DescribeChannelBanRequest(input *DescribeChannelBanI
 // API operation DescribeChannelBan for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelBan
 func (c *ChimeSDKMessaging) DescribeChannelBan(input *DescribeChannelBanInput) (*DescribeChannelBanOutput, error) {
@@ -1705,14 +1705,13 @@ const opDescribeChannelFlow = "DescribeChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelFlowRequest method.
+//	req, resp := client.DescribeChannelFlowRequest(params)
 //
-//    // Example sending a request using the DescribeChannelFlowRequest method.
-//    req, resp := client.DescribeChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelFlow
 func (c *ChimeSDKMessaging) DescribeChannelFlowRequest(input *DescribeChannelFlowInput) (req *request.Request, output *DescribeChannelFlowOutput) {
@@ -1744,23 +1743,24 @@ func (c *ChimeSDKMessaging) DescribeChannelFlowRequest(input *DescribeChannelFlo
 // API operation DescribeChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelFlow
 func (c *ChimeSDKMessaging) DescribeChannelFlow(input *DescribeChannelFlowInput) (*DescribeChannelFlowOutput, error) {
@@ -1800,14 +1800,13 @@ const opDescribeChannelMembership = "DescribeChannelMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelMembershipRequest method.
+//	req, resp := client.DescribeChannelMembershipRequest(params)
 //
-//    // Example sending a request using the DescribeChannelMembershipRequest method.
-//    req, resp := client.DescribeChannelMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelMembership
 func (c *ChimeSDKMessaging) DescribeChannelMembershipRequest(input *DescribeChannelMembershipInput) (req *request.Request, output *DescribeChannelMembershipOutput) {
@@ -1841,26 +1840,27 @@ func (c *ChimeSDKMessaging) DescribeChannelMembershipRequest(input *DescribeChan
 // API operation DescribeChannelMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelMembership
 func (c *ChimeSDKMessaging) DescribeChannelMembership(input *DescribeChannelMembershipInput) (*DescribeChannelMembershipOutput, error) {
@@ -1900,14 +1900,13 @@ const opDescribeChannelMembershipForAppInstanceUser = "DescribeChannelMembership
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelMembershipForAppInstanceUserRequest method.
+//	req, resp := client.DescribeChannelMembershipForAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DescribeChannelMembershipForAppInstanceUserRequest method.
-//    req, resp := client.DescribeChannelMembershipForAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelMembershipForAppInstanceUser
 func (c *ChimeSDKMessaging) DescribeChannelMembershipForAppInstanceUserRequest(input *DescribeChannelMembershipForAppInstanceUserInput) (req *request.Request, output *DescribeChannelMembershipForAppInstanceUserOutput) {
@@ -1942,23 +1941,24 @@ func (c *ChimeSDKMessaging) DescribeChannelMembershipForAppInstanceUserRequest(i
 // API operation DescribeChannelMembershipForAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelMembershipForAppInstanceUser
 func (c *ChimeSDKMessaging) DescribeChannelMembershipForAppInstanceUser(input *DescribeChannelMembershipForAppInstanceUserInput) (*DescribeChannelMembershipForAppInstanceUserOutput, error) {
@@ -1998,14 +1998,13 @@ const opDescribeChannelModeratedByAppInstanceUser = "DescribeChannelModeratedByA
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelModeratedByAppInstanceUserRequest method.
+//	req, resp := client.DescribeChannelModeratedByAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DescribeChannelModeratedByAppInstanceUserRequest method.
-//    req, resp := client.DescribeChannelModeratedByAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelModeratedByAppInstanceUser
 func (c *ChimeSDKMessaging) DescribeChannelModeratedByAppInstanceUserRequest(input *DescribeChannelModeratedByAppInstanceUserInput) (req *request.Request, output *DescribeChannelModeratedByAppInstanceUserOutput) {
@@ -2039,23 +2038,24 @@ func (c *ChimeSDKMessaging) DescribeChannelModeratedByAppInstanceUserRequest(inp
 // API operation DescribeChannelModeratedByAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelModeratedByAppInstanceUser
 func (c *ChimeSDKMessaging) DescribeChannelModeratedByAppInstanceUser(input *DescribeChannelModeratedByAppInstanceUserInput) (*DescribeChannelModeratedByAppInstanceUserOutput, error) {
@@ -2095,14 +2095,13 @@ const opDescribeChannelModerator = "DescribeChannelModerator"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeChannelModeratorRequest method.
+//	req, resp := client.DescribeChannelModeratorRequest(params)
 //
-//    // Example sending a request using the DescribeChannelModeratorRequest method.
-//    req, resp := client.DescribeChannelModeratorRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelModerator
 func (c *ChimeSDKMessaging) DescribeChannelModeratorRequest(input *DescribeChannelModeratorInput) (req *request.Request, output *DescribeChannelModeratorOutput) {
@@ -2136,26 +2135,27 @@ func (c *ChimeSDKMessaging) DescribeChannelModeratorRequest(input *DescribeChann
 // API operation DescribeChannelModerator for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DescribeChannelModerator
 func (c *ChimeSDKMessaging) DescribeChannelModerator(input *DescribeChannelModeratorInput) (*DescribeChannelModeratorOutput, error) {
@@ -2195,14 +2195,13 @@ const opDisassociateChannelFlow = "DisassociateChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateChannelFlowRequest method.
+//	req, resp := client.DisassociateChannelFlowRequest(params)
 //
-//    // Example sending a request using the DisassociateChannelFlowRequest method.
-//    req, resp := client.DisassociateChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DisassociateChannelFlow
 func (c *ChimeSDKMessaging) DisassociateChannelFlowRequest(input *DisassociateChannelFlowInput) (req *request.Request, output *DisassociateChannelFlowOutput) {
@@ -2239,30 +2238,31 @@ func (c *ChimeSDKMessaging) DisassociateChannelFlowRequest(input *DisassociateCh
 // API operation DisassociateChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/DisassociateChannelFlow
 func (c *ChimeSDKMessaging) DisassociateChannelFlow(input *DisassociateChannelFlowInput) (*DisassociateChannelFlowOutput, error) {
@@ -2302,14 +2302,13 @@ const opGetChannelMembershipPreferences = "GetChannelMembershipPreferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelMembershipPreferencesRequest method.
+//	req, resp := client.GetChannelMembershipPreferencesRequest(params)
 //
-//    // Example sending a request using the GetChannelMembershipPreferencesRequest method.
-//    req, resp := client.GetChannelMembershipPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMembershipPreferences
 func (c *ChimeSDKMessaging) GetChannelMembershipPreferencesRequest(input *GetChannelMembershipPreferencesInput) (req *request.Request, output *GetChannelMembershipPreferencesOutput) {
@@ -2345,23 +2344,24 @@ func (c *ChimeSDKMessaging) GetChannelMembershipPreferencesRequest(input *GetCha
 // API operation GetChannelMembershipPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMembershipPreferences
 func (c *ChimeSDKMessaging) GetChannelMembershipPreferences(input *GetChannelMembershipPreferencesInput) (*GetChannelMembershipPreferencesOutput, error) {
@@ -2401,14 +2401,13 @@ const opGetChannelMessage = "GetChannelMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelMessageRequest method.
+//	req, resp := client.GetChannelMessageRequest(params)
 //
-//    // Example sending a request using the GetChannelMessageRequest method.
-//    req, resp := client.GetChannelMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMessage
 func (c *ChimeSDKMessaging) GetChannelMessageRequest(input *GetChannelMessageInput) (req *request.Request, output *GetChannelMessageOutput) {
@@ -2442,26 +2441,27 @@ func (c *ChimeSDKMessaging) GetChannelMessageRequest(input *GetChannelMessageInp
 // API operation GetChannelMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * NotFoundException
-//   One or more of the resources in the request does not exist in the system.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMessage
 func (c *ChimeSDKMessaging) GetChannelMessage(input *GetChannelMessageInput) (*GetChannelMessageOutput, error) {
@@ -2501,14 +2501,13 @@ const opGetChannelMessageStatus = "GetChannelMessageStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelMessageStatusRequest method.
+//	req, resp := client.GetChannelMessageStatusRequest(params)
 //
-//    // Example sending a request using the GetChannelMessageStatusRequest method.
-//    req, resp := client.GetChannelMessageStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMessageStatus
 func (c *ChimeSDKMessaging) GetChannelMessageStatusRequest(input *GetChannelMessageStatusInput) (req *request.Request, output *GetChannelMessageStatusOutput) {
@@ -2536,29 +2535,29 @@ func (c *ChimeSDKMessaging) GetChannelMessageStatusRequest(input *GetChannelMess
 //
 // Messages can have any one of these statuses.
 //
-// SENT
+// # SENT
 //
 // Message processed successfully
 //
-// PENDING
+// # PENDING
 //
 // Ongoing processing
 //
-// FAILED
+// # FAILED
 //
 // Processing failed
 //
-// DENIED
+// # DENIED
 //
 // Messasge denied by the processor
 //
-//    * This API does not return statuses for denied messages, because we don't
-//    store them once the processor denies them.
+//   - This API does not return statuses for denied messages, because we don't
+//     store them once the processor denies them.
 //
-//    * Only the message sender can invoke this API.
+//   - Only the message sender can invoke this API.
 //
-//    * The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
-//    of the user that makes the API call as the value in the header
+//   - The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
+//     of the user that makes the API call as the value in the header
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2568,23 +2567,24 @@ func (c *ChimeSDKMessaging) GetChannelMessageStatusRequest(input *GetChannelMess
 // API operation GetChannelMessageStatus for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetChannelMessageStatus
 func (c *ChimeSDKMessaging) GetChannelMessageStatus(input *GetChannelMessageStatusInput) (*GetChannelMessageStatusOutput, error) {
@@ -2624,14 +2624,13 @@ const opGetMessagingSessionEndpoint = "GetMessagingSessionEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMessagingSessionEndpointRequest method.
+//	req, resp := client.GetMessagingSessionEndpointRequest(params)
 //
-//    // Example sending a request using the GetMessagingSessionEndpointRequest method.
-//    req, resp := client.GetMessagingSessionEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetMessagingSessionEndpoint
 func (c *ChimeSDKMessaging) GetMessagingSessionEndpointRequest(input *GetMessagingSessionEndpointInput) (req *request.Request, output *GetMessagingSessionEndpointOutput) {
@@ -2662,20 +2661,21 @@ func (c *ChimeSDKMessaging) GetMessagingSessionEndpointRequest(input *GetMessagi
 // API operation GetMessagingSessionEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/GetMessagingSessionEndpoint
 func (c *ChimeSDKMessaging) GetMessagingSessionEndpoint(input *GetMessagingSessionEndpointInput) (*GetMessagingSessionEndpointOutput, error) {
@@ -2715,14 +2715,13 @@ const opListChannelBans = "ListChannelBans"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelBansRequest method.
+//	req, resp := client.ListChannelBansRequest(params)
 //
-//    // Example sending a request using the ListChannelBansRequest method.
-//    req, resp := client.ListChannelBansRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelBans
 func (c *ChimeSDKMessaging) ListChannelBansRequest(input *ListChannelBansInput) (req *request.Request, output *ListChannelBansOutput) {
@@ -2762,23 +2761,24 @@ func (c *ChimeSDKMessaging) ListChannelBansRequest(input *ListChannelBansInput) 
 // API operation ListChannelBans for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelBans
 func (c *ChimeSDKMessaging) ListChannelBans(input *ListChannelBansInput) (*ListChannelBansOutput, error) {
@@ -2810,15 +2810,14 @@ func (c *ChimeSDKMessaging) ListChannelBansWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelBans operation.
-//    pageNum := 0
-//    err := client.ListChannelBansPages(params,
-//        func(page *chimesdkmessaging.ListChannelBansOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelBans operation.
+//	pageNum := 0
+//	err := client.ListChannelBansPages(params,
+//	    func(page *chimesdkmessaging.ListChannelBansOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelBansPages(input *ListChannelBansInput, fn func(*ListChannelBansOutput, bool) bool) error {
 	return c.ListChannelBansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2870,14 +2869,13 @@ const opListChannelFlows = "ListChannelFlows"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelFlowsRequest method.
+//	req, resp := client.ListChannelFlowsRequest(params)
 //
-//    // Example sending a request using the ListChannelFlowsRequest method.
-//    req, resp := client.ListChannelFlowsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelFlows
 func (c *ChimeSDKMessaging) ListChannelFlowsRequest(input *ListChannelFlowsInput) (req *request.Request, output *ListChannelFlowsOutput) {
@@ -2915,23 +2913,24 @@ func (c *ChimeSDKMessaging) ListChannelFlowsRequest(input *ListChannelFlowsInput
 // API operation ListChannelFlows for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelFlows
 func (c *ChimeSDKMessaging) ListChannelFlows(input *ListChannelFlowsInput) (*ListChannelFlowsOutput, error) {
@@ -2963,15 +2962,14 @@ func (c *ChimeSDKMessaging) ListChannelFlowsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelFlows operation.
-//    pageNum := 0
-//    err := client.ListChannelFlowsPages(params,
-//        func(page *chimesdkmessaging.ListChannelFlowsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelFlows operation.
+//	pageNum := 0
+//	err := client.ListChannelFlowsPages(params,
+//	    func(page *chimesdkmessaging.ListChannelFlowsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelFlowsPages(input *ListChannelFlowsInput, fn func(*ListChannelFlowsOutput, bool) bool) error {
 	return c.ListChannelFlowsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3023,14 +3021,13 @@ const opListChannelMemberships = "ListChannelMemberships"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelMembershipsRequest method.
+//	req, resp := client.ListChannelMembershipsRequest(params)
 //
-//    // Example sending a request using the ListChannelMembershipsRequest method.
-//    req, resp := client.ListChannelMembershipsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMemberships
 func (c *ChimeSDKMessaging) ListChannelMembershipsRequest(input *ListChannelMembershipsInput) (req *request.Request, output *ListChannelMembershipsOutput) {
@@ -3074,23 +3071,24 @@ func (c *ChimeSDKMessaging) ListChannelMembershipsRequest(input *ListChannelMemb
 // API operation ListChannelMemberships for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMemberships
 func (c *ChimeSDKMessaging) ListChannelMemberships(input *ListChannelMembershipsInput) (*ListChannelMembershipsOutput, error) {
@@ -3122,15 +3120,14 @@ func (c *ChimeSDKMessaging) ListChannelMembershipsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelMemberships operation.
-//    pageNum := 0
-//    err := client.ListChannelMembershipsPages(params,
-//        func(page *chimesdkmessaging.ListChannelMembershipsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelMemberships operation.
+//	pageNum := 0
+//	err := client.ListChannelMembershipsPages(params,
+//	    func(page *chimesdkmessaging.ListChannelMembershipsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelMembershipsPages(input *ListChannelMembershipsInput, fn func(*ListChannelMembershipsOutput, bool) bool) error {
 	return c.ListChannelMembershipsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3182,14 +3179,13 @@ const opListChannelMembershipsForAppInstanceUser = "ListChannelMembershipsForApp
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelMembershipsForAppInstanceUserRequest method.
+//	req, resp := client.ListChannelMembershipsForAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the ListChannelMembershipsForAppInstanceUserRequest method.
-//    req, resp := client.ListChannelMembershipsForAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMembershipsForAppInstanceUser
 func (c *ChimeSDKMessaging) ListChannelMembershipsForAppInstanceUserRequest(input *ListChannelMembershipsForAppInstanceUserInput) (req *request.Request, output *ListChannelMembershipsForAppInstanceUserOutput) {
@@ -3230,23 +3226,24 @@ func (c *ChimeSDKMessaging) ListChannelMembershipsForAppInstanceUserRequest(inpu
 // API operation ListChannelMembershipsForAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMembershipsForAppInstanceUser
 func (c *ChimeSDKMessaging) ListChannelMembershipsForAppInstanceUser(input *ListChannelMembershipsForAppInstanceUserInput) (*ListChannelMembershipsForAppInstanceUserOutput, error) {
@@ -3278,15 +3275,14 @@ func (c *ChimeSDKMessaging) ListChannelMembershipsForAppInstanceUserWithContext(
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelMembershipsForAppInstanceUser operation.
-//    pageNum := 0
-//    err := client.ListChannelMembershipsForAppInstanceUserPages(params,
-//        func(page *chimesdkmessaging.ListChannelMembershipsForAppInstanceUserOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelMembershipsForAppInstanceUser operation.
+//	pageNum := 0
+//	err := client.ListChannelMembershipsForAppInstanceUserPages(params,
+//	    func(page *chimesdkmessaging.ListChannelMembershipsForAppInstanceUserOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelMembershipsForAppInstanceUserPages(input *ListChannelMembershipsForAppInstanceUserInput, fn func(*ListChannelMembershipsForAppInstanceUserOutput, bool) bool) error {
 	return c.ListChannelMembershipsForAppInstanceUserPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3338,14 +3334,13 @@ const opListChannelMessages = "ListChannelMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelMessagesRequest method.
+//	req, resp := client.ListChannelMessagesRequest(params)
 //
-//    // Example sending a request using the ListChannelMessagesRequest method.
-//    req, resp := client.ListChannelMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMessages
 func (c *ChimeSDKMessaging) ListChannelMessagesRequest(input *ListChannelMessagesInput) (req *request.Request, output *ListChannelMessagesOutput) {
@@ -3390,23 +3385,24 @@ func (c *ChimeSDKMessaging) ListChannelMessagesRequest(input *ListChannelMessage
 // API operation ListChannelMessages for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelMessages
 func (c *ChimeSDKMessaging) ListChannelMessages(input *ListChannelMessagesInput) (*ListChannelMessagesOutput, error) {
@@ -3438,15 +3434,14 @@ func (c *ChimeSDKMessaging) ListChannelMessagesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelMessages operation.
-//    pageNum := 0
-//    err := client.ListChannelMessagesPages(params,
-//        func(page *chimesdkmessaging.ListChannelMessagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelMessages operation.
+//	pageNum := 0
+//	err := client.ListChannelMessagesPages(params,
+//	    func(page *chimesdkmessaging.ListChannelMessagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelMessagesPages(input *ListChannelMessagesInput, fn func(*ListChannelMessagesOutput, bool) bool) error {
 	return c.ListChannelMessagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3498,14 +3493,13 @@ const opListChannelModerators = "ListChannelModerators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelModeratorsRequest method.
+//	req, resp := client.ListChannelModeratorsRequest(params)
 //
-//    // Example sending a request using the ListChannelModeratorsRequest method.
-//    req, resp := client.ListChannelModeratorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelModerators
 func (c *ChimeSDKMessaging) ListChannelModeratorsRequest(input *ListChannelModeratorsInput) (req *request.Request, output *ListChannelModeratorsOutput) {
@@ -3545,23 +3539,24 @@ func (c *ChimeSDKMessaging) ListChannelModeratorsRequest(input *ListChannelModer
 // API operation ListChannelModerators for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelModerators
 func (c *ChimeSDKMessaging) ListChannelModerators(input *ListChannelModeratorsInput) (*ListChannelModeratorsOutput, error) {
@@ -3593,15 +3588,14 @@ func (c *ChimeSDKMessaging) ListChannelModeratorsWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelModerators operation.
-//    pageNum := 0
-//    err := client.ListChannelModeratorsPages(params,
-//        func(page *chimesdkmessaging.ListChannelModeratorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelModerators operation.
+//	pageNum := 0
+//	err := client.ListChannelModeratorsPages(params,
+//	    func(page *chimesdkmessaging.ListChannelModeratorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelModeratorsPages(input *ListChannelModeratorsInput, fn func(*ListChannelModeratorsOutput, bool) bool) error {
 	return c.ListChannelModeratorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3653,14 +3647,13 @@ const opListChannels = "ListChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsRequest method.
+//	req, resp := client.ListChannelsRequest(params)
 //
-//    // Example sending a request using the ListChannelsRequest method.
-//    req, resp := client.ListChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannels
 func (c *ChimeSDKMessaging) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
@@ -3692,10 +3685,10 @@ func (c *ChimeSDKMessaging) ListChannelsRequest(input *ListChannelsInput) (req *
 //
 // Functionality & restrictions
 //
-//    * Use privacy = PUBLIC to retrieve all public channels in the account.
+//   - Use privacy = PUBLIC to retrieve all public channels in the account.
 //
-//    * Only an AppInstanceAdmin can set privacy = PRIVATE to list the private
-//    channels in an account.
+//   - Only an AppInstanceAdmin can set privacy = PRIVATE to list the private
+//     channels in an account.
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
@@ -3708,23 +3701,24 @@ func (c *ChimeSDKMessaging) ListChannelsRequest(input *ListChannelsInput) (req *
 // API operation ListChannels for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannels
 func (c *ChimeSDKMessaging) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, error) {
@@ -3756,15 +3750,14 @@ func (c *ChimeSDKMessaging) ListChannelsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannels operation.
-//    pageNum := 0
-//    err := client.ListChannelsPages(params,
-//        func(page *chimesdkmessaging.ListChannelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannels operation.
+//	pageNum := 0
+//	err := client.ListChannelsPages(params,
+//	    func(page *chimesdkmessaging.ListChannelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3816,14 +3809,13 @@ const opListChannelsAssociatedWithChannelFlow = "ListChannelsAssociatedWithChann
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsAssociatedWithChannelFlowRequest method.
+//	req, resp := client.ListChannelsAssociatedWithChannelFlowRequest(params)
 //
-//    // Example sending a request using the ListChannelsAssociatedWithChannelFlowRequest method.
-//    req, resp := client.ListChannelsAssociatedWithChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelsAssociatedWithChannelFlow
 func (c *ChimeSDKMessaging) ListChannelsAssociatedWithChannelFlowRequest(input *ListChannelsAssociatedWithChannelFlowInput) (req *request.Request, output *ListChannelsAssociatedWithChannelFlowOutput) {
@@ -3862,23 +3854,24 @@ func (c *ChimeSDKMessaging) ListChannelsAssociatedWithChannelFlowRequest(input *
 // API operation ListChannelsAssociatedWithChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelsAssociatedWithChannelFlow
 func (c *ChimeSDKMessaging) ListChannelsAssociatedWithChannelFlow(input *ListChannelsAssociatedWithChannelFlowInput) (*ListChannelsAssociatedWithChannelFlowOutput, error) {
@@ -3910,15 +3903,14 @@ func (c *ChimeSDKMessaging) ListChannelsAssociatedWithChannelFlowWithContext(ctx
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelsAssociatedWithChannelFlow operation.
-//    pageNum := 0
-//    err := client.ListChannelsAssociatedWithChannelFlowPages(params,
-//        func(page *chimesdkmessaging.ListChannelsAssociatedWithChannelFlowOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelsAssociatedWithChannelFlow operation.
+//	pageNum := 0
+//	err := client.ListChannelsAssociatedWithChannelFlowPages(params,
+//	    func(page *chimesdkmessaging.ListChannelsAssociatedWithChannelFlowOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelsAssociatedWithChannelFlowPages(input *ListChannelsAssociatedWithChannelFlowInput, fn func(*ListChannelsAssociatedWithChannelFlowOutput, bool) bool) error {
 	return c.ListChannelsAssociatedWithChannelFlowPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3970,14 +3962,13 @@ const opListChannelsModeratedByAppInstanceUser = "ListChannelsModeratedByAppInst
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListChannelsModeratedByAppInstanceUserRequest method.
+//	req, resp := client.ListChannelsModeratedByAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the ListChannelsModeratedByAppInstanceUserRequest method.
-//    req, resp := client.ListChannelsModeratedByAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelsModeratedByAppInstanceUser
 func (c *ChimeSDKMessaging) ListChannelsModeratedByAppInstanceUserRequest(input *ListChannelsModeratedByAppInstanceUserInput) (req *request.Request, output *ListChannelsModeratedByAppInstanceUserOutput) {
@@ -4017,23 +4008,24 @@ func (c *ChimeSDKMessaging) ListChannelsModeratedByAppInstanceUserRequest(input 
 // API operation ListChannelsModeratedByAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListChannelsModeratedByAppInstanceUser
 func (c *ChimeSDKMessaging) ListChannelsModeratedByAppInstanceUser(input *ListChannelsModeratedByAppInstanceUserInput) (*ListChannelsModeratedByAppInstanceUserOutput, error) {
@@ -4065,15 +4057,14 @@ func (c *ChimeSDKMessaging) ListChannelsModeratedByAppInstanceUserWithContext(ct
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListChannelsModeratedByAppInstanceUser operation.
-//    pageNum := 0
-//    err := client.ListChannelsModeratedByAppInstanceUserPages(params,
-//        func(page *chimesdkmessaging.ListChannelsModeratedByAppInstanceUserOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListChannelsModeratedByAppInstanceUser operation.
+//	pageNum := 0
+//	err := client.ListChannelsModeratedByAppInstanceUserPages(params,
+//	    func(page *chimesdkmessaging.ListChannelsModeratedByAppInstanceUserOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKMessaging) ListChannelsModeratedByAppInstanceUserPages(input *ListChannelsModeratedByAppInstanceUserInput, fn func(*ListChannelsModeratedByAppInstanceUserOutput, bool) bool) error {
 	return c.ListChannelsModeratedByAppInstanceUserPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4125,14 +4116,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListTagsForResource
 func (c *ChimeSDKMessaging) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4163,23 +4153,24 @@ func (c *ChimeSDKMessaging) ListTagsForResourceRequest(input *ListTagsForResourc
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/ListTagsForResource
 func (c *ChimeSDKMessaging) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4219,14 +4210,13 @@ const opPutChannelMembershipPreferences = "PutChannelMembershipPreferences"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutChannelMembershipPreferencesRequest method.
+//	req, resp := client.PutChannelMembershipPreferencesRequest(params)
 //
-//    // Example sending a request using the PutChannelMembershipPreferencesRequest method.
-//    req, resp := client.PutChannelMembershipPreferencesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/PutChannelMembershipPreferences
 func (c *ChimeSDKMessaging) PutChannelMembershipPreferencesRequest(input *PutChannelMembershipPreferencesInput) (req *request.Request, output *PutChannelMembershipPreferencesOutput) {
@@ -4262,27 +4252,28 @@ func (c *ChimeSDKMessaging) PutChannelMembershipPreferencesRequest(input *PutCha
 // API operation PutChannelMembershipPreferences for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/PutChannelMembershipPreferences
 func (c *ChimeSDKMessaging) PutChannelMembershipPreferences(input *PutChannelMembershipPreferencesInput) (*PutChannelMembershipPreferencesOutput, error) {
@@ -4322,14 +4313,13 @@ const opRedactChannelMessage = "RedactChannelMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RedactChannelMessageRequest method.
+//	req, resp := client.RedactChannelMessageRequest(params)
 //
-//    // Example sending a request using the RedactChannelMessageRequest method.
-//    req, resp := client.RedactChannelMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/RedactChannelMessage
 func (c *ChimeSDKMessaging) RedactChannelMessageRequest(input *RedactChannelMessageInput) (req *request.Request, output *RedactChannelMessageOutput) {
@@ -4364,23 +4354,24 @@ func (c *ChimeSDKMessaging) RedactChannelMessageRequest(input *RedactChannelMess
 // API operation RedactChannelMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/RedactChannelMessage
 func (c *ChimeSDKMessaging) RedactChannelMessage(input *RedactChannelMessageInput) (*RedactChannelMessageOutput, error) {
@@ -4420,14 +4411,13 @@ const opSendChannelMessage = "SendChannelMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendChannelMessageRequest method.
+//	req, resp := client.SendChannelMessageRequest(params)
 //
-//    // Example sending a request using the SendChannelMessageRequest method.
-//    req, resp := client.SendChannelMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/SendChannelMessage
 func (c *ChimeSDKMessaging) SendChannelMessageRequest(input *SendChannelMessageInput) (req *request.Request, output *SendChannelMessageOutput) {
@@ -4464,27 +4454,28 @@ func (c *ChimeSDKMessaging) SendChannelMessageRequest(input *SendChannelMessageI
 // API operation SendChannelMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/SendChannelMessage
 func (c *ChimeSDKMessaging) SendChannelMessage(input *SendChannelMessageInput) (*SendChannelMessageOutput, error) {
@@ -4524,14 +4515,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/TagResource
 func (c *ChimeSDKMessaging) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -4563,26 +4553,27 @@ func (c *ChimeSDKMessaging) TagResourceRequest(input *TagResourceInput) (req *re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/TagResource
 func (c *ChimeSDKMessaging) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -4622,14 +4613,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UntagResource
 func (c *ChimeSDKMessaging) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -4662,23 +4652,24 @@ func (c *ChimeSDKMessaging) UntagResourceRequest(input *UntagResourceInput) (req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UntagResource
 func (c *ChimeSDKMessaging) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -4718,14 +4709,13 @@ const opUpdateChannel = "UpdateChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelRequest method.
+//	req, resp := client.UpdateChannelRequest(params)
 //
-//    // Example sending a request using the UpdateChannelRequest method.
-//    req, resp := client.UpdateChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannel
 func (c *ChimeSDKMessaging) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
@@ -4761,27 +4751,28 @@ func (c *ChimeSDKMessaging) UpdateChannelRequest(input *UpdateChannelInput) (req
 // API operation UpdateChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannel
 func (c *ChimeSDKMessaging) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, error) {
@@ -4821,14 +4812,13 @@ const opUpdateChannelFlow = "UpdateChannelFlow"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelFlowRequest method.
+//	req, resp := client.UpdateChannelFlowRequest(params)
 //
-//    // Example sending a request using the UpdateChannelFlowRequest method.
-//    req, resp := client.UpdateChannelFlowRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelFlow
 func (c *ChimeSDKMessaging) UpdateChannelFlowRequest(input *UpdateChannelFlowInput) (req *request.Request, output *UpdateChannelFlowOutput) {
@@ -4859,27 +4849,28 @@ func (c *ChimeSDKMessaging) UpdateChannelFlowRequest(input *UpdateChannelFlowInp
 // API operation UpdateChannelFlow for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelFlow
 func (c *ChimeSDKMessaging) UpdateChannelFlow(input *UpdateChannelFlowInput) (*UpdateChannelFlowOutput, error) {
@@ -4919,14 +4910,13 @@ const opUpdateChannelMessage = "UpdateChannelMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelMessageRequest method.
+//	req, resp := client.UpdateChannelMessageRequest(params)
 //
-//    // Example sending a request using the UpdateChannelMessageRequest method.
-//    req, resp := client.UpdateChannelMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelMessage
 func (c *ChimeSDKMessaging) UpdateChannelMessageRequest(input *UpdateChannelMessageInput) (req *request.Request, output *UpdateChannelMessageOutput) {
@@ -4960,27 +4950,28 @@ func (c *ChimeSDKMessaging) UpdateChannelMessageRequest(input *UpdateChannelMess
 // API operation UpdateChannelMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelMessage
 func (c *ChimeSDKMessaging) UpdateChannelMessage(input *UpdateChannelMessageInput) (*UpdateChannelMessageOutput, error) {
@@ -5020,14 +5011,13 @@ const opUpdateChannelReadMarker = "UpdateChannelReadMarker"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateChannelReadMarkerRequest method.
+//	req, resp := client.UpdateChannelReadMarkerRequest(params)
 //
-//    // Example sending a request using the UpdateChannelReadMarkerRequest method.
-//    req, resp := client.UpdateChannelReadMarkerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelReadMarker
 func (c *ChimeSDKMessaging) UpdateChannelReadMarkerRequest(input *UpdateChannelReadMarkerInput) (req *request.Request, output *UpdateChannelReadMarkerOutput) {
@@ -5061,27 +5051,28 @@ func (c *ChimeSDKMessaging) UpdateChannelReadMarkerRequest(input *UpdateChannelR
 // API operation UpdateChannelReadMarker for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-messaging-2021-05-15/UpdateChannelReadMarker
 func (c *ChimeSDKMessaging) UpdateChannelReadMarker(input *UpdateChannelReadMarkerInput) (*UpdateChannelReadMarkerOutput, error) {

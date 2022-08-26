@@ -29,14 +29,13 @@ const opCreateEnvironmentEC2 = "CreateEnvironmentEC2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentEC2Request method.
+//	req, resp := client.CreateEnvironmentEC2Request(params)
 //
-//    // Example sending a request using the CreateEnvironmentEC2Request method.
-//    req, resp := client.CreateEnvironmentEC2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/CreateEnvironmentEC2
 func (c *Cloud9) CreateEnvironmentEC2Request(input *CreateEnvironmentEC2Input) (req *request.Request, output *CreateEnvironmentEC2Output) {
@@ -68,26 +67,27 @@ func (c *Cloud9) CreateEnvironmentEC2Request(input *CreateEnvironmentEC2Input) (
 // API operation CreateEnvironmentEC2 for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/CreateEnvironmentEC2
 func (c *Cloud9) CreateEnvironmentEC2(input *CreateEnvironmentEC2Input) (*CreateEnvironmentEC2Output, error) {
@@ -127,14 +127,13 @@ const opCreateEnvironmentMembership = "CreateEnvironmentMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEnvironmentMembershipRequest method.
+//	req, resp := client.CreateEnvironmentMembershipRequest(params)
 //
-//    // Example sending a request using the CreateEnvironmentMembershipRequest method.
-//    req, resp := client.CreateEnvironmentMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/CreateEnvironmentMembership
 func (c *Cloud9) CreateEnvironmentMembershipRequest(input *CreateEnvironmentMembershipInput) (req *request.Request, output *CreateEnvironmentMembershipOutput) {
@@ -165,26 +164,27 @@ func (c *Cloud9) CreateEnvironmentMembershipRequest(input *CreateEnvironmentMemb
 // API operation CreateEnvironmentMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/CreateEnvironmentMembership
 func (c *Cloud9) CreateEnvironmentMembership(input *CreateEnvironmentMembershipInput) (*CreateEnvironmentMembershipOutput, error) {
@@ -224,14 +224,13 @@ const opDeleteEnvironment = "DeleteEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentRequest method.
+//	req, resp := client.DeleteEnvironmentRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentRequest method.
-//    req, resp := client.DeleteEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DeleteEnvironment
 func (c *Cloud9) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *request.Request, output *DeleteEnvironmentOutput) {
@@ -264,26 +263,27 @@ func (c *Cloud9) DeleteEnvironmentRequest(input *DeleteEnvironmentInput) (req *r
 // API operation DeleteEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DeleteEnvironment
 func (c *Cloud9) DeleteEnvironment(input *DeleteEnvironmentInput) (*DeleteEnvironmentOutput, error) {
@@ -323,14 +323,13 @@ const opDeleteEnvironmentMembership = "DeleteEnvironmentMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEnvironmentMembershipRequest method.
+//	req, resp := client.DeleteEnvironmentMembershipRequest(params)
 //
-//    // Example sending a request using the DeleteEnvironmentMembershipRequest method.
-//    req, resp := client.DeleteEnvironmentMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DeleteEnvironmentMembership
 func (c *Cloud9) DeleteEnvironmentMembershipRequest(input *DeleteEnvironmentMembershipInput) (req *request.Request, output *DeleteEnvironmentMembershipOutput) {
@@ -362,26 +361,27 @@ func (c *Cloud9) DeleteEnvironmentMembershipRequest(input *DeleteEnvironmentMemb
 // API operation DeleteEnvironmentMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DeleteEnvironmentMembership
 func (c *Cloud9) DeleteEnvironmentMembership(input *DeleteEnvironmentMembershipInput) (*DeleteEnvironmentMembershipOutput, error) {
@@ -421,14 +421,13 @@ const opDescribeEnvironmentMemberships = "DescribeEnvironmentMemberships"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentMembershipsRequest method.
+//	req, resp := client.DescribeEnvironmentMembershipsRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentMembershipsRequest method.
-//    req, resp := client.DescribeEnvironmentMembershipsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironmentMemberships
 func (c *Cloud9) DescribeEnvironmentMembershipsRequest(input *DescribeEnvironmentMembershipsInput) (req *request.Request, output *DescribeEnvironmentMembershipsOutput) {
@@ -465,26 +464,27 @@ func (c *Cloud9) DescribeEnvironmentMembershipsRequest(input *DescribeEnvironmen
 // API operation DescribeEnvironmentMemberships for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironmentMemberships
 func (c *Cloud9) DescribeEnvironmentMemberships(input *DescribeEnvironmentMembershipsInput) (*DescribeEnvironmentMembershipsOutput, error) {
@@ -516,15 +516,14 @@ func (c *Cloud9) DescribeEnvironmentMembershipsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEnvironmentMemberships operation.
-//    pageNum := 0
-//    err := client.DescribeEnvironmentMembershipsPages(params,
-//        func(page *cloud9.DescribeEnvironmentMembershipsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEnvironmentMemberships operation.
+//	pageNum := 0
+//	err := client.DescribeEnvironmentMembershipsPages(params,
+//	    func(page *cloud9.DescribeEnvironmentMembershipsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Cloud9) DescribeEnvironmentMembershipsPages(input *DescribeEnvironmentMembershipsInput, fn func(*DescribeEnvironmentMembershipsOutput, bool) bool) error {
 	return c.DescribeEnvironmentMembershipsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -576,14 +575,13 @@ const opDescribeEnvironmentStatus = "DescribeEnvironmentStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentStatusRequest method.
+//	req, resp := client.DescribeEnvironmentStatusRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentStatusRequest method.
-//    req, resp := client.DescribeEnvironmentStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironmentStatus
 func (c *Cloud9) DescribeEnvironmentStatusRequest(input *DescribeEnvironmentStatusInput) (req *request.Request, output *DescribeEnvironmentStatusOutput) {
@@ -614,26 +612,27 @@ func (c *Cloud9) DescribeEnvironmentStatusRequest(input *DescribeEnvironmentStat
 // API operation DescribeEnvironmentStatus for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironmentStatus
 func (c *Cloud9) DescribeEnvironmentStatus(input *DescribeEnvironmentStatusInput) (*DescribeEnvironmentStatusOutput, error) {
@@ -673,14 +672,13 @@ const opDescribeEnvironments = "DescribeEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEnvironmentsRequest method.
+//	req, resp := client.DescribeEnvironmentsRequest(params)
 //
-//    // Example sending a request using the DescribeEnvironmentsRequest method.
-//    req, resp := client.DescribeEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironments
 func (c *Cloud9) DescribeEnvironmentsRequest(input *DescribeEnvironmentsInput) (req *request.Request, output *DescribeEnvironmentsOutput) {
@@ -711,26 +709,27 @@ func (c *Cloud9) DescribeEnvironmentsRequest(input *DescribeEnvironmentsInput) (
 // API operation DescribeEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/DescribeEnvironments
 func (c *Cloud9) DescribeEnvironments(input *DescribeEnvironmentsInput) (*DescribeEnvironmentsOutput, error) {
@@ -770,14 +769,13 @@ const opListEnvironments = "ListEnvironments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEnvironmentsRequest method.
+//	req, resp := client.ListEnvironmentsRequest(params)
 //
-//    // Example sending a request using the ListEnvironmentsRequest method.
-//    req, resp := client.ListEnvironmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/ListEnvironments
 func (c *Cloud9) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *request.Request, output *ListEnvironmentsOutput) {
@@ -814,26 +812,27 @@ func (c *Cloud9) ListEnvironmentsRequest(input *ListEnvironmentsInput) (req *req
 // API operation ListEnvironments for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/ListEnvironments
 func (c *Cloud9) ListEnvironments(input *ListEnvironmentsInput) (*ListEnvironmentsOutput, error) {
@@ -865,15 +864,14 @@ func (c *Cloud9) ListEnvironmentsWithContext(ctx aws.Context, input *ListEnviron
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEnvironments operation.
-//    pageNum := 0
-//    err := client.ListEnvironmentsPages(params,
-//        func(page *cloud9.ListEnvironmentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEnvironments operation.
+//	pageNum := 0
+//	err := client.ListEnvironmentsPages(params,
+//	    func(page *cloud9.ListEnvironmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Cloud9) ListEnvironmentsPages(input *ListEnvironmentsInput, fn func(*ListEnvironmentsOutput, bool) bool) error {
 	return c.ListEnvironmentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -925,14 +923,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/ListTagsForResource
 func (c *Cloud9) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -963,14 +960,15 @@ func (c *Cloud9) ListTagsForResourceRequest(input *ListTagsForResourceInput) (re
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The target resource cannot be found.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * BadRequestException
-//   The target request is invalid.
+//   - InternalServerErrorException
+//     An internal server error occurred.
+//
+//   - BadRequestException
+//     The target request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/ListTagsForResource
 func (c *Cloud9) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1010,14 +1008,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/TagResource
 func (c *Cloud9) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1052,17 +1049,18 @@ func (c *Cloud9) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The target resource cannot be found.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * BadRequestException
-//   The target request is invalid.
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
-//   * ConcurrentAccessException
-//   A concurrent access issue occurred.
+//   - BadRequestException
+//     The target request is invalid.
+//
+//   - ConcurrentAccessException
+//     A concurrent access issue occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/TagResource
 func (c *Cloud9) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1102,14 +1100,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UntagResource
 func (c *Cloud9) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1141,17 +1138,18 @@ func (c *Cloud9) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The target resource cannot be found.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * BadRequestException
-//   The target request is invalid.
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
-//   * ConcurrentAccessException
-//   A concurrent access issue occurred.
+//   - BadRequestException
+//     The target request is invalid.
+//
+//   - ConcurrentAccessException
+//     A concurrent access issue occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UntagResource
 func (c *Cloud9) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1191,14 +1189,13 @@ const opUpdateEnvironment = "UpdateEnvironment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentRequest method.
+//	req, resp := client.UpdateEnvironmentRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentRequest method.
-//    req, resp := client.UpdateEnvironmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UpdateEnvironment
 func (c *Cloud9) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *request.Request, output *UpdateEnvironmentOutput) {
@@ -1230,26 +1227,27 @@ func (c *Cloud9) UpdateEnvironmentRequest(input *UpdateEnvironmentInput) (req *r
 // API operation UpdateEnvironment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UpdateEnvironment
 func (c *Cloud9) UpdateEnvironment(input *UpdateEnvironmentInput) (*UpdateEnvironmentOutput, error) {
@@ -1289,14 +1287,13 @@ const opUpdateEnvironmentMembership = "UpdateEnvironmentMembership"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEnvironmentMembershipRequest method.
+//	req, resp := client.UpdateEnvironmentMembershipRequest(params)
 //
-//    // Example sending a request using the UpdateEnvironmentMembershipRequest method.
-//    req, resp := client.UpdateEnvironmentMembershipRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UpdateEnvironmentMembership
 func (c *Cloud9) UpdateEnvironmentMembershipRequest(input *UpdateEnvironmentMembershipInput) (req *request.Request, output *UpdateEnvironmentMembershipOutput) {
@@ -1328,26 +1325,27 @@ func (c *Cloud9) UpdateEnvironmentMembershipRequest(input *UpdateEnvironmentMemb
 // API operation UpdateEnvironmentMembership for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The target request is invalid.
 //
-//   * ConflictException
-//   A conflict occurred.
+//   - BadRequestException
+//     The target request is invalid.
 //
-//   * NotFoundException
-//   The target resource cannot be found.
+//   - ConflictException
+//     A conflict occurred.
 //
-//   * ForbiddenException
-//   An access permissions issue occurred.
+//   - NotFoundException
+//     The target resource cannot be found.
 //
-//   * TooManyRequestsException
-//   Too many service requests were made over the given time period.
+//   - ForbiddenException
+//     An access permissions issue occurred.
 //
-//   * LimitExceededException
-//   A service limit was exceeded.
+//   - TooManyRequestsException
+//     Too many service requests were made over the given time period.
 //
-//   * InternalServerErrorException
-//   An internal server error occurred.
+//   - LimitExceededException
+//     A service limit was exceeded.
+//
+//   - InternalServerErrorException
+//     An internal server error occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cloud9-2017-09-23/UpdateEnvironmentMembership
 func (c *Cloud9) UpdateEnvironmentMembership(input *UpdateEnvironmentMembershipInput) (*UpdateEnvironmentMembershipOutput, error) {

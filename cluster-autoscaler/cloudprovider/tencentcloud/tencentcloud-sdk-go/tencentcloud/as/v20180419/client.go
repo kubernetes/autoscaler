@@ -66,20 +66,21 @@ func NewAttachInstancesResponse() (response *AttachInstancesResponse) {
 // 本接口（AttachInstances）用于将 CVM 实例添加到伸缩组。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_CVMVPCINCONSISTENT = "ResourceUnavailable.CvmVpcInconsistent"
-//  RESOURCEUNAVAILABLE_INSTANCESALREADYINAUTOSCALINGGROUP = "ResourceUnavailable.InstancesAlreadyInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_CVMVPCINCONSISTENT = "ResourceUnavailable.CvmVpcInconsistent"
+//	RESOURCEUNAVAILABLE_INSTANCESALREADYINAUTOSCALINGGROUP = "ResourceUnavailable.InstancesAlreadyInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) AttachInstances(request *AttachInstancesRequest) (response *AttachInstancesResponse, err error) {
 	if request == nil {
 		request = NewAttachInstancesRequest()
@@ -94,20 +95,21 @@ func (c *Client) AttachInstances(request *AttachInstancesRequest) (response *Att
 // 本接口（AttachInstances）用于将 CVM 实例添加到伸缩组。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_CVMVPCINCONSISTENT = "ResourceUnavailable.CvmVpcInconsistent"
-//  RESOURCEUNAVAILABLE_INSTANCESALREADYINAUTOSCALINGGROUP = "ResourceUnavailable.InstancesAlreadyInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_CVMVPCINCONSISTENT = "ResourceUnavailable.CvmVpcInconsistent"
+//	RESOURCEUNAVAILABLE_INSTANCESALREADYINAUTOSCALINGGROUP = "ResourceUnavailable.InstancesAlreadyInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) AttachInstancesWithContext(ctx context.Context, request *AttachInstancesRequest) (response *AttachInstancesResponse, err error) {
 	if request == nil {
 		request = NewAttachInstancesRequest()
@@ -139,27 +141,28 @@ func NewAttachLoadBalancersResponse() (response *AttachLoadBalancersResponse) {
 // 此接口（AttachLoadBalancers）用于将负载均衡器添加到伸缩组。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) AttachLoadBalancers(request *AttachLoadBalancersRequest) (response *AttachLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewAttachLoadBalancersRequest()
@@ -174,27 +177,28 @@ func (c *Client) AttachLoadBalancers(request *AttachLoadBalancersRequest) (respo
 // 此接口（AttachLoadBalancers）用于将负载均衡器添加到伸缩组。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) AttachLoadBalancersWithContext(ctx context.Context, request *AttachLoadBalancersRequest) (response *AttachLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewAttachLoadBalancersRequest()
@@ -226,7 +230,8 @@ func NewClearLaunchConfigurationAttributesResponse() (response *ClearLaunchConfi
 // 本接口（ClearLaunchConfigurationAttributes）用于将启动配置内的特定属性完全清空。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
 func (c *Client) ClearLaunchConfigurationAttributes(request *ClearLaunchConfigurationAttributesRequest) (response *ClearLaunchConfigurationAttributesResponse, err error) {
 	if request == nil {
 		request = NewClearLaunchConfigurationAttributesRequest()
@@ -241,7 +246,8 @@ func (c *Client) ClearLaunchConfigurationAttributes(request *ClearLaunchConfigur
 // 本接口（ClearLaunchConfigurationAttributes）用于将启动配置内的特定属性完全清空。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
 func (c *Client) ClearLaunchConfigurationAttributesWithContext(ctx context.Context, request *ClearLaunchConfigurationAttributesRequest) (response *ClearLaunchConfigurationAttributesResponse, err error) {
 	if request == nil {
 		request = NewClearLaunchConfigurationAttributesRequest()
@@ -272,20 +278,19 @@ func NewCompleteLifecycleActionResponse() (response *CompleteLifecycleActionResp
 // CompleteLifecycleAction
 // 本接口（CompleteLifecycleAction）用于完成生命周期动作。
 //
-//
-//
 // * 用户通过调用本接口，指定一个具体的生命周期挂钩的结果（“CONITNUE”或者“ABANDON”）。如果一直不调用本接口，则生命周期挂钩会在超时后按照“DefaultResult”进行处理。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKINSTANCENOTFOUND = "ResourceNotFound.LifecycleHookInstanceNotFound"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
-//  RESOURCEUNAVAILABLE_LIFECYCLEACTIONRESULTHASSET = "ResourceUnavailable.LifecycleActionResultHasSet"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKINSTANCENOTFOUND = "ResourceNotFound.LifecycleHookInstanceNotFound"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//	RESOURCEUNAVAILABLE_LIFECYCLEACTIONRESULTHASSET = "ResourceUnavailable.LifecycleActionResultHasSet"
 func (c *Client) CompleteLifecycleAction(request *CompleteLifecycleActionRequest) (response *CompleteLifecycleActionResponse, err error) {
 	if request == nil {
 		request = NewCompleteLifecycleActionRequest()
@@ -299,20 +304,19 @@ func (c *Client) CompleteLifecycleAction(request *CompleteLifecycleActionRequest
 // CompleteLifecycleAction
 // 本接口（CompleteLifecycleAction）用于完成生命周期动作。
 //
-//
-//
 // * 用户通过调用本接口，指定一个具体的生命周期挂钩的结果（“CONITNUE”或者“ABANDON”）。如果一直不调用本接口，则生命周期挂钩会在超时后按照“DefaultResult”进行处理。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKINSTANCENOTFOUND = "ResourceNotFound.LifecycleHookInstanceNotFound"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
-//  RESOURCEUNAVAILABLE_LIFECYCLEACTIONRESULTHASSET = "ResourceUnavailable.LifecycleActionResultHasSet"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKINSTANCENOTFOUND = "ResourceNotFound.LifecycleHookInstanceNotFound"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//	RESOURCEUNAVAILABLE_LIFECYCLEACTIONRESULTHASSET = "ResourceUnavailable.LifecycleActionResultHasSet"
 func (c *Client) CompleteLifecycleActionWithContext(ctx context.Context, request *CompleteLifecycleActionRequest) (response *CompleteLifecycleActionResponse, err error) {
 	if request == nil {
 		request = NewCompleteLifecycleActionRequest()
@@ -344,46 +348,47 @@ func NewCreateAutoScalingGroupResponse() (response *CreateAutoScalingGroupRespon
 // 本接口（CreateAutoScalingGroup）用于创建伸缩组
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLLBERROR = "InternalError.CallLbError"
-//  INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
-//  INTERNALERROR_CALLTVPCERROR = "InternalError.CallTvpcError"
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDFORWARDLB = "InvalidParameterValue.DuplicatedForwardLb"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_ZONEMISMATCHREGION = "InvalidParameterValue.ZoneMismatchRegion"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
-//  RESOURCEUNAVAILABLE_ZONEUNAVAILABLE = "ResourceUnavailable.ZoneUnavailable"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLLBERROR = "InternalError.CallLbError"
+//	INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
+//	INTERNALERROR_CALLTVPCERROR = "InternalError.CallTvpcError"
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDFORWARDLB = "InvalidParameterValue.DuplicatedForwardLb"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_ZONEMISMATCHREGION = "InvalidParameterValue.ZoneMismatchRegion"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//	RESOURCEUNAVAILABLE_ZONEUNAVAILABLE = "ResourceUnavailable.ZoneUnavailable"
 func (c *Client) CreateAutoScalingGroup(request *CreateAutoScalingGroupRequest) (response *CreateAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewCreateAutoScalingGroupRequest()
@@ -398,46 +403,47 @@ func (c *Client) CreateAutoScalingGroup(request *CreateAutoScalingGroupRequest) 
 // 本接口（CreateAutoScalingGroup）用于创建伸缩组
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLLBERROR = "InternalError.CallLbError"
-//  INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
-//  INTERNALERROR_CALLTVPCERROR = "InternalError.CallTvpcError"
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDFORWARDLB = "InvalidParameterValue.DuplicatedForwardLb"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_ZONEMISMATCHREGION = "InvalidParameterValue.ZoneMismatchRegion"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
-//  RESOURCEUNAVAILABLE_ZONEUNAVAILABLE = "ResourceUnavailable.ZoneUnavailable"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLLBERROR = "InternalError.CallLbError"
+//	INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
+//	INTERNALERROR_CALLTVPCERROR = "InternalError.CallTvpcError"
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDFORWARDLB = "InvalidParameterValue.DuplicatedForwardLb"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_ZONEMISMATCHREGION = "InvalidParameterValue.ZoneMismatchRegion"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//	RESOURCEUNAVAILABLE_ZONEUNAVAILABLE = "ResourceUnavailable.ZoneUnavailable"
 func (c *Client) CreateAutoScalingGroupWithContext(ctx context.Context, request *CreateAutoScalingGroupRequest) (response *CreateAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewCreateAutoScalingGroupRequest()
@@ -468,33 +474,32 @@ func NewCreateAutoScalingGroupFromInstanceResponse() (response *CreateAutoScalin
 // CreateAutoScalingGroupFromInstance
 // 本接口（CreateAutoScalingGroupFromInstance）用于根据实例创建启动配置及伸缩组。
 //
-//
-//
 // 说明：根据按包年包月计费的实例所创建的伸缩组，其扩容的实例为按量计费实例。
 //
 // 可能返回的错误码:
-//  ACCOUNTQUALIFICATIONRESTRICTIONS = "AccountQualificationRestrictions"
-//  CALLCVMERROR = "CallCvmError"
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
-//  RESOURCEUNAVAILABLE_STOPPEDINSTANCENOTALLOWATTACH = "ResourceUnavailable.StoppedInstanceNotAllowAttach"
+//
+//	ACCOUNTQUALIFICATIONRESTRICTIONS = "AccountQualificationRestrictions"
+//	CALLCVMERROR = "CallCvmError"
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//	RESOURCEUNAVAILABLE_STOPPEDINSTANCENOTALLOWATTACH = "ResourceUnavailable.StoppedInstanceNotAllowAttach"
 func (c *Client) CreateAutoScalingGroupFromInstance(request *CreateAutoScalingGroupFromInstanceRequest) (response *CreateAutoScalingGroupFromInstanceResponse, err error) {
 	if request == nil {
 		request = NewCreateAutoScalingGroupFromInstanceRequest()
@@ -508,33 +513,32 @@ func (c *Client) CreateAutoScalingGroupFromInstance(request *CreateAutoScalingGr
 // CreateAutoScalingGroupFromInstance
 // 本接口（CreateAutoScalingGroupFromInstance）用于根据实例创建启动配置及伸缩组。
 //
-//
-//
 // 说明：根据按包年包月计费的实例所创建的伸缩组，其扩容的实例为按量计费实例。
 //
 // 可能返回的错误码:
-//  ACCOUNTQUALIFICATIONRESTRICTIONS = "AccountQualificationRestrictions"
-//  CALLCVMERROR = "CallCvmError"
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
-//  RESOURCEUNAVAILABLE_STOPPEDINSTANCENOTALLOWATTACH = "ResourceUnavailable.StoppedInstanceNotAllowAttach"
+//
+//	ACCOUNTQUALIFICATIONRESTRICTIONS = "AccountQualificationRestrictions"
+//	CALLCVMERROR = "CallCvmError"
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_AUTOSCALINGGROUPLIMITEXCEEDED = "LimitExceeded.AutoScalingGroupLimitExceeded"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_INSTANCESNOTFOUND = "ResourceNotFound.InstancesNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//	RESOURCEUNAVAILABLE_STOPPEDINSTANCENOTALLOWATTACH = "ResourceUnavailable.StoppedInstanceNotAllowAttach"
 func (c *Client) CreateAutoScalingGroupFromInstanceWithContext(ctx context.Context, request *CreateAutoScalingGroupFromInstanceRequest) (response *CreateAutoScalingGroupFromInstanceResponse, err error) {
 	if request == nil {
 		request = NewCreateAutoScalingGroupFromInstanceRequest()
@@ -565,40 +569,37 @@ func NewCreateLaunchConfigurationResponse() (response *CreateLaunchConfiguration
 // CreateLaunchConfiguration
 // 本接口（CreateLaunchConfiguration）用于创建新的启动配置。
 //
-//
-//
 // * 启动配置，可以通过 `ModifyLaunchConfigurationAttributes` 修改少量字段。如需使用新的启动配置，建议重新创建启动配置。
-//
-//
 //
 // * 每个项目最多只能创建20个启动配置，详见[使用限制](https://cloud.tencent.com/document/product/377/3120)。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATION = "InvalidParameterValue.InvalidLaunchConfiguration"
-//  INVALIDPARAMETERVALUE_INVALIDSNAPSHOTID = "InvalidParameterValue.InvalidSnapshotId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_TOOSHORT = "InvalidParameterValue.TooShort"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  INVALIDPERMISSION = "InvalidPermission"
-//  LIMITEXCEEDED_LAUNCHCONFIGURATIONQUOTANOTENOUGH = "LimitExceeded.LaunchConfigurationQuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSTANCEMARKETOPTIONS = "MissingParameter.InstanceMarketOptions"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATION = "InvalidParameterValue.InvalidLaunchConfiguration"
+//	INVALIDPARAMETERVALUE_INVALIDSNAPSHOTID = "InvalidParameterValue.InvalidSnapshotId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_TOOSHORT = "InvalidParameterValue.TooShort"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	INVALIDPERMISSION = "InvalidPermission"
+//	LIMITEXCEEDED_LAUNCHCONFIGURATIONQUOTANOTENOUGH = "LimitExceeded.LaunchConfigurationQuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSTANCEMARKETOPTIONS = "MissingParameter.InstanceMarketOptions"
 func (c *Client) CreateLaunchConfiguration(request *CreateLaunchConfigurationRequest) (response *CreateLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewCreateLaunchConfigurationRequest()
@@ -612,40 +613,37 @@ func (c *Client) CreateLaunchConfiguration(request *CreateLaunchConfigurationReq
 // CreateLaunchConfiguration
 // 本接口（CreateLaunchConfiguration）用于创建新的启动配置。
 //
-//
-//
 // * 启动配置，可以通过 `ModifyLaunchConfigurationAttributes` 修改少量字段。如需使用新的启动配置，建议重新创建启动配置。
-//
-//
 //
 // * 每个项目最多只能创建20个启动配置，详见[使用限制](https://cloud.tencent.com/document/product/377/3120)。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATION = "InvalidParameterValue.InvalidLaunchConfiguration"
-//  INVALIDPARAMETERVALUE_INVALIDSNAPSHOTID = "InvalidParameterValue.InvalidSnapshotId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_TOOSHORT = "InvalidParameterValue.TooShort"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  INVALIDPERMISSION = "InvalidPermission"
-//  LIMITEXCEEDED_LAUNCHCONFIGURATIONQUOTANOTENOUGH = "LimitExceeded.LaunchConfigurationQuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSTANCEMARKETOPTIONS = "MissingParameter.InstanceMarketOptions"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATION = "InvalidParameterValue.InvalidLaunchConfiguration"
+//	INVALIDPARAMETERVALUE_INVALIDSNAPSHOTID = "InvalidParameterValue.InvalidSnapshotId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_TOOSHORT = "InvalidParameterValue.TooShort"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	INVALIDPERMISSION = "InvalidPermission"
+//	LIMITEXCEEDED_LAUNCHCONFIGURATIONQUOTANOTENOUGH = "LimitExceeded.LaunchConfigurationQuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSTANCEMARKETOPTIONS = "MissingParameter.InstanceMarketOptions"
 func (c *Client) CreateLaunchConfigurationWithContext(ctx context.Context, request *CreateLaunchConfigurationRequest) (response *CreateLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewCreateLaunchConfigurationRequest()
@@ -676,60 +674,57 @@ func NewCreateLifecycleHookResponse() (response *CreateLifecycleHookResponse) {
 // CreateLifecycleHook
 // 本接口（CreateLifecycleHook）用于创建生命周期挂钩。
 //
-//
-//
 // * 您可以为生命周期挂钩配置消息通知，弹性伸缩会通知您的CMQ消息队列，通知内容形如：
 //
-//
-//
-// ```
+// “`
 //
 // {
 //
-// 	"Service": "Tencent Cloud Auto Scaling",
+//	"Service": "Tencent Cloud Auto Scaling",
 //
-// 	"Time": "2019-03-14T10:15:11Z",
+//	"Time": "2019-03-14T10:15:11Z",
 //
-// 	"AppId": "1251783334",
+//	"AppId": "1251783334",
 //
-// 	"ActivityId": "asa-fznnvrja",
+//	"ActivityId": "asa-fznnvrja",
 //
-// 	"AutoScalingGroupId": "asg-rrrrtttt",
+//	"AutoScalingGroupId": "asg-rrrrtttt",
 //
-// 	"LifecycleHookId": "ash-xxxxyyyy",
+//	"LifecycleHookId": "ash-xxxxyyyy",
 //
-// 	"LifecycleHookName": "my-hook",
+//	"LifecycleHookName": "my-hook",
 //
-// 	"LifecycleActionToken": "3080e1c9-0efe-4dd7-ad3b-90cd6618298f",
+//	"LifecycleActionToken": "3080e1c9-0efe-4dd7-ad3b-90cd6618298f",
 //
-// 	"InstanceId": "ins-aaaabbbb",
+//	"InstanceId": "ins-aaaabbbb",
 //
-// 	"LifecycleTransition": "INSTANCE_LAUNCHING",
+//	"LifecycleTransition": "INSTANCE_LAUNCHING",
 //
-// 	"NotificationMetadata": ""
+//	"NotificationMetadata": ""
 //
 // }
 //
-// ```
+// “`
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLEEERROR = "InternalError.CalleeError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLEEERROR = "InternalError.CalleeError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) CreateLifecycleHook(request *CreateLifecycleHookRequest) (response *CreateLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewCreateLifecycleHookRequest()
@@ -743,60 +738,57 @@ func (c *Client) CreateLifecycleHook(request *CreateLifecycleHookRequest) (respo
 // CreateLifecycleHook
 // 本接口（CreateLifecycleHook）用于创建生命周期挂钩。
 //
-//
-//
 // * 您可以为生命周期挂钩配置消息通知，弹性伸缩会通知您的CMQ消息队列，通知内容形如：
 //
-//
-//
-// ```
+// “`
 //
 // {
 //
-// 	"Service": "Tencent Cloud Auto Scaling",
+//	"Service": "Tencent Cloud Auto Scaling",
 //
-// 	"Time": "2019-03-14T10:15:11Z",
+//	"Time": "2019-03-14T10:15:11Z",
 //
-// 	"AppId": "1251783334",
+//	"AppId": "1251783334",
 //
-// 	"ActivityId": "asa-fznnvrja",
+//	"ActivityId": "asa-fznnvrja",
 //
-// 	"AutoScalingGroupId": "asg-rrrrtttt",
+//	"AutoScalingGroupId": "asg-rrrrtttt",
 //
-// 	"LifecycleHookId": "ash-xxxxyyyy",
+//	"LifecycleHookId": "ash-xxxxyyyy",
 //
-// 	"LifecycleHookName": "my-hook",
+//	"LifecycleHookName": "my-hook",
 //
-// 	"LifecycleActionToken": "3080e1c9-0efe-4dd7-ad3b-90cd6618298f",
+//	"LifecycleActionToken": "3080e1c9-0efe-4dd7-ad3b-90cd6618298f",
 //
-// 	"InstanceId": "ins-aaaabbbb",
+//	"InstanceId": "ins-aaaabbbb",
 //
-// 	"LifecycleTransition": "INSTANCE_LAUNCHING",
+//	"LifecycleTransition": "INSTANCE_LAUNCHING",
 //
-// 	"NotificationMetadata": ""
+//	"NotificationMetadata": ""
 //
 // }
 //
-// ```
+// “`
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLEEERROR = "InternalError.CalleeError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLEEERROR = "InternalError.CalleeError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) CreateLifecycleHookWithContext(ctx context.Context, request *CreateLifecycleHookRequest) (response *CreateLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewCreateLifecycleHookRequest()
@@ -829,72 +821,73 @@ func NewCreateNotificationConfigurationResponse() (response *CreateNotificationC
 //
 // 通知到 CMQ 主题或队列时，消息内容如下：
 //
-// ```
+// “`
 //
 // {
 //
-//     "Service": "Tencent Cloud Auto Scaling",
+//	"Service": "Tencent Cloud Auto Scaling",
 //
-//     "CreatedTime": "2021-10-11T10:15:11Z", // 活动创建时间
+//	"CreatedTime": "2021-10-11T10:15:11Z", // 活动创建时间
 //
-//     "AppId": "100000000",
+//	"AppId": "100000000",
 //
-//     "ActivityId": "asa-fznnvrja", // 伸缩活动ID
+//	"ActivityId": "asa-fznnvrja", // 伸缩活动ID
 //
-//     "AutoScalingGroupId": "asg-pc2oqu2z", // 伸缩组ID
+//	"AutoScalingGroupId": "asg-pc2oqu2z", // 伸缩组ID
 //
-//     "ActivityType": "SCALE_OUT",  // 伸缩活动类型
+//	"ActivityType": "SCALE_OUT",  // 伸缩活动类型
 //
-//     "StatusCode": "SUCCESSFUL",   // 伸缩活动结果
+//	"StatusCode": "SUCCESSFUL",   // 伸缩活动结果
 //
-//     "Description": "Activity was launched in response to a difference between desired capacity and actual capacity,
+//	"Description": "Activity was launched in response to a difference between desired capacity and actual capacity,
 //
-//     scale out 1 instance(s).", // 伸缩活动描述
+//	scale out 1 instance(s).", // 伸缩活动描述
 //
-//     "StartTime": "2021-10-11T10:15:11Z",  // 活动开始时间
+//	"StartTime": "2021-10-11T10:15:11Z",  // 活动开始时间
 //
-//     "EndTime": "2021-10-11T10:15:32Z",    // 活动结束时间
+//	"EndTime": "2021-10-11T10:15:32Z",    // 活动结束时间
 //
-//     "DetailedStatusMessageSet": [ // 活动内部错误集合（非空不代表活动失败）
+//	"DetailedStatusMessageSet": [ // 活动内部错误集合（非空不代表活动失败）
 //
-//         {
+//	    {
 //
-//             "Code": "InvalidInstanceType",
+//	        "Code": "InvalidInstanceType",
 //
-//             "Zone": "ap-guangzhou-2",
+//	        "Zone": "ap-guangzhou-2",
 //
-//             "InstanceId": "",
+//	        "InstanceId": "",
 //
-//             "InstanceChargeType": "POSTPAID_BY_HOUR",
+//	        "InstanceChargeType": "POSTPAID_BY_HOUR",
 //
-//             "SubnetId": "subnet-4t5mgeuu",
+//	        "SubnetId": "subnet-4t5mgeuu",
 //
-//             "Message": "The specified instance type `S5.LARGE8` is invalid in `subnet-4t5mgeuu`, `ap-guangzhou-2`.",
+//	        "Message": "The specified instance type `S5.LARGE8` is invalid in `subnet-4t5mgeuu`, `ap-guangzhou-2`.",
 //
-//             "InstanceType": "S5.LARGE8"
+//	        "InstanceType": "S5.LARGE8"
 //
-//         }
+//	    }
 //
-//     ]
+//	]
 //
 // }
 //
-// ```
+// “`
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) CreateNotificationConfiguration(request *CreateNotificationConfigurationRequest) (response *CreateNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewCreateNotificationConfigurationRequest()
@@ -910,72 +903,73 @@ func (c *Client) CreateNotificationConfiguration(request *CreateNotificationConf
 //
 // 通知到 CMQ 主题或队列时，消息内容如下：
 //
-// ```
+// “`
 //
 // {
 //
-//     "Service": "Tencent Cloud Auto Scaling",
+//	"Service": "Tencent Cloud Auto Scaling",
 //
-//     "CreatedTime": "2021-10-11T10:15:11Z", // 活动创建时间
+//	"CreatedTime": "2021-10-11T10:15:11Z", // 活动创建时间
 //
-//     "AppId": "100000000",
+//	"AppId": "100000000",
 //
-//     "ActivityId": "asa-fznnvrja", // 伸缩活动ID
+//	"ActivityId": "asa-fznnvrja", // 伸缩活动ID
 //
-//     "AutoScalingGroupId": "asg-pc2oqu2z", // 伸缩组ID
+//	"AutoScalingGroupId": "asg-pc2oqu2z", // 伸缩组ID
 //
-//     "ActivityType": "SCALE_OUT",  // 伸缩活动类型
+//	"ActivityType": "SCALE_OUT",  // 伸缩活动类型
 //
-//     "StatusCode": "SUCCESSFUL",   // 伸缩活动结果
+//	"StatusCode": "SUCCESSFUL",   // 伸缩活动结果
 //
-//     "Description": "Activity was launched in response to a difference between desired capacity and actual capacity,
+//	"Description": "Activity was launched in response to a difference between desired capacity and actual capacity,
 //
-//     scale out 1 instance(s).", // 伸缩活动描述
+//	scale out 1 instance(s).", // 伸缩活动描述
 //
-//     "StartTime": "2021-10-11T10:15:11Z",  // 活动开始时间
+//	"StartTime": "2021-10-11T10:15:11Z",  // 活动开始时间
 //
-//     "EndTime": "2021-10-11T10:15:32Z",    // 活动结束时间
+//	"EndTime": "2021-10-11T10:15:32Z",    // 活动结束时间
 //
-//     "DetailedStatusMessageSet": [ // 活动内部错误集合（非空不代表活动失败）
+//	"DetailedStatusMessageSet": [ // 活动内部错误集合（非空不代表活动失败）
 //
-//         {
+//	    {
 //
-//             "Code": "InvalidInstanceType",
+//	        "Code": "InvalidInstanceType",
 //
-//             "Zone": "ap-guangzhou-2",
+//	        "Zone": "ap-guangzhou-2",
 //
-//             "InstanceId": "",
+//	        "InstanceId": "",
 //
-//             "InstanceChargeType": "POSTPAID_BY_HOUR",
+//	        "InstanceChargeType": "POSTPAID_BY_HOUR",
 //
-//             "SubnetId": "subnet-4t5mgeuu",
+//	        "SubnetId": "subnet-4t5mgeuu",
 //
-//             "Message": "The specified instance type `S5.LARGE8` is invalid in `subnet-4t5mgeuu`, `ap-guangzhou-2`.",
+//	        "Message": "The specified instance type `S5.LARGE8` is invalid in `subnet-4t5mgeuu`, `ap-guangzhou-2`.",
 //
-//             "InstanceType": "S5.LARGE8"
+//	        "InstanceType": "S5.LARGE8"
 //
-//         }
+//	    }
 //
-//     ]
+//	]
 //
 // }
 //
-// ```
+// “`
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) CreateNotificationConfigurationWithContext(ctx context.Context, request *CreateNotificationConfigurationRequest) (response *CreateNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewCreateNotificationConfigurationRequest()
@@ -1007,17 +1001,18 @@ func NewCreateScalingPolicyResponse() (response *CreateScalingPolicyResponse) {
 // 本接口（CreateScalingPolicy）用于创建告警触发策略。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLNOTIFICATIONERROR = "InternalError.CallNotificationError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
-//  INVALIDPARAMETERVALUE_THRESHOLDOUTOFRANGE = "InvalidParameterValue.ThresholdOutOfRange"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR_CALLNOTIFICATIONERROR = "InternalError.CallNotificationError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
+//	INVALIDPARAMETERVALUE_THRESHOLDOUTOFRANGE = "InvalidParameterValue.ThresholdOutOfRange"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) CreateScalingPolicy(request *CreateScalingPolicyRequest) (response *CreateScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewCreateScalingPolicyRequest()
@@ -1032,17 +1027,18 @@ func (c *Client) CreateScalingPolicy(request *CreateScalingPolicyRequest) (respo
 // 本接口（CreateScalingPolicy）用于创建告警触发策略。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLNOTIFICATIONERROR = "InternalError.CallNotificationError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
-//  INVALIDPARAMETERVALUE_THRESHOLDOUTOFRANGE = "InvalidParameterValue.ThresholdOutOfRange"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR_CALLNOTIFICATIONERROR = "InternalError.CallNotificationError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
+//	INVALIDPARAMETERVALUE_THRESHOLDOUTOFRANGE = "InvalidParameterValue.ThresholdOutOfRange"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) CreateScalingPolicyWithContext(ctx context.Context, request *CreateScalingPolicyRequest) (response *CreateScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewCreateScalingPolicyRequest()
@@ -1074,23 +1070,24 @@ func NewCreateScheduledActionResponse() (response *CreateScheduledActionResponse
 // 本接口（CreateScheduledAction）用于创建定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
-//  INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
-//  INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
-//  INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
+//	INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
+//	INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
+//	INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) CreateScheduledAction(request *CreateScheduledActionRequest) (response *CreateScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewCreateScheduledActionRequest()
@@ -1105,23 +1102,24 @@ func (c *Client) CreateScheduledAction(request *CreateScheduledActionRequest) (r
 // 本接口（CreateScheduledAction）用于创建定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
-//  INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
-//  INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
-//  INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
-//  LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
+//	INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
+//	INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
+//	INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	LIMITEXCEEDED_QUOTANOTENOUGH = "LimitExceeded.QuotaNotEnough"
+//	LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) CreateScheduledActionWithContext(ctx context.Context, request *CreateScheduledActionRequest) (response *CreateScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewCreateScheduledActionRequest()
@@ -1153,15 +1151,16 @@ func NewDeleteAutoScalingGroupResponse() (response *DeleteAutoScalingGroupRespon
 // 本接口（DeleteAutoScalingGroup）用于删除指定伸缩组，删除前提是伸缩组内无实例且当前未在执行伸缩活动。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLERROR = "InternalError.CallError"
-//  INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
-//  INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCEINUSE_ACTIVITYINPROGRESS = "ResourceInUse.ActivityInProgress"
-//  RESOURCEINUSE_INSTANCEINGROUP = "ResourceInUse.InstanceInGroup"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLERROR = "InternalError.CallError"
+//	INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
+//	INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCEINUSE_ACTIVITYINPROGRESS = "ResourceInUse.ActivityInProgress"
+//	RESOURCEINUSE_INSTANCEINGROUP = "ResourceInUse.InstanceInGroup"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) DeleteAutoScalingGroup(request *DeleteAutoScalingGroupRequest) (response *DeleteAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewDeleteAutoScalingGroupRequest()
@@ -1176,15 +1175,16 @@ func (c *Client) DeleteAutoScalingGroup(request *DeleteAutoScalingGroupRequest) 
 // 本接口（DeleteAutoScalingGroup）用于删除指定伸缩组，删除前提是伸缩组内无实例且当前未在执行伸缩活动。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLERROR = "InternalError.CallError"
-//  INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
-//  INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCEINUSE_ACTIVITYINPROGRESS = "ResourceInUse.ActivityInProgress"
-//  RESOURCEINUSE_INSTANCEINGROUP = "ResourceInUse.InstanceInGroup"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLERROR = "InternalError.CallError"
+//	INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
+//	INTERNALERROR_CALLTAGERROR = "InternalError.CallTagError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCEINUSE_ACTIVITYINPROGRESS = "ResourceInUse.ActivityInProgress"
+//	RESOURCEINUSE_INSTANCEINGROUP = "ResourceInUse.InstanceInGroup"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) DeleteAutoScalingGroupWithContext(ctx context.Context, request *DeleteAutoScalingGroupRequest) (response *DeleteAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewDeleteAutoScalingGroupRequest()
@@ -1215,14 +1215,13 @@ func NewDeleteLaunchConfigurationResponse() (response *DeleteLaunchConfiguration
 // DeleteLaunchConfiguration
 // 本接口（DeleteLaunchConfiguration）用于删除启动配置。
 //
-//
-//
 // * 若启动配置在伸缩组中属于生效状态，则该启动配置不允许删除。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  RESOURCEINUSE_LAUNCHCONFIGURATIONIDINUSE = "ResourceInUse.LaunchConfigurationIdInUse"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	RESOURCEINUSE_LAUNCHCONFIGURATIONIDINUSE = "ResourceInUse.LaunchConfigurationIdInUse"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) DeleteLaunchConfiguration(request *DeleteLaunchConfigurationRequest) (response *DeleteLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewDeleteLaunchConfigurationRequest()
@@ -1236,14 +1235,13 @@ func (c *Client) DeleteLaunchConfiguration(request *DeleteLaunchConfigurationReq
 // DeleteLaunchConfiguration
 // 本接口（DeleteLaunchConfiguration）用于删除启动配置。
 //
-//
-//
 // * 若启动配置在伸缩组中属于生效状态，则该启动配置不允许删除。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  RESOURCEINUSE_LAUNCHCONFIGURATIONIDINUSE = "ResourceInUse.LaunchConfigurationIdInUse"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	RESOURCEINUSE_LAUNCHCONFIGURATIONIDINUSE = "ResourceInUse.LaunchConfigurationIdInUse"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) DeleteLaunchConfigurationWithContext(ctx context.Context, request *DeleteLaunchConfigurationRequest) (response *DeleteLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewDeleteLaunchConfigurationRequest()
@@ -1275,11 +1273,12 @@ func NewDeleteLifecycleHookResponse() (response *DeleteLifecycleHookResponse) {
 // 本接口（DeleteLifecycleHook）用于删除生命周期挂钩。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
 func (c *Client) DeleteLifecycleHook(request *DeleteLifecycleHookRequest) (response *DeleteLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewDeleteLifecycleHookRequest()
@@ -1294,11 +1293,12 @@ func (c *Client) DeleteLifecycleHook(request *DeleteLifecycleHookRequest) (respo
 // 本接口（DeleteLifecycleHook）用于删除生命周期挂钩。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
 func (c *Client) DeleteLifecycleHookWithContext(ctx context.Context, request *DeleteLifecycleHookRequest) (response *DeleteLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewDeleteLifecycleHookRequest()
@@ -1330,8 +1330,9 @@ func NewDeleteNotificationConfigurationResponse() (response *DeleteNotificationC
 // 本接口（DeleteNotificationConfiguration）用于删除特定的通知。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
 func (c *Client) DeleteNotificationConfiguration(request *DeleteNotificationConfigurationRequest) (response *DeleteNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewDeleteNotificationConfigurationRequest()
@@ -1346,8 +1347,9 @@ func (c *Client) DeleteNotificationConfiguration(request *DeleteNotificationConf
 // 本接口（DeleteNotificationConfiguration）用于删除特定的通知。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
 func (c *Client) DeleteNotificationConfigurationWithContext(ctx context.Context, request *DeleteNotificationConfigurationRequest) (response *DeleteNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewDeleteNotificationConfigurationRequest()
@@ -1379,8 +1381,9 @@ func NewDeleteScalingPolicyResponse() (response *DeleteScalingPolicyResponse) {
 // 本接口（DeleteScalingPolicy）用于删除告警触发策略。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
 func (c *Client) DeleteScalingPolicy(request *DeleteScalingPolicyRequest) (response *DeleteScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewDeleteScalingPolicyRequest()
@@ -1395,8 +1398,9 @@ func (c *Client) DeleteScalingPolicy(request *DeleteScalingPolicyRequest) (respo
 // 本接口（DeleteScalingPolicy）用于删除告警触发策略。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
 func (c *Client) DeleteScalingPolicyWithContext(ctx context.Context, request *DeleteScalingPolicyRequest) (response *DeleteScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewDeleteScalingPolicyRequest()
@@ -1428,8 +1432,9 @@ func NewDeleteScheduledActionResponse() (response *DeleteScheduledActionResponse
 // 本接口（DeleteScheduledAction）用于删除特定的定时任务。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) DeleteScheduledAction(request *DeleteScheduledActionRequest) (response *DeleteScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewDeleteScheduledActionRequest()
@@ -1444,8 +1449,9 @@ func (c *Client) DeleteScheduledAction(request *DeleteScheduledActionRequest) (r
 // 本接口（DeleteScheduledAction）用于删除特定的定时任务。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) DeleteScheduledActionWithContext(ctx context.Context, request *DeleteScheduledActionRequest) (response *DeleteScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewDeleteScheduledActionRequest()
@@ -1477,7 +1483,8 @@ func NewDescribeAccountLimitsResponse() (response *DescribeAccountLimitsResponse
 // 本接口（DescribeAccountLimits）用于查询用户账户在弹性伸缩中的资源限制。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
+//
+//	INTERNALERROR = "InternalError"
 func (c *Client) DescribeAccountLimits(request *DescribeAccountLimitsRequest) (response *DescribeAccountLimitsResponse, err error) {
 	if request == nil {
 		request = NewDescribeAccountLimitsRequest()
@@ -1492,7 +1499,8 @@ func (c *Client) DescribeAccountLimits(request *DescribeAccountLimitsRequest) (r
 // 本接口（DescribeAccountLimits）用于查询用户账户在弹性伸缩中的资源限制。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
+//
+//	INTERNALERROR = "InternalError"
 func (c *Client) DescribeAccountLimitsWithContext(ctx context.Context, request *DescribeAccountLimitsRequest) (response *DescribeAccountLimitsResponse, err error) {
 	if request == nil {
 		request = NewDescribeAccountLimitsRequest()
@@ -1524,14 +1532,15 @@ func NewDescribeAutoScalingActivitiesResponse() (response *DescribeAutoScalingAc
 // 本接口（DescribeAutoScalingActivities）用于查询伸缩组的伸缩活动记录。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDACTIVITYID = "InvalidParameterValue.InvalidActivityId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDACTIVITYID = "InvalidParameterValue.InvalidActivityId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
 func (c *Client) DescribeAutoScalingActivities(request *DescribeAutoScalingActivitiesRequest) (response *DescribeAutoScalingActivitiesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingActivitiesRequest()
@@ -1546,14 +1555,15 @@ func (c *Client) DescribeAutoScalingActivities(request *DescribeAutoScalingActiv
 // 本接口（DescribeAutoScalingActivities）用于查询伸缩组的伸缩活动记录。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDACTIVITYID = "InvalidParameterValue.InvalidActivityId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDACTIVITYID = "InvalidParameterValue.InvalidActivityId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
 func (c *Client) DescribeAutoScalingActivitiesWithContext(ctx context.Context, request *DescribeAutoScalingActivitiesRequest) (response *DescribeAutoScalingActivitiesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingActivitiesRequest()
@@ -1585,8 +1595,9 @@ func NewDescribeAutoScalingAdvicesResponse() (response *DescribeAutoScalingAdvic
 // 此接口用于查询伸缩组配置建议。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
 func (c *Client) DescribeAutoScalingAdvices(request *DescribeAutoScalingAdvicesRequest) (response *DescribeAutoScalingAdvicesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingAdvicesRequest()
@@ -1601,8 +1612,9 @@ func (c *Client) DescribeAutoScalingAdvices(request *DescribeAutoScalingAdvicesR
 // 此接口用于查询伸缩组配置建议。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
 func (c *Client) DescribeAutoScalingAdvicesWithContext(ctx context.Context, request *DescribeAutoScalingAdvicesRequest) (response *DescribeAutoScalingAdvicesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingAdvicesRequest()
@@ -1634,9 +1646,10 @@ func NewDescribeAutoScalingGroupLastActivitiesResponse() (response *DescribeAuto
 // 本接口（DescribeAutoScalingGroupLastActivities）用于查询伸缩组的最新一次伸缩活动记录。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_NORESOURCEPERMISSION = "InvalidParameterValue.NoResourcePermission"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_NORESOURCEPERMISSION = "InvalidParameterValue.NoResourcePermission"
 func (c *Client) DescribeAutoScalingGroupLastActivities(request *DescribeAutoScalingGroupLastActivitiesRequest) (response *DescribeAutoScalingGroupLastActivitiesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingGroupLastActivitiesRequest()
@@ -1651,9 +1664,10 @@ func (c *Client) DescribeAutoScalingGroupLastActivities(request *DescribeAutoSca
 // 本接口（DescribeAutoScalingGroupLastActivities）用于查询伸缩组的最新一次伸缩活动记录。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_NORESOURCEPERMISSION = "InvalidParameterValue.NoResourcePermission"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_NORESOURCEPERMISSION = "InvalidParameterValue.NoResourcePermission"
 func (c *Client) DescribeAutoScalingGroupLastActivitiesWithContext(ctx context.Context, request *DescribeAutoScalingGroupLastActivitiesRequest) (response *DescribeAutoScalingGroupLastActivitiesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingGroupLastActivitiesRequest()
@@ -1684,22 +1698,21 @@ func NewDescribeAutoScalingGroupsResponse() (response *DescribeAutoScalingGroups
 // DescribeAutoScalingGroups
 // 本接口（DescribeAutoScalingGroups）用于查询伸缩组信息。
 //
-//
-//
 // * 可以根据伸缩组ID、伸缩组名称或者启动配置ID等信息来查询伸缩组的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的伸缩组。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPERMISSION = "InvalidPermission"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPERMISSION = "InvalidPermission"
 func (c *Client) DescribeAutoScalingGroups(request *DescribeAutoScalingGroupsRequest) (response *DescribeAutoScalingGroupsResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingGroupsRequest()
@@ -1713,22 +1726,21 @@ func (c *Client) DescribeAutoScalingGroups(request *DescribeAutoScalingGroupsReq
 // DescribeAutoScalingGroups
 // 本接口（DescribeAutoScalingGroups）用于查询伸缩组信息。
 //
-//
-//
 // * 可以根据伸缩组ID、伸缩组名称或者启动配置ID等信息来查询伸缩组的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的伸缩组。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  INVALIDPERMISSION = "InvalidPermission"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	INVALIDPERMISSION = "InvalidPermission"
 func (c *Client) DescribeAutoScalingGroupsWithContext(ctx context.Context, request *DescribeAutoScalingGroupsRequest) (response *DescribeAutoScalingGroupsResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingGroupsRequest()
@@ -1759,20 +1771,19 @@ func NewDescribeAutoScalingInstancesResponse() (response *DescribeAutoScalingIns
 // DescribeAutoScalingInstances
 // 本接口（DescribeAutoScalingInstances）用于查询弹性伸缩关联实例的信息。
 //
-//
-//
 // * 可以根据实例ID、伸缩组ID等信息来查询实例的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的实例。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
 func (c *Client) DescribeAutoScalingInstances(request *DescribeAutoScalingInstancesRequest) (response *DescribeAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingInstancesRequest()
@@ -1786,20 +1797,19 @@ func (c *Client) DescribeAutoScalingInstances(request *DescribeAutoScalingInstan
 // DescribeAutoScalingInstances
 // 本接口（DescribeAutoScalingInstances）用于查询弹性伸缩关联实例的信息。
 //
-//
-//
 // * 可以根据实例ID、伸缩组ID等信息来查询实例的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的实例。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	LIMITEXCEEDED_FILTERVALUESTOOLONG = "LimitExceeded.FilterValuesTooLong"
 func (c *Client) DescribeAutoScalingInstancesWithContext(ctx context.Context, request *DescribeAutoScalingInstancesRequest) (response *DescribeAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewDescribeAutoScalingInstancesRequest()
@@ -1830,19 +1840,18 @@ func NewDescribeLaunchConfigurationsResponse() (response *DescribeLaunchConfigur
 // DescribeLaunchConfigurations
 // 本接口（DescribeLaunchConfigurations）用于查询启动配置的信息。
 //
-//
-//
 // * 可以根据启动配置ID、启动配置名称等信息来查询启动配置的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的启动配置。
 //
 // 可能返回的错误码:
-//  INVALIDLAUNCHCONFIGURATION = "InvalidLaunchConfiguration"
-//  INVALIDLAUNCHCONFIGURATIONID = "InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPERMISSION = "InvalidPermission"
+//
+//	INVALIDLAUNCHCONFIGURATION = "InvalidLaunchConfiguration"
+//	INVALIDLAUNCHCONFIGURATIONID = "InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPERMISSION = "InvalidPermission"
 func (c *Client) DescribeLaunchConfigurations(request *DescribeLaunchConfigurationsRequest) (response *DescribeLaunchConfigurationsResponse, err error) {
 	if request == nil {
 		request = NewDescribeLaunchConfigurationsRequest()
@@ -1856,19 +1865,18 @@ func (c *Client) DescribeLaunchConfigurations(request *DescribeLaunchConfigurati
 // DescribeLaunchConfigurations
 // 本接口（DescribeLaunchConfigurations）用于查询启动配置的信息。
 //
-//
-//
 // * 可以根据启动配置ID、启动配置名称等信息来查询启动配置的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的启动配置。
 //
 // 可能返回的错误码:
-//  INVALIDLAUNCHCONFIGURATION = "InvalidLaunchConfiguration"
-//  INVALIDLAUNCHCONFIGURATIONID = "InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPERMISSION = "InvalidPermission"
+//
+//	INVALIDLAUNCHCONFIGURATION = "InvalidLaunchConfiguration"
+//	INVALIDLAUNCHCONFIGURATIONID = "InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPERMISSION = "InvalidPermission"
 func (c *Client) DescribeLaunchConfigurationsWithContext(ctx context.Context, request *DescribeLaunchConfigurationsRequest) (response *DescribeLaunchConfigurationsResponse, err error) {
 	if request == nil {
 		request = NewDescribeLaunchConfigurationsRequest()
@@ -1899,20 +1907,19 @@ func NewDescribeLifecycleHooksResponse() (response *DescribeLifecycleHooksRespon
 // DescribeLifecycleHooks
 // 本接口（DescribeLifecycleHooks）用于查询生命周期挂钩信息。
 //
-//
-//
 // * 可以根据伸缩组ID、生命周期挂钩ID或者生命周期挂钩名称等信息来查询生命周期挂钩的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的生命周期挂钩。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  MISSINGPARAMETER = "MissingParameter"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	MISSINGPARAMETER = "MissingParameter"
 func (c *Client) DescribeLifecycleHooks(request *DescribeLifecycleHooksRequest) (response *DescribeLifecycleHooksResponse, err error) {
 	if request == nil {
 		request = NewDescribeLifecycleHooksRequest()
@@ -1926,20 +1933,19 @@ func (c *Client) DescribeLifecycleHooks(request *DescribeLifecycleHooksRequest) 
 // DescribeLifecycleHooks
 // 本接口（DescribeLifecycleHooks）用于查询生命周期挂钩信息。
 //
-//
-//
 // * 可以根据伸缩组ID、生命周期挂钩ID或者生命周期挂钩名称等信息来查询生命周期挂钩的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的生命周期挂钩。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  MISSINGPARAMETER = "MissingParameter"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	MISSINGPARAMETER = "MissingParameter"
 func (c *Client) DescribeLifecycleHooksWithContext(ctx context.Context, request *DescribeLifecycleHooksRequest) (response *DescribeLifecycleHooksResponse, err error) {
 	if request == nil {
 		request = NewDescribeLifecycleHooksRequest()
@@ -1970,17 +1976,16 @@ func NewDescribeNotificationConfigurationsResponse() (response *DescribeNotifica
 // DescribeNotificationConfigurations
 // 本接口 (DescribeNotificationConfigurations) 用于查询一个或多个通知的详细信息。
 //
-//
-//
 // 可以根据通知ID、伸缩组ID等信息来查询通知的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // 如果参数为空，返回当前用户一定数量（Limit所指定的数量，默认为20）的通知。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
 func (c *Client) DescribeNotificationConfigurations(request *DescribeNotificationConfigurationsRequest) (response *DescribeNotificationConfigurationsResponse, err error) {
 	if request == nil {
 		request = NewDescribeNotificationConfigurationsRequest()
@@ -1994,17 +1999,16 @@ func (c *Client) DescribeNotificationConfigurations(request *DescribeNotificatio
 // DescribeNotificationConfigurations
 // 本接口 (DescribeNotificationConfigurations) 用于查询一个或多个通知的详细信息。
 //
-//
-//
 // 可以根据通知ID、伸缩组ID等信息来查询通知的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // 如果参数为空，返回当前用户一定数量（Limit所指定的数量，默认为20）的通知。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//
+//	INVALIDPARAMETERCONFLICT = "InvalidParameterConflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
 func (c *Client) DescribeNotificationConfigurationsWithContext(ctx context.Context, request *DescribeNotificationConfigurationsRequest) (response *DescribeNotificationConfigurationsResponse, err error) {
 	if request == nil {
 		request = NewDescribeNotificationConfigurationsRequest()
@@ -2035,16 +2039,15 @@ func NewDescribePaiInstancesResponse() (response *DescribePaiInstancesResponse) 
 // DescribePaiInstances
 // 本接口（DescribePaiInstances）用于查询PAI实例信息。
 //
-//
-//
 // * 可以根据实例ID、实例域名等信息来查询PAI实例的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的PAI实例。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
 func (c *Client) DescribePaiInstances(request *DescribePaiInstancesRequest) (response *DescribePaiInstancesResponse, err error) {
 	if request == nil {
 		request = NewDescribePaiInstancesRequest()
@@ -2058,16 +2061,15 @@ func (c *Client) DescribePaiInstances(request *DescribePaiInstancesRequest) (res
 // DescribePaiInstances
 // 本接口（DescribePaiInstances）用于查询PAI实例信息。
 //
-//
-//
 // * 可以根据实例ID、实例域名等信息来查询PAI实例的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（`Limit`所指定的数量，默认为20）的PAI实例。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
 func (c *Client) DescribePaiInstancesWithContext(ctx context.Context, request *DescribePaiInstancesRequest) (response *DescribePaiInstancesResponse, err error) {
 	if request == nil {
 		request = NewDescribePaiInstancesRequest()
@@ -2099,13 +2101,14 @@ func NewDescribeScalingPoliciesResponse() (response *DescribeScalingPoliciesResp
 // 本接口（DescribeScalingPolicies）用于查询告警触发策略。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  LIMITEXCEEDED = "LimitExceeded"
+//
+//	INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	LIMITEXCEEDED = "LimitExceeded"
 func (c *Client) DescribeScalingPolicies(request *DescribeScalingPoliciesRequest) (response *DescribeScalingPoliciesResponse, err error) {
 	if request == nil {
 		request = NewDescribeScalingPoliciesRequest()
@@ -2120,13 +2123,14 @@ func (c *Client) DescribeScalingPolicies(request *DescribeScalingPoliciesRequest
 // 本接口（DescribeScalingPolicies）用于查询告警触发策略。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  LIMITEXCEEDED = "LimitExceeded"
+//
+//	INTERNALERROR_CALLMONITORERROR = "InternalError.CallMonitorError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	LIMITEXCEEDED = "LimitExceeded"
 func (c *Client) DescribeScalingPoliciesWithContext(ctx context.Context, request *DescribeScalingPoliciesRequest) (response *DescribeScalingPoliciesResponse, err error) {
 	if request == nil {
 		request = NewDescribeScalingPoliciesRequest()
@@ -2157,20 +2161,19 @@ func NewDescribeScheduledActionsResponse() (response *DescribeScheduledActionsRe
 // DescribeScheduledActions
 // 本接口 (DescribeScheduledActions) 用于查询一个或多个定时任务的详细信息。
 //
-//
-//
 // * 可以根据定时任务ID、定时任务名称或者伸缩组ID等信息来查询定时任务的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（Limit所指定的数量，默认为20）的定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) DescribeScheduledActions(request *DescribeScheduledActionsRequest) (response *DescribeScheduledActionsResponse, err error) {
 	if request == nil {
 		request = NewDescribeScheduledActionsRequest()
@@ -2184,20 +2187,19 @@ func (c *Client) DescribeScheduledActions(request *DescribeScheduledActionsReque
 // DescribeScheduledActions
 // 本接口 (DescribeScheduledActions) 用于查询一个或多个定时任务的详细信息。
 //
-//
-//
 // * 可以根据定时任务ID、定时任务名称或者伸缩组ID等信息来查询定时任务的详细信息。过滤信息详细请见过滤器`Filter`。
 //
 // * 如果参数为空，返回当前用户一定数量（Limit所指定的数量，默认为20）的定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDFILTER = "InvalidParameterValue.InvalidFilter"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) DescribeScheduledActionsWithContext(ctx context.Context, request *DescribeScheduledActionsRequest) (response *DescribeScheduledActionsResponse, err error) {
 	if request == nil {
 		request = NewDescribeScheduledActionsRequest()
@@ -2235,18 +2237,19 @@ func NewDetachInstancesResponse() (response *DetachInstancesResponse) {
 // * 对于伸缩组配置的 CLB，实例在离开伸缩组时，AS 会进行解挂载动作
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) DetachInstances(request *DetachInstancesRequest) (response *DetachInstancesResponse, err error) {
 	if request == nil {
 		request = NewDetachInstancesRequest()
@@ -2267,18 +2270,19 @@ func (c *Client) DetachInstances(request *DetachInstancesRequest) (response *Det
 // * 对于伸缩组配置的 CLB，实例在离开伸缩组时，AS 会进行解挂载动作
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) DetachInstancesWithContext(ctx context.Context, request *DetachInstancesRequest) (response *DetachInstancesResponse, err error) {
 	if request == nil {
 		request = NewDetachInstancesRequest()
@@ -2310,27 +2314,28 @@ func NewDetachLoadBalancersResponse() (response *DetachLoadBalancersResponse) {
 // 本接口（DetachLoadBalancers）用于从伸缩组移出负载均衡器，本接口不会销毁负载均衡器。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) DetachLoadBalancers(request *DetachLoadBalancersRequest) (response *DetachLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewDetachLoadBalancersRequest()
@@ -2345,27 +2350,28 @@ func (c *Client) DetachLoadBalancers(request *DetachLoadBalancersRequest) (respo
 // 本接口（DetachLoadBalancers）用于从伸缩组移出负载均衡器，本接口不会销毁负载均衡器。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) DetachLoadBalancersWithContext(ctx context.Context, request *DetachLoadBalancersRequest) (response *DetachLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewDetachLoadBalancersRequest()
@@ -2397,9 +2403,10 @@ func NewDisableAutoScalingGroupResponse() (response *DisableAutoScalingGroupResp
 // 本接口（DisableAutoScalingGroup）用于停用指定伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) DisableAutoScalingGroup(request *DisableAutoScalingGroupRequest) (response *DisableAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewDisableAutoScalingGroupRequest()
@@ -2414,9 +2421,10 @@ func (c *Client) DisableAutoScalingGroup(request *DisableAutoScalingGroupRequest
 // 本接口（DisableAutoScalingGroup）用于停用指定伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) DisableAutoScalingGroupWithContext(ctx context.Context, request *DisableAutoScalingGroupRequest) (response *DisableAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewDisableAutoScalingGroupRequest()
@@ -2448,9 +2456,10 @@ func NewEnableAutoScalingGroupResponse() (response *EnableAutoScalingGroupRespon
 // 本接口（EnableAutoScalingGroup）用于启用指定伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) EnableAutoScalingGroup(request *EnableAutoScalingGroupRequest) (response *EnableAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewEnableAutoScalingGroupRequest()
@@ -2465,9 +2474,10 @@ func (c *Client) EnableAutoScalingGroup(request *EnableAutoScalingGroupRequest) 
 // 本接口（EnableAutoScalingGroup）用于启用指定伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
 func (c *Client) EnableAutoScalingGroupWithContext(ctx context.Context, request *EnableAutoScalingGroupRequest) (response *EnableAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewEnableAutoScalingGroupRequest()
@@ -2498,21 +2508,20 @@ func NewExecuteScalingPolicyResponse() (response *ExecuteScalingPolicyResponse) 
 // ExecuteScalingPolicy
 // 本接口（ExecuteScalingPolicy）用于执行伸缩策略。
 //
-//
-//
 // * 可以根据伸缩策略ID执行伸缩策略。
 //
 // * 伸缩策略所属伸缩组处于伸缩活动时，会拒绝执行伸缩策略。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  RESOURCEINUSE_AUTOSCALINGGROUPNOTACTIVE = "ResourceInUse.AutoScalingGroupNotActive"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	RESOURCEINUSE_AUTOSCALINGGROUPNOTACTIVE = "ResourceInUse.AutoScalingGroupNotActive"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ExecuteScalingPolicy(request *ExecuteScalingPolicyRequest) (response *ExecuteScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewExecuteScalingPolicyRequest()
@@ -2526,21 +2535,20 @@ func (c *Client) ExecuteScalingPolicy(request *ExecuteScalingPolicyRequest) (res
 // ExecuteScalingPolicy
 // 本接口（ExecuteScalingPolicy）用于执行伸缩策略。
 //
-//
-//
 // * 可以根据伸缩策略ID执行伸缩策略。
 //
 // * 伸缩策略所属伸缩组处于伸缩活动时，会拒绝执行伸缩策略。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  RESOURCEINUSE_AUTOSCALINGGROUPNOTACTIVE = "ResourceInUse.AutoScalingGroupNotActive"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	RESOURCEINUSE_AUTOSCALINGGROUPNOTACTIVE = "ResourceInUse.AutoScalingGroupNotActive"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ExecuteScalingPolicyWithContext(ctx context.Context, request *ExecuteScalingPolicyRequest) (response *ExecuteScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewExecuteScalingPolicyRequest()
@@ -2572,34 +2580,35 @@ func NewModifyAutoScalingGroupResponse() (response *ModifyAutoScalingGroupRespon
 // 本接口（ModifyAutoScalingGroup）用于修改伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
 func (c *Client) ModifyAutoScalingGroup(request *ModifyAutoScalingGroupRequest) (response *ModifyAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewModifyAutoScalingGroupRequest()
@@ -2614,34 +2623,35 @@ func (c *Client) ModifyAutoScalingGroup(request *ModifyAutoScalingGroupRequest) 
 // 本接口（ModifyAutoScalingGroup）用于修改伸缩组。
 //
 // 可能返回的错误码:
-//  INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
-//  INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED = "LimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
-//  RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
+//
+//	INTERNALERROR_CALLVPCERROR = "InternalError.CallVpcError"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_BASECAPACITYTOOLARGE = "InvalidParameterValue.BaseCapacityTooLarge"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_DUPLICATEDSUBNET = "InvalidParameterValue.DuplicatedSubnet"
+//	INVALIDPARAMETERVALUE_GROUPNAMEDUPLICATED = "InvalidParameterValue.GroupNameDuplicated"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_INVALIDSUBNETID = "InvalidParameterValue.InvalidSubnetId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNOTFOUND = "InvalidParameterValue.LaunchConfigurationNotFound"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	INVALIDPARAMETERVALUE_ONLYVPC = "InvalidParameterValue.OnlyVpc"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_SUBNETIDS = "InvalidParameterValue.SubnetIds"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED = "LimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_LAUNCHCONFIGURATIONSTATUSABNORMAL = "ResourceUnavailable.LaunchConfigurationStatusAbnormal"
+//	RESOURCEUNAVAILABLE_PROJECTINCONSISTENT = "ResourceUnavailable.ProjectInconsistent"
 func (c *Client) ModifyAutoScalingGroupWithContext(ctx context.Context, request *ModifyAutoScalingGroupRequest) (response *ModifyAutoScalingGroupResponse, err error) {
 	if request == nil {
 		request = NewModifyAutoScalingGroupRequest()
@@ -2673,13 +2683,14 @@ func NewModifyDesiredCapacityResponse() (response *ModifyDesiredCapacityResponse
 // 本接口（ModifyDesiredCapacity）用于修改指定伸缩组的期望实例数
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPDISABLED = "ResourceUnavailable.AutoScalingGroupDisabled"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPDISABLED = "ResourceUnavailable.AutoScalingGroupDisabled"
 func (c *Client) ModifyDesiredCapacity(request *ModifyDesiredCapacityRequest) (response *ModifyDesiredCapacityResponse, err error) {
 	if request == nil {
 		request = NewModifyDesiredCapacityRequest()
@@ -2694,13 +2705,14 @@ func (c *Client) ModifyDesiredCapacity(request *ModifyDesiredCapacityRequest) (r
 // 本接口（ModifyDesiredCapacity）用于修改指定伸缩组的期望实例数
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPDISABLED = "ResourceUnavailable.AutoScalingGroupDisabled"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPABNORMALSTATUS = "ResourceUnavailable.AutoScalingGroupAbnormalStatus"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPDISABLED = "ResourceUnavailable.AutoScalingGroupDisabled"
 func (c *Client) ModifyDesiredCapacityWithContext(ctx context.Context, request *ModifyDesiredCapacityRequest) (response *ModifyDesiredCapacityResponse, err error) {
 	if request == nil {
 		request = NewModifyDesiredCapacityRequest()
@@ -2731,33 +2743,32 @@ func NewModifyLaunchConfigurationAttributesResponse() (response *ModifyLaunchCon
 // ModifyLaunchConfigurationAttributes
 // 本接口（ModifyLaunchConfigurationAttributes）用于修改启动配置部分属性。
 //
-//
-//
 // * 修改启动配置后，已经使用该启动配置扩容的存量实例不会发生变更，此后使用该启动配置的新增实例会按照新的配置进行扩容。
 //
 // * 本接口支持修改部分简单类型。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_IMAGENOTFOUND = "InvalidParameterValue.ImageNotFound"
-//  INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_IMAGENOTFOUND = "InvalidParameterValue.ImageNotFound"
+//	INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) ModifyLaunchConfigurationAttributes(request *ModifyLaunchConfigurationAttributesRequest) (response *ModifyLaunchConfigurationAttributesResponse, err error) {
 	if request == nil {
 		request = NewModifyLaunchConfigurationAttributesRequest()
@@ -2771,33 +2782,32 @@ func (c *Client) ModifyLaunchConfigurationAttributes(request *ModifyLaunchConfig
 // ModifyLaunchConfigurationAttributes
 // 本接口（ModifyLaunchConfigurationAttributes）用于修改启动配置部分属性。
 //
-//
-//
 // * 修改启动配置后，已经使用该启动配置扩容的存量实例不会发生变更，此后使用该启动配置的新增实例会按照新的配置进行扩容。
 //
 // * 本接口支持修改部分简单类型。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_IMAGENOTFOUND = "InvalidParameterValue.ImageNotFound"
-//  INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_HOSTNAMEUNAVAILABLE = "InvalidParameter.HostNameUnavailable"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_IMAGENOTFOUND = "InvalidParameterValue.ImageNotFound"
+//	INVALIDPARAMETERVALUE_INSTANCENAMEILLEGAL = "InvalidParameterValue.InstanceNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) ModifyLaunchConfigurationAttributesWithContext(ctx context.Context, request *ModifyLaunchConfigurationAttributesRequest) (response *ModifyLaunchConfigurationAttributesResponse, err error) {
 	if request == nil {
 		request = NewModifyLaunchConfigurationAttributesRequest()
@@ -2829,27 +2839,28 @@ func NewModifyLoadBalancerTargetAttributesResponse() (response *ModifyLoadBalanc
 // 本接口（ModifyLoadBalancerTargetAttributes）用于修改伸缩组内负载均衡器的目标规则属性。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) ModifyLoadBalancerTargetAttributes(request *ModifyLoadBalancerTargetAttributesRequest) (response *ModifyLoadBalancerTargetAttributesResponse, err error) {
 	if request == nil {
 		request = NewModifyLoadBalancerTargetAttributesRequest()
@@ -2864,27 +2875,28 @@ func (c *Client) ModifyLoadBalancerTargetAttributes(request *ModifyLoadBalancerT
 // 本接口（ModifyLoadBalancerTargetAttributes）用于修改伸缩组内负载均衡器的目标规则属性。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
-//  LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETER_LOADBALANCERNOTINAUTOSCALINGGROUP = "InvalidParameter.LoadBalancerNotInAutoScalingGroup"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_TARGETPORTDUPLICATED = "InvalidParameterValue.TargetPortDuplicated"
+//	LIMITEXCEEDED_AFTERATTACHLBLIMITEXCEEDED = "LimitExceeded.AfterAttachLbLimitExceeded"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBPROJECTINCONSISTENT = "ResourceUnavailable.LbProjectInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) ModifyLoadBalancerTargetAttributesWithContext(ctx context.Context, request *ModifyLoadBalancerTargetAttributesRequest) (response *ModifyLoadBalancerTargetAttributesResponse, err error) {
 	if request == nil {
 		request = NewModifyLoadBalancerTargetAttributesRequest()
@@ -2915,8 +2927,6 @@ func NewModifyLoadBalancersResponse() (response *ModifyLoadBalancersResponse) {
 // ModifyLoadBalancers
 // 本接口（ModifyLoadBalancers）用于修改伸缩组的负载均衡器。
 //
-//
-//
 // * 本接口用于为伸缩组指定新的负载均衡器配置，采用`完全覆盖`风格，无论之前配置如何，`统一按照接口参数配置为新的负载均衡器`。
 //
 // * 如果要为伸缩组清空负载均衡器，则在调用本接口时仅指定伸缩组ID，不指定具体负载均衡器。
@@ -2924,25 +2934,26 @@ func NewModifyLoadBalancersResponse() (response *ModifyLoadBalancersResponse) {
 // * 本接口会立即修改伸缩组的负载均衡器，并生成一个伸缩活动，异步修改存量实例的负载均衡器。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) ModifyLoadBalancers(request *ModifyLoadBalancersRequest) (response *ModifyLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewModifyLoadBalancersRequest()
@@ -2956,8 +2967,6 @@ func (c *Client) ModifyLoadBalancers(request *ModifyLoadBalancersRequest) (respo
 // ModifyLoadBalancers
 // 本接口（ModifyLoadBalancers）用于修改伸缩组的负载均衡器。
 //
-//
-//
 // * 本接口用于为伸缩组指定新的负载均衡器配置，采用`完全覆盖`风格，无论之前配置如何，`统一按照接口参数配置为新的负载均衡器`。
 //
 // * 如果要为伸缩组清空负载均衡器，则在调用本接口时仅指定伸缩组ID，不指定具体负载均衡器。
@@ -2965,25 +2974,26 @@ func (c *Client) ModifyLoadBalancers(request *ModifyLoadBalancersRequest) (respo
 // * 本接口会立即修改伸缩组的负载均衡器，并生成一个伸缩活动，异步修改存量实例的负载均衡器。
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
-//  INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
-//  INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
-//  INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
-//  RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
-//  RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
-//  RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INSCENARIO = "InvalidParameter.InScenario"
+//	INVALIDPARAMETERVALUE_CLASSICLB = "InvalidParameterValue.ClassicLb"
+//	INVALIDPARAMETERVALUE_FORWARDLB = "InvalidParameterValue.ForwardLb"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDCLBREGION = "InvalidParameterValue.InvalidClbRegion"
+//	INVALIDPARAMETERVALUE_LBPROJECTINCONSISTENT = "InvalidParameterValue.LbProjectInconsistent"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	MISSINGPARAMETER_INSCENARIO = "MissingParameter.InScenario"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_LISTENERNOTFOUND = "ResourceNotFound.ListenerNotFound"
+//	RESOURCENOTFOUND_LOADBALANCERNOTFOUND = "ResourceNotFound.LoadBalancerNotFound"
+//	RESOURCENOTFOUND_LOCATIONNOTFOUND = "ResourceNotFound.LocationNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LBBACKENDREGIONINCONSISTENT = "ResourceUnavailable.LbBackendRegionInconsistent"
+//	RESOURCEUNAVAILABLE_LBVPCINCONSISTENT = "ResourceUnavailable.LbVpcInconsistent"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) ModifyLoadBalancersWithContext(ctx context.Context, request *ModifyLoadBalancersRequest) (response *ModifyLoadBalancersResponse, err error) {
 	if request == nil {
 		request = NewModifyLoadBalancersRequest()
@@ -3017,15 +3027,16 @@ func NewModifyNotificationConfigurationResponse() (response *ModifyNotificationC
 // * 通知的接收端类型不支持修改。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) ModifyNotificationConfiguration(request *ModifyNotificationConfigurationRequest) (response *ModifyNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewModifyNotificationConfigurationRequest()
@@ -3042,15 +3053,16 @@ func (c *Client) ModifyNotificationConfiguration(request *ModifyNotificationConf
 // * 通知的接收端类型不支持修改。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
-//  RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
-//  RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
-//  RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
-//  RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
+//
+//	INVALIDPARAMETERVALUE_CONFLICTNOTIFICATIONTARGET = "InvalidParameterValue.ConflictNotificationTarget"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGNOTIFICATIONID = "InvalidParameterValue.InvalidAutoScalingNotificationId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_USERGROUPIDNOTFOUND = "InvalidParameterValue.UserGroupIdNotFound"
+//	RESOURCENOTFOUND_AUTOSCALINGNOTIFICATIONNOTFOUND = "ResourceNotFound.AutoScalingNotificationNotFound"
+//	RESOURCENOTFOUND_CMQQUEUENOTFOUND = "ResourceNotFound.CmqQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQQUEUENOTFOUND = "ResourceNotFound.TDMQCMQQueueNotFound"
+//	RESOURCENOTFOUND_TDMQCMQTOPICNOTFOUND = "ResourceNotFound.TDMQCMQTopicNotFound"
+//	RESOURCEUNAVAILABLE_TDMQCMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.TDMQCMQTopicHasNoSubscriber"
 func (c *Client) ModifyNotificationConfigurationWithContext(ctx context.Context, request *ModifyNotificationConfigurationRequest) (response *ModifyNotificationConfigurationResponse, err error) {
 	if request == nil {
 		request = NewModifyNotificationConfigurationRequest()
@@ -3082,12 +3094,13 @@ func NewModifyScalingPolicyResponse() (response *ModifyScalingPolicyResponse) {
 // 本接口（ModifyScalingPolicy）用于修改告警触发策略。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
 func (c *Client) ModifyScalingPolicy(request *ModifyScalingPolicyRequest) (response *ModifyScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewModifyScalingPolicyRequest()
@@ -3102,12 +3115,13 @@ func (c *Client) ModifyScalingPolicy(request *ModifyScalingPolicyRequest) (respo
 // 本接口（ModifyScalingPolicy）用于修改告警触发策略。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
-//  INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGPOLICYID = "InvalidParameterValue.InvalidAutoScalingPolicyId"
+//	INVALIDPARAMETERVALUE_INVALIDNOTIFICATIONUSERGROUPID = "InvalidParameterValue.InvalidNotificationUserGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_SCALINGPOLICYNAMEDUPLICATE = "InvalidParameterValue.ScalingPolicyNameDuplicate"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_SCALINGPOLICYNOTFOUND = "ResourceNotFound.ScalingPolicyNotFound"
 func (c *Client) ModifyScalingPolicyWithContext(ctx context.Context, request *ModifyScalingPolicyRequest) (response *ModifyScalingPolicyResponse, err error) {
 	if request == nil {
 		request = NewModifyScalingPolicyRequest()
@@ -3139,21 +3153,22 @@ func NewModifyScheduledActionResponse() (response *ModifyScheduledActionResponse
 // 本接口（ModifyScheduledAction）用于修改定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
-//  INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
-//  INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
-//  INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
+//	INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
+//	INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
+//	INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) ModifyScheduledAction(request *ModifyScheduledActionRequest) (response *ModifyScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewModifyScheduledActionRequest()
@@ -3168,21 +3183,22 @@ func (c *Client) ModifyScheduledAction(request *ModifyScheduledActionRequest) (r
 // 本接口（ModifyScheduledAction）用于修改定时任务。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
-//  INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
-//  INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
-//  INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
-//  INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
-//  INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
-//  INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
-//  INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
-//  LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
-//  LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
-//  RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_CRONEXPRESSIONILLEGAL = "InvalidParameterValue.CronExpressionIllegal"
+//	INVALIDPARAMETERVALUE_ENDTIMEBEFORESTARTTIME = "InvalidParameterValue.EndTimeBeforeStartTime"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONID = "InvalidParameterValue.InvalidScheduledActionId"
+//	INVALIDPARAMETERVALUE_INVALIDSCHEDULEDACTIONNAMEINCLUDEILLEGALCHAR = "InvalidParameterValue.InvalidScheduledActionNameIncludeIllegalChar"
+//	INVALIDPARAMETERVALUE_SCHEDULEDACTIONNAMEDUPLICATE = "InvalidParameterValue.ScheduledActionNameDuplicate"
+//	INVALIDPARAMETERVALUE_SIZE = "InvalidParameterValue.Size"
+//	INVALIDPARAMETERVALUE_STARTTIMEBEFORECURRENTTIME = "InvalidParameterValue.StartTimeBeforeCurrentTime"
+//	INVALIDPARAMETERVALUE_TIMEFORMAT = "InvalidParameterValue.TimeFormat"
+//	INVALIDPARAMETERVALUE_TOOLONG = "InvalidParameterValue.TooLong"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	LIMITEXCEEDED_MAXSIZELIMITEXCEEDED = "LimitExceeded.MaxSizeLimitExceeded"
+//	LIMITEXCEEDED_MINSIZELIMITEXCEEDED = "LimitExceeded.MinSizeLimitExceeded"
+//	LIMITEXCEEDED_SCHEDULEDACTIONLIMITEXCEEDED = "LimitExceeded.ScheduledActionLimitExceeded"
+//	RESOURCENOTFOUND_SCHEDULEDACTIONNOTFOUND = "ResourceNotFound.ScheduledActionNotFound"
 func (c *Client) ModifyScheduledActionWithContext(ctx context.Context, request *ModifyScheduledActionRequest) (response *ModifyScheduledActionResponse, err error) {
 	if request == nil {
 		request = NewModifyScheduledActionRequest()
@@ -3214,7 +3230,8 @@ func NewPreviewPaiDomainNameResponse() (response *PreviewPaiDomainNameResponse) 
 // 本接口（PreviewPaiDomainName）用于预览PAI实例域名。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDPAIDOMAINNAMETYPE = "InvalidParameterValue.InvalidPaiDomainNameType"
+//
+//	INVALIDPARAMETERVALUE_INVALIDPAIDOMAINNAMETYPE = "InvalidParameterValue.InvalidPaiDomainNameType"
 func (c *Client) PreviewPaiDomainName(request *PreviewPaiDomainNameRequest) (response *PreviewPaiDomainNameResponse, err error) {
 	if request == nil {
 		request = NewPreviewPaiDomainNameRequest()
@@ -3229,7 +3246,8 @@ func (c *Client) PreviewPaiDomainName(request *PreviewPaiDomainNameRequest) (res
 // 本接口（PreviewPaiDomainName）用于预览PAI实例域名。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDPAIDOMAINNAMETYPE = "InvalidParameterValue.InvalidPaiDomainNameType"
+//
+//	INVALIDPARAMETERVALUE_INVALIDPAIDOMAINNAMETYPE = "InvalidParameterValue.InvalidPaiDomainNameType"
 func (c *Client) PreviewPaiDomainNameWithContext(ctx context.Context, request *PreviewPaiDomainNameRequest) (response *PreviewPaiDomainNameResponse, err error) {
 	if request == nil {
 		request = NewPreviewPaiDomainNameRequest()
@@ -3267,16 +3285,17 @@ func NewRemoveInstancesResponse() (response *RemoveInstancesResponse) {
 // * 对于伸缩组配置的 CLB，实例在离开伸缩组时，AS 会进行解挂载动作
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
 func (c *Client) RemoveInstances(request *RemoveInstancesRequest) (response *RemoveInstancesResponse, err error) {
 	if request == nil {
 		request = NewRemoveInstancesRequest()
@@ -3297,16 +3316,17 @@ func (c *Client) RemoveInstances(request *RemoveInstancesRequest) (response *Rem
 // * 对于伸缩组配置的 CLB，实例在离开伸缩组时，AS 会进行解挂载动作
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//
+//	INTERNALERROR = "InternalError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	INVALIDPARAMETERVALUE_LIMITEXCEEDED = "InvalidParameterValue.LimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
 func (c *Client) RemoveInstancesWithContext(ctx context.Context, request *RemoveInstancesRequest) (response *RemoveInstancesResponse, err error) {
 	if request == nil {
 		request = NewRemoveInstancesRequest()
@@ -3348,12 +3368,13 @@ func NewScaleInInstancesResponse() (response *ScaleInInstancesResponse) {
 // * 缩容如果失败或者部分成功，最后期望实例数只会扣减实际缩容成功的实例数量
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ScaleInInstances(request *ScaleInInstancesRequest) (response *ScaleInInstancesResponse, err error) {
 	if request == nil {
 		request = NewScaleInInstancesRequest()
@@ -3378,12 +3399,13 @@ func (c *Client) ScaleInInstances(request *ScaleInInstancesRequest) (response *S
 // * 缩容如果失败或者部分成功，最后期望实例数只会扣减实际缩容成功的实例数量
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ScaleInInstancesWithContext(ctx context.Context, request *ScaleInInstancesRequest) (response *ScaleInInstancesResponse, err error) {
 	if request == nil {
 		request = NewScaleInInstancesRequest()
@@ -3421,12 +3443,13 @@ func NewScaleOutInstancesResponse() (response *ScaleOutInstancesResponse) {
 // * 扩容如果失败或者部分成功，最后期望实例数只会增加实际成功的实例数量
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ScaleOutInstances(request *ScaleOutInstancesRequest) (response *ScaleOutInstancesResponse, err error) {
 	if request == nil {
 		request = NewScaleOutInstancesRequest()
@@ -3447,12 +3470,13 @@ func (c *Client) ScaleOutInstances(request *ScaleOutInstancesRequest) (response 
 // * 扩容如果失败或者部分成功，最后期望实例数只会增加实际成功的实例数量
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	LIMITEXCEEDED_DESIREDCAPACITYLIMITEXCEEDED = "LimitExceeded.DesiredCapacityLimitExceeded"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
 func (c *Client) ScaleOutInstancesWithContext(ctx context.Context, request *ScaleOutInstancesRequest) (response *ScaleOutInstancesResponse, err error) {
 	if request == nil {
 		request = NewScaleOutInstancesRequest()
@@ -3486,10 +3510,11 @@ func NewSetInstancesProtectionResponse() (response *SetInstancesProtectionRespon
 // 实例设置保护之后，当发生不健康替换、报警策略、期望值变更等触发缩容时，将不对此实例缩容操作。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
 func (c *Client) SetInstancesProtection(request *SetInstancesProtectionRequest) (response *SetInstancesProtectionResponse, err error) {
 	if request == nil {
 		request = NewSetInstancesProtectionRequest()
@@ -3506,10 +3531,11 @@ func (c *Client) SetInstancesProtection(request *SetInstancesProtectionRequest) 
 // 实例设置保护之后，当发生不健康替换、报警策略、期望值变更等触发缩容时，将不对此实例缩容操作。
 //
 // 可能返回的错误码:
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
 func (c *Client) SetInstancesProtectionWithContext(ctx context.Context, request *SetInstancesProtectionRequest) (response *SetInstancesProtectionResponse, err error) {
 	if request == nil {
 		request = NewSetInstancesProtectionRequest()
@@ -3545,15 +3571,16 @@ func NewStartAutoScalingInstancesResponse() (response *StartAutoScalingInstances
 // * 本接口支持批量操作，每次请求开机实例的上限为100
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) StartAutoScalingInstances(request *StartAutoScalingInstancesRequest) (response *StartAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewStartAutoScalingInstancesRequest()
@@ -3572,15 +3599,16 @@ func (c *Client) StartAutoScalingInstances(request *StartAutoScalingInstancesReq
 // * 本接口支持批量操作，每次请求开机实例的上限为100
 //
 // 可能返回的错误码:
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPABOVEMAXSIZE = "ResourceInsufficient.AutoScalingGroupAboveMaxSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEABOVEMAXSIZE = "ResourceInsufficient.InServiceInstanceAboveMaxSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) StartAutoScalingInstancesWithContext(ctx context.Context, request *StartAutoScalingInstancesRequest) (response *StartAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewStartAutoScalingInstancesRequest()
@@ -3620,19 +3648,20 @@ func NewStopAutoScalingInstancesResponse() (response *StopAutoScalingInstancesRe
 // * 本接口支持批量操作，每次请求关机实例的上限为100
 //
 // 可能返回的错误码:
-//  CALLCVMERROR = "CallCvmError"
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
-//  RESOURCEUNAVAILABLE_INSTANCENOTSUPPORTSTOPCHARGING = "ResourceUnavailable.InstanceNotSupportStopCharging"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	CALLCVMERROR = "CallCvmError"
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//	RESOURCEUNAVAILABLE_INSTANCENOTSUPPORTSTOPCHARGING = "ResourceUnavailable.InstanceNotSupportStopCharging"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) StopAutoScalingInstances(request *StopAutoScalingInstancesRequest) (response *StopAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewStopAutoScalingInstancesRequest()
@@ -3655,19 +3684,20 @@ func (c *Client) StopAutoScalingInstances(request *StopAutoScalingInstancesReque
 // * 本接口支持批量操作，每次请求关机实例的上限为100
 //
 // 可能返回的错误码:
-//  CALLCVMERROR = "CallCvmError"
-//  FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
-//  INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
-//  INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
-//  RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
-//  RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
-//  RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
-//  RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
-//  RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
-//  RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
-//  RESOURCEUNAVAILABLE_INSTANCENOTSUPPORTSTOPCHARGING = "ResourceUnavailable.InstanceNotSupportStopCharging"
-//  RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
+//
+//	CALLCVMERROR = "CallCvmError"
+//	FAILEDOPERATION_NOACTIVITYTOGENERATE = "FailedOperation.NoActivityToGenerate"
+//	INTERNALERROR_REQUESTERROR = "InternalError.RequestError"
+//	INVALIDPARAMETERVALUE_INVALIDAUTOSCALINGGROUPID = "InvalidParameterValue.InvalidAutoScalingGroupId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCEID = "InvalidParameterValue.InvalidInstanceId"
+//	RESOURCEINSUFFICIENT_AUTOSCALINGGROUPBELOWMINSIZE = "ResourceInsufficient.AutoScalingGroupBelowMinSize"
+//	RESOURCEINSUFFICIENT_INSERVICEINSTANCEBELOWMINSIZE = "ResourceInsufficient.InServiceInstanceBelowMinSize"
+//	RESOURCENOTFOUND_AUTOSCALINGGROUPNOTFOUND = "ResourceNotFound.AutoScalingGroupNotFound"
+//	RESOURCENOTFOUND_INSTANCESNOTINAUTOSCALINGGROUP = "ResourceNotFound.InstancesNotInAutoScalingGroup"
+//	RESOURCEUNAVAILABLE_AUTOSCALINGGROUPINACTIVITY = "ResourceUnavailable.AutoScalingGroupInActivity"
+//	RESOURCEUNAVAILABLE_INSTANCEINOPERATION = "ResourceUnavailable.InstanceInOperation"
+//	RESOURCEUNAVAILABLE_INSTANCENOTSUPPORTSTOPCHARGING = "ResourceUnavailable.InstanceNotSupportStopCharging"
+//	RESOURCEUNAVAILABLE_LOADBALANCERINOPERATION = "ResourceUnavailable.LoadBalancerInOperation"
 func (c *Client) StopAutoScalingInstancesWithContext(ctx context.Context, request *StopAutoScalingInstancesRequest) (response *StopAutoScalingInstancesResponse, err error) {
 	if request == nil {
 		request = NewStopAutoScalingInstancesRequest()
@@ -3698,36 +3728,35 @@ func NewUpgradeLaunchConfigurationResponse() (response *UpgradeLaunchConfigurati
 // UpgradeLaunchConfiguration
 // 本接口（UpgradeLaunchConfiguration）用于升级启动配置。
 //
-//
-//
 // * 本接口用于升级启动配置，采用“完全覆盖”风格，无论之前参数如何，统一按照接口参数设置为新的配置。对于非必填字段，不填写则按照默认值赋值。
 //
 // * 升级修改启动配置后，已经使用该启动配置扩容的存量实例不会发生变更，此后使用该启动配置的新增实例会按照新的配置进行扩容。
 //
 // 可能返回的错误码:
-//  CALLCVMERROR = "CallCvmError"
-//  INTERNALERROR = "InternalError"
-//  INVALIDIMAGEID_NOTFOUND = "InvalidImageId.NotFound"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	CALLCVMERROR = "CallCvmError"
+//	INTERNALERROR = "InternalError"
+//	INVALIDIMAGEID_NOTFOUND = "InvalidImageId.NotFound"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) UpgradeLaunchConfiguration(request *UpgradeLaunchConfigurationRequest) (response *UpgradeLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewUpgradeLaunchConfigurationRequest()
@@ -3741,36 +3770,35 @@ func (c *Client) UpgradeLaunchConfiguration(request *UpgradeLaunchConfigurationR
 // UpgradeLaunchConfiguration
 // 本接口（UpgradeLaunchConfiguration）用于升级启动配置。
 //
-//
-//
 // * 本接口用于升级启动配置，采用“完全覆盖”风格，无论之前参数如何，统一按照接口参数设置为新的配置。对于非必填字段，不填写则按照默认值赋值。
 //
 // * 升级修改启动配置后，已经使用该启动配置扩容的存量实例不会发生变更，此后使用该启动配置的新增实例会按照新的配置进行扩容。
 //
 // 可能返回的错误码:
-//  CALLCVMERROR = "CallCvmError"
-//  INTERNALERROR = "InternalError"
-//  INVALIDIMAGEID_NOTFOUND = "InvalidImageId.NotFound"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
-//  INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
-//  INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
-//  INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
-//  INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
-//  INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
-//  INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
-//  INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
-//  INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
-//  INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
-//  INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
-//  INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
-//  INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
-//  INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
-//  INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
+//
+//	CALLCVMERROR = "CallCvmError"
+//	INTERNALERROR = "InternalError"
+//	INVALIDIMAGEID_NOTFOUND = "InvalidImageId.NotFound"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETER_INVALIDCOMBINATION = "InvalidParameter.InvalidCombination"
+//	INVALIDPARAMETER_MUSTONEPARAMETER = "InvalidParameter.MustOneParameter"
+//	INVALIDPARAMETER_PARAMETERMUSTBEDELETED = "InvalidParameter.ParameterMustBeDeleted"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_CVMCONFIGURATIONERROR = "InvalidParameterValue.CvmConfigurationError"
+//	INVALIDPARAMETERVALUE_CVMERROR = "InvalidParameterValue.CvmError"
+//	INVALIDPARAMETERVALUE_HOSTNAMEILLEGAL = "InvalidParameterValue.HostNameIllegal"
+//	INVALIDPARAMETERVALUE_INSTANCETYPENOTSUPPORTED = "InvalidParameterValue.InstanceTypeNotSupported"
+//	INVALIDPARAMETERVALUE_INVALIDIMAGEID = "InvalidParameterValue.InvalidImageId"
+//	INVALIDPARAMETERVALUE_INVALIDINSTANCETYPE = "InvalidParameterValue.InvalidInstanceType"
+//	INVALIDPARAMETERVALUE_INVALIDLAUNCHCONFIGURATIONID = "InvalidParameterValue.InvalidLaunchConfigurationId"
+//	INVALIDPARAMETERVALUE_LAUNCHCONFIGURATIONNAMEDUPLICATED = "InvalidParameterValue.LaunchConfigurationNameDuplicated"
+//	INVALIDPARAMETERVALUE_NOTSTRINGTYPEFLOAT = "InvalidParameterValue.NotStringTypeFloat"
+//	INVALIDPARAMETERVALUE_PROJECTIDNOTFOUND = "InvalidParameterValue.ProjectIdNotFound"
+//	INVALIDPARAMETERVALUE_RANGE = "InvalidParameterValue.Range"
+//	INVALIDPARAMETERVALUE_USERDATAFORMATERROR = "InvalidParameterValue.UserDataFormatError"
+//	INVALIDPARAMETERVALUE_USERDATASIZEEXCEEDED = "InvalidParameterValue.UserDataSizeExceeded"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LAUNCHCONFIGURATIONIDNOTFOUND = "ResourceNotFound.LaunchConfigurationIdNotFound"
 func (c *Client) UpgradeLaunchConfigurationWithContext(ctx context.Context, request *UpgradeLaunchConfigurationRequest) (response *UpgradeLaunchConfigurationResponse, err error) {
 	if request == nil {
 		request = NewUpgradeLaunchConfigurationRequest()
@@ -3801,23 +3829,22 @@ func NewUpgradeLifecycleHookResponse() (response *UpgradeLifecycleHookResponse) 
 // UpgradeLifecycleHook
 // 本接口（UpgradeLifecycleHook）用于升级生命周期挂钩。
 //
-//
-//
 // * 本接口用于升级生命周期挂钩，采用“完全覆盖”风格，无论之前参数如何，统一按照接口参数设置为新的配置。对于非必填字段，不填写则按照默认值赋值。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLCMQERROR = "InternalError.CallCmqError"
-//  INTERNALERROR_CALLSTSERROR = "InternalError.CallStsError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLCMQERROR = "InternalError.CallCmqError"
+//	INTERNALERROR_CALLSTSERROR = "InternalError.CallStsError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
 func (c *Client) UpgradeLifecycleHook(request *UpgradeLifecycleHookRequest) (response *UpgradeLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewUpgradeLifecycleHookRequest()
@@ -3831,23 +3858,22 @@ func (c *Client) UpgradeLifecycleHook(request *UpgradeLifecycleHookRequest) (res
 // UpgradeLifecycleHook
 // 本接口（UpgradeLifecycleHook）用于升级生命周期挂钩。
 //
-//
-//
 // * 本接口用于升级生命周期挂钩，采用“完全覆盖”风格，无论之前参数如何，统一按照接口参数设置为新的配置。对于非必填字段，不填写则按照默认值赋值。
 //
 // 可能返回的错误码:
-//  INTERNALERROR = "InternalError"
-//  INTERNALERROR_CALLCMQERROR = "InternalError.CallCmqError"
-//  INTERNALERROR_CALLSTSERROR = "InternalError.CallStsError"
-//  INVALIDPARAMETER = "InvalidParameter"
-//  INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
-//  INVALIDPARAMETERVALUE = "InvalidParameterValue"
-//  INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
-//  INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
-//  INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
-//  MISSINGPARAMETER = "MissingParameter"
-//  RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
-//  RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
+//
+//	INTERNALERROR = "InternalError"
+//	INTERNALERROR_CALLCMQERROR = "InternalError.CallCmqError"
+//	INTERNALERROR_CALLSTSERROR = "InternalError.CallStsError"
+//	INVALIDPARAMETER = "InvalidParameter"
+//	INVALIDPARAMETER_CONFLICT = "InvalidParameter.Conflict"
+//	INVALIDPARAMETERVALUE = "InvalidParameterValue"
+//	INVALIDPARAMETERVALUE_FILTER = "InvalidParameterValue.Filter"
+//	INVALIDPARAMETERVALUE_INVALIDLIFECYCLEHOOKID = "InvalidParameterValue.InvalidLifecycleHookId"
+//	INVALIDPARAMETERVALUE_LIFECYCLEHOOKNAMEDUPLICATED = "InvalidParameterValue.LifecycleHookNameDuplicated"
+//	MISSINGPARAMETER = "MissingParameter"
+//	RESOURCENOTFOUND_LIFECYCLEHOOKNOTFOUND = "ResourceNotFound.LifecycleHookNotFound"
+//	RESOURCEUNAVAILABLE_CMQTOPICHASNOSUBSCRIBER = "ResourceUnavailable.CmqTopicHasNoSubscriber"
 func (c *Client) UpgradeLifecycleHookWithContext(ctx context.Context, request *UpgradeLifecycleHookRequest) (response *UpgradeLifecycleHookResponse, err error) {
 	if request == nil {
 		request = NewUpgradeLifecycleHookRequest()

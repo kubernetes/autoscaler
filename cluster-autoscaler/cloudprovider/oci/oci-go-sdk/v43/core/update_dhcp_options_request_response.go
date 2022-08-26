@@ -11,7 +11,7 @@ import (
 
 // UpdateDhcpOptionsRequest wrapper for the UpdateDhcpOptions operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/UpdateDhcpOptions.go.html to see an example of how to use UpdateDhcpOptionsRequest.
 type UpdateDhcpOptionsRequest struct {

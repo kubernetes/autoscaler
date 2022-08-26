@@ -8,7 +8,7 @@
 // See elastictranscoder package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/elastictranscoder/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Elastic Transcoder with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

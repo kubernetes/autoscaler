@@ -29,14 +29,13 @@ const opActivateKeySigningKey = "ActivateKeySigningKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ActivateKeySigningKeyRequest method.
+//	req, resp := client.ActivateKeySigningKeyRequest(params)
 //
-//    // Example sending a request using the ActivateKeySigningKeyRequest method.
-//    req, resp := client.ActivateKeySigningKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ActivateKeySigningKey
 func (c *Route53) ActivateKeySigningKeyRequest(input *ActivateKeySigningKeyInput) (req *request.Request, output *ActivateKeySigningKeyOutput) {
@@ -68,27 +67,28 @@ func (c *Route53) ActivateKeySigningKeyRequest(input *ActivateKeySigningKeyInput
 // API operation ActivateKeySigningKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key-signing key (KSK) doesn't exist.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//     The specified key-signing key (KSK) doesn't exist.
 //
-//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
-//   Your hosted zone status isn't valid for this operation. In the hosted zone,
-//   change the status to enable DNSSEC or disable DNSSEC.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
 //
-//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
-//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
-//   signing.
+//   - ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//     Your hosted zone status isn't valid for this operation. In the hosted zone,
+//     change the status to enable DNSSEC or disable DNSSEC.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidKMSArn "InvalidKMSArn"
+//     The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//     signing.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ActivateKeySigningKey
 func (c *Route53) ActivateKeySigningKey(input *ActivateKeySigningKeyInput) (*ActivateKeySigningKeyOutput, error) {
@@ -128,14 +128,13 @@ const opAssociateVPCWithHostedZone = "AssociateVPCWithHostedZone"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateVPCWithHostedZoneRequest method.
+//	req, resp := client.AssociateVPCWithHostedZoneRequest(params)
 //
-//    // Example sending a request using the AssociateVPCWithHostedZoneRequest method.
-//    req, resp := client.AssociateVPCWithHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/AssociateVPCWithHostedZone
 func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHostedZoneInput) (req *request.Request, output *AssociateVPCWithHostedZoneOutput) {
@@ -174,11 +173,11 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 //
 // The following are the supported partitions:
 //
-//    * aws - Amazon Web Services Regions
+//   - aws - Amazon Web Services Regions
 //
-//    * aws-cn - China Regions
+//   - aws-cn - China Regions
 //
-//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//   - aws-us-gov - Amazon Web Services GovCloud (US) Region
 //
 // For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 // in the Amazon Web Services General Reference.
@@ -191,59 +190,60 @@ func (c *Route53) AssociateVPCWithHostedZoneRequest(input *AssociateVPCWithHoste
 // API operation AssociateVPCWithHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeNotAuthorizedException "NotAuthorizedException"
-//   Associating the specified VPC with the specified hosted zone has not been
-//   authorized.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidVPCId "InvalidVPCId"
-//   The VPC ID that you specified either isn't a valid ID or the current account
-//   is not authorized to access this VPC.
+//   - ErrCodeNotAuthorizedException "NotAuthorizedException"
+//     Associating the specified VPC with the specified hosted zone has not been
+//     authorized.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidVPCId "InvalidVPCId"
+//     The VPC ID that you specified either isn't a valid ID or the current account
+//     is not authorized to access this VPC.
 //
-//   * ErrCodePublicZoneVPCAssociation "PublicZoneVPCAssociation"
-//   You're trying to associate a VPC with a public hosted zone. Amazon Route
-//   53 doesn't support associating a VPC with a public hosted zone.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeConflictingDomainExists "ConflictingDomainExists"
-//   The cause of this error depends on the operation that you're performing:
+//   - ErrCodePublicZoneVPCAssociation "PublicZoneVPCAssociation"
+//     You're trying to associate a VPC with a public hosted zone. Amazon Route
+//     53 doesn't support associating a VPC with a public hosted zone.
 //
-//      * Create a public hosted zone: Two hosted zones that have the same name
-//      or that have a parent/child relationship (example.com and test.example.com)
-//      can't have any common name servers. You tried to create a hosted zone
-//      that has the same name as an existing hosted zone or that's the parent
-//      or child of an existing hosted zone, and you specified a delegation set
-//      that shares one or more name servers with the existing hosted zone. For
-//      more information, see CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html).
+//   - ErrCodeConflictingDomainExists "ConflictingDomainExists"
+//     The cause of this error depends on the operation that you're performing:
 //
-//      * Create a private hosted zone: A hosted zone with the specified name
-//      already exists and is already associated with the Amazon VPC that you
-//      specified.
+//   - Create a public hosted zone: Two hosted zones that have the same name
+//     or that have a parent/child relationship (example.com and test.example.com)
+//     can't have any common name servers. You tried to create a hosted zone
+//     that has the same name as an existing hosted zone or that's the parent
+//     or child of an existing hosted zone, and you specified a delegation set
+//     that shares one or more name servers with the existing hosted zone. For
+//     more information, see CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html).
 //
-//      * Associate VPCs with a private hosted zone: The VPC that you specified
-//      is already associated with another hosted zone that has the same name.
+//   - Create a private hosted zone: A hosted zone with the specified name
+//     already exists and is already associated with the Amazon VPC that you
+//     specified.
 //
-//   * ErrCodeLimitsExceeded "LimitsExceeded"
-//   This operation can't be completed either because the current account has
-//   reached the limit on reusable delegation sets that it can create or because
-//   you've reached the limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone. To get the current limit on the number of reusable
-//   delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
-//   To get the current limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//   - Associate VPCs with a private hosted zone: The VPC that you specified
+//     is already associated with another hosted zone that has the same name.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeLimitsExceeded "LimitsExceeded"
+//     This operation can't be completed either because the current account has
+//     reached the limit on reusable delegation sets that it can create or because
+//     you've reached the limit on the number of Amazon VPCs that you can associate
+//     with a private hosted zone. To get the current limit on the number of reusable
+//     delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     To get the current limit on the number of Amazon VPCs that you can associate
+//     with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
+//
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/AssociateVPCWithHostedZone
 func (c *Route53) AssociateVPCWithHostedZone(input *AssociateVPCWithHostedZoneInput) (*AssociateVPCWithHostedZoneOutput, error) {
@@ -283,14 +283,13 @@ const opChangeResourceRecordSets = "ChangeResourceRecordSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ChangeResourceRecordSetsRequest method.
+//	req, resp := client.ChangeResourceRecordSetsRequest(params)
 //
-//    // Example sending a request using the ChangeResourceRecordSetsRequest method.
-//    req, resp := client.ChangeResourceRecordSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeResourceRecordSets
 func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSetsInput) (req *request.Request, output *ChangeResourceRecordSetsOutput) {
@@ -317,12 +316,12 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // routes traffic for test.example.com to a web server that has an IP address
 // of 192.0.2.44.
 //
-// Deleting Resource Record Sets
+// # Deleting Resource Record Sets
 //
 // To delete a resource record set, you must specify all the same values that
 // you specified when you created it.
 //
-// Change Batches and Transactional Changes
+// # Change Batches and Transactional Changes
 //
 // The request body must include a document with a ChangeResourceRecordSetsRequest
 // element. The request body contains a list of change items, known as a change
@@ -342,7 +341,7 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // If you try to delete the same resource record set more than once in a single
 // change batch, Route 53 returns an InvalidChangeBatch error.
 //
-// Traffic Flow
+// # Traffic Flow
 //
 // To create resource record sets for complex routing configurations, use either
 // the traffic flow visual editor in the Route 53 console or the API actions
@@ -354,19 +353,19 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // see Using Traffic Flow to Route DNS Traffic (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/traffic-flow.html)
 // in the Amazon Route 53 Developer Guide.
 //
-// Create, Delete, and Upsert
+// # Create, Delete, and Upsert
 //
 // Use ChangeResourceRecordsSetsRequest to perform the following actions:
 //
-//    * CREATE: Creates a resource record set that has the specified values.
+//   - CREATE: Creates a resource record set that has the specified values.
 //
-//    * DELETE: Deletes an existing resource record set that has the specified
-//    values.
+//   - DELETE: Deletes an existing resource record set that has the specified
+//     values.
 //
-//    * UPSERT: If a resource set exists Route 53 updates it with the values
-//    in the request.
+//   - UPSERT: If a resource set exists Route 53 updates it with the values
+//     in the request.
 //
-// Syntaxes for Creating, Updating, and Deleting Resource Record Sets
+// # Syntaxes for Creating, Updating, and Deleting Resource Record Sets
 //
 // The syntax for a request depends on the type of resource record set that
 // you want to create, delete, or update, such as weighted, alias, or failover.
@@ -378,7 +377,7 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // all of the elements for every kind of resource record set that you can create,
 // delete, or update by using ChangeResourceRecordSets.
 //
-// Change Propagation to Route 53 DNS Servers
+// # Change Propagation to Route 53 DNS Servers
 //
 // When you submit a ChangeResourceRecordSets request, Route 53 propagates your
 // changes to all of the Route 53 authoritative DNS servers. While your changes
@@ -387,7 +386,7 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // to all Route 53 name servers within 60 seconds. For more information, see
 // GetChange (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetChange.html).
 //
-// Limits on ChangeResourceRecordSets Requests
+// # Limits on ChangeResourceRecordSets Requests
 //
 // For information about the limits on a ChangeResourceRecordSets request, see
 // Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
@@ -401,25 +400,26 @@ func (c *Route53) ChangeResourceRecordSetsRequest(input *ChangeResourceRecordSet
 // API operation ChangeResourceRecordSets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidChangeBatch "InvalidChangeBatch"
-//   This exception contains a list of messages that might contain one or more
-//   error messages. Each error message indicates one error in the change batch.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidChangeBatch "InvalidChangeBatch"
+//     This exception contains a list of messages that might contain one or more
+//     error messages. Each error message indicates one error in the change batch.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeResourceRecordSets
 func (c *Route53) ChangeResourceRecordSets(input *ChangeResourceRecordSetsInput) (*ChangeResourceRecordSetsOutput, error) {
@@ -459,14 +459,13 @@ const opChangeTagsForResource = "ChangeTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ChangeTagsForResourceRequest method.
+//	req, resp := client.ChangeTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ChangeTagsForResourceRequest method.
-//    req, resp := client.ChangeTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeTagsForResource
 func (c *Route53) ChangeTagsForResourceRequest(input *ChangeTagsForResourceInput) (req *request.Request, output *ChangeTagsForResourceOutput) {
@@ -502,24 +501,25 @@ func (c *Route53) ChangeTagsForResourceRequest(input *ChangeTagsForResourceInput
 // API operation ChangeTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeThrottlingException "ThrottlingException"
-//   The limit on the number of requests per second was exceeded.
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
+//
+//   - ErrCodeThrottlingException "ThrottlingException"
+//     The limit on the number of requests per second was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ChangeTagsForResource
 func (c *Route53) ChangeTagsForResource(input *ChangeTagsForResourceInput) (*ChangeTagsForResourceOutput, error) {
@@ -559,14 +559,13 @@ const opCreateHealthCheck = "CreateHealthCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHealthCheckRequest method.
+//	req, resp := client.CreateHealthCheckRequest(params)
 //
-//    // Example sending a request using the CreateHealthCheckRequest method.
-//    req, resp := client.CreateHealthCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateHealthCheck
 func (c *Route53) CreateHealthCheckRequest(input *CreateHealthCheckInput) (req *request.Request, output *CreateHealthCheckOutput) {
@@ -593,7 +592,7 @@ func (c *Route53) CreateHealthCheckRequest(input *CreateHealthCheckInput) (req *
 // (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ResourceRecordSet.html#Route53-Type-ResourceRecordSet-HealthCheckId)
 // in ChangeResourceRecordSets (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ChangeResourceRecordSets.html).
 //
-// ELB Load Balancers
+// # ELB Load Balancers
 //
 // If you're registering EC2 instances with an Elastic Load Balancing (ELB)
 // load balancer, do not create Amazon Route 53 health checks for the EC2 instances.
@@ -601,25 +600,25 @@ func (c *Route53) CreateHealthCheckRequest(input *CreateHealthCheckInput) (req *
 // for an ELB health check, which performs a similar function to a Route 53
 // health check.
 //
-// Private Hosted Zones
+// # Private Hosted Zones
 //
 // You can associate health checks with failover resource record sets in a private
 // hosted zone. Note the following:
 //
-//    * Route 53 health checkers are outside the VPC. To check the health of
-//    an endpoint within a VPC by IP address, you must assign a public IP address
-//    to the instance in the VPC.
+//   - Route 53 health checkers are outside the VPC. To check the health of
+//     an endpoint within a VPC by IP address, you must assign a public IP address
+//     to the instance in the VPC.
 //
-//    * You can configure a health checker to check the health of an external
-//    resource that the instance relies on, such as a database server.
+//   - You can configure a health checker to check the health of an external
+//     resource that the instance relies on, such as a database server.
 //
-//    * You can create a CloudWatch metric, associate an alarm with the metric,
-//    and then create a health check that is based on the state of the alarm.
-//    For example, you might create a CloudWatch metric that checks the status
-//    of the Amazon EC2 StatusCheckFailed metric, add an alarm to the metric,
-//    and then create a health check that is based on the state of the alarm.
-//    For information about creating CloudWatch metrics and alarms by using
-//    the CloudWatch console, see the Amazon CloudWatch User Guide (https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/WhatIsCloudWatch.html).
+//   - You can create a CloudWatch metric, associate an alarm with the metric,
+//     and then create a health check that is based on the state of the alarm.
+//     For example, you might create a CloudWatch metric that checks the status
+//     of the Amazon EC2 StatusCheckFailed metric, add an alarm to the metric,
+//     and then create a health check that is based on the state of the alarm.
+//     For information about creating CloudWatch metrics and alarms by using
+//     the CloudWatch console, see the Amazon CloudWatch User Guide (https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/WhatIsCloudWatch.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -629,35 +628,36 @@ func (c *Route53) CreateHealthCheckRequest(input *CreateHealthCheckInput) (req *
 // API operation CreateHealthCheck for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeTooManyHealthChecks "TooManyHealthChecks"
-//   This health check can't be created because the current account has reached
-//   the limit on the number of active health checks.
 //
-//   For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-//   in the Amazon Route 53 Developer Guide.
+//   - ErrCodeTooManyHealthChecks "TooManyHealthChecks"
+//     This health check can't be created because the current account has reached
+//     the limit on the number of active health checks.
 //
-//   For information about how to get the current limit for an account, see GetAccountLimit
-//   (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//     For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
+//     in the Amazon Route 53 Developer Guide.
 //
-//   You have reached the maximum number of active health checks for an Amazon
-//   Web Services account. To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//     For information about how to get the current limit for an account, see GetAccountLimit
+//     (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//   * ErrCodeHealthCheckAlreadyExists "HealthCheckAlreadyExists"
-//   The health check you're attempting to create already exists. Amazon Route
-//   53 returns this error when you submit a request that has the following values:
+//     You have reached the maximum number of active health checks for an Amazon
+//     Web Services account. To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//      * The same value for CallerReference as an existing health check, and
-//      one or more values that differ from the existing health check that has
-//      the same caller reference.
+//   - ErrCodeHealthCheckAlreadyExists "HealthCheckAlreadyExists"
+//     The health check you're attempting to create already exists. Amazon Route
+//     53 returns this error when you submit a request that has the following values:
 //
-//      * The same value for CallerReference as a health check that you created
-//      and later deleted, regardless of the other settings in the request.
+//   - The same value for CallerReference as an existing health check, and
+//     one or more values that differ from the existing health check that has
+//     the same caller reference.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - The same value for CallerReference as a health check that you created
+//     and later deleted, regardless of the other settings in the request.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateHealthCheck
 func (c *Route53) CreateHealthCheck(input *CreateHealthCheckInput) (*CreateHealthCheckOutput, error) {
@@ -697,14 +697,13 @@ const opCreateHostedZone = "CreateHostedZone"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateHostedZoneRequest method.
+//	req, resp := client.CreateHostedZoneRequest(params)
 //
-//    // Example sending a request using the CreateHostedZoneRequest method.
-//    req, resp := client.CreateHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateHostedZone
 func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *request.Request, output *CreateHostedZoneOutput) {
@@ -741,23 +740,23 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 //
 // Note the following:
 //
-//    * You can't create a hosted zone for a top-level domain (TLD) such as
-//    .com.
+//   - You can't create a hosted zone for a top-level domain (TLD) such as
+//     .com.
 //
-//    * For public hosted zones, Route 53 automatically creates a default SOA
-//    record and four NS records for the zone. For more information about SOA
-//    and NS records, see NS and SOA Records that Route 53 Creates for a Hosted
-//    Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/SOA-NSrecords.html)
-//    in the Amazon Route 53 Developer Guide. If you want to use the same name
-//    servers for multiple public hosted zones, you can optionally associate
-//    a reusable delegation set with the hosted zone. See the DelegationSetId
-//    element.
+//   - For public hosted zones, Route 53 automatically creates a default SOA
+//     record and four NS records for the zone. For more information about SOA
+//     and NS records, see NS and SOA Records that Route 53 Creates for a Hosted
+//     Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/SOA-NSrecords.html)
+//     in the Amazon Route 53 Developer Guide. If you want to use the same name
+//     servers for multiple public hosted zones, you can optionally associate
+//     a reusable delegation set with the hosted zone. See the DelegationSetId
+//     element.
 //
-//    * If your domain is registered with a registrar other than Route 53, you
-//    must update the name servers with your registrar to make Route 53 the
-//    DNS service for the domain. For more information, see Migrating DNS Service
-//    for an Existing Domain to Amazon Route 53 (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html)
-//    in the Amazon Route 53 Developer Guide.
+//   - If your domain is registered with a registrar other than Route 53, you
+//     must update the name servers with your registrar to make Route 53 the
+//     DNS service for the domain. For more information, see Migrating DNS Service
+//     for an Existing Domain to Amazon Route 53 (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html)
+//     in the Amazon Route 53 Developer Guide.
 //
 // When you submit a CreateHostedZone request, the initial status of the hosted
 // zone is PENDING. For public hosted zones, this means that the NS and SOA
@@ -773,11 +772,11 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 //
 // The following are the supported partitions:
 //
-//    * aws - Amazon Web Services Regions
+//   - aws - Amazon Web Services Regions
 //
-//    * aws-cn - China Regions
+//   - aws-cn - China Regions
 //
-//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//   - aws-us-gov - Amazon Web Services GovCloud (US) Region
 //
 // For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 // in the Amazon Web Services General Reference.
@@ -790,69 +789,70 @@ func (c *Route53) CreateHostedZoneRequest(input *CreateHostedZoneInput) (req *re
 // API operation CreateHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidDomainName "InvalidDomainName"
-//   The specified domain name is not valid.
 //
-//   * ErrCodeHostedZoneAlreadyExists "HostedZoneAlreadyExists"
-//   The hosted zone you're trying to create already exists. Amazon Route 53 returns
-//   this error when a hosted zone has already been created with the specified
-//   CallerReference.
+//   - ErrCodeInvalidDomainName "InvalidDomainName"
+//     The specified domain name is not valid.
 //
-//   * ErrCodeTooManyHostedZones "TooManyHostedZones"
-//   This operation can't be completed either because the current account has
-//   reached the limit on the number of hosted zones or because you've reached
-//   the limit on the number of hosted zones that can be associated with a reusable
-//   delegation set.
+//   - ErrCodeHostedZoneAlreadyExists "HostedZoneAlreadyExists"
+//     The hosted zone you're trying to create already exists. Amazon Route 53 returns
+//     this error when a hosted zone has already been created with the specified
+//     CallerReference.
 //
-//   For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-//   in the Amazon Route 53 Developer Guide.
+//   - ErrCodeTooManyHostedZones "TooManyHostedZones"
+//     This operation can't be completed either because the current account has
+//     reached the limit on the number of hosted zones or because you've reached
+//     the limit on the number of hosted zones that can be associated with a reusable
+//     delegation set.
 //
-//   To get the current limit on hosted zones that can be created by an account,
-//   see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
+//     in the Amazon Route 53 Developer Guide.
 //
-//   To get the current limit on hosted zones that can be associated with a reusable
-//   delegation set, see GetReusableDelegationSetLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetReusableDelegationSetLimit.html).
+//     To get the current limit on hosted zones that can be created by an account,
+//     see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 //
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//     To get the current limit on hosted zones that can be associated with a reusable
+//     delegation set, see GetReusableDelegationSetLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetReusableDelegationSetLimit.html).
 //
-//   * ErrCodeInvalidVPCId "InvalidVPCId"
-//   The VPC ID that you specified either isn't a valid ID or the current account
-//   is not authorized to access this VPC.
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidVPCId "InvalidVPCId"
+//     The VPC ID that you specified either isn't a valid ID or the current account
+//     is not authorized to access this VPC.
 //
-//   * ErrCodeDelegationSetNotAvailable "DelegationSetNotAvailable"
-//   You can create a hosted zone that has the same name as an existing hosted
-//   zone (example.com is common), but there is a limit to the number of hosted
-//   zones that have the same name. If you get this error, Amazon Route 53 has
-//   reached that limit. If you own the domain name and Route 53 generates this
-//   error, contact Customer Support.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeConflictingDomainExists "ConflictingDomainExists"
-//   The cause of this error depends on the operation that you're performing:
+//   - ErrCodeDelegationSetNotAvailable "DelegationSetNotAvailable"
+//     You can create a hosted zone that has the same name as an existing hosted
+//     zone (example.com is common), but there is a limit to the number of hosted
+//     zones that have the same name. If you get this error, Amazon Route 53 has
+//     reached that limit. If you own the domain name and Route 53 generates this
+//     error, contact Customer Support.
 //
-//      * Create a public hosted zone: Two hosted zones that have the same name
-//      or that have a parent/child relationship (example.com and test.example.com)
-//      can't have any common name servers. You tried to create a hosted zone
-//      that has the same name as an existing hosted zone or that's the parent
-//      or child of an existing hosted zone, and you specified a delegation set
-//      that shares one or more name servers with the existing hosted zone. For
-//      more information, see CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html).
+//   - ErrCodeConflictingDomainExists "ConflictingDomainExists"
+//     The cause of this error depends on the operation that you're performing:
 //
-//      * Create a private hosted zone: A hosted zone with the specified name
-//      already exists and is already associated with the Amazon VPC that you
-//      specified.
+//   - Create a public hosted zone: Two hosted zones that have the same name
+//     or that have a parent/child relationship (example.com and test.example.com)
+//     can't have any common name servers. You tried to create a hosted zone
+//     that has the same name as an existing hosted zone or that's the parent
+//     or child of an existing hosted zone, and you specified a delegation set
+//     that shares one or more name servers with the existing hosted zone. For
+//     more information, see CreateReusableDelegationSet (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateReusableDelegationSet.html).
 //
-//      * Associate VPCs with a private hosted zone: The VPC that you specified
-//      is already associated with another hosted zone that has the same name.
+//   - Create a private hosted zone: A hosted zone with the specified name
+//     already exists and is already associated with the Amazon VPC that you
+//     specified.
 //
-//   * ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
-//   A reusable delegation set with the specified ID does not exist.
+//   - Associate VPCs with a private hosted zone: The VPC that you specified
+//     is already associated with another hosted zone that has the same name.
 //
-//   * ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
+//     A reusable delegation set with the specified ID does not exist.
+//
+//   - ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
+//     A reusable delegation set with the specified ID does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateHostedZone
 func (c *Route53) CreateHostedZone(input *CreateHostedZoneInput) (*CreateHostedZoneOutput, error) {
@@ -892,14 +892,13 @@ const opCreateKeySigningKey = "CreateKeySigningKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKeySigningKeyRequest method.
+//	req, resp := client.CreateKeySigningKeyRequest(params)
 //
-//    // Example sending a request using the CreateKeySigningKeyRequest method.
-//    req, resp := client.CreateKeySigningKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateKeySigningKey
 func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (req *request.Request, output *CreateKeySigningKeyOutput) {
@@ -931,41 +930,42 @@ func (c *Route53) CreateKeySigningKeyRequest(input *CreateKeySigningKeyInput) (r
 // API operation CreateKeySigningKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     Parameter name is not valid.
 //
-//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
-//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
-//   signing.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeInvalidKMSArn "InvalidKMSArn"
+//     The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//     signing.
 //
-//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
-//   Your hosted zone status isn't valid for this operation. In the hosted zone,
-//   change the status to enable DNSSEC or disable DNSSEC.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
 //
-//   * ErrCodeInvalidKeySigningKeyName "InvalidKeySigningKeyName"
-//   The key-signing key (KSK) name that you specified isn't a valid name.
+//   - ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//     Your hosted zone status isn't valid for this operation. In the hosted zone,
+//     change the status to enable DNSSEC or disable DNSSEC.
 //
-//   * ErrCodeKeySigningKeyAlreadyExists "KeySigningKeyAlreadyExists"
-//   You've already created a key-signing key (KSK) with this name or with the
-//   same customer managed key ARN.
+//   - ErrCodeInvalidKeySigningKeyName "InvalidKeySigningKeyName"
+//     The key-signing key (KSK) name that you specified isn't a valid name.
 //
-//   * ErrCodeTooManyKeySigningKeys "TooManyKeySigningKeys"
-//   You've reached the limit for the number of key-signing keys (KSKs). Remove
-//   at least one KSK, and then try again.
+//   - ErrCodeKeySigningKeyAlreadyExists "KeySigningKeyAlreadyExists"
+//     You've already created a key-signing key (KSK) with this name or with the
+//     same customer managed key ARN.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//   - ErrCodeTooManyKeySigningKeys "TooManyKeySigningKeys"
+//     You've reached the limit for the number of key-signing keys (KSKs). Remove
+//     at least one KSK, and then try again.
+//
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateKeySigningKey
 func (c *Route53) CreateKeySigningKey(input *CreateKeySigningKeyInput) (*CreateKeySigningKeyOutput, error) {
@@ -1005,14 +1005,13 @@ const opCreateQueryLoggingConfig = "CreateQueryLoggingConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateQueryLoggingConfigRequest method.
+//	req, resp := client.CreateQueryLoggingConfigRequest(params)
 //
-//    // Example sending a request using the CreateQueryLoggingConfigRequest method.
-//    req, resp := client.CreateQueryLoggingConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateQueryLoggingConfig
 func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfigInput) (req *request.Request, output *CreateQueryLoggingConfigOutput) {
@@ -1040,15 +1039,15 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // DNS query logs contain information about the queries that Route 53 receives
 // for a specified public hosted zone, such as the following:
 //
-//    * Route 53 edge location that responded to the DNS query
+//   - Route 53 edge location that responded to the DNS query
 //
-//    * Domain or subdomain that was requested
+//   - Domain or subdomain that was requested
 //
-//    * DNS record type, such as A or AAAA
+//   - DNS record type, such as A or AAAA
 //
-//    * DNS response code, such as NoError or ServFail
+//   - DNS response code, such as NoError or ServFail
 //
-// Log Group and Resource Policy
+// # Log Group and Resource Policy
 //
 // Before you create a query logging configuration, perform the following operations.
 //
@@ -1058,19 +1057,19 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // Create a CloudWatch Logs log group, and make note of the ARN, which you specify
 // when you create a query logging configuration. Note the following:
 //
-//    * You must create the log group in the us-east-1 region.
+//   - You must create the log group in the us-east-1 region.
 //
-//    * You must use the same Amazon Web Services account to create the log
-//    group and the hosted zone that you want to configure query logging for.
+//   - You must use the same Amazon Web Services account to create the log
+//     group and the hosted zone that you want to configure query logging for.
 //
-//    * When you create log groups for query logging, we recommend that you
-//    use a consistent prefix, for example: /aws/route53/hosted zone name In
-//    the next step, you'll create a resource policy, which controls access
-//    to one or more log groups and the associated Amazon Web Services resources,
-//    such as Route 53 hosted zones. There's a limit on the number of resource
-//    policies that you can create, so we recommend that you use a consistent
-//    prefix so you can use the same resource policy for all the log groups
-//    that you create for query logging.
+//   - When you create log groups for query logging, we recommend that you
+//     use a consistent prefix, for example: /aws/route53/hosted zone name In
+//     the next step, you'll create a resource policy, which controls access
+//     to one or more log groups and the associated Amazon Web Services resources,
+//     such as Route 53 hosted zones. There's a limit on the number of resource
+//     policies that you can create, so we recommend that you use a consistent
+//     prefix so you can use the same resource policy for all the log groups
+//     that you create for query logging.
 //
 // Create a CloudWatch Logs resource policy, and give it the permissions that
 // Route 53 needs to create log streams and to send query logs to log streams.
@@ -1086,12 +1085,12 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // it, you can optionally limit the permissions that a service has to a resource
 // in a resource-based policy by supplying the following values:
 //
-//    * For aws:SourceArn, supply the hosted zone ARN used in creating the query
-//    logging configuration. For example, aws:SourceArn: arn:aws:route53:::hostedzone/hosted
-//    zone ID.
+//   - For aws:SourceArn, supply the hosted zone ARN used in creating the query
+//     logging configuration. For example, aws:SourceArn: arn:aws:route53:::hostedzone/hosted
+//     zone ID.
 //
-//    * For aws:SourceAccount, supply the account ID for the account that creates
-//    the query logging configuration. For example, aws:SourceAccount:111111111111.
+//   - For aws:SourceAccount, supply the account ID for the account that creates
+//     the query logging configuration. For example, aws:SourceAccount:111111111111.
 //
 // For more information, see The confused deputy problem (https://docs.aws.amazon.com/IAM/latest/UserGuide/confused-deputy.html)
 // in the Amazon Web Services IAM User Guide.
@@ -1100,17 +1099,17 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // You must use the CloudWatch API, one of the Amazon Web Services SDKs, or
 // the CLI.
 //
-// Log Streams and Edge Locations
+// # Log Streams and Edge Locations
 //
 // When Route 53 finishes creating the configuration for DNS query logging,
 // it does the following:
 //
-//    * Creates a log stream for an edge location the first time that the edge
-//    location responds to DNS queries for the specified hosted zone. That log
-//    stream is used to log all queries that Route 53 responds to for that edge
-//    location.
+//   - Creates a log stream for an edge location the first time that the edge
+//     location responds to DNS queries for the specified hosted zone. That log
+//     stream is used to log all queries that Route 53 responds to for that edge
+//     location.
 //
-//    * Begins to send query logs to the applicable log stream.
+//   - Begins to send query logs to the applicable log stream.
 //
 // The name of each log stream is in the following format:
 //
@@ -1123,7 +1122,7 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // a list of edge locations, see "The Route 53 Global Network" on the Route
 // 53 Product Details (http://aws.amazon.com/route53/details/) page.
 //
-// Queries That Are Logged
+// # Queries That Are Logged
 //
 // Query logs contain only the queries that DNS resolvers forward to Route 53.
 // If a DNS resolver has already cached the response to a query (such as the
@@ -1137,18 +1136,18 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // to Your Website or Web Application (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/welcome-dns-service.html)
 // in the Amazon Route 53 Developer Guide.
 //
-// Log File Format
+// # Log File Format
 //
 // For a list of the values in each query log and the format of each value,
 // see Logging DNS Queries (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/query-logs.html)
 // in the Amazon Route 53 Developer Guide.
 //
-// Pricing
+// # Pricing
 //
 // For information about charges for query logs, see Amazon CloudWatch Pricing
 // (http://aws.amazon.com/cloudwatch/pricing/).
 //
-// How to Stop Logging
+// # How to Stop Logging
 //
 // If you want Route 53 to stop sending query logs to CloudWatch Logs, delete
 // the query logging configuration. For more information, see DeleteQueryLoggingConfig
@@ -1162,38 +1161,39 @@ func (c *Route53) CreateQueryLoggingConfigRequest(input *CreateQueryLoggingConfi
 // API operation CreateQueryLoggingConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchCloudWatchLogsLogGroup "NoSuchCloudWatchLogsLogGroup"
-//   There is no CloudWatch Logs log group with the specified ARN.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchCloudWatchLogsLogGroup "NoSuchCloudWatchLogsLogGroup"
+//     There is no CloudWatch Logs log group with the specified ARN.
 //
-//   * ErrCodeQueryLoggingConfigAlreadyExists "QueryLoggingConfigAlreadyExists"
-//   You can create only one query logging configuration for a hosted zone, and
-//   a query logging configuration already exists for this hosted zone.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeInsufficientCloudWatchLogsResourcePolicy "InsufficientCloudWatchLogsResourcePolicy"
-//   Amazon Route 53 doesn't have the permissions required to create log streams
-//   and send query logs to log streams. Possible causes include the following:
+//   - ErrCodeQueryLoggingConfigAlreadyExists "QueryLoggingConfigAlreadyExists"
+//     You can create only one query logging configuration for a hosted zone, and
+//     a query logging configuration already exists for this hosted zone.
 //
-//      * There is no resource policy that specifies the log group ARN in the
-//      value for Resource.
+//   - ErrCodeInsufficientCloudWatchLogsResourcePolicy "InsufficientCloudWatchLogsResourcePolicy"
+//     Amazon Route 53 doesn't have the permissions required to create log streams
+//     and send query logs to log streams. Possible causes include the following:
 //
-//      * The resource policy that includes the log group ARN in the value for
-//      Resource doesn't have the necessary permissions.
+//   - There is no resource policy that specifies the log group ARN in the
+//     value for Resource.
 //
-//      * The resource policy hasn't finished propagating yet.
+//   - The resource policy that includes the log group ARN in the value for
+//     Resource doesn't have the necessary permissions.
 //
-//      * The Key management service (KMS) key you specified doesn’t exist or
-//      it can’t be used with the log group associated with query log. Update
-//      or provide a resource policy to grant permissions for the KMS key.
+//   - The resource policy hasn't finished propagating yet.
+//
+//   - The Key management service (KMS) key you specified doesn’t exist or
+//     it can’t be used with the log group associated with query log. Update
+//     or provide a resource policy to grant permissions for the KMS key.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateQueryLoggingConfig
 func (c *Route53) CreateQueryLoggingConfig(input *CreateQueryLoggingConfigInput) (*CreateQueryLoggingConfigOutput, error) {
@@ -1233,14 +1233,13 @@ const opCreateReusableDelegationSet = "CreateReusableDelegationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReusableDelegationSetRequest method.
+//	req, resp := client.CreateReusableDelegationSetRequest(params)
 //
-//    // Example sending a request using the CreateReusableDelegationSetRequest method.
-//    req, resp := client.CreateReusableDelegationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateReusableDelegationSet
 func (c *Route53) CreateReusableDelegationSetRequest(input *CreateReusableDelegationSetInput) (req *request.Request, output *CreateReusableDelegationSetOutput) {
@@ -1297,18 +1296,18 @@ func (c *Route53) CreateReusableDelegationSetRequest(input *CreateReusableDelega
 // one or more name servers that are assigned to the reusable delegation set,
 // you can do one of the following:
 //
-//    * For small numbers of hosted zones—up to a few hundred—it's relatively
-//    easy to create reusable delegation sets until you get one that has four
-//    name servers that don't overlap with any of the name servers in your hosted
-//    zones.
+//   - For small numbers of hosted zones—up to a few hundred—it's relatively
+//     easy to create reusable delegation sets until you get one that has four
+//     name servers that don't overlap with any of the name servers in your hosted
+//     zones.
 //
-//    * For larger numbers of hosted zones, the easiest solution is to use more
-//    than one reusable delegation set.
+//   - For larger numbers of hosted zones, the easiest solution is to use more
+//     than one reusable delegation set.
 //
-//    * For larger numbers of hosted zones, you can also migrate hosted zones
-//    that have overlapping name servers to hosted zones that don't have overlapping
-//    name servers, then migrate the hosted zones again to use the reusable
-//    delegation set.
+//   - For larger numbers of hosted zones, you can also migrate hosted zones
+//     that have overlapping name servers to hosted zones that don't have overlapping
+//     name servers, then migrate the hosted zones again to use the reusable
+//     delegation set.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1318,39 +1317,40 @@ func (c *Route53) CreateReusableDelegationSetRequest(input *CreateReusableDelega
 // API operation CreateReusableDelegationSet for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeDelegationSetAlreadyCreated "DelegationSetAlreadyCreated"
-//   A delegation set with the same owner and caller reference combination has
-//   already been created.
 //
-//   * ErrCodeLimitsExceeded "LimitsExceeded"
-//   This operation can't be completed either because the current account has
-//   reached the limit on reusable delegation sets that it can create or because
-//   you've reached the limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone. To get the current limit on the number of reusable
-//   delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
-//   To get the current limit on the number of Amazon VPCs that you can associate
-//   with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//   - ErrCodeDelegationSetAlreadyCreated "DelegationSetAlreadyCreated"
+//     A delegation set with the same owner and caller reference combination has
+//     already been created.
 //
-//   * ErrCodeHostedZoneNotFound "HostedZoneNotFound"
-//   The specified HostedZone can't be found.
+//   - ErrCodeLimitsExceeded "LimitsExceeded"
+//     This operation can't be completed either because the current account has
+//     reached the limit on reusable delegation sets that it can create or because
+//     you've reached the limit on the number of Amazon VPCs that you can associate
+//     with a private hosted zone. To get the current limit on the number of reusable
+//     delegation sets, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     To get the current limit on the number of Amazon VPCs that you can associate
+//     with a private hosted zone, see GetHostedZoneLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetHostedZoneLimit.html).
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is not valid.
+//   - ErrCodeHostedZoneNotFound "HostedZoneNotFound"
+//     The specified HostedZone can't be found.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     Parameter name is not valid.
 //
-//   * ErrCodeDelegationSetNotAvailable "DelegationSetNotAvailable"
-//   You can create a hosted zone that has the same name as an existing hosted
-//   zone (example.com is common), but there is a limit to the number of hosted
-//   zones that have the same name. If you get this error, Amazon Route 53 has
-//   reached that limit. If you own the domain name and Route 53 generates this
-//   error, contact Customer Support.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeDelegationSetAlreadyReusable "DelegationSetAlreadyReusable"
-//   The specified delegation set has already been marked as reusable.
+//   - ErrCodeDelegationSetNotAvailable "DelegationSetNotAvailable"
+//     You can create a hosted zone that has the same name as an existing hosted
+//     zone (example.com is common), but there is a limit to the number of hosted
+//     zones that have the same name. If you get this error, Amazon Route 53 has
+//     reached that limit. If you own the domain name and Route 53 generates this
+//     error, contact Customer Support.
+//
+//   - ErrCodeDelegationSetAlreadyReusable "DelegationSetAlreadyReusable"
+//     The specified delegation set has already been marked as reusable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateReusableDelegationSet
 func (c *Route53) CreateReusableDelegationSet(input *CreateReusableDelegationSetInput) (*CreateReusableDelegationSetOutput, error) {
@@ -1390,14 +1390,13 @@ const opCreateTrafficPolicy = "CreateTrafficPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficPolicyRequest method.
+//	req, resp := client.CreateTrafficPolicyRequest(params)
 //
-//    // Example sending a request using the CreateTrafficPolicyRequest method.
-//    req, resp := client.CreateTrafficPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicy
 func (c *Route53) CreateTrafficPolicyRequest(input *CreateTrafficPolicyInput) (req *request.Request, output *CreateTrafficPolicyOutput) {
@@ -1430,27 +1429,28 @@ func (c *Route53) CreateTrafficPolicyRequest(input *CreateTrafficPolicyInput) (r
 // API operation CreateTrafficPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeTooManyTrafficPolicies "TooManyTrafficPolicies"
-//   This traffic policy can't be created because the current account has reached
-//   the limit on the number of traffic policies.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-//   in the Amazon Route 53 Developer Guide.
+//   - ErrCodeTooManyTrafficPolicies "TooManyTrafficPolicies"
+//     This traffic policy can't be created because the current account has reached
+//     the limit on the number of traffic policies.
 //
-//   To get the current limit for an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
+//     in the Amazon Route 53 Developer Guide.
 //
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//     To get the current limit for an account, see GetAccountLimit (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 //
-//   * ErrCodeTrafficPolicyAlreadyExists "TrafficPolicyAlreadyExists"
-//   A traffic policy that has the same value for Name already exists.
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//   * ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
-//   The format of the traffic policy document that you specified in the Document
-//   element is not valid.
+//   - ErrCodeTrafficPolicyAlreadyExists "TrafficPolicyAlreadyExists"
+//     A traffic policy that has the same value for Name already exists.
+//
+//   - ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
+//     The format of the traffic policy document that you specified in the Document
+//     element is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicy
 func (c *Route53) CreateTrafficPolicy(input *CreateTrafficPolicyInput) (*CreateTrafficPolicyOutput, error) {
@@ -1490,14 +1490,13 @@ const opCreateTrafficPolicyInstance = "CreateTrafficPolicyInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficPolicyInstanceRequest method.
+//	req, resp := client.CreateTrafficPolicyInstanceRequest(params)
 //
-//    // Example sending a request using the CreateTrafficPolicyInstanceRequest method.
-//    req, resp := client.CreateTrafficPolicyInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicyInstance
 func (c *Route53) CreateTrafficPolicyInstanceRequest(input *CreateTrafficPolicyInstanceInput) (req *request.Request, output *CreateTrafficPolicyInstanceOutput) {
@@ -1533,30 +1532,31 @@ func (c *Route53) CreateTrafficPolicyInstanceRequest(input *CreateTrafficPolicyI
 // API operation CreateTrafficPolicyInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeTooManyTrafficPolicyInstances "TooManyTrafficPolicyInstances"
-//   This traffic policy instance can't be created because the current account
-//   has reached the limit on the number of traffic policy instances.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
-//   in the Amazon Route 53 Developer Guide.
+//   - ErrCodeTooManyTrafficPolicyInstances "TooManyTrafficPolicyInstances"
+//     This traffic policy instance can't be created because the current account
+//     has reached the limit on the number of traffic policy instances.
 //
-//   For information about how to get the current limit for an account, see GetAccountLimit
-//   (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
+//     For information about default limits, see Limits (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html)
+//     in the Amazon Route 53 Developer Guide.
 //
-//   To request a higher limit, create a case (http://aws.amazon.com/route53-request)
-//   with the Amazon Web Services Support Center.
+//     For information about how to get the current limit for an account, see GetAccountLimit
+//     (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetAccountLimit.html).
 //
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
+//     To request a higher limit, create a case (http://aws.amazon.com/route53-request)
+//     with the Amazon Web Services Support Center.
 //
-//   * ErrCodeTrafficPolicyInstanceAlreadyExists "TrafficPolicyInstanceAlreadyExists"
-//   There is already a traffic policy instance with the specified ID.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
+//
+//   - ErrCodeTrafficPolicyInstanceAlreadyExists "TrafficPolicyInstanceAlreadyExists"
+//     There is already a traffic policy instance with the specified ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicyInstance
 func (c *Route53) CreateTrafficPolicyInstance(input *CreateTrafficPolicyInstanceInput) (*CreateTrafficPolicyInstanceOutput, error) {
@@ -1596,14 +1596,13 @@ const opCreateTrafficPolicyVersion = "CreateTrafficPolicyVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrafficPolicyVersionRequest method.
+//	req, resp := client.CreateTrafficPolicyVersionRequest(params)
 //
-//    // Example sending a request using the CreateTrafficPolicyVersionRequest method.
-//    req, resp := client.CreateTrafficPolicyVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicyVersion
 func (c *Route53) CreateTrafficPolicyVersionRequest(input *CreateTrafficPolicyVersionInput) (req *request.Request, output *CreateTrafficPolicyVersionOutput) {
@@ -1641,29 +1640,30 @@ func (c *Route53) CreateTrafficPolicyVersionRequest(input *CreateTrafficPolicyVe
 // API operation CreateTrafficPolicyVersion for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
 //
-//   * ErrCodeTooManyTrafficPolicyVersionsForCurrentPolicy "TooManyTrafficPolicyVersionsForCurrentPolicy"
-//   This traffic policy version can't be created because you've reached the limit
-//   of 1000 on the number of versions that you can create for the current traffic
-//   policy.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   To create more traffic policy versions, you can use GetTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html)
-//   to get the traffic policy document for a specified traffic policy version,
-//   and then use CreateTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html)
-//   to create a new traffic policy using the traffic policy document.
+//   - ErrCodeTooManyTrafficPolicyVersionsForCurrentPolicy "TooManyTrafficPolicyVersionsForCurrentPolicy"
+//     This traffic policy version can't be created because you've reached the limit
+//     of 1000 on the number of versions that you can create for the current traffic
+//     policy.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//     To create more traffic policy versions, you can use GetTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html)
+//     to get the traffic policy document for a specified traffic policy version,
+//     and then use CreateTrafficPolicy (https://docs.aws.amazon.com/Route53/latest/APIReference/API_CreateTrafficPolicy.html)
+//     to create a new traffic policy using the traffic policy document.
 //
-//   * ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
-//   The format of the traffic policy document that you specified in the Document
-//   element is not valid.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
+//
+//   - ErrCodeInvalidTrafficPolicyDocument "InvalidTrafficPolicyDocument"
+//     The format of the traffic policy document that you specified in the Document
+//     element is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateTrafficPolicyVersion
 func (c *Route53) CreateTrafficPolicyVersion(input *CreateTrafficPolicyVersionInput) (*CreateTrafficPolicyVersionOutput, error) {
@@ -1703,14 +1703,13 @@ const opCreateVPCAssociationAuthorization = "CreateVPCAssociationAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVPCAssociationAuthorizationRequest method.
+//	req, resp := client.CreateVPCAssociationAuthorizationRequest(params)
 //
-//    // Example sending a request using the CreateVPCAssociationAuthorizationRequest method.
-//    req, resp := client.CreateVPCAssociationAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateVPCAssociationAuthorization
 func (c *Route53) CreateVPCAssociationAuthorizationRequest(input *CreateVPCAssociationAuthorizationInput) (req *request.Request, output *CreateVPCAssociationAuthorizationOutput) {
@@ -1750,26 +1749,27 @@ func (c *Route53) CreateVPCAssociationAuthorizationRequest(input *CreateVPCAssoc
 // API operation CreateVPCAssociationAuthorization for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeTooManyVPCAssociationAuthorizations "TooManyVPCAssociationAuthorizations"
-//   You've created the maximum number of authorizations that can be created for
-//   the specified hosted zone. To authorize another VPC to be associated with
-//   the hosted zone, submit a DeleteVPCAssociationAuthorization request to remove
-//   an existing authorization. To get a list of existing authorizations, submit
-//   a ListVPCAssociationAuthorizations request.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeTooManyVPCAssociationAuthorizations "TooManyVPCAssociationAuthorizations"
+//     You've created the maximum number of authorizations that can be created for
+//     the specified hosted zone. To authorize another VPC to be associated with
+//     the hosted zone, submit a DeleteVPCAssociationAuthorization request to remove
+//     an existing authorization. To get a list of existing authorizations, submit
+//     a ListVPCAssociationAuthorizations request.
 //
-//   * ErrCodeInvalidVPCId "InvalidVPCId"
-//   The VPC ID that you specified either isn't a valid ID or the current account
-//   is not authorized to access this VPC.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidVPCId "InvalidVPCId"
+//     The VPC ID that you specified either isn't a valid ID or the current account
+//     is not authorized to access this VPC.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/CreateVPCAssociationAuthorization
 func (c *Route53) CreateVPCAssociationAuthorization(input *CreateVPCAssociationAuthorizationInput) (*CreateVPCAssociationAuthorizationOutput, error) {
@@ -1809,14 +1809,13 @@ const opDeactivateKeySigningKey = "DeactivateKeySigningKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeactivateKeySigningKeyRequest method.
+//	req, resp := client.DeactivateKeySigningKeyRequest(params)
 //
-//    // Example sending a request using the DeactivateKeySigningKeyRequest method.
-//    req, resp := client.DeactivateKeySigningKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeactivateKeySigningKey
 func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyInput) (req *request.Request, output *DeactivateKeySigningKeyOutput) {
@@ -1848,31 +1847,32 @@ func (c *Route53) DeactivateKeySigningKeyRequest(input *DeactivateKeySigningKeyI
 // API operation DeactivateKeySigningKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key-signing key (KSK) doesn't exist.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//     The specified key-signing key (KSK) doesn't exist.
 //
-//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
-//   Your hosted zone status isn't valid for this operation. In the hosted zone,
-//   change the status to enable DNSSEC or disable DNSSEC.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
 //
-//   * ErrCodeKeySigningKeyInUse "KeySigningKeyInUse"
-//   The key-signing key (KSK) that you specified can't be deactivated because
-//   it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
-//   or add or enable another KSK.
+//   - ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//     Your hosted zone status isn't valid for this operation. In the hosted zone,
+//     change the status to enable DNSSEC or disable DNSSEC.
 //
-//   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
-//   The key-signing key (KSK) is specified in a parent DS record.
+//   - ErrCodeKeySigningKeyInUse "KeySigningKeyInUse"
+//     The key-signing key (KSK) that you specified can't be deactivated because
+//     it's the only KSK for a currently-enabled DNSSEC. Disable DNSSEC signing,
+//     or add or enable another KSK.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
+//     The key-signing key (KSK) is specified in a parent DS record.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeactivateKeySigningKey
 func (c *Route53) DeactivateKeySigningKey(input *DeactivateKeySigningKeyInput) (*DeactivateKeySigningKeyOutput, error) {
@@ -1912,14 +1912,13 @@ const opDeleteHealthCheck = "DeleteHealthCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHealthCheckRequest method.
+//	req, resp := client.DeleteHealthCheckRequest(params)
 //
-//    // Example sending a request using the DeleteHealthCheckRequest method.
-//    req, resp := client.DeleteHealthCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteHealthCheck
 func (c *Route53) DeleteHealthCheckRequest(input *DeleteHealthCheckInput) (req *request.Request, output *DeleteHealthCheckOutput) {
@@ -1965,14 +1964,15 @@ func (c *Route53) DeleteHealthCheckRequest(input *DeleteHealthCheckInput) (req *
 // API operation DeleteHealthCheck for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
 //
-//   * ErrCodeHealthCheckInUse "HealthCheckInUse"
-//   This error code is not in use.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeHealthCheckInUse "HealthCheckInUse"
+//     This error code is not in use.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteHealthCheck
 func (c *Route53) DeleteHealthCheck(input *DeleteHealthCheckInput) (*DeleteHealthCheckOutput, error) {
@@ -2012,14 +2012,13 @@ const opDeleteHostedZone = "DeleteHostedZone"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteHostedZoneRequest method.
+//	req, resp := client.DeleteHostedZoneRequest(params)
 //
-//    // Example sending a request using the DeleteHostedZoneRequest method.
-//    req, resp := client.DeleteHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteHostedZone
 func (c *Route53) DeleteHostedZoneRequest(input *DeleteHostedZoneInput) (req *request.Request, output *DeleteHostedZoneOutput) {
@@ -2081,11 +2080,11 @@ func (c *Route53) DeleteHostedZoneRequest(input *DeleteHostedZoneInput) (req *re
 //
 // To verify that the hosted zone has been deleted, do one of the following:
 //
-//    * Use the GetHostedZone action to request information about the hosted
-//    zone.
+//   - Use the GetHostedZone action to request information about the hosted
+//     zone.
 //
-//    * Use the ListHostedZones action to get a list of the hosted zones associated
-//    with the current Amazon Web Services account.
+//   - Use the ListHostedZones action to get a list of the hosted zones associated
+//     with the current Amazon Web Services account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2095,24 +2094,25 @@ func (c *Route53) DeleteHostedZoneRequest(input *DeleteHostedZoneInput) (req *re
 // API operation DeleteHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeHostedZoneNotEmpty "HostedZoneNotEmpty"
-//   The hosted zone contains resource records that are not SOA or NS records.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeHostedZoneNotEmpty "HostedZoneNotEmpty"
+//     The hosted zone contains resource records that are not SOA or NS records.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
 //
-//   * ErrCodeInvalidDomainName "InvalidDomainName"
-//   The specified domain name is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeInvalidDomainName "InvalidDomainName"
+//     The specified domain name is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteHostedZone
 func (c *Route53) DeleteHostedZone(input *DeleteHostedZoneInput) (*DeleteHostedZoneOutput, error) {
@@ -2152,14 +2152,13 @@ const opDeleteKeySigningKey = "DeleteKeySigningKey"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKeySigningKeyRequest method.
+//	req, resp := client.DeleteKeySigningKeyRequest(params)
 //
-//    // Example sending a request using the DeleteKeySigningKeyRequest method.
-//    req, resp := client.DeleteKeySigningKeyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteKeySigningKey
 func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (req *request.Request, output *DeleteKeySigningKeyOutput) {
@@ -2198,27 +2197,28 @@ func (c *Route53) DeleteKeySigningKeyRequest(input *DeleteKeySigningKeyInput) (r
 // API operation DeleteKeySigningKey for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
-//   The specified key-signing key (KSK) doesn't exist.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeNoSuchKeySigningKey "NoSuchKeySigningKey"
+//     The specified key-signing key (KSK) doesn't exist.
 //
-//   * ErrCodeInvalidSigningStatus "InvalidSigningStatus"
-//   Your hosted zone status isn't valid for this operation. In the hosted zone,
-//   change the status to enable DNSSEC or disable DNSSEC.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
 //
-//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
-//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
-//   signing.
+//   - ErrCodeInvalidSigningStatus "InvalidSigningStatus"
+//     Your hosted zone status isn't valid for this operation. In the hosted zone,
+//     change the status to enable DNSSEC or disable DNSSEC.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidKMSArn "InvalidKMSArn"
+//     The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//     signing.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteKeySigningKey
 func (c *Route53) DeleteKeySigningKey(input *DeleteKeySigningKeyInput) (*DeleteKeySigningKeyOutput, error) {
@@ -2258,14 +2258,13 @@ const opDeleteQueryLoggingConfig = "DeleteQueryLoggingConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteQueryLoggingConfigRequest method.
+//	req, resp := client.DeleteQueryLoggingConfigRequest(params)
 //
-//    // Example sending a request using the DeleteQueryLoggingConfigRequest method.
-//    req, resp := client.DeleteQueryLoggingConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteQueryLoggingConfig
 func (c *Route53) DeleteQueryLoggingConfigRequest(input *DeleteQueryLoggingConfigInput) (req *request.Request, output *DeleteQueryLoggingConfigOutput) {
@@ -2301,15 +2300,16 @@ func (c *Route53) DeleteQueryLoggingConfigRequest(input *DeleteQueryLoggingConfi
 // API operation DeleteQueryLoggingConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchQueryLoggingConfig "NoSuchQueryLoggingConfig"
-//   There is no DNS query logging configuration with the specified ID.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchQueryLoggingConfig "NoSuchQueryLoggingConfig"
+//     There is no DNS query logging configuration with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteQueryLoggingConfig
 func (c *Route53) DeleteQueryLoggingConfig(input *DeleteQueryLoggingConfigInput) (*DeleteQueryLoggingConfigOutput, error) {
@@ -2349,14 +2349,13 @@ const opDeleteReusableDelegationSet = "DeleteReusableDelegationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReusableDelegationSetRequest method.
+//	req, resp := client.DeleteReusableDelegationSetRequest(params)
 //
-//    // Example sending a request using the DeleteReusableDelegationSetRequest method.
-//    req, resp := client.DeleteReusableDelegationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteReusableDelegationSet
 func (c *Route53) DeleteReusableDelegationSetRequest(input *DeleteReusableDelegationSetInput) (req *request.Request, output *DeleteReusableDelegationSetOutput) {
@@ -2396,18 +2395,19 @@ func (c *Route53) DeleteReusableDelegationSetRequest(input *DeleteReusableDelega
 // API operation DeleteReusableDelegationSet for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
-//   A reusable delegation set with the specified ID does not exist.
 //
-//   * ErrCodeDelegationSetInUse "DelegationSetInUse"
-//   The specified delegation contains associated hosted zones which must be deleted
-//   before the reusable delegation set can be deleted.
+//   - ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
+//     A reusable delegation set with the specified ID does not exist.
 //
-//   * ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeDelegationSetInUse "DelegationSetInUse"
+//     The specified delegation contains associated hosted zones which must be deleted
+//     before the reusable delegation set can be deleted.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
+//     A reusable delegation set with the specified ID does not exist.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteReusableDelegationSet
 func (c *Route53) DeleteReusableDelegationSet(input *DeleteReusableDelegationSetInput) (*DeleteReusableDelegationSetOutput, error) {
@@ -2447,14 +2447,13 @@ const opDeleteTrafficPolicy = "DeleteTrafficPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficPolicyRequest method.
+//	req, resp := client.DeleteTrafficPolicyRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficPolicyRequest method.
-//    req, resp := client.DeleteTrafficPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteTrafficPolicy
 func (c *Route53) DeleteTrafficPolicyRequest(input *DeleteTrafficPolicyInput) (req *request.Request, output *DeleteTrafficPolicyOutput) {
@@ -2482,14 +2481,14 @@ func (c *Route53) DeleteTrafficPolicyRequest(input *DeleteTrafficPolicyInput) (r
 // that it has been deleted. However, Route 53 never fully deletes the traffic
 // policy. Note the following:
 //
-//    * Deleted traffic policies aren't listed if you run ListTrafficPolicies
-//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListTrafficPolicies.html).
+//   - Deleted traffic policies aren't listed if you run ListTrafficPolicies
+//     (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListTrafficPolicies.html).
 //
-//    * There's no way to get a list of deleted policies.
+//   - There's no way to get a list of deleted policies.
 //
-//    * If you retain the ID of the policy, you can get information about the
-//    policy, including the traffic policy document, by running GetTrafficPolicy
-//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html).
+//   - If you retain the ID of the policy, you can get information about the
+//     policy, including the traffic policy document, by running GetTrafficPolicy
+//     (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GetTrafficPolicy.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2499,19 +2498,20 @@ func (c *Route53) DeleteTrafficPolicyRequest(input *DeleteTrafficPolicyInput) (r
 // API operation DeleteTrafficPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
 //
-//   * ErrCodeTrafficPolicyInUse "TrafficPolicyInUse"
-//   One or more traffic policy instances were created by using the specified
-//   traffic policy.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//   - ErrCodeTrafficPolicyInUse "TrafficPolicyInUse"
+//     One or more traffic policy instances were created by using the specified
+//     traffic policy.
+//
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteTrafficPolicy
 func (c *Route53) DeleteTrafficPolicy(input *DeleteTrafficPolicyInput) (*DeleteTrafficPolicyOutput, error) {
@@ -2551,14 +2551,13 @@ const opDeleteTrafficPolicyInstance = "DeleteTrafficPolicyInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrafficPolicyInstanceRequest method.
+//	req, resp := client.DeleteTrafficPolicyInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteTrafficPolicyInstanceRequest method.
-//    req, resp := client.DeleteTrafficPolicyInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteTrafficPolicyInstance
 func (c *Route53) DeleteTrafficPolicyInstanceRequest(input *DeleteTrafficPolicyInstanceInput) (req *request.Request, output *DeleteTrafficPolicyInstanceOutput) {
@@ -2593,18 +2592,19 @@ func (c *Route53) DeleteTrafficPolicyInstanceRequest(input *DeleteTrafficPolicyI
 // API operation DeleteTrafficPolicyInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteTrafficPolicyInstance
 func (c *Route53) DeleteTrafficPolicyInstance(input *DeleteTrafficPolicyInstanceInput) (*DeleteTrafficPolicyInstanceOutput, error) {
@@ -2644,14 +2644,13 @@ const opDeleteVPCAssociationAuthorization = "DeleteVPCAssociationAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVPCAssociationAuthorizationRequest method.
+//	req, resp := client.DeleteVPCAssociationAuthorizationRequest(params)
 //
-//    // Example sending a request using the DeleteVPCAssociationAuthorizationRequest method.
-//    req, resp := client.DeleteVPCAssociationAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteVPCAssociationAuthorization
 func (c *Route53) DeleteVPCAssociationAuthorizationRequest(input *DeleteVPCAssociationAuthorizationInput) (req *request.Request, output *DeleteVPCAssociationAuthorizationOutput) {
@@ -2692,23 +2691,24 @@ func (c *Route53) DeleteVPCAssociationAuthorizationRequest(input *DeleteVPCAssoc
 // API operation DeleteVPCAssociationAuthorization for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
 //
-//   * ErrCodeVPCAssociationAuthorizationNotFound "VPCAssociationAuthorizationNotFound"
-//   The VPC that you specified is not authorized to be associated with the hosted
-//   zone.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeVPCAssociationAuthorizationNotFound "VPCAssociationAuthorizationNotFound"
+//     The VPC that you specified is not authorized to be associated with the hosted
+//     zone.
 //
-//   * ErrCodeInvalidVPCId "InvalidVPCId"
-//   The VPC ID that you specified either isn't a valid ID or the current account
-//   is not authorized to access this VPC.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidVPCId "InvalidVPCId"
+//     The VPC ID that you specified either isn't a valid ID or the current account
+//     is not authorized to access this VPC.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DeleteVPCAssociationAuthorization
 func (c *Route53) DeleteVPCAssociationAuthorization(input *DeleteVPCAssociationAuthorizationInput) (*DeleteVPCAssociationAuthorizationOutput, error) {
@@ -2748,14 +2748,13 @@ const opDisableHostedZoneDNSSEC = "DisableHostedZoneDNSSEC"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisableHostedZoneDNSSECRequest method.
+//	req, resp := client.DisableHostedZoneDNSSECRequest(params)
 //
-//    // Example sending a request using the DisableHostedZoneDNSSECRequest method.
-//    req, resp := client.DisableHostedZoneDNSSECRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisableHostedZoneDNSSEC
 func (c *Route53) DisableHostedZoneDNSSECRequest(input *DisableHostedZoneDNSSECInput) (req *request.Request, output *DisableHostedZoneDNSSECOutput) {
@@ -2787,32 +2786,33 @@ func (c *Route53) DisableHostedZoneDNSSECRequest(input *DisableHostedZoneDNSSECI
 // API operation DisableHostedZoneDNSSEC for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     Parameter name is not valid.
 //
-//   * ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
-//   The key-signing key (KSK) is specified in a parent DS record.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeDNSSECNotFound "DNSSECNotFound"
-//   The hosted zone doesn't have any DNSSEC resources.
+//   - ErrCodeKeySigningKeyInParentDSRecord "KeySigningKeyInParentDSRecord"
+//     The key-signing key (KSK) is specified in a parent DS record.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeDNSSECNotFound "DNSSECNotFound"
+//     The hosted zone doesn't have any DNSSEC resources.
 //
-//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
-//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
-//   signing.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidKMSArn "InvalidKMSArn"
+//     The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//     signing.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisableHostedZoneDNSSEC
 func (c *Route53) DisableHostedZoneDNSSEC(input *DisableHostedZoneDNSSECInput) (*DisableHostedZoneDNSSECOutput, error) {
@@ -2852,14 +2852,13 @@ const opDisassociateVPCFromHostedZone = "DisassociateVPCFromHostedZone"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateVPCFromHostedZoneRequest method.
+//	req, resp := client.DisassociateVPCFromHostedZoneRequest(params)
 //
-//    // Example sending a request using the DisassociateVPCFromHostedZoneRequest method.
-//    req, resp := client.DisassociateVPCFromHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisassociateVPCFromHostedZone
 func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFromHostedZoneInput) (req *request.Request, output *DisassociateVPCFromHostedZoneOutput) {
@@ -2883,22 +2882,22 @@ func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFro
 // Disassociates an Amazon Virtual Private Cloud (Amazon VPC) from an Amazon
 // Route 53 private hosted zone. Note the following:
 //
-//    * You can't disassociate the last Amazon VPC from a private hosted zone.
+//   - You can't disassociate the last Amazon VPC from a private hosted zone.
 //
-//    * You can't convert a private hosted zone into a public hosted zone.
+//   - You can't convert a private hosted zone into a public hosted zone.
 //
-//    * You can submit a DisassociateVPCFromHostedZone request using either
-//    the account that created the hosted zone or the account that created the
-//    Amazon VPC.
+//   - You can submit a DisassociateVPCFromHostedZone request using either
+//     the account that created the hosted zone or the account that created the
+//     Amazon VPC.
 //
-//    * Some services, such as Cloud Map and Amazon Elastic File System (Amazon
-//    EFS) automatically create hosted zones and associate VPCs with the hosted
-//    zones. A service can create a hosted zone using your account or using
-//    its own account. You can disassociate a VPC from a hosted zone only if
-//    the service created the hosted zone using your account. When you run DisassociateVPCFromHostedZone
-//    (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZonesByVPC.html),
-//    if the hosted zone has a value for OwningAccount, you can use DisassociateVPCFromHostedZone.
-//    If the hosted zone has a value for OwningService, you can't use DisassociateVPCFromHostedZone.
+//   - Some services, such as Cloud Map and Amazon Elastic File System (Amazon
+//     EFS) automatically create hosted zones and associate VPCs with the hosted
+//     zones. A service can create a hosted zone using your account or using
+//     its own account. You can disassociate a VPC from a hosted zone only if
+//     the service created the hosted zone using your account. When you run DisassociateVPCFromHostedZone
+//     (https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZonesByVPC.html),
+//     if the hosted zone has a value for OwningAccount, you can use DisassociateVPCFromHostedZone.
+//     If the hosted zone has a value for OwningService, you can't use DisassociateVPCFromHostedZone.
 //
 // When revoking access, the hosted zone and the Amazon VPC must belong to the
 // same partition. A partition is a group of Amazon Web Services Regions. Each
@@ -2906,11 +2905,11 @@ func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFro
 //
 // The following are the supported partitions:
 //
-//    * aws - Amazon Web Services Regions
+//   - aws - Amazon Web Services Regions
 //
-//    * aws-cn - China Regions
+//   - aws-cn - China Regions
 //
-//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//   - aws-us-gov - Amazon Web Services GovCloud (US) Region
 //
 // For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 // in the Amazon Web Services General Reference.
@@ -2923,23 +2922,24 @@ func (c *Route53) DisassociateVPCFromHostedZoneRequest(input *DisassociateVPCFro
 // API operation DisassociateVPCFromHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidVPCId "InvalidVPCId"
-//   The VPC ID that you specified either isn't a valid ID or the current account
-//   is not authorized to access this VPC.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeVPCAssociationNotFound "VPCAssociationNotFound"
-//   The specified VPC and hosted zone are not currently associated.
+//   - ErrCodeInvalidVPCId "InvalidVPCId"
+//     The VPC ID that you specified either isn't a valid ID or the current account
+//     is not authorized to access this VPC.
 //
-//   * ErrCodeLastVPCAssociation "LastVPCAssociation"
-//   The VPC that you're trying to disassociate from the private hosted zone is
-//   the last VPC that is associated with the hosted zone. Amazon Route 53 doesn't
-//   support disassociating the last VPC from a hosted zone.
+//   - ErrCodeVPCAssociationNotFound "VPCAssociationNotFound"
+//     The specified VPC and hosted zone are not currently associated.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeLastVPCAssociation "LastVPCAssociation"
+//     The VPC that you're trying to disassociate from the private hosted zone is
+//     the last VPC that is associated with the hosted zone. Amazon Route 53 doesn't
+//     support disassociating the last VPC from a hosted zone.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/DisassociateVPCFromHostedZone
 func (c *Route53) DisassociateVPCFromHostedZone(input *DisassociateVPCFromHostedZoneInput) (*DisassociateVPCFromHostedZoneOutput, error) {
@@ -2979,14 +2979,13 @@ const opEnableHostedZoneDNSSEC = "EnableHostedZoneDNSSEC"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the EnableHostedZoneDNSSECRequest method.
+//	req, resp := client.EnableHostedZoneDNSSECRequest(params)
 //
-//    // Example sending a request using the EnableHostedZoneDNSSECRequest method.
-//    req, resp := client.EnableHostedZoneDNSSECRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/EnableHostedZoneDNSSEC
 func (c *Route53) EnableHostedZoneDNSSECRequest(input *EnableHostedZoneDNSSECInput) (req *request.Request, output *EnableHostedZoneDNSSECOutput) {
@@ -3017,36 +3016,37 @@ func (c *Route53) EnableHostedZoneDNSSECRequest(input *EnableHostedZoneDNSSECInp
 // API operation EnableHostedZoneDNSSEC for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     Parameter name is not valid.
 //
-//   * ErrCodeKeySigningKeyWithActiveStatusNotFound "KeySigningKeyWithActiveStatusNotFound"
-//   A key-signing key (KSK) with ACTIVE status wasn't found.
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
-//   * ErrCodeInvalidKMSArn "InvalidKMSArn"
-//   The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
-//   signing.
+//   - ErrCodeKeySigningKeyWithActiveStatusNotFound "KeySigningKeyWithActiveStatusNotFound"
+//     A key-signing key (KSK) with ACTIVE status wasn't found.
 //
-//   * ErrCodeHostedZonePartiallyDelegated "HostedZonePartiallyDelegated"
-//   The hosted zone nameservers don't match the parent nameservers. The hosted
-//   zone and parent must have the same nameservers.
+//   - ErrCodeInvalidKMSArn "InvalidKMSArn"
+//     The KeyManagementServiceArn that you specified isn't valid to use with DNSSEC
+//     signing.
 //
-//   * ErrCodeDNSSECNotFound "DNSSECNotFound"
-//   The hosted zone doesn't have any DNSSEC resources.
+//   - ErrCodeHostedZonePartiallyDelegated "HostedZonePartiallyDelegated"
+//     The hosted zone nameservers don't match the parent nameservers. The hosted
+//     zone and parent must have the same nameservers.
 //
-//   * ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
-//   The key-signing key (KSK) status isn't valid or another KSK has the status
-//   INTERNAL_FAILURE.
+//   - ErrCodeDNSSECNotFound "DNSSECNotFound"
+//     The hosted zone doesn't have any DNSSEC resources.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidKeySigningKeyStatus "InvalidKeySigningKeyStatus"
+//     The key-signing key (KSK) status isn't valid or another KSK has the status
+//     INTERNAL_FAILURE.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/EnableHostedZoneDNSSEC
 func (c *Route53) EnableHostedZoneDNSSEC(input *EnableHostedZoneDNSSECInput) (*EnableHostedZoneDNSSECOutput, error) {
@@ -3086,14 +3086,13 @@ const opGetAccountLimit = "GetAccountLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAccountLimitRequest method.
+//	req, resp := client.GetAccountLimitRequest(params)
 //
-//    // Example sending a request using the GetAccountLimitRequest method.
-//    req, resp := client.GetAccountLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetAccountLimit
 func (c *Route53) GetAccountLimitRequest(input *GetAccountLimitInput) (req *request.Request, output *GetAccountLimitOutput) {
@@ -3134,8 +3133,8 @@ func (c *Route53) GetAccountLimitRequest(input *GetAccountLimitInput) (req *requ
 // API operation GetAccountLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetAccountLimit
 func (c *Route53) GetAccountLimit(input *GetAccountLimitInput) (*GetAccountLimitOutput, error) {
@@ -3175,14 +3174,13 @@ const opGetChange = "GetChange"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChangeRequest method.
+//	req, resp := client.GetChangeRequest(params)
 //
-//    // Example sending a request using the GetChangeRequest method.
-//    req, resp := client.GetChangeRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetChange
 func (c *Route53) GetChangeRequest(input *GetChangeInput) (req *request.Request, output *GetChangeOutput) {
@@ -3206,12 +3204,12 @@ func (c *Route53) GetChangeRequest(input *GetChangeInput) (req *request.Request,
 // Returns the current status of a change batch request. The status is one of
 // the following values:
 //
-//    * PENDING indicates that the changes in this request have not propagated
-//    to all Amazon Route 53 DNS servers. This is the initial status of all
-//    change batch requests.
+//   - PENDING indicates that the changes in this request have not propagated
+//     to all Amazon Route 53 DNS servers. This is the initial status of all
+//     change batch requests.
 //
-//    * INSYNC indicates that the changes have propagated to all Route 53 DNS
-//    servers.
+//   - INSYNC indicates that the changes have propagated to all Route 53 DNS
+//     servers.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3221,11 +3219,12 @@ func (c *Route53) GetChangeRequest(input *GetChangeInput) (req *request.Request,
 // API operation GetChange for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchChange "NoSuchChange"
-//   A change with the specified change ID does not exist.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchChange "NoSuchChange"
+//     A change with the specified change ID does not exist.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetChange
 func (c *Route53) GetChange(input *GetChangeInput) (*GetChangeOutput, error) {
@@ -3265,14 +3264,13 @@ const opGetCheckerIpRanges = "GetCheckerIpRanges"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCheckerIpRangesRequest method.
+//	req, resp := client.GetCheckerIpRangesRequest(params)
 //
-//    // Example sending a request using the GetCheckerIpRangesRequest method.
-//    req, resp := client.GetCheckerIpRangesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetCheckerIpRanges
 func (c *Route53) GetCheckerIpRangesRequest(input *GetCheckerIpRangesInput) (req *request.Request, output *GetCheckerIpRangesOutput) {
@@ -3345,14 +3343,13 @@ const opGetDNSSEC = "GetDNSSEC"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDNSSECRequest method.
+//	req, resp := client.GetDNSSECRequest(params)
 //
-//    // Example sending a request using the GetDNSSECRequest method.
-//    req, resp := client.GetDNSSECRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetDNSSEC
 func (c *Route53) GetDNSSECRequest(input *GetDNSSECInput) (req *request.Request, output *GetDNSSECOutput) {
@@ -3384,14 +3381,15 @@ func (c *Route53) GetDNSSECRequest(input *GetDNSSECInput) (req *request.Request,
 // API operation GetDNSSEC for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidArgument "InvalidArgument"
-//   Parameter name is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidArgument "InvalidArgument"
+//     Parameter name is not valid.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetDNSSEC
 func (c *Route53) GetDNSSEC(input *GetDNSSECInput) (*GetDNSSECOutput, error) {
@@ -3431,14 +3429,13 @@ const opGetGeoLocation = "GetGeoLocation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGeoLocationRequest method.
+//	req, resp := client.GetGeoLocationRequest(params)
 //
-//    // Example sending a request using the GetGeoLocationRequest method.
-//    req, resp := client.GetGeoLocationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetGeoLocation
 func (c *Route53) GetGeoLocationRequest(input *GetGeoLocationInput) (req *request.Request, output *GetGeoLocationOutput) {
@@ -3489,13 +3486,14 @@ func (c *Route53) GetGeoLocationRequest(input *GetGeoLocationInput) (req *reques
 // API operation GetGeoLocation for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchGeoLocation "NoSuchGeoLocation"
-//   Amazon Route 53 doesn't support the specified geographic location. For a
-//   list of supported geolocation codes, see the GeoLocation (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GeoLocation.html)
-//   data type.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchGeoLocation "NoSuchGeoLocation"
+//     Amazon Route 53 doesn't support the specified geographic location. For a
+//     list of supported geolocation codes, see the GeoLocation (https://docs.aws.amazon.com/Route53/latest/APIReference/API_GeoLocation.html)
+//     data type.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetGeoLocation
 func (c *Route53) GetGeoLocation(input *GetGeoLocationInput) (*GetGeoLocationOutput, error) {
@@ -3535,14 +3533,13 @@ const opGetHealthCheck = "GetHealthCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHealthCheckRequest method.
+//	req, resp := client.GetHealthCheckRequest(params)
 //
-//    // Example sending a request using the GetHealthCheckRequest method.
-//    req, resp := client.GetHealthCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheck
 func (c *Route53) GetHealthCheckRequest(input *GetHealthCheckInput) (req *request.Request, output *GetHealthCheckOutput) {
@@ -3573,15 +3570,16 @@ func (c *Route53) GetHealthCheckRequest(input *GetHealthCheckInput) (req *reques
 // API operation GetHealthCheck for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodeIncompatibleVersion "IncompatibleVersion"
-//   The resource you're trying to access is unsupported on this Amazon Route
-//   53 endpoint.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeIncompatibleVersion "IncompatibleVersion"
+//     The resource you're trying to access is unsupported on this Amazon Route
+//     53 endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheck
 func (c *Route53) GetHealthCheck(input *GetHealthCheckInput) (*GetHealthCheckOutput, error) {
@@ -3621,14 +3619,13 @@ const opGetHealthCheckCount = "GetHealthCheckCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHealthCheckCountRequest method.
+//	req, resp := client.GetHealthCheckCountRequest(params)
 //
-//    // Example sending a request using the GetHealthCheckCountRequest method.
-//    req, resp := client.GetHealthCheckCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheckCount
 func (c *Route53) GetHealthCheckCountRequest(input *GetHealthCheckCountInput) (req *request.Request, output *GetHealthCheckCountOutput) {
@@ -3696,14 +3693,13 @@ const opGetHealthCheckLastFailureReason = "GetHealthCheckLastFailureReason"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHealthCheckLastFailureReasonRequest method.
+//	req, resp := client.GetHealthCheckLastFailureReasonRequest(params)
 //
-//    // Example sending a request using the GetHealthCheckLastFailureReasonRequest method.
-//    req, resp := client.GetHealthCheckLastFailureReasonRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheckLastFailureReason
 func (c *Route53) GetHealthCheckLastFailureReasonRequest(input *GetHealthCheckLastFailureReasonInput) (req *request.Request, output *GetHealthCheckLastFailureReasonOutput) {
@@ -3734,11 +3730,12 @@ func (c *Route53) GetHealthCheckLastFailureReasonRequest(input *GetHealthCheckLa
 // API operation GetHealthCheckLastFailureReason for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheckLastFailureReason
 func (c *Route53) GetHealthCheckLastFailureReason(input *GetHealthCheckLastFailureReasonInput) (*GetHealthCheckLastFailureReasonOutput, error) {
@@ -3778,14 +3775,13 @@ const opGetHealthCheckStatus = "GetHealthCheckStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHealthCheckStatusRequest method.
+//	req, resp := client.GetHealthCheckStatusRequest(params)
 //
-//    // Example sending a request using the GetHealthCheckStatusRequest method.
-//    req, resp := client.GetHealthCheckStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheckStatus
 func (c *Route53) GetHealthCheckStatusRequest(input *GetHealthCheckStatusInput) (req *request.Request, output *GetHealthCheckStatusOutput) {
@@ -3820,11 +3816,12 @@ func (c *Route53) GetHealthCheckStatusRequest(input *GetHealthCheckStatusInput) 
 // API operation GetHealthCheckStatus for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHealthCheckStatus
 func (c *Route53) GetHealthCheckStatus(input *GetHealthCheckStatusInput) (*GetHealthCheckStatusOutput, error) {
@@ -3864,14 +3861,13 @@ const opGetHostedZone = "GetHostedZone"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostedZoneRequest method.
+//	req, resp := client.GetHostedZoneRequest(params)
 //
-//    // Example sending a request using the GetHostedZoneRequest method.
-//    req, resp := client.GetHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZone
 func (c *Route53) GetHostedZoneRequest(input *GetHostedZoneInput) (req *request.Request, output *GetHostedZoneOutput) {
@@ -3903,11 +3899,12 @@ func (c *Route53) GetHostedZoneRequest(input *GetHostedZoneInput) (req *request.
 // API operation GetHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZone
 func (c *Route53) GetHostedZone(input *GetHostedZoneInput) (*GetHostedZoneOutput, error) {
@@ -3947,14 +3944,13 @@ const opGetHostedZoneCount = "GetHostedZoneCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostedZoneCountRequest method.
+//	req, resp := client.GetHostedZoneCountRequest(params)
 //
-//    // Example sending a request using the GetHostedZoneCountRequest method.
-//    req, resp := client.GetHostedZoneCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZoneCount
 func (c *Route53) GetHostedZoneCountRequest(input *GetHostedZoneCountInput) (req *request.Request, output *GetHostedZoneCountOutput) {
@@ -3986,8 +3982,8 @@ func (c *Route53) GetHostedZoneCountRequest(input *GetHostedZoneCountInput) (req
 // API operation GetHostedZoneCount for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZoneCount
 func (c *Route53) GetHostedZoneCount(input *GetHostedZoneCountInput) (*GetHostedZoneCountOutput, error) {
@@ -4027,14 +4023,13 @@ const opGetHostedZoneLimit = "GetHostedZoneLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetHostedZoneLimitRequest method.
+//	req, resp := client.GetHostedZoneLimitRequest(params)
 //
-//    // Example sending a request using the GetHostedZoneLimitRequest method.
-//    req, resp := client.GetHostedZoneLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZoneLimit
 func (c *Route53) GetHostedZoneLimitRequest(input *GetHostedZoneLimitInput) (req *request.Request, output *GetHostedZoneLimitOutput) {
@@ -4070,14 +4065,15 @@ func (c *Route53) GetHostedZoneLimitRequest(input *GetHostedZoneLimitInput) (req
 // API operation GetHostedZoneLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeHostedZoneNotPrivate "HostedZoneNotPrivate"
-//   The specified hosted zone is a public hosted zone, not a private hosted zone.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeHostedZoneNotPrivate "HostedZoneNotPrivate"
+//     The specified hosted zone is a public hosted zone, not a private hosted zone.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetHostedZoneLimit
 func (c *Route53) GetHostedZoneLimit(input *GetHostedZoneLimitInput) (*GetHostedZoneLimitOutput, error) {
@@ -4117,14 +4113,13 @@ const opGetQueryLoggingConfig = "GetQueryLoggingConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetQueryLoggingConfigRequest method.
+//	req, resp := client.GetQueryLoggingConfigRequest(params)
 //
-//    // Example sending a request using the GetQueryLoggingConfigRequest method.
-//    req, resp := client.GetQueryLoggingConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetQueryLoggingConfig
 func (c *Route53) GetQueryLoggingConfigRequest(input *GetQueryLoggingConfigInput) (req *request.Request, output *GetQueryLoggingConfigOutput) {
@@ -4158,11 +4153,12 @@ func (c *Route53) GetQueryLoggingConfigRequest(input *GetQueryLoggingConfigInput
 // API operation GetQueryLoggingConfig for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchQueryLoggingConfig "NoSuchQueryLoggingConfig"
-//   There is no DNS query logging configuration with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchQueryLoggingConfig "NoSuchQueryLoggingConfig"
+//     There is no DNS query logging configuration with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetQueryLoggingConfig
 func (c *Route53) GetQueryLoggingConfig(input *GetQueryLoggingConfigInput) (*GetQueryLoggingConfigOutput, error) {
@@ -4202,14 +4198,13 @@ const opGetReusableDelegationSet = "GetReusableDelegationSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReusableDelegationSetRequest method.
+//	req, resp := client.GetReusableDelegationSetRequest(params)
 //
-//    // Example sending a request using the GetReusableDelegationSetRequest method.
-//    req, resp := client.GetReusableDelegationSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetReusableDelegationSet
 func (c *Route53) GetReusableDelegationSetRequest(input *GetReusableDelegationSetInput) (req *request.Request, output *GetReusableDelegationSetOutput) {
@@ -4241,14 +4236,15 @@ func (c *Route53) GetReusableDelegationSetRequest(input *GetReusableDelegationSe
 // API operation GetReusableDelegationSet for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
-//   A reusable delegation set with the specified ID does not exist.
 //
-//   * ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
+//     A reusable delegation set with the specified ID does not exist.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
+//     A reusable delegation set with the specified ID does not exist.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetReusableDelegationSet
 func (c *Route53) GetReusableDelegationSet(input *GetReusableDelegationSetInput) (*GetReusableDelegationSetOutput, error) {
@@ -4288,14 +4284,13 @@ const opGetReusableDelegationSetLimit = "GetReusableDelegationSetLimit"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReusableDelegationSetLimitRequest method.
+//	req, resp := client.GetReusableDelegationSetLimitRequest(params)
 //
-//    // Example sending a request using the GetReusableDelegationSetLimitRequest method.
-//    req, resp := client.GetReusableDelegationSetLimitRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetReusableDelegationSetLimit
 func (c *Route53) GetReusableDelegationSetLimitRequest(input *GetReusableDelegationSetLimitInput) (req *request.Request, output *GetReusableDelegationSetLimitOutput) {
@@ -4331,11 +4326,12 @@ func (c *Route53) GetReusableDelegationSetLimitRequest(input *GetReusableDelegat
 // API operation GetReusableDelegationSetLimit for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
+//     A reusable delegation set with the specified ID does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetReusableDelegationSetLimit
 func (c *Route53) GetReusableDelegationSetLimit(input *GetReusableDelegationSetLimitInput) (*GetReusableDelegationSetLimitOutput, error) {
@@ -4375,14 +4371,13 @@ const opGetTrafficPolicy = "GetTrafficPolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrafficPolicyRequest method.
+//	req, resp := client.GetTrafficPolicyRequest(params)
 //
-//    // Example sending a request using the GetTrafficPolicyRequest method.
-//    req, resp := client.GetTrafficPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetTrafficPolicy
 func (c *Route53) GetTrafficPolicyRequest(input *GetTrafficPolicyInput) (req *request.Request, output *GetTrafficPolicyOutput) {
@@ -4416,11 +4411,12 @@ func (c *Route53) GetTrafficPolicyRequest(input *GetTrafficPolicyInput) (req *re
 // API operation GetTrafficPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetTrafficPolicy
 func (c *Route53) GetTrafficPolicy(input *GetTrafficPolicyInput) (*GetTrafficPolicyOutput, error) {
@@ -4460,14 +4456,13 @@ const opGetTrafficPolicyInstance = "GetTrafficPolicyInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrafficPolicyInstanceRequest method.
+//	req, resp := client.GetTrafficPolicyInstanceRequest(params)
 //
-//    // Example sending a request using the GetTrafficPolicyInstanceRequest method.
-//    req, resp := client.GetTrafficPolicyInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetTrafficPolicyInstance
 func (c *Route53) GetTrafficPolicyInstanceRequest(input *GetTrafficPolicyInstanceInput) (req *request.Request, output *GetTrafficPolicyInstanceOutput) {
@@ -4505,11 +4500,12 @@ func (c *Route53) GetTrafficPolicyInstanceRequest(input *GetTrafficPolicyInstanc
 // API operation GetTrafficPolicyInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetTrafficPolicyInstance
 func (c *Route53) GetTrafficPolicyInstance(input *GetTrafficPolicyInstanceInput) (*GetTrafficPolicyInstanceOutput, error) {
@@ -4549,14 +4545,13 @@ const opGetTrafficPolicyInstanceCount = "GetTrafficPolicyInstanceCount"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrafficPolicyInstanceCountRequest method.
+//	req, resp := client.GetTrafficPolicyInstanceCountRequest(params)
 //
-//    // Example sending a request using the GetTrafficPolicyInstanceCountRequest method.
-//    req, resp := client.GetTrafficPolicyInstanceCountRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/GetTrafficPolicyInstanceCount
 func (c *Route53) GetTrafficPolicyInstanceCountRequest(input *GetTrafficPolicyInstanceCountInput) (req *request.Request, output *GetTrafficPolicyInstanceCountOutput) {
@@ -4624,14 +4619,13 @@ const opListGeoLocations = "ListGeoLocations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGeoLocationsRequest method.
+//	req, resp := client.ListGeoLocationsRequest(params)
 //
-//    // Example sending a request using the ListGeoLocationsRequest method.
-//    req, resp := client.ListGeoLocationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListGeoLocations
 func (c *Route53) ListGeoLocationsRequest(input *ListGeoLocationsInput) (req *request.Request, output *ListGeoLocationsOutput) {
@@ -4673,8 +4667,8 @@ func (c *Route53) ListGeoLocationsRequest(input *ListGeoLocationsInput) (req *re
 // API operation ListGeoLocations for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListGeoLocations
 func (c *Route53) ListGeoLocations(input *ListGeoLocationsInput) (*ListGeoLocationsOutput, error) {
@@ -4714,14 +4708,13 @@ const opListHealthChecks = "ListHealthChecks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHealthChecksRequest method.
+//	req, resp := client.ListHealthChecksRequest(params)
 //
-//    // Example sending a request using the ListHealthChecksRequest method.
-//    req, resp := client.ListHealthChecksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHealthChecks
 func (c *Route53) ListHealthChecksRequest(input *ListHealthChecksInput) (req *request.Request, output *ListHealthChecksOutput) {
@@ -4759,12 +4752,13 @@ func (c *Route53) ListHealthChecksRequest(input *ListHealthChecksInput) (req *re
 // API operation ListHealthChecks for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeIncompatibleVersion "IncompatibleVersion"
-//   The resource you're trying to access is unsupported on this Amazon Route
-//   53 endpoint.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeIncompatibleVersion "IncompatibleVersion"
+//     The resource you're trying to access is unsupported on this Amazon Route
+//     53 endpoint.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHealthChecks
 func (c *Route53) ListHealthChecks(input *ListHealthChecksInput) (*ListHealthChecksOutput, error) {
@@ -4796,15 +4790,14 @@ func (c *Route53) ListHealthChecksWithContext(ctx aws.Context, input *ListHealth
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHealthChecks operation.
-//    pageNum := 0
-//    err := client.ListHealthChecksPages(params,
-//        func(page *route53.ListHealthChecksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHealthChecks operation.
+//	pageNum := 0
+//	err := client.ListHealthChecksPages(params,
+//	    func(page *route53.ListHealthChecksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53) ListHealthChecksPages(input *ListHealthChecksInput, fn func(*ListHealthChecksOutput, bool) bool) error {
 	return c.ListHealthChecksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4856,14 +4849,13 @@ const opListHostedZones = "ListHostedZones"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHostedZonesRequest method.
+//	req, resp := client.ListHostedZonesRequest(params)
 //
-//    // Example sending a request using the ListHostedZonesRequest method.
-//    req, resp := client.ListHostedZonesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZones
 func (c *Route53) ListHostedZonesRequest(input *ListHostedZonesInput) (req *request.Request, output *ListHostedZonesOutput) {
@@ -4906,14 +4898,15 @@ func (c *Route53) ListHostedZonesRequest(input *ListHostedZonesInput) (req *requ
 // API operation ListHostedZones for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
-//   A reusable delegation set with the specified ID does not exist.
+//   - ErrCodeNoSuchDelegationSet "NoSuchDelegationSet"
+//     A reusable delegation set with the specified ID does not exist.
+//
+//   - ErrCodeDelegationSetNotReusable "DelegationSetNotReusable"
+//     A reusable delegation set with the specified ID does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZones
 func (c *Route53) ListHostedZones(input *ListHostedZonesInput) (*ListHostedZonesOutput, error) {
@@ -4945,15 +4938,14 @@ func (c *Route53) ListHostedZonesWithContext(ctx aws.Context, input *ListHostedZ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListHostedZones operation.
-//    pageNum := 0
-//    err := client.ListHostedZonesPages(params,
-//        func(page *route53.ListHostedZonesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListHostedZones operation.
+//	pageNum := 0
+//	err := client.ListHostedZonesPages(params,
+//	    func(page *route53.ListHostedZonesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53) ListHostedZonesPages(input *ListHostedZonesInput, fn func(*ListHostedZonesOutput, bool) bool) error {
 	return c.ListHostedZonesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5005,14 +4997,13 @@ const opListHostedZonesByName = "ListHostedZonesByName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHostedZonesByNameRequest method.
+//	req, resp := client.ListHostedZonesByNameRequest(params)
 //
-//    // Example sending a request using the ListHostedZonesByNameRequest method.
-//    req, resp := client.ListHostedZonesByNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByName
 func (c *Route53) ListHostedZonesByNameRequest(input *ListHostedZonesByNameInput) (req *request.Request, output *ListHostedZonesByNameOutput) {
@@ -5062,26 +5053,26 @@ func (c *Route53) ListHostedZonesByNameRequest(input *ListHostedZonesByNameInput
 // response includes values that help navigate from one group of MaxItems hosted
 // zones to the next:
 //
-//    * The DNSName and HostedZoneId elements in the response contain the values,
-//    if any, specified for the dnsname and hostedzoneid parameters in the request
-//    that produced the current response.
+//   - The DNSName and HostedZoneId elements in the response contain the values,
+//     if any, specified for the dnsname and hostedzoneid parameters in the request
+//     that produced the current response.
 //
-//    * The MaxItems element in the response contains the value, if any, that
-//    you specified for the maxitems parameter in the request that produced
-//    the current response.
+//   - The MaxItems element in the response contains the value, if any, that
+//     you specified for the maxitems parameter in the request that produced
+//     the current response.
 //
-//    * If the value of IsTruncated in the response is true, there are more
-//    hosted zones associated with the current Amazon Web Services account.
-//    If IsTruncated is false, this response includes the last hosted zone that
-//    is associated with the current account. The NextDNSName element and NextHostedZoneId
-//    elements are omitted from the response.
+//   - If the value of IsTruncated in the response is true, there are more
+//     hosted zones associated with the current Amazon Web Services account.
+//     If IsTruncated is false, this response includes the last hosted zone that
+//     is associated with the current account. The NextDNSName element and NextHostedZoneId
+//     elements are omitted from the response.
 //
-//    * The NextDNSName and NextHostedZoneId elements in the response contain
-//    the domain name and the hosted zone ID of the next hosted zone that is
-//    associated with the current Amazon Web Services account. If you want to
-//    list more hosted zones, make another call to ListHostedZonesByName, and
-//    specify the value of NextDNSName and NextHostedZoneId in the dnsname and
-//    hostedzoneid parameters, respectively.
+//   - The NextDNSName and NextHostedZoneId elements in the response contain
+//     the domain name and the hosted zone ID of the next hosted zone that is
+//     associated with the current Amazon Web Services account. If you want to
+//     list more hosted zones, make another call to ListHostedZonesByName, and
+//     specify the value of NextDNSName and NextHostedZoneId in the dnsname and
+//     hostedzoneid parameters, respectively.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5091,11 +5082,12 @@ func (c *Route53) ListHostedZonesByNameRequest(input *ListHostedZonesByNameInput
 // API operation ListHostedZonesByName for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeInvalidDomainName "InvalidDomainName"
-//   The specified domain name is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeInvalidDomainName "InvalidDomainName"
+//     The specified domain name is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByName
 func (c *Route53) ListHostedZonesByName(input *ListHostedZonesByNameInput) (*ListHostedZonesByNameOutput, error) {
@@ -5135,14 +5127,13 @@ const opListHostedZonesByVPC = "ListHostedZonesByVPC"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListHostedZonesByVPCRequest method.
+//	req, resp := client.ListHostedZonesByVPCRequest(params)
 //
-//    // Example sending a request using the ListHostedZonesByVPCRequest method.
-//    req, resp := client.ListHostedZonesByVPCRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByVPC
 func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) (req *request.Request, output *ListHostedZonesByVPCOutput) {
@@ -5168,15 +5159,15 @@ func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) 
 // owns the hosted zones. The HostedZoneOwner structure in the response contains
 // one of the following values:
 //
-//    * An OwningAccount element, which contains the account number of either
-//    the current Amazon Web Services account or another Amazon Web Services
-//    account. Some services, such as Cloud Map, create hosted zones using the
-//    current account.
+//   - An OwningAccount element, which contains the account number of either
+//     the current Amazon Web Services account or another Amazon Web Services
+//     account. Some services, such as Cloud Map, create hosted zones using the
+//     current account.
 //
-//    * An OwningService element, which identifies the Amazon Web Services service
-//    that created and owns the hosted zone. For example, if a hosted zone was
-//    created by Amazon Elastic File System (Amazon EFS), the value of Owner
-//    is efs.amazonaws.com.
+//   - An OwningService element, which identifies the Amazon Web Services service
+//     that created and owns the hosted zone. For example, if a hosted zone was
+//     created by Amazon Elastic File System (Amazon EFS), the value of Owner
+//     is efs.amazonaws.com.
 //
 // When listing private hosted zones, the hosted zone and the Amazon VPC must
 // belong to the same partition where the hosted zones were created. A partition
@@ -5185,11 +5176,11 @@ func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) 
 //
 // The following are the supported partitions:
 //
-//    * aws - Amazon Web Services Regions
+//   - aws - Amazon Web Services Regions
 //
-//    * aws-cn - China Regions
+//   - aws-cn - China Regions
 //
-//    * aws-us-gov - Amazon Web Services GovCloud (US) Region
+//   - aws-us-gov - Amazon Web Services GovCloud (US) Region
 //
 // For more information, see Access Management (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 // in the Amazon Web Services General Reference.
@@ -5202,12 +5193,13 @@ func (c *Route53) ListHostedZonesByVPCRequest(input *ListHostedZonesByVPCInput) 
 // API operation ListHostedZonesByVPC for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeInvalidPaginationToken "InvalidPaginationToken"
-//   The value that you specified to get the second or subsequent page of results
-//   is invalid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeInvalidPaginationToken "InvalidPaginationToken"
+//     The value that you specified to get the second or subsequent page of results
+//     is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListHostedZonesByVPC
 func (c *Route53) ListHostedZonesByVPC(input *ListHostedZonesByVPCInput) (*ListHostedZonesByVPCOutput, error) {
@@ -5247,14 +5239,13 @@ const opListQueryLoggingConfigs = "ListQueryLoggingConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListQueryLoggingConfigsRequest method.
+//	req, resp := client.ListQueryLoggingConfigsRequest(params)
 //
-//    // Example sending a request using the ListQueryLoggingConfigsRequest method.
-//    req, resp := client.ListQueryLoggingConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListQueryLoggingConfigs
 func (c *Route53) ListQueryLoggingConfigsRequest(input *ListQueryLoggingConfigsInput) (req *request.Request, output *ListQueryLoggingConfigsOutput) {
@@ -5298,15 +5289,16 @@ func (c *Route53) ListQueryLoggingConfigsRequest(input *ListQueryLoggingConfigsI
 // API operation ListQueryLoggingConfigs for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeInvalidPaginationToken "InvalidPaginationToken"
-//   The value that you specified to get the second or subsequent page of results
-//   is invalid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeInvalidPaginationToken "InvalidPaginationToken"
+//     The value that you specified to get the second or subsequent page of results
+//     is invalid.
+//
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListQueryLoggingConfigs
 func (c *Route53) ListQueryLoggingConfigs(input *ListQueryLoggingConfigsInput) (*ListQueryLoggingConfigsOutput, error) {
@@ -5338,15 +5330,14 @@ func (c *Route53) ListQueryLoggingConfigsWithContext(ctx aws.Context, input *Lis
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListQueryLoggingConfigs operation.
-//    pageNum := 0
-//    err := client.ListQueryLoggingConfigsPages(params,
-//        func(page *route53.ListQueryLoggingConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListQueryLoggingConfigs operation.
+//	pageNum := 0
+//	err := client.ListQueryLoggingConfigsPages(params,
+//	    func(page *route53.ListQueryLoggingConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53) ListQueryLoggingConfigsPages(input *ListQueryLoggingConfigsInput, fn func(*ListQueryLoggingConfigsOutput, bool) bool) error {
 	return c.ListQueryLoggingConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5398,14 +5389,13 @@ const opListResourceRecordSets = "ListResourceRecordSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourceRecordSetsRequest method.
+//	req, resp := client.ListResourceRecordSetsRequest(params)
 //
-//    // Example sending a request using the ListResourceRecordSetsRequest method.
-//    req, resp := client.ListResourceRecordSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListResourceRecordSets
 func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInput) (req *request.Request, output *ListResourceRecordSetsOutput) {
@@ -5437,7 +5427,7 @@ func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInp
 // ListResourceRecordSets returns up to 300 resource record sets at a time in
 // ASCII order, beginning at a position specified by the name and type elements.
 //
-// Sort order
+// # Sort order
 //
 // ListResourceRecordSets sorts results first by DNS name with the labels reversed,
 // for example:
@@ -5451,38 +5441,38 @@ func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInp
 // When multiple records have the same DNS name, ListResourceRecordSets sorts
 // results by the record type.
 //
-// Specifying where to start listing records
+// # Specifying where to start listing records
 //
 // You can use the name and type elements to specify the resource record set
 // that the list begins with:
 //
-// If you do not specify Name or Type
+// # If you do not specify Name or Type
 //
 // The results begin with the first resource record set that the hosted zone
 // contains.
 //
-// If you specify Name but not Type
+// # If you specify Name but not Type
 //
 // The results begin with the first resource record set in the list whose name
 // is greater than or equal to Name.
 //
-// If you specify Type but not Name
+// # If you specify Type but not Name
 //
 // Amazon Route 53 returns the InvalidInput error.
 //
-// If you specify both Name and Type
+// # If you specify both Name and Type
 //
 // The results begin with the first resource record set in the list whose name
 // is greater than or equal to Name, and whose type is greater than or equal
 // to Type.
 //
-// Resource record sets that are PENDING
+// # Resource record sets that are PENDING
 //
 // This action returns the most current version of the records. This includes
 // records that are PENDING, and that are not yet available on all Route 53
 // DNS servers.
 //
-// Changing resource record sets
+// # Changing resource record sets
 //
 // To ensure that you get an accurate listing of the resource record sets for
 // a hosted zone at a point in time, do not submit a ChangeResourceRecordSets
@@ -5490,7 +5480,7 @@ func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInp
 // request. If you do, some pages may display results without the latest changes
 // while other pages display results with the latest changes.
 //
-// Displaying the next page of results
+// # Displaying the next page of results
 //
 // If a ListResourceRecordSets command returns more than one page of results,
 // the value of IsTruncated is true. To display the next page of results, get
@@ -5506,11 +5496,12 @@ func (c *Route53) ListResourceRecordSetsRequest(input *ListResourceRecordSetsInp
 // API operation ListResourceRecordSets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListResourceRecordSets
 func (c *Route53) ListResourceRecordSets(input *ListResourceRecordSetsInput) (*ListResourceRecordSetsOutput, error) {
@@ -5542,15 +5533,14 @@ func (c *Route53) ListResourceRecordSetsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResourceRecordSets operation.
-//    pageNum := 0
-//    err := client.ListResourceRecordSetsPages(params,
-//        func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResourceRecordSets operation.
+//	pageNum := 0
+//	err := client.ListResourceRecordSetsPages(params,
+//	    func(page *route53.ListResourceRecordSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53) ListResourceRecordSetsPages(input *ListResourceRecordSetsInput, fn func(*ListResourceRecordSetsOutput, bool) bool) error {
 	return c.ListResourceRecordSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5602,14 +5592,13 @@ const opListReusableDelegationSets = "ListReusableDelegationSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReusableDelegationSetsRequest method.
+//	req, resp := client.ListReusableDelegationSetsRequest(params)
 //
-//    // Example sending a request using the ListReusableDelegationSetsRequest method.
-//    req, resp := client.ListReusableDelegationSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListReusableDelegationSets
 func (c *Route53) ListReusableDelegationSetsRequest(input *ListReusableDelegationSetsInput) (req *request.Request, output *ListReusableDelegationSetsOutput) {
@@ -5641,8 +5630,8 @@ func (c *Route53) ListReusableDelegationSetsRequest(input *ListReusableDelegatio
 // API operation ListReusableDelegationSets for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListReusableDelegationSets
 func (c *Route53) ListReusableDelegationSets(input *ListReusableDelegationSetsInput) (*ListReusableDelegationSetsOutput, error) {
@@ -5682,14 +5671,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTagsForResource
 func (c *Route53) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -5724,24 +5712,25 @@ func (c *Route53) ListTagsForResourceRequest(input *ListTagsForResourceInput) (r
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeThrottlingException "ThrottlingException"
-//   The limit on the number of requests per second was exceeded.
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
+//
+//   - ErrCodeThrottlingException "ThrottlingException"
+//     The limit on the number of requests per second was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTagsForResource
 func (c *Route53) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -5781,14 +5770,13 @@ const opListTagsForResources = "ListTagsForResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourcesRequest method.
+//	req, resp := client.ListTagsForResourcesRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourcesRequest method.
-//    req, resp := client.ListTagsForResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTagsForResources
 func (c *Route53) ListTagsForResourcesRequest(input *ListTagsForResourcesInput) (req *request.Request, output *ListTagsForResourcesOutput) {
@@ -5823,24 +5811,25 @@ func (c *Route53) ListTagsForResourcesRequest(input *ListTagsForResourcesInput) 
 // API operation ListTagsForResources for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeThrottlingException "ThrottlingException"
-//   The limit on the number of requests per second was exceeded.
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
+//
+//   - ErrCodeThrottlingException "ThrottlingException"
+//     The limit on the number of requests per second was exceeded.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTagsForResources
 func (c *Route53) ListTagsForResources(input *ListTagsForResourcesInput) (*ListTagsForResourcesOutput, error) {
@@ -5880,14 +5869,13 @@ const opListTrafficPolicies = "ListTrafficPolicies"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrafficPoliciesRequest method.
+//	req, resp := client.ListTrafficPoliciesRequest(params)
 //
-//    // Example sending a request using the ListTrafficPoliciesRequest method.
-//    req, resp := client.ListTrafficPoliciesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicies
 func (c *Route53) ListTrafficPoliciesRequest(input *ListTrafficPoliciesInput) (req *request.Request, output *ListTrafficPoliciesOutput) {
@@ -5923,8 +5911,8 @@ func (c *Route53) ListTrafficPoliciesRequest(input *ListTrafficPoliciesInput) (r
 // API operation ListTrafficPolicies for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicies
 func (c *Route53) ListTrafficPolicies(input *ListTrafficPoliciesInput) (*ListTrafficPoliciesOutput, error) {
@@ -5964,14 +5952,13 @@ const opListTrafficPolicyInstances = "ListTrafficPolicyInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrafficPolicyInstancesRequest method.
+//	req, resp := client.ListTrafficPolicyInstancesRequest(params)
 //
-//    // Example sending a request using the ListTrafficPolicyInstancesRequest method.
-//    req, resp := client.ListTrafficPolicyInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstances
 func (c *Route53) ListTrafficPolicyInstancesRequest(input *ListTrafficPolicyInstancesInput) (req *request.Request, output *ListTrafficPolicyInstancesOutput) {
@@ -6012,11 +5999,12 @@ func (c *Route53) ListTrafficPolicyInstancesRequest(input *ListTrafficPolicyInst
 // API operation ListTrafficPolicyInstances for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstances
 func (c *Route53) ListTrafficPolicyInstances(input *ListTrafficPolicyInstancesInput) (*ListTrafficPolicyInstancesOutput, error) {
@@ -6056,14 +6044,13 @@ const opListTrafficPolicyInstancesByHostedZone = "ListTrafficPolicyInstancesByHo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrafficPolicyInstancesByHostedZoneRequest method.
+//	req, resp := client.ListTrafficPolicyInstancesByHostedZoneRequest(params)
 //
-//    // Example sending a request using the ListTrafficPolicyInstancesByHostedZoneRequest method.
-//    req, resp := client.ListTrafficPolicyInstancesByHostedZoneRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstancesByHostedZone
 func (c *Route53) ListTrafficPolicyInstancesByHostedZoneRequest(input *ListTrafficPolicyInstancesByHostedZoneInput) (req *request.Request, output *ListTrafficPolicyInstancesByHostedZoneOutput) {
@@ -6104,14 +6091,15 @@ func (c *Route53) ListTrafficPolicyInstancesByHostedZoneRequest(input *ListTraff
 // API operation ListTrafficPolicyInstancesByHostedZone for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
+//
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstancesByHostedZone
 func (c *Route53) ListTrafficPolicyInstancesByHostedZone(input *ListTrafficPolicyInstancesByHostedZoneInput) (*ListTrafficPolicyInstancesByHostedZoneOutput, error) {
@@ -6151,14 +6139,13 @@ const opListTrafficPolicyInstancesByPolicy = "ListTrafficPolicyInstancesByPolicy
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrafficPolicyInstancesByPolicyRequest method.
+//	req, resp := client.ListTrafficPolicyInstancesByPolicyRequest(params)
 //
-//    // Example sending a request using the ListTrafficPolicyInstancesByPolicyRequest method.
-//    req, resp := client.ListTrafficPolicyInstancesByPolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstancesByPolicy
 func (c *Route53) ListTrafficPolicyInstancesByPolicyRequest(input *ListTrafficPolicyInstancesByPolicyInput) (req *request.Request, output *ListTrafficPolicyInstancesByPolicyOutput) {
@@ -6199,14 +6186,15 @@ func (c *Route53) ListTrafficPolicyInstancesByPolicyRequest(input *ListTrafficPo
 // API operation ListTrafficPolicyInstancesByPolicy for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
+//
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyInstancesByPolicy
 func (c *Route53) ListTrafficPolicyInstancesByPolicy(input *ListTrafficPolicyInstancesByPolicyInput) (*ListTrafficPolicyInstancesByPolicyOutput, error) {
@@ -6246,14 +6234,13 @@ const opListTrafficPolicyVersions = "ListTrafficPolicyVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrafficPolicyVersionsRequest method.
+//	req, resp := client.ListTrafficPolicyVersionsRequest(params)
 //
-//    // Example sending a request using the ListTrafficPolicyVersionsRequest method.
-//    req, resp := client.ListTrafficPolicyVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyVersions
 func (c *Route53) ListTrafficPolicyVersionsRequest(input *ListTrafficPolicyVersionsInput) (req *request.Request, output *ListTrafficPolicyVersionsOutput) {
@@ -6286,11 +6273,12 @@ func (c *Route53) ListTrafficPolicyVersionsRequest(input *ListTrafficPolicyVersi
 // API operation ListTrafficPolicyVersions for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListTrafficPolicyVersions
 func (c *Route53) ListTrafficPolicyVersions(input *ListTrafficPolicyVersionsInput) (*ListTrafficPolicyVersionsOutput, error) {
@@ -6330,14 +6318,13 @@ const opListVPCAssociationAuthorizations = "ListVPCAssociationAuthorizations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListVPCAssociationAuthorizationsRequest method.
+//	req, resp := client.ListVPCAssociationAuthorizationsRequest(params)
 //
-//    // Example sending a request using the ListVPCAssociationAuthorizationsRequest method.
-//    req, resp := client.ListVPCAssociationAuthorizationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListVPCAssociationAuthorizations
 func (c *Route53) ListVPCAssociationAuthorizationsRequest(input *ListVPCAssociationAuthorizationsInput) (req *request.Request, output *ListVPCAssociationAuthorizationsOutput) {
@@ -6373,15 +6360,16 @@ func (c *Route53) ListVPCAssociationAuthorizationsRequest(input *ListVPCAssociat
 // API operation ListVPCAssociationAuthorizations for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidPaginationToken "InvalidPaginationToken"
-//   The value that you specified to get the second or subsequent page of results
-//   is invalid.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeInvalidPaginationToken "InvalidPaginationToken"
+//     The value that you specified to get the second or subsequent page of results
+//     is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/ListVPCAssociationAuthorizations
 func (c *Route53) ListVPCAssociationAuthorizations(input *ListVPCAssociationAuthorizationsInput) (*ListVPCAssociationAuthorizationsOutput, error) {
@@ -6421,14 +6409,13 @@ const opTestDNSAnswer = "TestDNSAnswer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TestDNSAnswerRequest method.
+//	req, resp := client.TestDNSAnswerRequest(params)
 //
-//    // Example sending a request using the TestDNSAnswerRequest method.
-//    req, resp := client.TestDNSAnswerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/TestDNSAnswer
 func (c *Route53) TestDNSAnswerRequest(input *TestDNSAnswerInput) (req *request.Request, output *TestDNSAnswerOutput) {
@@ -6463,11 +6450,12 @@ func (c *Route53) TestDNSAnswerRequest(input *TestDNSAnswerInput) (req *request.
 // API operation TestDNSAnswer for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
+//
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/TestDNSAnswer
 func (c *Route53) TestDNSAnswer(input *TestDNSAnswerInput) (*TestDNSAnswerOutput, error) {
@@ -6507,14 +6495,13 @@ const opUpdateHealthCheck = "UpdateHealthCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateHealthCheckRequest method.
+//	req, resp := client.UpdateHealthCheckRequest(params)
 //
-//    // Example sending a request using the UpdateHealthCheckRequest method.
-//    req, resp := client.UpdateHealthCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateHealthCheck
 func (c *Route53) UpdateHealthCheckRequest(input *UpdateHealthCheckInput) (req *request.Request, output *UpdateHealthCheckOutput) {
@@ -6549,15 +6536,16 @@ func (c *Route53) UpdateHealthCheckRequest(input *UpdateHealthCheckInput) (req *
 // API operation UpdateHealthCheck for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
-//   No health check exists with the specified ID.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHealthCheck "NoSuchHealthCheck"
+//     No health check exists with the specified ID.
 //
-//   * ErrCodeHealthCheckVersionMismatch "HealthCheckVersionMismatch"
-//   The value of HealthCheckVersion in the request doesn't match the value of
-//   HealthCheckVersion in the health check.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodeHealthCheckVersionMismatch "HealthCheckVersionMismatch"
+//     The value of HealthCheckVersion in the request doesn't match the value of
+//     HealthCheckVersion in the health check.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateHealthCheck
 func (c *Route53) UpdateHealthCheck(input *UpdateHealthCheckInput) (*UpdateHealthCheckOutput, error) {
@@ -6597,14 +6585,13 @@ const opUpdateHostedZoneComment = "UpdateHostedZoneComment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateHostedZoneCommentRequest method.
+//	req, resp := client.UpdateHostedZoneCommentRequest(params)
 //
-//    // Example sending a request using the UpdateHostedZoneCommentRequest method.
-//    req, resp := client.UpdateHostedZoneCommentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateHostedZoneComment
 func (c *Route53) UpdateHostedZoneCommentRequest(input *UpdateHostedZoneCommentInput) (req *request.Request, output *UpdateHostedZoneCommentOutput) {
@@ -6635,18 +6622,19 @@ func (c *Route53) UpdateHostedZoneCommentRequest(input *UpdateHostedZoneCommentI
 // API operation UpdateHostedZoneComment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeNoSuchHostedZone "NoSuchHostedZone"
-//   No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
+//   - ErrCodeNoSuchHostedZone "NoSuchHostedZone"
+//     No hosted zone exists with the ID that you specified.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
+//
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateHostedZoneComment
 func (c *Route53) UpdateHostedZoneComment(input *UpdateHostedZoneCommentInput) (*UpdateHostedZoneCommentOutput, error) {
@@ -6686,14 +6674,13 @@ const opUpdateTrafficPolicyComment = "UpdateTrafficPolicyComment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTrafficPolicyCommentRequest method.
+//	req, resp := client.UpdateTrafficPolicyCommentRequest(params)
 //
-//    // Example sending a request using the UpdateTrafficPolicyCommentRequest method.
-//    req, resp := client.UpdateTrafficPolicyCommentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateTrafficPolicyComment
 func (c *Route53) UpdateTrafficPolicyCommentRequest(input *UpdateTrafficPolicyCommentInput) (req *request.Request, output *UpdateTrafficPolicyCommentOutput) {
@@ -6724,15 +6711,16 @@ func (c *Route53) UpdateTrafficPolicyCommentRequest(input *UpdateTrafficPolicyCo
 // API operation UpdateTrafficPolicyComment for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeConcurrentModification "ConcurrentModification"
-//   Another user submitted a request to create, update, or delete the object
-//   at the same time that you did. Retry the request.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
+//
+//   - ErrCodeConcurrentModification "ConcurrentModification"
+//     Another user submitted a request to create, update, or delete the object
+//     at the same time that you did. Retry the request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateTrafficPolicyComment
 func (c *Route53) UpdateTrafficPolicyComment(input *UpdateTrafficPolicyCommentInput) (*UpdateTrafficPolicyCommentOutput, error) {
@@ -6772,14 +6760,13 @@ const opUpdateTrafficPolicyInstance = "UpdateTrafficPolicyInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTrafficPolicyInstanceRequest method.
+//	req, resp := client.UpdateTrafficPolicyInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateTrafficPolicyInstanceRequest method.
-//    req, resp := client.UpdateTrafficPolicyInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateTrafficPolicyInstance
 func (c *Route53) UpdateTrafficPolicyInstanceRequest(input *UpdateTrafficPolicyInstanceInput) (req *request.Request, output *UpdateTrafficPolicyInstanceOutput) {
@@ -6828,26 +6815,27 @@ func (c *Route53) UpdateTrafficPolicyInstanceRequest(input *UpdateTrafficPolicyI
 // API operation UpdateTrafficPolicyInstance for usage and error information.
 //
 // Returned Error Codes:
-//   * ErrCodeInvalidInput "InvalidInput"
-//   The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
-//   No traffic policy exists with the specified ID.
+//   - ErrCodeInvalidInput "InvalidInput"
+//     The input is not valid.
 //
-//   * ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
-//   No traffic policy instance exists with the specified ID.
+//   - ErrCodeNoSuchTrafficPolicy "NoSuchTrafficPolicy"
+//     No traffic policy exists with the specified ID.
 //
-//   * ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
-//   If Amazon Route 53 can't process a request before the next request arrives,
-//   it will reject subsequent requests for the same hosted zone and return an
-//   HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
-//   the same request, we recommend that you wait, in intervals of increasing
-//   duration, before you try the request again.
+//   - ErrCodeNoSuchTrafficPolicyInstance "NoSuchTrafficPolicyInstance"
+//     No traffic policy instance exists with the specified ID.
 //
-//   * ErrCodeConflictingTypes "ConflictingTypes"
-//   You tried to update a traffic policy instance by using a traffic policy version
-//   that has a different DNS type than the current type for the instance. You
-//   specified the type in the JSON document in the CreateTrafficPolicy or CreateTrafficPolicyVersionrequest.
+//   - ErrCodePriorRequestNotComplete "PriorRequestNotComplete"
+//     If Amazon Route 53 can't process a request before the next request arrives,
+//     it will reject subsequent requests for the same hosted zone and return an
+//     HTTP 400 error (Bad request). If Route 53 returns this error repeatedly for
+//     the same request, we recommend that you wait, in intervals of increasing
+//     duration, before you try the request again.
+//
+//   - ErrCodeConflictingTypes "ConflictingTypes"
+//     You tried to update a traffic policy instance by using a traffic policy version
+//     that has a different DNS type than the current type for the instance. You
+//     specified the type in the JSON document in the CreateTrafficPolicy or CreateTrafficPolicyVersionrequest.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-2013-04-01/UpdateTrafficPolicyInstance
 func (c *Route53) UpdateTrafficPolicyInstance(input *UpdateTrafficPolicyInstanceInput) (*UpdateTrafficPolicyInstanceOutput, error) {
@@ -7127,11 +7115,11 @@ func (s *AlarmIdentifier) SetRegion(v string) *AlarmIdentifier {
 //
 // When creating resource record sets for a private hosted zone, note the following:
 //
-//    * Creating geolocation alias resource record sets or latency alias resource
-//    record sets in a private hosted zone is unsupported.
+//   - Creating geolocation alias resource record sets or latency alias resource
+//     record sets in a private hosted zone is unsupported.
 //
-//    * For information about creating failover resource record sets in a private
-//    hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
+//   - For information about creating failover resource record sets in a private
+//     hosted zone, see Configuring Failover in a Private Hosted Zone (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-private-hosted-zones.html).
 type AliasTarget struct {
 	_ struct{} `type:"structure"`
 

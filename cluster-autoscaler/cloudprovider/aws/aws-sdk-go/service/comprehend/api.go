@@ -29,14 +29,13 @@ const opBatchDetectDominantLanguage = "BatchDetectDominantLanguage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDetectDominantLanguageRequest method.
+//	req, resp := client.BatchDetectDominantLanguageRequest(params)
 //
-//    // Example sending a request using the BatchDetectDominantLanguageRequest method.
-//    req, resp := client.BatchDetectDominantLanguageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectDominantLanguage
 func (c *Comprehend) BatchDetectDominantLanguageRequest(input *BatchDetectDominantLanguageInput) (req *request.Request, output *BatchDetectDominantLanguageOutput) {
@@ -69,18 +68,19 @@ func (c *Comprehend) BatchDetectDominantLanguageRequest(input *BatchDetectDomina
 // API operation BatchDetectDominantLanguage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * BatchSizeLimitExceededException
-//   The number of documents in the request exceeds the limit of 25. Try your
-//   request again with fewer documents.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - BatchSizeLimitExceededException
+//     The number of documents in the request exceeds the limit of 25. Try your
+//     request again with fewer documents.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectDominantLanguage
 func (c *Comprehend) BatchDetectDominantLanguage(input *BatchDetectDominantLanguageInput) (*BatchDetectDominantLanguageOutput, error) {
@@ -120,14 +120,13 @@ const opBatchDetectEntities = "BatchDetectEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDetectEntitiesRequest method.
+//	req, resp := client.BatchDetectEntitiesRequest(params)
 //
-//    // Example sending a request using the BatchDetectEntitiesRequest method.
-//    req, resp := client.BatchDetectEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectEntities
 func (c *Comprehend) BatchDetectEntitiesRequest(input *BatchDetectEntitiesInput) (req *request.Request, output *BatchDetectEntitiesOutput) {
@@ -159,23 +158,24 @@ func (c *Comprehend) BatchDetectEntitiesRequest(input *BatchDetectEntitiesInput)
 // API operation BatchDetectEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * BatchSizeLimitExceededException
-//   The number of documents in the request exceeds the limit of 25. Try your
-//   request again with fewer documents.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - BatchSizeLimitExceededException
+//     The number of documents in the request exceeds the limit of 25. Try your
+//     request again with fewer documents.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectEntities
 func (c *Comprehend) BatchDetectEntities(input *BatchDetectEntitiesInput) (*BatchDetectEntitiesOutput, error) {
@@ -215,14 +215,13 @@ const opBatchDetectKeyPhrases = "BatchDetectKeyPhrases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDetectKeyPhrasesRequest method.
+//	req, resp := client.BatchDetectKeyPhrasesRequest(params)
 //
-//    // Example sending a request using the BatchDetectKeyPhrasesRequest method.
-//    req, resp := client.BatchDetectKeyPhrasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectKeyPhrases
 func (c *Comprehend) BatchDetectKeyPhrasesRequest(input *BatchDetectKeyPhrasesInput) (req *request.Request, output *BatchDetectKeyPhrasesOutput) {
@@ -253,23 +252,24 @@ func (c *Comprehend) BatchDetectKeyPhrasesRequest(input *BatchDetectKeyPhrasesIn
 // API operation BatchDetectKeyPhrases for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * BatchSizeLimitExceededException
-//   The number of documents in the request exceeds the limit of 25. Try your
-//   request again with fewer documents.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - BatchSizeLimitExceededException
+//     The number of documents in the request exceeds the limit of 25. Try your
+//     request again with fewer documents.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectKeyPhrases
 func (c *Comprehend) BatchDetectKeyPhrases(input *BatchDetectKeyPhrasesInput) (*BatchDetectKeyPhrasesOutput, error) {
@@ -309,14 +309,13 @@ const opBatchDetectSentiment = "BatchDetectSentiment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDetectSentimentRequest method.
+//	req, resp := client.BatchDetectSentimentRequest(params)
 //
-//    // Example sending a request using the BatchDetectSentimentRequest method.
-//    req, resp := client.BatchDetectSentimentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectSentiment
 func (c *Comprehend) BatchDetectSentimentRequest(input *BatchDetectSentimentInput) (req *request.Request, output *BatchDetectSentimentOutput) {
@@ -348,23 +347,24 @@ func (c *Comprehend) BatchDetectSentimentRequest(input *BatchDetectSentimentInpu
 // API operation BatchDetectSentiment for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * BatchSizeLimitExceededException
-//   The number of documents in the request exceeds the limit of 25. Try your
-//   request again with fewer documents.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - BatchSizeLimitExceededException
+//     The number of documents in the request exceeds the limit of 25. Try your
+//     request again with fewer documents.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectSentiment
 func (c *Comprehend) BatchDetectSentiment(input *BatchDetectSentimentInput) (*BatchDetectSentimentOutput, error) {
@@ -404,14 +404,13 @@ const opBatchDetectSyntax = "BatchDetectSyntax"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the BatchDetectSyntaxRequest method.
+//	req, resp := client.BatchDetectSyntaxRequest(params)
 //
-//    // Example sending a request using the BatchDetectSyntaxRequest method.
-//    req, resp := client.BatchDetectSyntaxRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectSyntax
 func (c *Comprehend) BatchDetectSyntaxRequest(input *BatchDetectSyntaxInput) (req *request.Request, output *BatchDetectSyntaxOutput) {
@@ -444,23 +443,24 @@ func (c *Comprehend) BatchDetectSyntaxRequest(input *BatchDetectSyntaxInput) (re
 // API operation BatchDetectSyntax for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * BatchSizeLimitExceededException
-//   The number of documents in the request exceeds the limit of 25. Try your
-//   request again with fewer documents.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - BatchSizeLimitExceededException
+//     The number of documents in the request exceeds the limit of 25. Try your
+//     request again with fewer documents.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/BatchDetectSyntax
 func (c *Comprehend) BatchDetectSyntax(input *BatchDetectSyntaxInput) (*BatchDetectSyntaxOutput, error) {
@@ -500,14 +500,13 @@ const opClassifyDocument = "ClassifyDocument"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ClassifyDocumentRequest method.
+//	req, resp := client.ClassifyDocumentRequest(params)
 //
-//    // Example sending a request using the ClassifyDocumentRequest method.
-//    req, resp := client.ClassifyDocumentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ClassifyDocument
 func (c *Comprehend) ClassifyDocumentRequest(input *ClassifyDocumentInput) (req *request.Request, output *ClassifyDocumentOutput) {
@@ -540,18 +539,19 @@ func (c *Comprehend) ClassifyDocumentRequest(input *ClassifyDocumentInput) (req 
 // API operation ClassifyDocument for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ClassifyDocument
 func (c *Comprehend) ClassifyDocument(input *ClassifyDocumentInput) (*ClassifyDocumentOutput, error) {
@@ -591,14 +591,13 @@ const opContainsPiiEntities = "ContainsPiiEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ContainsPiiEntitiesRequest method.
+//	req, resp := client.ContainsPiiEntitiesRequest(params)
 //
-//    // Example sending a request using the ContainsPiiEntitiesRequest method.
-//    req, resp := client.ContainsPiiEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ContainsPiiEntities
 func (c *Comprehend) ContainsPiiEntitiesRequest(input *ContainsPiiEntitiesInput) (req *request.Request, output *ContainsPiiEntitiesOutput) {
@@ -631,19 +630,20 @@ func (c *Comprehend) ContainsPiiEntitiesRequest(input *ContainsPiiEntitiesInput)
 // API operation ContainsPiiEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ContainsPiiEntities
 func (c *Comprehend) ContainsPiiEntities(input *ContainsPiiEntitiesInput) (*ContainsPiiEntitiesOutput, error) {
@@ -683,14 +683,13 @@ const opCreateDocumentClassifier = "CreateDocumentClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDocumentClassifierRequest method.
+//	req, resp := client.CreateDocumentClassifierRequest(params)
 //
-//    // Example sending a request using the CreateDocumentClassifierRequest method.
-//    req, resp := client.CreateDocumentClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateDocumentClassifier
 func (c *Comprehend) CreateDocumentClassifierRequest(input *CreateDocumentClassifierInput) (req *request.Request, output *CreateDocumentClassifierOutput) {
@@ -725,36 +724,37 @@ func (c *Comprehend) CreateDocumentClassifierRequest(input *CreateDocumentClassi
 // API operation CreateDocumentClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
 //
-//   * ResourceLimitExceededException
-//   The maximum number of resources per account has been exceeded. Review the
-//   resources, and then try your request again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - ResourceLimitExceededException
+//     The maximum number of resources per account has been exceeded. Review the
+//     resources, and then try your request again.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateDocumentClassifier
 func (c *Comprehend) CreateDocumentClassifier(input *CreateDocumentClassifierInput) (*CreateDocumentClassifierOutput, error) {
@@ -794,14 +794,13 @@ const opCreateEndpoint = "CreateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEndpointRequest method.
+//	req, resp := client.CreateEndpointRequest(params)
 //
-//    // Example sending a request using the CreateEndpointRequest method.
-//    req, resp := client.CreateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateEndpoint
 func (c *Comprehend) CreateEndpointRequest(input *CreateEndpointInput) (req *request.Request, output *CreateEndpointOutput) {
@@ -834,35 +833,36 @@ func (c *Comprehend) CreateEndpointRequest(input *CreateEndpointInput) (req *req
 // API operation CreateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceLimitExceededException
-//   The maximum number of resources per account has been exceeded. Review the
-//   resources, and then try your request again.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - ResourceLimitExceededException
+//     The maximum number of resources per account has been exceeded. Review the
+//     resources, and then try your request again.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateEndpoint
 func (c *Comprehend) CreateEndpoint(input *CreateEndpointInput) (*CreateEndpointOutput, error) {
@@ -902,14 +902,13 @@ const opCreateEntityRecognizer = "CreateEntityRecognizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEntityRecognizerRequest method.
+//	req, resp := client.CreateEntityRecognizerRequest(params)
 //
-//    // Example sending a request using the CreateEntityRecognizerRequest method.
-//    req, resp := client.CreateEntityRecognizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateEntityRecognizer
 func (c *Comprehend) CreateEntityRecognizerRequest(input *CreateEntityRecognizerInput) (req *request.Request, output *CreateEntityRecognizerOutput) {
@@ -941,36 +940,37 @@ func (c *Comprehend) CreateEntityRecognizerRequest(input *CreateEntityRecognizer
 // API operation CreateEntityRecognizer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
 //
-//   * ResourceLimitExceededException
-//   The maximum number of resources per account has been exceeded. Review the
-//   resources, and then try your request again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - ResourceLimitExceededException
+//     The maximum number of resources per account has been exceeded. Review the
+//     resources, and then try your request again.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/CreateEntityRecognizer
 func (c *Comprehend) CreateEntityRecognizer(input *CreateEntityRecognizerInput) (*CreateEntityRecognizerOutput, error) {
@@ -1010,14 +1010,13 @@ const opDeleteDocumentClassifier = "DeleteDocumentClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDocumentClassifierRequest method.
+//	req, resp := client.DeleteDocumentClassifierRequest(params)
 //
-//    // Example sending a request using the DeleteDocumentClassifierRequest method.
-//    req, resp := client.DeleteDocumentClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteDocumentClassifier
 func (c *Comprehend) DeleteDocumentClassifierRequest(input *DeleteDocumentClassifierInput) (req *request.Request, output *DeleteDocumentClassifierOutput) {
@@ -1039,7 +1038,7 @@ func (c *Comprehend) DeleteDocumentClassifierRequest(input *DeleteDocumentClassi
 
 // DeleteDocumentClassifier API operation for Amazon Comprehend.
 //
-// Deletes a previously created document classifier
+// # Deletes a previously created document classifier
 //
 // Only those classifiers that are in terminated states (IN_ERROR, TRAINED)
 // will be deleted. If an active inference job is using the model, a ResourceInUseException
@@ -1057,26 +1056,27 @@ func (c *Comprehend) DeleteDocumentClassifierRequest(input *DeleteDocumentClassi
 // API operation DeleteDocumentClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteDocumentClassifier
 func (c *Comprehend) DeleteDocumentClassifier(input *DeleteDocumentClassifierInput) (*DeleteDocumentClassifierOutput, error) {
@@ -1116,14 +1116,13 @@ const opDeleteEndpoint = "DeleteEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointRequest method.
+//	req, resp := client.DeleteEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointRequest method.
-//    req, resp := client.DeleteEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteEndpoint
 func (c *Comprehend) DeleteEndpointRequest(input *DeleteEndpointInput) (req *request.Request, output *DeleteEndpointOutput) {
@@ -1157,22 +1156,23 @@ func (c *Comprehend) DeleteEndpointRequest(input *DeleteEndpointInput) (req *req
 // API operation DeleteEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteEndpoint
 func (c *Comprehend) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
@@ -1212,14 +1212,13 @@ const opDeleteEntityRecognizer = "DeleteEntityRecognizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEntityRecognizerRequest method.
+//	req, resp := client.DeleteEntityRecognizerRequest(params)
 //
-//    // Example sending a request using the DeleteEntityRecognizerRequest method.
-//    req, resp := client.DeleteEntityRecognizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteEntityRecognizer
 func (c *Comprehend) DeleteEntityRecognizerRequest(input *DeleteEntityRecognizerInput) (req *request.Request, output *DeleteEntityRecognizerOutput) {
@@ -1259,26 +1258,27 @@ func (c *Comprehend) DeleteEntityRecognizerRequest(input *DeleteEntityRecognizer
 // API operation DeleteEntityRecognizer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteEntityRecognizer
 func (c *Comprehend) DeleteEntityRecognizer(input *DeleteEntityRecognizerInput) (*DeleteEntityRecognizerOutput, error) {
@@ -1318,14 +1318,13 @@ const opDeleteResourcePolicy = "DeleteResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DeleteResourcePolicyRequest method.
-//    req, resp := client.DeleteResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteResourcePolicy
 func (c *Comprehend) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
@@ -1357,15 +1356,16 @@ func (c *Comprehend) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInpu
 // API operation DeleteResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DeleteResourcePolicy
 func (c *Comprehend) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
@@ -1405,14 +1405,13 @@ const opDescribeDocumentClassificationJob = "DescribeDocumentClassificationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDocumentClassificationJobRequest method.
+//	req, resp := client.DescribeDocumentClassificationJobRequest(params)
 //
-//    // Example sending a request using the DescribeDocumentClassificationJobRequest method.
-//    req, resp := client.DescribeDocumentClassificationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDocumentClassificationJob
 func (c *Comprehend) DescribeDocumentClassificationJobRequest(input *DescribeDocumentClassificationJobInput) (req *request.Request, output *DescribeDocumentClassificationJobOutput) {
@@ -1444,17 +1443,18 @@ func (c *Comprehend) DescribeDocumentClassificationJobRequest(input *DescribeDoc
 // API operation DescribeDocumentClassificationJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDocumentClassificationJob
 func (c *Comprehend) DescribeDocumentClassificationJob(input *DescribeDocumentClassificationJobInput) (*DescribeDocumentClassificationJobOutput, error) {
@@ -1494,14 +1494,13 @@ const opDescribeDocumentClassifier = "DescribeDocumentClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDocumentClassifierRequest method.
+//	req, resp := client.DescribeDocumentClassifierRequest(params)
 //
-//    // Example sending a request using the DescribeDocumentClassifierRequest method.
-//    req, resp := client.DescribeDocumentClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDocumentClassifier
 func (c *Comprehend) DescribeDocumentClassifierRequest(input *DescribeDocumentClassifierInput) (req *request.Request, output *DescribeDocumentClassifierOutput) {
@@ -1532,18 +1531,19 @@ func (c *Comprehend) DescribeDocumentClassifierRequest(input *DescribeDocumentCl
 // API operation DescribeDocumentClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDocumentClassifier
 func (c *Comprehend) DescribeDocumentClassifier(input *DescribeDocumentClassifierInput) (*DescribeDocumentClassifierOutput, error) {
@@ -1583,14 +1583,13 @@ const opDescribeDominantLanguageDetectionJob = "DescribeDominantLanguageDetectio
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDominantLanguageDetectionJobRequest method.
+//	req, resp := client.DescribeDominantLanguageDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeDominantLanguageDetectionJobRequest method.
-//    req, resp := client.DescribeDominantLanguageDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDominantLanguageDetectionJob
 func (c *Comprehend) DescribeDominantLanguageDetectionJobRequest(input *DescribeDominantLanguageDetectionJobInput) (req *request.Request, output *DescribeDominantLanguageDetectionJobOutput) {
@@ -1622,17 +1621,18 @@ func (c *Comprehend) DescribeDominantLanguageDetectionJobRequest(input *Describe
 // API operation DescribeDominantLanguageDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeDominantLanguageDetectionJob
 func (c *Comprehend) DescribeDominantLanguageDetectionJob(input *DescribeDominantLanguageDetectionJobInput) (*DescribeDominantLanguageDetectionJobOutput, error) {
@@ -1672,14 +1672,13 @@ const opDescribeEndpoint = "DescribeEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEndpointRequest method.
+//	req, resp := client.DescribeEndpointRequest(params)
 //
-//    // Example sending a request using the DescribeEndpointRequest method.
-//    req, resp := client.DescribeEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEndpoint
 func (c *Comprehend) DescribeEndpointRequest(input *DescribeEndpointInput) (req *request.Request, output *DescribeEndpointOutput) {
@@ -1712,18 +1711,19 @@ func (c *Comprehend) DescribeEndpointRequest(input *DescribeEndpointInput) (req 
 // API operation DescribeEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEndpoint
 func (c *Comprehend) DescribeEndpoint(input *DescribeEndpointInput) (*DescribeEndpointOutput, error) {
@@ -1763,14 +1763,13 @@ const opDescribeEntitiesDetectionJob = "DescribeEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntitiesDetectionJobRequest method.
+//	req, resp := client.DescribeEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeEntitiesDetectionJobRequest method.
-//    req, resp := client.DescribeEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEntitiesDetectionJob
 func (c *Comprehend) DescribeEntitiesDetectionJobRequest(input *DescribeEntitiesDetectionJobInput) (req *request.Request, output *DescribeEntitiesDetectionJobOutput) {
@@ -1802,17 +1801,18 @@ func (c *Comprehend) DescribeEntitiesDetectionJobRequest(input *DescribeEntities
 // API operation DescribeEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEntitiesDetectionJob
 func (c *Comprehend) DescribeEntitiesDetectionJob(input *DescribeEntitiesDetectionJobInput) (*DescribeEntitiesDetectionJobOutput, error) {
@@ -1852,14 +1852,13 @@ const opDescribeEntityRecognizer = "DescribeEntityRecognizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntityRecognizerRequest method.
+//	req, resp := client.DescribeEntityRecognizerRequest(params)
 //
-//    // Example sending a request using the DescribeEntityRecognizerRequest method.
-//    req, resp := client.DescribeEntityRecognizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEntityRecognizer
 func (c *Comprehend) DescribeEntityRecognizerRequest(input *DescribeEntityRecognizerInput) (req *request.Request, output *DescribeEntityRecognizerOutput) {
@@ -1891,18 +1890,19 @@ func (c *Comprehend) DescribeEntityRecognizerRequest(input *DescribeEntityRecogn
 // API operation DescribeEntityRecognizer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEntityRecognizer
 func (c *Comprehend) DescribeEntityRecognizer(input *DescribeEntityRecognizerInput) (*DescribeEntityRecognizerOutput, error) {
@@ -1942,14 +1942,13 @@ const opDescribeEventsDetectionJob = "DescribeEventsDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEventsDetectionJobRequest method.
+//	req, resp := client.DescribeEventsDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeEventsDetectionJobRequest method.
-//    req, resp := client.DescribeEventsDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEventsDetectionJob
 func (c *Comprehend) DescribeEventsDetectionJobRequest(input *DescribeEventsDetectionJobInput) (req *request.Request, output *DescribeEventsDetectionJobOutput) {
@@ -1980,17 +1979,18 @@ func (c *Comprehend) DescribeEventsDetectionJobRequest(input *DescribeEventsDete
 // API operation DescribeEventsDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeEventsDetectionJob
 func (c *Comprehend) DescribeEventsDetectionJob(input *DescribeEventsDetectionJobInput) (*DescribeEventsDetectionJobOutput, error) {
@@ -2030,14 +2030,13 @@ const opDescribeKeyPhrasesDetectionJob = "DescribeKeyPhrasesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeKeyPhrasesDetectionJobRequest method.
+//	req, resp := client.DescribeKeyPhrasesDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeKeyPhrasesDetectionJobRequest method.
-//    req, resp := client.DescribeKeyPhrasesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeKeyPhrasesDetectionJob
 func (c *Comprehend) DescribeKeyPhrasesDetectionJobRequest(input *DescribeKeyPhrasesDetectionJobInput) (req *request.Request, output *DescribeKeyPhrasesDetectionJobOutput) {
@@ -2069,17 +2068,18 @@ func (c *Comprehend) DescribeKeyPhrasesDetectionJobRequest(input *DescribeKeyPhr
 // API operation DescribeKeyPhrasesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeKeyPhrasesDetectionJob
 func (c *Comprehend) DescribeKeyPhrasesDetectionJob(input *DescribeKeyPhrasesDetectionJobInput) (*DescribeKeyPhrasesDetectionJobOutput, error) {
@@ -2119,14 +2119,13 @@ const opDescribePiiEntitiesDetectionJob = "DescribePiiEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePiiEntitiesDetectionJobRequest method.
+//	req, resp := client.DescribePiiEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribePiiEntitiesDetectionJobRequest method.
-//    req, resp := client.DescribePiiEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribePiiEntitiesDetectionJob
 func (c *Comprehend) DescribePiiEntitiesDetectionJobRequest(input *DescribePiiEntitiesDetectionJobInput) (req *request.Request, output *DescribePiiEntitiesDetectionJobOutput) {
@@ -2158,17 +2157,18 @@ func (c *Comprehend) DescribePiiEntitiesDetectionJobRequest(input *DescribePiiEn
 // API operation DescribePiiEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribePiiEntitiesDetectionJob
 func (c *Comprehend) DescribePiiEntitiesDetectionJob(input *DescribePiiEntitiesDetectionJobInput) (*DescribePiiEntitiesDetectionJobOutput, error) {
@@ -2208,14 +2208,13 @@ const opDescribeResourcePolicy = "DescribeResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeResourcePolicyRequest method.
+//	req, resp := client.DescribeResourcePolicyRequest(params)
 //
-//    // Example sending a request using the DescribeResourcePolicyRequest method.
-//    req, resp := client.DescribeResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeResourcePolicy
 func (c *Comprehend) DescribeResourcePolicyRequest(input *DescribeResourcePolicyInput) (req *request.Request, output *DescribeResourcePolicyOutput) {
@@ -2247,15 +2246,16 @@ func (c *Comprehend) DescribeResourcePolicyRequest(input *DescribeResourcePolicy
 // API operation DescribeResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeResourcePolicy
 func (c *Comprehend) DescribeResourcePolicy(input *DescribeResourcePolicyInput) (*DescribeResourcePolicyOutput, error) {
@@ -2295,14 +2295,13 @@ const opDescribeSentimentDetectionJob = "DescribeSentimentDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSentimentDetectionJobRequest method.
+//	req, resp := client.DescribeSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeSentimentDetectionJobRequest method.
-//    req, resp := client.DescribeSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeSentimentDetectionJob
 func (c *Comprehend) DescribeSentimentDetectionJobRequest(input *DescribeSentimentDetectionJobInput) (req *request.Request, output *DescribeSentimentDetectionJobOutput) {
@@ -2334,17 +2333,18 @@ func (c *Comprehend) DescribeSentimentDetectionJobRequest(input *DescribeSentime
 // API operation DescribeSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeSentimentDetectionJob
 func (c *Comprehend) DescribeSentimentDetectionJob(input *DescribeSentimentDetectionJobInput) (*DescribeSentimentDetectionJobOutput, error) {
@@ -2384,14 +2384,13 @@ const opDescribeTargetedSentimentDetectionJob = "DescribeTargetedSentimentDetect
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTargetedSentimentDetectionJobRequest method.
+//	req, resp := client.DescribeTargetedSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeTargetedSentimentDetectionJobRequest method.
-//    req, resp := client.DescribeTargetedSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeTargetedSentimentDetectionJob
 func (c *Comprehend) DescribeTargetedSentimentDetectionJobRequest(input *DescribeTargetedSentimentDetectionJobInput) (req *request.Request, output *DescribeTargetedSentimentDetectionJobOutput) {
@@ -2423,17 +2422,18 @@ func (c *Comprehend) DescribeTargetedSentimentDetectionJobRequest(input *Describ
 // API operation DescribeTargetedSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeTargetedSentimentDetectionJob
 func (c *Comprehend) DescribeTargetedSentimentDetectionJob(input *DescribeTargetedSentimentDetectionJobInput) (*DescribeTargetedSentimentDetectionJobOutput, error) {
@@ -2473,14 +2473,13 @@ const opDescribeTopicsDetectionJob = "DescribeTopicsDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTopicsDetectionJobRequest method.
+//	req, resp := client.DescribeTopicsDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribeTopicsDetectionJobRequest method.
-//    req, resp := client.DescribeTopicsDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeTopicsDetectionJob
 func (c *Comprehend) DescribeTopicsDetectionJobRequest(input *DescribeTopicsDetectionJobInput) (req *request.Request, output *DescribeTopicsDetectionJobOutput) {
@@ -2512,17 +2511,18 @@ func (c *Comprehend) DescribeTopicsDetectionJobRequest(input *DescribeTopicsDete
 // API operation DescribeTopicsDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DescribeTopicsDetectionJob
 func (c *Comprehend) DescribeTopicsDetectionJob(input *DescribeTopicsDetectionJobInput) (*DescribeTopicsDetectionJobOutput, error) {
@@ -2562,14 +2562,13 @@ const opDetectDominantLanguage = "DetectDominantLanguage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectDominantLanguageRequest method.
+//	req, resp := client.DetectDominantLanguageRequest(params)
 //
-//    // Example sending a request using the DetectDominantLanguageRequest method.
-//    req, resp := client.DetectDominantLanguageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectDominantLanguage
 func (c *Comprehend) DetectDominantLanguageRequest(input *DetectDominantLanguageInput) (req *request.Request, output *DetectDominantLanguageOutput) {
@@ -2602,14 +2601,15 @@ func (c *Comprehend) DetectDominantLanguageRequest(input *DetectDominantLanguage
 // API operation DetectDominantLanguage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectDominantLanguage
 func (c *Comprehend) DetectDominantLanguage(input *DetectDominantLanguageInput) (*DetectDominantLanguageOutput, error) {
@@ -2649,14 +2649,13 @@ const opDetectEntities = "DetectEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectEntitiesRequest method.
+//	req, resp := client.DetectEntitiesRequest(params)
 //
-//    // Example sending a request using the DetectEntitiesRequest method.
-//    req, resp := client.DetectEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectEntities
 func (c *Comprehend) DetectEntitiesRequest(input *DetectEntitiesInput) (req *request.Request, output *DetectEntitiesOutput) {
@@ -2688,23 +2687,24 @@ func (c *Comprehend) DetectEntitiesRequest(input *DetectEntitiesInput) (req *req
 // API operation DetectEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectEntities
 func (c *Comprehend) DetectEntities(input *DetectEntitiesInput) (*DetectEntitiesOutput, error) {
@@ -2744,14 +2744,13 @@ const opDetectKeyPhrases = "DetectKeyPhrases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectKeyPhrasesRequest method.
+//	req, resp := client.DetectKeyPhrasesRequest(params)
 //
-//    // Example sending a request using the DetectKeyPhrasesRequest method.
-//    req, resp := client.DetectKeyPhrasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectKeyPhrases
 func (c *Comprehend) DetectKeyPhrasesRequest(input *DetectKeyPhrasesInput) (req *request.Request, output *DetectKeyPhrasesOutput) {
@@ -2782,19 +2781,20 @@ func (c *Comprehend) DetectKeyPhrasesRequest(input *DetectKeyPhrasesInput) (req 
 // API operation DetectKeyPhrases for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectKeyPhrases
 func (c *Comprehend) DetectKeyPhrases(input *DetectKeyPhrasesInput) (*DetectKeyPhrasesOutput, error) {
@@ -2834,14 +2834,13 @@ const opDetectPiiEntities = "DetectPiiEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectPiiEntitiesRequest method.
+//	req, resp := client.DetectPiiEntitiesRequest(params)
 //
-//    // Example sending a request using the DetectPiiEntitiesRequest method.
-//    req, resp := client.DetectPiiEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectPiiEntities
 func (c *Comprehend) DetectPiiEntitiesRequest(input *DetectPiiEntitiesInput) (req *request.Request, output *DetectPiiEntitiesOutput) {
@@ -2873,19 +2872,20 @@ func (c *Comprehend) DetectPiiEntitiesRequest(input *DetectPiiEntitiesInput) (re
 // API operation DetectPiiEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectPiiEntities
 func (c *Comprehend) DetectPiiEntities(input *DetectPiiEntitiesInput) (*DetectPiiEntitiesOutput, error) {
@@ -2925,14 +2925,13 @@ const opDetectSentiment = "DetectSentiment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectSentimentRequest method.
+//	req, resp := client.DetectSentimentRequest(params)
 //
-//    // Example sending a request using the DetectSentimentRequest method.
-//    req, resp := client.DetectSentimentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectSentiment
 func (c *Comprehend) DetectSentimentRequest(input *DetectSentimentInput) (req *request.Request, output *DetectSentimentOutput) {
@@ -2964,19 +2963,20 @@ func (c *Comprehend) DetectSentimentRequest(input *DetectSentimentInput) (req *r
 // API operation DetectSentiment for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectSentiment
 func (c *Comprehend) DetectSentiment(input *DetectSentimentInput) (*DetectSentimentOutput, error) {
@@ -3016,14 +3016,13 @@ const opDetectSyntax = "DetectSyntax"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectSyntaxRequest method.
+//	req, resp := client.DetectSyntaxRequest(params)
 //
-//    // Example sending a request using the DetectSyntaxRequest method.
-//    req, resp := client.DetectSyntaxRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectSyntax
 func (c *Comprehend) DetectSyntaxRequest(input *DetectSyntaxInput) (req *request.Request, output *DetectSyntaxOutput) {
@@ -3055,19 +3054,20 @@ func (c *Comprehend) DetectSyntaxRequest(input *DetectSyntaxInput) (req *request
 // API operation DetectSyntax for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TextSizeLimitExceededException
-//   The size of the input text exceeds the limit. Use a smaller document.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * UnsupportedLanguageException
-//   Amazon Comprehend can't process the language of the input text. For custom
-//   entity recognition APIs, only English, Spanish, French, Italian, German,
-//   or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//   - TextSizeLimitExceededException
+//     The size of the input text exceeds the limit. Use a smaller document.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - UnsupportedLanguageException
+//     Amazon Comprehend can't process the language of the input text. For custom
+//     entity recognition APIs, only English, Spanish, French, Italian, German,
+//     or Portuguese are accepted. For a list of supported languages, see supported-languages.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/DetectSyntax
 func (c *Comprehend) DetectSyntax(input *DetectSyntaxInput) (*DetectSyntaxOutput, error) {
@@ -3107,14 +3107,13 @@ const opImportModel = "ImportModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportModelRequest method.
+//	req, resp := client.ImportModelRequest(params)
 //
-//    // Example sending a request using the ImportModelRequest method.
-//    req, resp := client.ImportModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ImportModel
 func (c *Comprehend) ImportModelRequest(input *ImportModelInput) (req *request.Request, output *ImportModelOutput) {
@@ -3152,39 +3151,40 @@ func (c *Comprehend) ImportModelRequest(input *ImportModelInput) (req *request.R
 // API operation ImportModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
 //
-//   * ResourceLimitExceededException
-//   The maximum number of resources per account has been exceeded. Review the
-//   resources, and then try your request again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - ResourceLimitExceededException
+//     The maximum number of resources per account has been exceeded. Review the
+//     resources, and then try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ImportModel
 func (c *Comprehend) ImportModel(input *ImportModelInput) (*ImportModelOutput, error) {
@@ -3224,14 +3224,13 @@ const opListDocumentClassificationJobs = "ListDocumentClassificationJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDocumentClassificationJobsRequest method.
+//	req, resp := client.ListDocumentClassificationJobsRequest(params)
 //
-//    // Example sending a request using the ListDocumentClassificationJobsRequest method.
-//    req, resp := client.ListDocumentClassificationJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassificationJobs
 func (c *Comprehend) ListDocumentClassificationJobsRequest(input *ListDocumentClassificationJobsInput) (req *request.Request, output *ListDocumentClassificationJobsOutput) {
@@ -3268,17 +3267,18 @@ func (c *Comprehend) ListDocumentClassificationJobsRequest(input *ListDocumentCl
 // API operation ListDocumentClassificationJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassificationJobs
 func (c *Comprehend) ListDocumentClassificationJobs(input *ListDocumentClassificationJobsInput) (*ListDocumentClassificationJobsOutput, error) {
@@ -3310,15 +3310,14 @@ func (c *Comprehend) ListDocumentClassificationJobsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDocumentClassificationJobs operation.
-//    pageNum := 0
-//    err := client.ListDocumentClassificationJobsPages(params,
-//        func(page *comprehend.ListDocumentClassificationJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDocumentClassificationJobs operation.
+//	pageNum := 0
+//	err := client.ListDocumentClassificationJobsPages(params,
+//	    func(page *comprehend.ListDocumentClassificationJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListDocumentClassificationJobsPages(input *ListDocumentClassificationJobsInput, fn func(*ListDocumentClassificationJobsOutput, bool) bool) error {
 	return c.ListDocumentClassificationJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3370,14 +3369,13 @@ const opListDocumentClassifierSummaries = "ListDocumentClassifierSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDocumentClassifierSummariesRequest method.
+//	req, resp := client.ListDocumentClassifierSummariesRequest(params)
 //
-//    // Example sending a request using the ListDocumentClassifierSummariesRequest method.
-//    req, resp := client.ListDocumentClassifierSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassifierSummaries
 func (c *Comprehend) ListDocumentClassifierSummariesRequest(input *ListDocumentClassifierSummariesInput) (req *request.Request, output *ListDocumentClassifierSummariesOutput) {
@@ -3404,7 +3402,7 @@ func (c *Comprehend) ListDocumentClassifierSummariesRequest(input *ListDocumentC
 
 // ListDocumentClassifierSummaries API operation for Amazon Comprehend.
 //
-// Gets a list of summaries of the document classifiers that you have created
+// # Gets a list of summaries of the document classifiers that you have created
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3414,14 +3412,15 @@ func (c *Comprehend) ListDocumentClassifierSummariesRequest(input *ListDocumentC
 // API operation ListDocumentClassifierSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassifierSummaries
 func (c *Comprehend) ListDocumentClassifierSummaries(input *ListDocumentClassifierSummariesInput) (*ListDocumentClassifierSummariesOutput, error) {
@@ -3453,15 +3452,14 @@ func (c *Comprehend) ListDocumentClassifierSummariesWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDocumentClassifierSummaries operation.
-//    pageNum := 0
-//    err := client.ListDocumentClassifierSummariesPages(params,
-//        func(page *comprehend.ListDocumentClassifierSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDocumentClassifierSummaries operation.
+//	pageNum := 0
+//	err := client.ListDocumentClassifierSummariesPages(params,
+//	    func(page *comprehend.ListDocumentClassifierSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListDocumentClassifierSummariesPages(input *ListDocumentClassifierSummariesInput, fn func(*ListDocumentClassifierSummariesOutput, bool) bool) error {
 	return c.ListDocumentClassifierSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3513,14 +3511,13 @@ const opListDocumentClassifiers = "ListDocumentClassifiers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDocumentClassifiersRequest method.
+//	req, resp := client.ListDocumentClassifiersRequest(params)
 //
-//    // Example sending a request using the ListDocumentClassifiersRequest method.
-//    req, resp := client.ListDocumentClassifiersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassifiers
 func (c *Comprehend) ListDocumentClassifiersRequest(input *ListDocumentClassifiersInput) (req *request.Request, output *ListDocumentClassifiersOutput) {
@@ -3557,17 +3554,18 @@ func (c *Comprehend) ListDocumentClassifiersRequest(input *ListDocumentClassifie
 // API operation ListDocumentClassifiers for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDocumentClassifiers
 func (c *Comprehend) ListDocumentClassifiers(input *ListDocumentClassifiersInput) (*ListDocumentClassifiersOutput, error) {
@@ -3599,15 +3597,14 @@ func (c *Comprehend) ListDocumentClassifiersWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDocumentClassifiers operation.
-//    pageNum := 0
-//    err := client.ListDocumentClassifiersPages(params,
-//        func(page *comprehend.ListDocumentClassifiersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDocumentClassifiers operation.
+//	pageNum := 0
+//	err := client.ListDocumentClassifiersPages(params,
+//	    func(page *comprehend.ListDocumentClassifiersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListDocumentClassifiersPages(input *ListDocumentClassifiersInput, fn func(*ListDocumentClassifiersOutput, bool) bool) error {
 	return c.ListDocumentClassifiersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3659,14 +3656,13 @@ const opListDominantLanguageDetectionJobs = "ListDominantLanguageDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDominantLanguageDetectionJobsRequest method.
+//	req, resp := client.ListDominantLanguageDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListDominantLanguageDetectionJobsRequest method.
-//    req, resp := client.ListDominantLanguageDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDominantLanguageDetectionJobs
 func (c *Comprehend) ListDominantLanguageDetectionJobsRequest(input *ListDominantLanguageDetectionJobsInput) (req *request.Request, output *ListDominantLanguageDetectionJobsOutput) {
@@ -3703,17 +3699,18 @@ func (c *Comprehend) ListDominantLanguageDetectionJobsRequest(input *ListDominan
 // API operation ListDominantLanguageDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListDominantLanguageDetectionJobs
 func (c *Comprehend) ListDominantLanguageDetectionJobs(input *ListDominantLanguageDetectionJobsInput) (*ListDominantLanguageDetectionJobsOutput, error) {
@@ -3745,15 +3742,14 @@ func (c *Comprehend) ListDominantLanguageDetectionJobsWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDominantLanguageDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListDominantLanguageDetectionJobsPages(params,
-//        func(page *comprehend.ListDominantLanguageDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDominantLanguageDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListDominantLanguageDetectionJobsPages(params,
+//	    func(page *comprehend.ListDominantLanguageDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListDominantLanguageDetectionJobsPages(input *ListDominantLanguageDetectionJobsInput, fn func(*ListDominantLanguageDetectionJobsOutput, bool) bool) error {
 	return c.ListDominantLanguageDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3805,14 +3801,13 @@ const opListEndpoints = "ListEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEndpointsRequest method.
+//	req, resp := client.ListEndpointsRequest(params)
 //
-//    // Example sending a request using the ListEndpointsRequest method.
-//    req, resp := client.ListEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEndpoints
 func (c *Comprehend) ListEndpointsRequest(input *ListEndpointsInput) (req *request.Request, output *ListEndpointsOutput) {
@@ -3844,14 +3839,15 @@ func (c *Comprehend) ListEndpointsRequest(input *ListEndpointsInput) (req *reque
 // API operation ListEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEndpoints
 func (c *Comprehend) ListEndpoints(input *ListEndpointsInput) (*ListEndpointsOutput, error) {
@@ -3891,14 +3887,13 @@ const opListEntitiesDetectionJobs = "ListEntitiesDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitiesDetectionJobsRequest method.
+//	req, resp := client.ListEntitiesDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListEntitiesDetectionJobsRequest method.
-//    req, resp := client.ListEntitiesDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntitiesDetectionJobs
 func (c *Comprehend) ListEntitiesDetectionJobsRequest(input *ListEntitiesDetectionJobsInput) (req *request.Request, output *ListEntitiesDetectionJobsOutput) {
@@ -3935,17 +3930,18 @@ func (c *Comprehend) ListEntitiesDetectionJobsRequest(input *ListEntitiesDetecti
 // API operation ListEntitiesDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntitiesDetectionJobs
 func (c *Comprehend) ListEntitiesDetectionJobs(input *ListEntitiesDetectionJobsInput) (*ListEntitiesDetectionJobsOutput, error) {
@@ -3977,15 +3973,14 @@ func (c *Comprehend) ListEntitiesDetectionJobsWithContext(ctx aws.Context, input
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntitiesDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListEntitiesDetectionJobsPages(params,
-//        func(page *comprehend.ListEntitiesDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntitiesDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListEntitiesDetectionJobsPages(params,
+//	    func(page *comprehend.ListEntitiesDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListEntitiesDetectionJobsPages(input *ListEntitiesDetectionJobsInput, fn func(*ListEntitiesDetectionJobsOutput, bool) bool) error {
 	return c.ListEntitiesDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4037,14 +4032,13 @@ const opListEntityRecognizerSummaries = "ListEntityRecognizerSummaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntityRecognizerSummariesRequest method.
+//	req, resp := client.ListEntityRecognizerSummariesRequest(params)
 //
-//    // Example sending a request using the ListEntityRecognizerSummariesRequest method.
-//    req, resp := client.ListEntityRecognizerSummariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntityRecognizerSummaries
 func (c *Comprehend) ListEntityRecognizerSummariesRequest(input *ListEntityRecognizerSummariesInput) (req *request.Request, output *ListEntityRecognizerSummariesOutput) {
@@ -4081,14 +4075,15 @@ func (c *Comprehend) ListEntityRecognizerSummariesRequest(input *ListEntityRecog
 // API operation ListEntityRecognizerSummaries for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntityRecognizerSummaries
 func (c *Comprehend) ListEntityRecognizerSummaries(input *ListEntityRecognizerSummariesInput) (*ListEntityRecognizerSummariesOutput, error) {
@@ -4120,15 +4115,14 @@ func (c *Comprehend) ListEntityRecognizerSummariesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntityRecognizerSummaries operation.
-//    pageNum := 0
-//    err := client.ListEntityRecognizerSummariesPages(params,
-//        func(page *comprehend.ListEntityRecognizerSummariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntityRecognizerSummaries operation.
+//	pageNum := 0
+//	err := client.ListEntityRecognizerSummariesPages(params,
+//	    func(page *comprehend.ListEntityRecognizerSummariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListEntityRecognizerSummariesPages(input *ListEntityRecognizerSummariesInput, fn func(*ListEntityRecognizerSummariesOutput, bool) bool) error {
 	return c.ListEntityRecognizerSummariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4180,14 +4174,13 @@ const opListEntityRecognizers = "ListEntityRecognizers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntityRecognizersRequest method.
+//	req, resp := client.ListEntityRecognizersRequest(params)
 //
-//    // Example sending a request using the ListEntityRecognizersRequest method.
-//    req, resp := client.ListEntityRecognizersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntityRecognizers
 func (c *Comprehend) ListEntityRecognizersRequest(input *ListEntityRecognizersInput) (req *request.Request, output *ListEntityRecognizersOutput) {
@@ -4231,17 +4224,18 @@ func (c *Comprehend) ListEntityRecognizersRequest(input *ListEntityRecognizersIn
 // API operation ListEntityRecognizers for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEntityRecognizers
 func (c *Comprehend) ListEntityRecognizers(input *ListEntityRecognizersInput) (*ListEntityRecognizersOutput, error) {
@@ -4273,15 +4267,14 @@ func (c *Comprehend) ListEntityRecognizersWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEntityRecognizers operation.
-//    pageNum := 0
-//    err := client.ListEntityRecognizersPages(params,
-//        func(page *comprehend.ListEntityRecognizersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEntityRecognizers operation.
+//	pageNum := 0
+//	err := client.ListEntityRecognizersPages(params,
+//	    func(page *comprehend.ListEntityRecognizersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListEntityRecognizersPages(input *ListEntityRecognizersInput, fn func(*ListEntityRecognizersOutput, bool) bool) error {
 	return c.ListEntityRecognizersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4333,14 +4326,13 @@ const opListEventsDetectionJobs = "ListEventsDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEventsDetectionJobsRequest method.
+//	req, resp := client.ListEventsDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListEventsDetectionJobsRequest method.
-//    req, resp := client.ListEventsDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEventsDetectionJobs
 func (c *Comprehend) ListEventsDetectionJobsRequest(input *ListEventsDetectionJobsInput) (req *request.Request, output *ListEventsDetectionJobsOutput) {
@@ -4377,17 +4369,18 @@ func (c *Comprehend) ListEventsDetectionJobsRequest(input *ListEventsDetectionJo
 // API operation ListEventsDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListEventsDetectionJobs
 func (c *Comprehend) ListEventsDetectionJobs(input *ListEventsDetectionJobsInput) (*ListEventsDetectionJobsOutput, error) {
@@ -4419,15 +4412,14 @@ func (c *Comprehend) ListEventsDetectionJobsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListEventsDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListEventsDetectionJobsPages(params,
-//        func(page *comprehend.ListEventsDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListEventsDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListEventsDetectionJobsPages(params,
+//	    func(page *comprehend.ListEventsDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListEventsDetectionJobsPages(input *ListEventsDetectionJobsInput, fn func(*ListEventsDetectionJobsOutput, bool) bool) error {
 	return c.ListEventsDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4479,14 +4471,13 @@ const opListKeyPhrasesDetectionJobs = "ListKeyPhrasesDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKeyPhrasesDetectionJobsRequest method.
+//	req, resp := client.ListKeyPhrasesDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListKeyPhrasesDetectionJobsRequest method.
-//    req, resp := client.ListKeyPhrasesDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListKeyPhrasesDetectionJobs
 func (c *Comprehend) ListKeyPhrasesDetectionJobsRequest(input *ListKeyPhrasesDetectionJobsInput) (req *request.Request, output *ListKeyPhrasesDetectionJobsOutput) {
@@ -4523,17 +4514,18 @@ func (c *Comprehend) ListKeyPhrasesDetectionJobsRequest(input *ListKeyPhrasesDet
 // API operation ListKeyPhrasesDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListKeyPhrasesDetectionJobs
 func (c *Comprehend) ListKeyPhrasesDetectionJobs(input *ListKeyPhrasesDetectionJobsInput) (*ListKeyPhrasesDetectionJobsOutput, error) {
@@ -4565,15 +4557,14 @@ func (c *Comprehend) ListKeyPhrasesDetectionJobsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKeyPhrasesDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListKeyPhrasesDetectionJobsPages(params,
-//        func(page *comprehend.ListKeyPhrasesDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKeyPhrasesDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListKeyPhrasesDetectionJobsPages(params,
+//	    func(page *comprehend.ListKeyPhrasesDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListKeyPhrasesDetectionJobsPages(input *ListKeyPhrasesDetectionJobsInput, fn func(*ListKeyPhrasesDetectionJobsOutput, bool) bool) error {
 	return c.ListKeyPhrasesDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4625,14 +4616,13 @@ const opListPiiEntitiesDetectionJobs = "ListPiiEntitiesDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPiiEntitiesDetectionJobsRequest method.
+//	req, resp := client.ListPiiEntitiesDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListPiiEntitiesDetectionJobsRequest method.
-//    req, resp := client.ListPiiEntitiesDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListPiiEntitiesDetectionJobs
 func (c *Comprehend) ListPiiEntitiesDetectionJobsRequest(input *ListPiiEntitiesDetectionJobsInput) (req *request.Request, output *ListPiiEntitiesDetectionJobsOutput) {
@@ -4663,17 +4653,18 @@ func (c *Comprehend) ListPiiEntitiesDetectionJobsRequest(input *ListPiiEntitiesD
 // API operation ListPiiEntitiesDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListPiiEntitiesDetectionJobs
 func (c *Comprehend) ListPiiEntitiesDetectionJobs(input *ListPiiEntitiesDetectionJobsInput) (*ListPiiEntitiesDetectionJobsOutput, error) {
@@ -4713,14 +4704,13 @@ const opListSentimentDetectionJobs = "ListSentimentDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSentimentDetectionJobsRequest method.
+//	req, resp := client.ListSentimentDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListSentimentDetectionJobsRequest method.
-//    req, resp := client.ListSentimentDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListSentimentDetectionJobs
 func (c *Comprehend) ListSentimentDetectionJobsRequest(input *ListSentimentDetectionJobsInput) (req *request.Request, output *ListSentimentDetectionJobsOutput) {
@@ -4757,17 +4747,18 @@ func (c *Comprehend) ListSentimentDetectionJobsRequest(input *ListSentimentDetec
 // API operation ListSentimentDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListSentimentDetectionJobs
 func (c *Comprehend) ListSentimentDetectionJobs(input *ListSentimentDetectionJobsInput) (*ListSentimentDetectionJobsOutput, error) {
@@ -4799,15 +4790,14 @@ func (c *Comprehend) ListSentimentDetectionJobsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSentimentDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListSentimentDetectionJobsPages(params,
-//        func(page *comprehend.ListSentimentDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSentimentDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListSentimentDetectionJobsPages(params,
+//	    func(page *comprehend.ListSentimentDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListSentimentDetectionJobsPages(input *ListSentimentDetectionJobsInput, fn func(*ListSentimentDetectionJobsOutput, bool) bool) error {
 	return c.ListSentimentDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -4859,14 +4849,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTagsForResource
 func (c *Comprehend) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -4897,15 +4886,16 @@ func (c *Comprehend) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTagsForResource
 func (c *Comprehend) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -4945,14 +4935,13 @@ const opListTargetedSentimentDetectionJobs = "ListTargetedSentimentDetectionJobs
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTargetedSentimentDetectionJobsRequest method.
+//	req, resp := client.ListTargetedSentimentDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListTargetedSentimentDetectionJobsRequest method.
-//    req, resp := client.ListTargetedSentimentDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTargetedSentimentDetectionJobs
 func (c *Comprehend) ListTargetedSentimentDetectionJobsRequest(input *ListTargetedSentimentDetectionJobsInput) (req *request.Request, output *ListTargetedSentimentDetectionJobsOutput) {
@@ -4989,17 +4978,18 @@ func (c *Comprehend) ListTargetedSentimentDetectionJobsRequest(input *ListTarget
 // API operation ListTargetedSentimentDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTargetedSentimentDetectionJobs
 func (c *Comprehend) ListTargetedSentimentDetectionJobs(input *ListTargetedSentimentDetectionJobsInput) (*ListTargetedSentimentDetectionJobsOutput, error) {
@@ -5031,15 +5021,14 @@ func (c *Comprehend) ListTargetedSentimentDetectionJobsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTargetedSentimentDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListTargetedSentimentDetectionJobsPages(params,
-//        func(page *comprehend.ListTargetedSentimentDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTargetedSentimentDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListTargetedSentimentDetectionJobsPages(params,
+//	    func(page *comprehend.ListTargetedSentimentDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListTargetedSentimentDetectionJobsPages(input *ListTargetedSentimentDetectionJobsInput, fn func(*ListTargetedSentimentDetectionJobsOutput, bool) bool) error {
 	return c.ListTargetedSentimentDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5091,14 +5080,13 @@ const opListTopicsDetectionJobs = "ListTopicsDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTopicsDetectionJobsRequest method.
+//	req, resp := client.ListTopicsDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListTopicsDetectionJobsRequest method.
-//    req, resp := client.ListTopicsDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTopicsDetectionJobs
 func (c *Comprehend) ListTopicsDetectionJobsRequest(input *ListTopicsDetectionJobsInput) (req *request.Request, output *ListTopicsDetectionJobsOutput) {
@@ -5135,17 +5123,18 @@ func (c *Comprehend) ListTopicsDetectionJobsRequest(input *ListTopicsDetectionJo
 // API operation ListTopicsDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InvalidFilterException
-//   The filter specified for the operation is invalid. Specify a different filter.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - InvalidFilterException
+//     The filter specified for the operation is invalid. Specify a different filter.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/ListTopicsDetectionJobs
 func (c *Comprehend) ListTopicsDetectionJobs(input *ListTopicsDetectionJobsInput) (*ListTopicsDetectionJobsOutput, error) {
@@ -5177,15 +5166,14 @@ func (c *Comprehend) ListTopicsDetectionJobsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTopicsDetectionJobs operation.
-//    pageNum := 0
-//    err := client.ListTopicsDetectionJobsPages(params,
-//        func(page *comprehend.ListTopicsDetectionJobsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTopicsDetectionJobs operation.
+//	pageNum := 0
+//	err := client.ListTopicsDetectionJobsPages(params,
+//	    func(page *comprehend.ListTopicsDetectionJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Comprehend) ListTopicsDetectionJobsPages(input *ListTopicsDetectionJobsInput, fn func(*ListTopicsDetectionJobsOutput, bool) bool) error {
 	return c.ListTopicsDetectionJobsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -5237,14 +5225,13 @@ const opPutResourcePolicy = "PutResourcePolicy"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
 //
-//    // Example sending a request using the PutResourcePolicyRequest method.
-//    req, resp := client.PutResourcePolicyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/PutResourcePolicy
 func (c *Comprehend) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
@@ -5277,15 +5264,16 @@ func (c *Comprehend) PutResourcePolicyRequest(input *PutResourcePolicyInput) (re
 // API operation PutResourcePolicy for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/PutResourcePolicy
 func (c *Comprehend) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
@@ -5325,14 +5313,13 @@ const opStartDocumentClassificationJob = "StartDocumentClassificationJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDocumentClassificationJobRequest method.
+//	req, resp := client.StartDocumentClassificationJobRequest(params)
 //
-//    // Example sending a request using the StartDocumentClassificationJobRequest method.
-//    req, resp := client.StartDocumentClassificationJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartDocumentClassificationJob
 func (c *Comprehend) StartDocumentClassificationJobRequest(input *StartDocumentClassificationJobInput) (req *request.Request, output *StartDocumentClassificationJobOutput) {
@@ -5364,31 +5351,32 @@ func (c *Comprehend) StartDocumentClassificationJobRequest(input *StartDocumentC
 // API operation StartDocumentClassificationJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartDocumentClassificationJob
 func (c *Comprehend) StartDocumentClassificationJob(input *StartDocumentClassificationJobInput) (*StartDocumentClassificationJobOutput, error) {
@@ -5428,14 +5416,13 @@ const opStartDominantLanguageDetectionJob = "StartDominantLanguageDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDominantLanguageDetectionJobRequest method.
+//	req, resp := client.StartDominantLanguageDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartDominantLanguageDetectionJobRequest method.
-//    req, resp := client.StartDominantLanguageDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartDominantLanguageDetectionJob
 func (c *Comprehend) StartDominantLanguageDetectionJobRequest(input *StartDominantLanguageDetectionJobInput) (req *request.Request, output *StartDominantLanguageDetectionJobOutput) {
@@ -5467,23 +5454,24 @@ func (c *Comprehend) StartDominantLanguageDetectionJobRequest(input *StartDomina
 // API operation StartDominantLanguageDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartDominantLanguageDetectionJob
 func (c *Comprehend) StartDominantLanguageDetectionJob(input *StartDominantLanguageDetectionJobInput) (*StartDominantLanguageDetectionJobOutput, error) {
@@ -5523,14 +5511,13 @@ const opStartEntitiesDetectionJob = "StartEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartEntitiesDetectionJobRequest method.
+//	req, resp := client.StartEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartEntitiesDetectionJobRequest method.
-//    req, resp := client.StartEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartEntitiesDetectionJob
 func (c *Comprehend) StartEntitiesDetectionJobRequest(input *StartEntitiesDetectionJobInput) (req *request.Request, output *StartEntitiesDetectionJobOutput) {
@@ -5567,31 +5554,32 @@ func (c *Comprehend) StartEntitiesDetectionJobRequest(input *StartEntitiesDetect
 // API operation StartEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartEntitiesDetectionJob
 func (c *Comprehend) StartEntitiesDetectionJob(input *StartEntitiesDetectionJobInput) (*StartEntitiesDetectionJobOutput, error) {
@@ -5631,14 +5619,13 @@ const opStartEventsDetectionJob = "StartEventsDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartEventsDetectionJobRequest method.
+//	req, resp := client.StartEventsDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartEventsDetectionJobRequest method.
-//    req, resp := client.StartEventsDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartEventsDetectionJob
 func (c *Comprehend) StartEventsDetectionJobRequest(input *StartEventsDetectionJobInput) (req *request.Request, output *StartEventsDetectionJobOutput) {
@@ -5669,23 +5656,24 @@ func (c *Comprehend) StartEventsDetectionJobRequest(input *StartEventsDetectionJ
 // API operation StartEventsDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartEventsDetectionJob
 func (c *Comprehend) StartEventsDetectionJob(input *StartEventsDetectionJobInput) (*StartEventsDetectionJobOutput, error) {
@@ -5725,14 +5713,13 @@ const opStartKeyPhrasesDetectionJob = "StartKeyPhrasesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartKeyPhrasesDetectionJobRequest method.
+//	req, resp := client.StartKeyPhrasesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartKeyPhrasesDetectionJobRequest method.
-//    req, resp := client.StartKeyPhrasesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartKeyPhrasesDetectionJob
 func (c *Comprehend) StartKeyPhrasesDetectionJobRequest(input *StartKeyPhrasesDetectionJobInput) (req *request.Request, output *StartKeyPhrasesDetectionJobOutput) {
@@ -5764,23 +5751,24 @@ func (c *Comprehend) StartKeyPhrasesDetectionJobRequest(input *StartKeyPhrasesDe
 // API operation StartKeyPhrasesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartKeyPhrasesDetectionJob
 func (c *Comprehend) StartKeyPhrasesDetectionJob(input *StartKeyPhrasesDetectionJobInput) (*StartKeyPhrasesDetectionJobOutput, error) {
@@ -5820,14 +5808,13 @@ const opStartPiiEntitiesDetectionJob = "StartPiiEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartPiiEntitiesDetectionJobRequest method.
+//	req, resp := client.StartPiiEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartPiiEntitiesDetectionJobRequest method.
-//    req, resp := client.StartPiiEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartPiiEntitiesDetectionJob
 func (c *Comprehend) StartPiiEntitiesDetectionJobRequest(input *StartPiiEntitiesDetectionJobInput) (req *request.Request, output *StartPiiEntitiesDetectionJobOutput) {
@@ -5858,23 +5845,24 @@ func (c *Comprehend) StartPiiEntitiesDetectionJobRequest(input *StartPiiEntities
 // API operation StartPiiEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartPiiEntitiesDetectionJob
 func (c *Comprehend) StartPiiEntitiesDetectionJob(input *StartPiiEntitiesDetectionJobInput) (*StartPiiEntitiesDetectionJobOutput, error) {
@@ -5914,14 +5902,13 @@ const opStartSentimentDetectionJob = "StartSentimentDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSentimentDetectionJobRequest method.
+//	req, resp := client.StartSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartSentimentDetectionJobRequest method.
-//    req, resp := client.StartSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartSentimentDetectionJob
 func (c *Comprehend) StartSentimentDetectionJobRequest(input *StartSentimentDetectionJobInput) (req *request.Request, output *StartSentimentDetectionJobOutput) {
@@ -5953,23 +5940,24 @@ func (c *Comprehend) StartSentimentDetectionJobRequest(input *StartSentimentDete
 // API operation StartSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartSentimentDetectionJob
 func (c *Comprehend) StartSentimentDetectionJob(input *StartSentimentDetectionJobInput) (*StartSentimentDetectionJobOutput, error) {
@@ -6009,14 +5997,13 @@ const opStartTargetedSentimentDetectionJob = "StartTargetedSentimentDetectionJob
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTargetedSentimentDetectionJobRequest method.
+//	req, resp := client.StartTargetedSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartTargetedSentimentDetectionJobRequest method.
-//    req, resp := client.StartTargetedSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartTargetedSentimentDetectionJob
 func (c *Comprehend) StartTargetedSentimentDetectionJobRequest(input *StartTargetedSentimentDetectionJobInput) (req *request.Request, output *StartTargetedSentimentDetectionJobOutput) {
@@ -6048,23 +6035,24 @@ func (c *Comprehend) StartTargetedSentimentDetectionJobRequest(input *StartTarge
 // API operation StartTargetedSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartTargetedSentimentDetectionJob
 func (c *Comprehend) StartTargetedSentimentDetectionJob(input *StartTargetedSentimentDetectionJobInput) (*StartTargetedSentimentDetectionJobOutput, error) {
@@ -6104,14 +6092,13 @@ const opStartTopicsDetectionJob = "StartTopicsDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartTopicsDetectionJobRequest method.
+//	req, resp := client.StartTopicsDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartTopicsDetectionJobRequest method.
-//    req, resp := client.StartTopicsDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartTopicsDetectionJob
 func (c *Comprehend) StartTopicsDetectionJobRequest(input *StartTopicsDetectionJobInput) (req *request.Request, output *StartTopicsDetectionJobOutput) {
@@ -6143,23 +6130,24 @@ func (c *Comprehend) StartTopicsDetectionJobRequest(input *StartTopicsDetectionJ
 // API operation StartTopicsDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * KmsKeyValidationException
-//   The KMS customer managed key (CMK) entered cannot be validated. Verify the
-//   key and re-enter it.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - KmsKeyValidationException
+//     The KMS customer managed key (CMK) entered cannot be validated. Verify the
+//     key and re-enter it.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StartTopicsDetectionJob
 func (c *Comprehend) StartTopicsDetectionJob(input *StartTopicsDetectionJobInput) (*StartTopicsDetectionJobOutput, error) {
@@ -6199,14 +6187,13 @@ const opStopDominantLanguageDetectionJob = "StopDominantLanguageDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopDominantLanguageDetectionJobRequest method.
+//	req, resp := client.StopDominantLanguageDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopDominantLanguageDetectionJobRequest method.
-//    req, resp := client.StopDominantLanguageDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopDominantLanguageDetectionJob
 func (c *Comprehend) StopDominantLanguageDetectionJobRequest(input *StopDominantLanguageDetectionJobInput) (req *request.Request, output *StopDominantLanguageDetectionJobOutput) {
@@ -6248,14 +6235,15 @@ func (c *Comprehend) StopDominantLanguageDetectionJobRequest(input *StopDominant
 // API operation StopDominantLanguageDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopDominantLanguageDetectionJob
 func (c *Comprehend) StopDominantLanguageDetectionJob(input *StopDominantLanguageDetectionJobInput) (*StopDominantLanguageDetectionJobOutput, error) {
@@ -6295,14 +6283,13 @@ const opStopEntitiesDetectionJob = "StopEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopEntitiesDetectionJobRequest method.
+//	req, resp := client.StopEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopEntitiesDetectionJobRequest method.
-//    req, resp := client.StopEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopEntitiesDetectionJob
 func (c *Comprehend) StopEntitiesDetectionJobRequest(input *StopEntitiesDetectionJobInput) (req *request.Request, output *StopEntitiesDetectionJobOutput) {
@@ -6344,14 +6331,15 @@ func (c *Comprehend) StopEntitiesDetectionJobRequest(input *StopEntitiesDetectio
 // API operation StopEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopEntitiesDetectionJob
 func (c *Comprehend) StopEntitiesDetectionJob(input *StopEntitiesDetectionJobInput) (*StopEntitiesDetectionJobOutput, error) {
@@ -6391,14 +6379,13 @@ const opStopEventsDetectionJob = "StopEventsDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopEventsDetectionJobRequest method.
+//	req, resp := client.StopEventsDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopEventsDetectionJobRequest method.
-//    req, resp := client.StopEventsDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopEventsDetectionJob
 func (c *Comprehend) StopEventsDetectionJobRequest(input *StopEventsDetectionJobInput) (req *request.Request, output *StopEventsDetectionJobOutput) {
@@ -6429,14 +6416,15 @@ func (c *Comprehend) StopEventsDetectionJobRequest(input *StopEventsDetectionJob
 // API operation StopEventsDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopEventsDetectionJob
 func (c *Comprehend) StopEventsDetectionJob(input *StopEventsDetectionJobInput) (*StopEventsDetectionJobOutput, error) {
@@ -6476,14 +6464,13 @@ const opStopKeyPhrasesDetectionJob = "StopKeyPhrasesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopKeyPhrasesDetectionJobRequest method.
+//	req, resp := client.StopKeyPhrasesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopKeyPhrasesDetectionJobRequest method.
-//    req, resp := client.StopKeyPhrasesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopKeyPhrasesDetectionJob
 func (c *Comprehend) StopKeyPhrasesDetectionJobRequest(input *StopKeyPhrasesDetectionJobInput) (req *request.Request, output *StopKeyPhrasesDetectionJobOutput) {
@@ -6525,14 +6512,15 @@ func (c *Comprehend) StopKeyPhrasesDetectionJobRequest(input *StopKeyPhrasesDete
 // API operation StopKeyPhrasesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopKeyPhrasesDetectionJob
 func (c *Comprehend) StopKeyPhrasesDetectionJob(input *StopKeyPhrasesDetectionJobInput) (*StopKeyPhrasesDetectionJobOutput, error) {
@@ -6572,14 +6560,13 @@ const opStopPiiEntitiesDetectionJob = "StopPiiEntitiesDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopPiiEntitiesDetectionJobRequest method.
+//	req, resp := client.StopPiiEntitiesDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopPiiEntitiesDetectionJobRequest method.
-//    req, resp := client.StopPiiEntitiesDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopPiiEntitiesDetectionJob
 func (c *Comprehend) StopPiiEntitiesDetectionJobRequest(input *StopPiiEntitiesDetectionJobInput) (req *request.Request, output *StopPiiEntitiesDetectionJobOutput) {
@@ -6610,14 +6597,15 @@ func (c *Comprehend) StopPiiEntitiesDetectionJobRequest(input *StopPiiEntitiesDe
 // API operation StopPiiEntitiesDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopPiiEntitiesDetectionJob
 func (c *Comprehend) StopPiiEntitiesDetectionJob(input *StopPiiEntitiesDetectionJobInput) (*StopPiiEntitiesDetectionJobOutput, error) {
@@ -6657,14 +6645,13 @@ const opStopSentimentDetectionJob = "StopSentimentDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopSentimentDetectionJobRequest method.
+//	req, resp := client.StopSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopSentimentDetectionJobRequest method.
-//    req, resp := client.StopSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopSentimentDetectionJob
 func (c *Comprehend) StopSentimentDetectionJobRequest(input *StopSentimentDetectionJobInput) (req *request.Request, output *StopSentimentDetectionJobOutput) {
@@ -6706,14 +6693,15 @@ func (c *Comprehend) StopSentimentDetectionJobRequest(input *StopSentimentDetect
 // API operation StopSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopSentimentDetectionJob
 func (c *Comprehend) StopSentimentDetectionJob(input *StopSentimentDetectionJobInput) (*StopSentimentDetectionJobOutput, error) {
@@ -6753,14 +6741,13 @@ const opStopTargetedSentimentDetectionJob = "StopTargetedSentimentDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopTargetedSentimentDetectionJobRequest method.
+//	req, resp := client.StopTargetedSentimentDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopTargetedSentimentDetectionJobRequest method.
-//    req, resp := client.StopTargetedSentimentDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTargetedSentimentDetectionJob
 func (c *Comprehend) StopTargetedSentimentDetectionJobRequest(input *StopTargetedSentimentDetectionJobInput) (req *request.Request, output *StopTargetedSentimentDetectionJobOutput) {
@@ -6802,14 +6789,15 @@ func (c *Comprehend) StopTargetedSentimentDetectionJobRequest(input *StopTargete
 // API operation StopTargetedSentimentDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * JobNotFoundException
-//   The specified job was not found. Check the job ID and try again.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - JobNotFoundException
+//     The specified job was not found. Check the job ID and try again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTargetedSentimentDetectionJob
 func (c *Comprehend) StopTargetedSentimentDetectionJob(input *StopTargetedSentimentDetectionJobInput) (*StopTargetedSentimentDetectionJobOutput, error) {
@@ -6849,14 +6837,13 @@ const opStopTrainingDocumentClassifier = "StopTrainingDocumentClassifier"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopTrainingDocumentClassifierRequest method.
+//	req, resp := client.StopTrainingDocumentClassifierRequest(params)
 //
-//    // Example sending a request using the StopTrainingDocumentClassifierRequest method.
-//    req, resp := client.StopTrainingDocumentClassifierRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTrainingDocumentClassifier
 func (c *Comprehend) StopTrainingDocumentClassifierRequest(input *StopTrainingDocumentClassifierInput) (req *request.Request, output *StopTrainingDocumentClassifierOutput) {
@@ -6894,18 +6881,19 @@ func (c *Comprehend) StopTrainingDocumentClassifierRequest(input *StopTrainingDo
 // API operation StopTrainingDocumentClassifier for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTrainingDocumentClassifier
 func (c *Comprehend) StopTrainingDocumentClassifier(input *StopTrainingDocumentClassifierInput) (*StopTrainingDocumentClassifierOutput, error) {
@@ -6945,14 +6933,13 @@ const opStopTrainingEntityRecognizer = "StopTrainingEntityRecognizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopTrainingEntityRecognizerRequest method.
+//	req, resp := client.StopTrainingEntityRecognizerRequest(params)
 //
-//    // Example sending a request using the StopTrainingEntityRecognizerRequest method.
-//    req, resp := client.StopTrainingEntityRecognizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTrainingEntityRecognizer
 func (c *Comprehend) StopTrainingEntityRecognizerRequest(input *StopTrainingEntityRecognizerInput) (req *request.Request, output *StopTrainingEntityRecognizerOutput) {
@@ -6990,18 +6977,19 @@ func (c *Comprehend) StopTrainingEntityRecognizerRequest(input *StopTrainingEnti
 // API operation StopTrainingEntityRecognizer for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/StopTrainingEntityRecognizer
 func (c *Comprehend) StopTrainingEntityRecognizer(input *StopTrainingEntityRecognizerInput) (*StopTrainingEntityRecognizerOutput, error) {
@@ -7041,14 +7029,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/TagResource
 func (c *Comprehend) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -7083,24 +7070,25 @@ func (c *Comprehend) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * ConcurrentModificationException
-//   Concurrent modification of the tags associated with an Amazon Comprehend
-//   resource is not supported.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - ConcurrentModificationException
+//     Concurrent modification of the tags associated with an Amazon Comprehend
+//     resource is not supported.
 //
-//   * TooManyTagsException
-//   The request contains more tags than can be associated with a resource (50
-//   tags per resource). The maximum number of tags includes both existing tags
-//   and those included in your current request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyTagsException
+//     The request contains more tags than can be associated with a resource (50
+//     tags per resource). The maximum number of tags includes both existing tags
+//     and those included in your current request.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/TagResource
 func (c *Comprehend) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -7140,14 +7128,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/UntagResource
 func (c *Comprehend) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -7179,23 +7166,24 @@ func (c *Comprehend) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyTagKeysException
-//   The request contains more tag keys than can be associated with a resource
-//   (50 tag keys per resource).
 //
-//   * InvalidRequestException
-//   The request is invalid.
+//   - TooManyTagKeysException
+//     The request contains more tag keys than can be associated with a resource
+//     (50 tag keys per resource).
 //
-//   * ConcurrentModificationException
-//   Concurrent modification of the tags associated with an Amazon Comprehend
-//   resource is not supported.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - ConcurrentModificationException
+//     Concurrent modification of the tags associated with an Amazon Comprehend
+//     resource is not supported.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/UntagResource
 func (c *Comprehend) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -7235,14 +7223,13 @@ const opUpdateEndpoint = "UpdateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEndpointRequest method.
+//	req, resp := client.UpdateEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateEndpointRequest method.
-//    req, resp := client.UpdateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/UpdateEndpoint
 func (c *Comprehend) UpdateEndpointRequest(input *UpdateEndpointInput) (req *request.Request, output *UpdateEndpointOutput) {
@@ -7275,30 +7262,31 @@ func (c *Comprehend) UpdateEndpointRequest(input *UpdateEndpointInput) (req *req
 // API operation UpdateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request is invalid.
 //
-//   * TooManyRequestsException
-//   The number of requests exceeds the limit. Resubmit your request later.
+//   - InvalidRequestException
+//     The request is invalid.
 //
-//   * ResourceInUseException
-//   The specified resource name is already in use. Use a different name and try
-//   your request again.
+//   - TooManyRequestsException
+//     The number of requests exceeds the limit. Resubmit your request later.
 //
-//   * ResourceLimitExceededException
-//   The maximum number of resources per account has been exceeded. Review the
-//   resources, and then try your request again.
+//   - ResourceInUseException
+//     The specified resource name is already in use. Use a different name and try
+//     your request again.
 //
-//   * ResourceNotFoundException
-//   The specified resource ARN was not found. Check the ARN and try your request
-//   again.
+//   - ResourceLimitExceededException
+//     The maximum number of resources per account has been exceeded. Review the
+//     resources, and then try your request again.
 //
-//   * ResourceUnavailableException
-//   The specified resource is not available. Check the resource and try your
-//   request again.
+//   - ResourceNotFoundException
+//     The specified resource ARN was not found. Check the ARN and try your request
+//     again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceUnavailableException
+//     The specified resource is not available. Check the resource and try your
+//     request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27/UpdateEndpoint
 func (c *Comprehend) UpdateEndpoint(input *UpdateEndpointInput) (*UpdateEndpointOutput, error) {
@@ -22494,10 +22482,10 @@ func DocumentReadAction_Values() []string {
 // types need to be extracted from the document where entity recognition is
 // expected.
 //
-//    * TABLES - Add TABLES to the list to return information about the tables
-//    that are detected in the input document.
+//   - TABLES - Add TABLES to the list to return information about the tables
+//     that are detected in the input document.
 //
-//    * FORMS - Add FORMS to return detected form data.
+//   - FORMS - Add FORMS to return detected form data.
 const (
 	// DocumentReadFeatureTypesTables is a DocumentReadFeatureTypes enum value
 	DocumentReadFeatureTypesTables = "TABLES"

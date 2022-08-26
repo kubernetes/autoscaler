@@ -11,7 +11,7 @@ import (
 
 // RemovePublicIpPoolCapacityRequest wrapper for the RemovePublicIpPoolCapacity operation
 //
-// See also
+// # See also
 //
 // Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/RemovePublicIpPoolCapacity.go.html to see an example of how to use RemovePublicIpPoolCapacityRequest.
 type RemovePublicIpPoolCapacityRequest struct {

@@ -29,14 +29,13 @@ const opCancelContact = "CancelContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelContactRequest method.
+//	req, resp := client.CancelContactRequest(params)
 //
-//    // Example sending a request using the CancelContactRequest method.
-//    req, resp := client.CancelContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CancelContact
 func (c *GroundStation) CancelContactRequest(input *CancelContactInput) (req *request.Request, output *CancelContactOutput) {
@@ -67,14 +66,15 @@ func (c *GroundStation) CancelContactRequest(input *CancelContactInput) (req *re
 // API operation CancelContact for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CancelContact
 func (c *GroundStation) CancelContact(input *CancelContactInput) (*CancelContactOutput, error) {
@@ -114,14 +114,13 @@ const opCreateConfig = "CreateConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateConfigRequest method.
+//	req, resp := client.CreateConfigRequest(params)
 //
-//    // Example sending a request using the CreateConfigRequest method.
-//    req, resp := client.CreateConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateConfig
 func (c *GroundStation) CreateConfigRequest(input *CreateConfigInput) (req *request.Request, output *CreateConfigOutput) {
@@ -154,17 +153,18 @@ func (c *GroundStation) CreateConfigRequest(input *CreateConfigInput) (req *requ
 // API operation CreateConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceLimitExceededException
-//   Account limits for this resource have been exceeded.
+//   - DependencyException
+//     Dependency encountered an error.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - ResourceLimitExceededException
+//     Account limits for this resource have been exceeded.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateConfig
 func (c *GroundStation) CreateConfig(input *CreateConfigInput) (*CreateConfigOutput, error) {
@@ -204,14 +204,13 @@ const opCreateDataflowEndpointGroup = "CreateDataflowEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataflowEndpointGroupRequest method.
+//	req, resp := client.CreateDataflowEndpointGroupRequest(params)
 //
-//    // Example sending a request using the CreateDataflowEndpointGroupRequest method.
-//    req, resp := client.CreateDataflowEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateDataflowEndpointGroup
 func (c *GroundStation) CreateDataflowEndpointGroupRequest(input *CreateDataflowEndpointGroupInput) (req *request.Request, output *CreateDataflowEndpointGroupOutput) {
@@ -249,14 +248,15 @@ func (c *GroundStation) CreateDataflowEndpointGroupRequest(input *CreateDataflow
 // API operation CreateDataflowEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateDataflowEndpointGroup
 func (c *GroundStation) CreateDataflowEndpointGroup(input *CreateDataflowEndpointGroupInput) (*CreateDataflowEndpointGroupOutput, error) {
@@ -296,14 +296,13 @@ const opCreateMissionProfile = "CreateMissionProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMissionProfileRequest method.
+//	req, resp := client.CreateMissionProfileRequest(params)
 //
-//    // Example sending a request using the CreateMissionProfileRequest method.
-//    req, resp := client.CreateMissionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateMissionProfile
 func (c *GroundStation) CreateMissionProfileRequest(input *CreateMissionProfileInput) (req *request.Request, output *CreateMissionProfileOutput) {
@@ -337,14 +336,15 @@ func (c *GroundStation) CreateMissionProfileRequest(input *CreateMissionProfileI
 // API operation CreateMissionProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/CreateMissionProfile
 func (c *GroundStation) CreateMissionProfile(input *CreateMissionProfileInput) (*CreateMissionProfileOutput, error) {
@@ -384,14 +384,13 @@ const opDeleteConfig = "DeleteConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteConfigRequest method.
+//	req, resp := client.DeleteConfigRequest(params)
 //
-//    // Example sending a request using the DeleteConfigRequest method.
-//    req, resp := client.DeleteConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteConfig
 func (c *GroundStation) DeleteConfigRequest(input *DeleteConfigInput) (req *request.Request, output *DeleteConfigOutput) {
@@ -422,14 +421,15 @@ func (c *GroundStation) DeleteConfigRequest(input *DeleteConfigInput) (req *requ
 // API operation DeleteConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteConfig
 func (c *GroundStation) DeleteConfig(input *DeleteConfigInput) (*DeleteConfigOutput, error) {
@@ -469,14 +469,13 @@ const opDeleteDataflowEndpointGroup = "DeleteDataflowEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataflowEndpointGroupRequest method.
+//	req, resp := client.DeleteDataflowEndpointGroupRequest(params)
 //
-//    // Example sending a request using the DeleteDataflowEndpointGroupRequest method.
-//    req, resp := client.DeleteDataflowEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteDataflowEndpointGroup
 func (c *GroundStation) DeleteDataflowEndpointGroupRequest(input *DeleteDataflowEndpointGroupInput) (req *request.Request, output *DeleteDataflowEndpointGroupOutput) {
@@ -507,14 +506,15 @@ func (c *GroundStation) DeleteDataflowEndpointGroupRequest(input *DeleteDataflow
 // API operation DeleteDataflowEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteDataflowEndpointGroup
 func (c *GroundStation) DeleteDataflowEndpointGroup(input *DeleteDataflowEndpointGroupInput) (*DeleteDataflowEndpointGroupOutput, error) {
@@ -554,14 +554,13 @@ const opDeleteMissionProfile = "DeleteMissionProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMissionProfileRequest method.
+//	req, resp := client.DeleteMissionProfileRequest(params)
 //
-//    // Example sending a request using the DeleteMissionProfileRequest method.
-//    req, resp := client.DeleteMissionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteMissionProfile
 func (c *GroundStation) DeleteMissionProfileRequest(input *DeleteMissionProfileInput) (req *request.Request, output *DeleteMissionProfileOutput) {
@@ -592,14 +591,15 @@ func (c *GroundStation) DeleteMissionProfileRequest(input *DeleteMissionProfileI
 // API operation DeleteMissionProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DeleteMissionProfile
 func (c *GroundStation) DeleteMissionProfile(input *DeleteMissionProfileInput) (*DeleteMissionProfileOutput, error) {
@@ -639,14 +639,13 @@ const opDescribeContact = "DescribeContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeContactRequest method.
+//	req, resp := client.DescribeContactRequest(params)
 //
-//    // Example sending a request using the DescribeContactRequest method.
-//    req, resp := client.DescribeContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DescribeContact
 func (c *GroundStation) DescribeContactRequest(input *DescribeContactInput) (req *request.Request, output *DescribeContactOutput) {
@@ -677,14 +676,15 @@ func (c *GroundStation) DescribeContactRequest(input *DescribeContactInput) (req
 // API operation DescribeContact for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/DescribeContact
 func (c *GroundStation) DescribeContact(input *DescribeContactInput) (*DescribeContactOutput, error) {
@@ -724,14 +724,13 @@ const opGetConfig = "GetConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetConfigRequest method.
+//	req, resp := client.GetConfigRequest(params)
 //
-//    // Example sending a request using the GetConfigRequest method.
-//    req, resp := client.GetConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetConfig
 func (c *GroundStation) GetConfigRequest(input *GetConfigInput) (req *request.Request, output *GetConfigOutput) {
@@ -764,14 +763,15 @@ func (c *GroundStation) GetConfigRequest(input *GetConfigInput) (req *request.Re
 // API operation GetConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetConfig
 func (c *GroundStation) GetConfig(input *GetConfigInput) (*GetConfigOutput, error) {
@@ -811,14 +811,13 @@ const opGetDataflowEndpointGroup = "GetDataflowEndpointGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataflowEndpointGroupRequest method.
+//	req, resp := client.GetDataflowEndpointGroupRequest(params)
 //
-//    // Example sending a request using the GetDataflowEndpointGroupRequest method.
-//    req, resp := client.GetDataflowEndpointGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetDataflowEndpointGroup
 func (c *GroundStation) GetDataflowEndpointGroupRequest(input *GetDataflowEndpointGroupInput) (req *request.Request, output *GetDataflowEndpointGroupOutput) {
@@ -849,14 +848,15 @@ func (c *GroundStation) GetDataflowEndpointGroupRequest(input *GetDataflowEndpoi
 // API operation GetDataflowEndpointGroup for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetDataflowEndpointGroup
 func (c *GroundStation) GetDataflowEndpointGroup(input *GetDataflowEndpointGroupInput) (*GetDataflowEndpointGroupOutput, error) {
@@ -896,14 +896,13 @@ const opGetMinuteUsage = "GetMinuteUsage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMinuteUsageRequest method.
+//	req, resp := client.GetMinuteUsageRequest(params)
 //
-//    // Example sending a request using the GetMinuteUsageRequest method.
-//    req, resp := client.GetMinuteUsageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetMinuteUsage
 func (c *GroundStation) GetMinuteUsageRequest(input *GetMinuteUsageInput) (req *request.Request, output *GetMinuteUsageOutput) {
@@ -934,14 +933,15 @@ func (c *GroundStation) GetMinuteUsageRequest(input *GetMinuteUsageInput) (req *
 // API operation GetMinuteUsage for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetMinuteUsage
 func (c *GroundStation) GetMinuteUsage(input *GetMinuteUsageInput) (*GetMinuteUsageOutput, error) {
@@ -981,14 +981,13 @@ const opGetMissionProfile = "GetMissionProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMissionProfileRequest method.
+//	req, resp := client.GetMissionProfileRequest(params)
 //
-//    // Example sending a request using the GetMissionProfileRequest method.
-//    req, resp := client.GetMissionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetMissionProfile
 func (c *GroundStation) GetMissionProfileRequest(input *GetMissionProfileInput) (req *request.Request, output *GetMissionProfileOutput) {
@@ -1019,14 +1018,15 @@ func (c *GroundStation) GetMissionProfileRequest(input *GetMissionProfileInput) 
 // API operation GetMissionProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetMissionProfile
 func (c *GroundStation) GetMissionProfile(input *GetMissionProfileInput) (*GetMissionProfileOutput, error) {
@@ -1066,14 +1066,13 @@ const opGetSatellite = "GetSatellite"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSatelliteRequest method.
+//	req, resp := client.GetSatelliteRequest(params)
 //
-//    // Example sending a request using the GetSatelliteRequest method.
-//    req, resp := client.GetSatelliteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetSatellite
 func (c *GroundStation) GetSatelliteRequest(input *GetSatelliteInput) (req *request.Request, output *GetSatelliteOutput) {
@@ -1104,14 +1103,15 @@ func (c *GroundStation) GetSatelliteRequest(input *GetSatelliteInput) (req *requ
 // API operation GetSatellite for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/GetSatellite
 func (c *GroundStation) GetSatellite(input *GetSatelliteInput) (*GetSatelliteOutput, error) {
@@ -1151,14 +1151,13 @@ const opListConfigs = "ListConfigs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListConfigsRequest method.
+//	req, resp := client.ListConfigsRequest(params)
 //
-//    // Example sending a request using the ListConfigsRequest method.
-//    req, resp := client.ListConfigsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListConfigs
 func (c *GroundStation) ListConfigsRequest(input *ListConfigsInput) (req *request.Request, output *ListConfigsOutput) {
@@ -1195,14 +1194,15 @@ func (c *GroundStation) ListConfigsRequest(input *ListConfigsInput) (req *reques
 // API operation ListConfigs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListConfigs
 func (c *GroundStation) ListConfigs(input *ListConfigsInput) (*ListConfigsOutput, error) {
@@ -1234,15 +1234,14 @@ func (c *GroundStation) ListConfigsWithContext(ctx aws.Context, input *ListConfi
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListConfigs operation.
-//    pageNum := 0
-//    err := client.ListConfigsPages(params,
-//        func(page *groundstation.ListConfigsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListConfigs operation.
+//	pageNum := 0
+//	err := client.ListConfigsPages(params,
+//	    func(page *groundstation.ListConfigsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListConfigsPages(input *ListConfigsInput, fn func(*ListConfigsOutput, bool) bool) error {
 	return c.ListConfigsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1294,14 +1293,13 @@ const opListContacts = "ListContacts"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContactsRequest method.
+//	req, resp := client.ListContactsRequest(params)
 //
-//    // Example sending a request using the ListContactsRequest method.
-//    req, resp := client.ListContactsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListContacts
 func (c *GroundStation) ListContactsRequest(input *ListContactsInput) (req *request.Request, output *ListContactsOutput) {
@@ -1341,14 +1339,15 @@ func (c *GroundStation) ListContactsRequest(input *ListContactsInput) (req *requ
 // API operation ListContacts for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListContacts
 func (c *GroundStation) ListContacts(input *ListContactsInput) (*ListContactsOutput, error) {
@@ -1380,15 +1379,14 @@ func (c *GroundStation) ListContactsWithContext(ctx aws.Context, input *ListCont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContacts operation.
-//    pageNum := 0
-//    err := client.ListContactsPages(params,
-//        func(page *groundstation.ListContactsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContacts operation.
+//	pageNum := 0
+//	err := client.ListContactsPages(params,
+//	    func(page *groundstation.ListContactsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListContactsPages(input *ListContactsInput, fn func(*ListContactsOutput, bool) bool) error {
 	return c.ListContactsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1440,14 +1438,13 @@ const opListDataflowEndpointGroups = "ListDataflowEndpointGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDataflowEndpointGroupsRequest method.
+//	req, resp := client.ListDataflowEndpointGroupsRequest(params)
 //
-//    // Example sending a request using the ListDataflowEndpointGroupsRequest method.
-//    req, resp := client.ListDataflowEndpointGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListDataflowEndpointGroups
 func (c *GroundStation) ListDataflowEndpointGroupsRequest(input *ListDataflowEndpointGroupsInput) (req *request.Request, output *ListDataflowEndpointGroupsOutput) {
@@ -1484,14 +1481,15 @@ func (c *GroundStation) ListDataflowEndpointGroupsRequest(input *ListDataflowEnd
 // API operation ListDataflowEndpointGroups for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListDataflowEndpointGroups
 func (c *GroundStation) ListDataflowEndpointGroups(input *ListDataflowEndpointGroupsInput) (*ListDataflowEndpointGroupsOutput, error) {
@@ -1523,15 +1521,14 @@ func (c *GroundStation) ListDataflowEndpointGroupsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDataflowEndpointGroups operation.
-//    pageNum := 0
-//    err := client.ListDataflowEndpointGroupsPages(params,
-//        func(page *groundstation.ListDataflowEndpointGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDataflowEndpointGroups operation.
+//	pageNum := 0
+//	err := client.ListDataflowEndpointGroupsPages(params,
+//	    func(page *groundstation.ListDataflowEndpointGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListDataflowEndpointGroupsPages(input *ListDataflowEndpointGroupsInput, fn func(*ListDataflowEndpointGroupsOutput, bool) bool) error {
 	return c.ListDataflowEndpointGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1583,14 +1580,13 @@ const opListGroundStations = "ListGroundStations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListGroundStationsRequest method.
+//	req, resp := client.ListGroundStationsRequest(params)
 //
-//    // Example sending a request using the ListGroundStationsRequest method.
-//    req, resp := client.ListGroundStationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListGroundStations
 func (c *GroundStation) ListGroundStationsRequest(input *ListGroundStationsInput) (req *request.Request, output *ListGroundStationsOutput) {
@@ -1627,14 +1623,15 @@ func (c *GroundStation) ListGroundStationsRequest(input *ListGroundStationsInput
 // API operation ListGroundStations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListGroundStations
 func (c *GroundStation) ListGroundStations(input *ListGroundStationsInput) (*ListGroundStationsOutput, error) {
@@ -1666,15 +1663,14 @@ func (c *GroundStation) ListGroundStationsWithContext(ctx aws.Context, input *Li
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListGroundStations operation.
-//    pageNum := 0
-//    err := client.ListGroundStationsPages(params,
-//        func(page *groundstation.ListGroundStationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListGroundStations operation.
+//	pageNum := 0
+//	err := client.ListGroundStationsPages(params,
+//	    func(page *groundstation.ListGroundStationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListGroundStationsPages(input *ListGroundStationsInput, fn func(*ListGroundStationsOutput, bool) bool) error {
 	return c.ListGroundStationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1726,14 +1722,13 @@ const opListMissionProfiles = "ListMissionProfiles"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListMissionProfilesRequest method.
+//	req, resp := client.ListMissionProfilesRequest(params)
 //
-//    // Example sending a request using the ListMissionProfilesRequest method.
-//    req, resp := client.ListMissionProfilesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListMissionProfiles
 func (c *GroundStation) ListMissionProfilesRequest(input *ListMissionProfilesInput) (req *request.Request, output *ListMissionProfilesOutput) {
@@ -1770,14 +1765,15 @@ func (c *GroundStation) ListMissionProfilesRequest(input *ListMissionProfilesInp
 // API operation ListMissionProfiles for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListMissionProfiles
 func (c *GroundStation) ListMissionProfiles(input *ListMissionProfilesInput) (*ListMissionProfilesOutput, error) {
@@ -1809,15 +1805,14 @@ func (c *GroundStation) ListMissionProfilesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListMissionProfiles operation.
-//    pageNum := 0
-//    err := client.ListMissionProfilesPages(params,
-//        func(page *groundstation.ListMissionProfilesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListMissionProfiles operation.
+//	pageNum := 0
+//	err := client.ListMissionProfilesPages(params,
+//	    func(page *groundstation.ListMissionProfilesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListMissionProfilesPages(input *ListMissionProfilesInput, fn func(*ListMissionProfilesOutput, bool) bool) error {
 	return c.ListMissionProfilesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1869,14 +1864,13 @@ const opListSatellites = "ListSatellites"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSatellitesRequest method.
+//	req, resp := client.ListSatellitesRequest(params)
 //
-//    // Example sending a request using the ListSatellitesRequest method.
-//    req, resp := client.ListSatellitesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListSatellites
 func (c *GroundStation) ListSatellitesRequest(input *ListSatellitesInput) (req *request.Request, output *ListSatellitesOutput) {
@@ -1913,14 +1907,15 @@ func (c *GroundStation) ListSatellitesRequest(input *ListSatellitesInput) (req *
 // API operation ListSatellites for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListSatellites
 func (c *GroundStation) ListSatellites(input *ListSatellitesInput) (*ListSatellitesOutput, error) {
@@ -1952,15 +1947,14 @@ func (c *GroundStation) ListSatellitesWithContext(ctx aws.Context, input *ListSa
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSatellites operation.
-//    pageNum := 0
-//    err := client.ListSatellitesPages(params,
-//        func(page *groundstation.ListSatellitesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSatellites operation.
+//	pageNum := 0
+//	err := client.ListSatellitesPages(params,
+//	    func(page *groundstation.ListSatellitesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *GroundStation) ListSatellitesPages(input *ListSatellitesInput, fn func(*ListSatellitesOutput, bool) bool) error {
 	return c.ListSatellitesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2012,14 +2006,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListTagsForResource
 func (c *GroundStation) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2050,14 +2043,15 @@ func (c *GroundStation) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ListTagsForResource
 func (c *GroundStation) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2097,14 +2091,13 @@ const opReserveContact = "ReserveContact"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReserveContactRequest method.
+//	req, resp := client.ReserveContactRequest(params)
 //
-//    // Example sending a request using the ReserveContactRequest method.
-//    req, resp := client.ReserveContactRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ReserveContact
 func (c *GroundStation) ReserveContactRequest(input *ReserveContactInput) (req *request.Request, output *ReserveContactOutput) {
@@ -2135,14 +2128,15 @@ func (c *GroundStation) ReserveContactRequest(input *ReserveContactInput) (req *
 // API operation ReserveContact for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/ReserveContact
 func (c *GroundStation) ReserveContact(input *ReserveContactInput) (*ReserveContactOutput, error) {
@@ -2182,14 +2176,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/TagResource
 func (c *GroundStation) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2221,14 +2214,15 @@ func (c *GroundStation) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/TagResource
 func (c *GroundStation) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2268,14 +2262,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UntagResource
 func (c *GroundStation) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2307,14 +2300,15 @@ func (c *GroundStation) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UntagResource
 func (c *GroundStation) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2354,14 +2348,13 @@ const opUpdateConfig = "UpdateConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateConfigRequest method.
+//	req, resp := client.UpdateConfigRequest(params)
 //
-//    // Example sending a request using the UpdateConfigRequest method.
-//    req, resp := client.UpdateConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateConfig
 func (c *GroundStation) UpdateConfigRequest(input *UpdateConfigInput) (req *request.Request, output *UpdateConfigOutput) {
@@ -2395,14 +2388,15 @@ func (c *GroundStation) UpdateConfigRequest(input *UpdateConfigInput) (req *requ
 // API operation UpdateConfig for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateConfig
 func (c *GroundStation) UpdateConfig(input *UpdateConfigInput) (*UpdateConfigOutput, error) {
@@ -2442,14 +2436,13 @@ const opUpdateMissionProfile = "UpdateMissionProfile"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMissionProfileRequest method.
+//	req, resp := client.UpdateMissionProfileRequest(params)
 //
-//    // Example sending a request using the UpdateMissionProfileRequest method.
-//    req, resp := client.UpdateMissionProfileRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateMissionProfile
 func (c *GroundStation) UpdateMissionProfileRequest(input *UpdateMissionProfileInput) (req *request.Request, output *UpdateMissionProfileOutput) {
@@ -2483,14 +2476,15 @@ func (c *GroundStation) UpdateMissionProfileRequest(input *UpdateMissionProfileI
 // API operation UpdateMissionProfile for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidParameterException
-//   One or more parameters are not valid.
 //
-//   * DependencyException
-//   Dependency encountered an error.
+//   - InvalidParameterException
+//     One or more parameters are not valid.
 //
-//   * ResourceNotFoundException
-//   Resource was not found.
+//   - DependencyException
+//     Dependency encountered an error.
+//
+//   - ResourceNotFoundException
+//     Resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/groundstation-2019-05-23/UpdateMissionProfile
 func (c *GroundStation) UpdateMissionProfile(input *UpdateMissionProfileInput) (*UpdateMissionProfileOutput, error) {
