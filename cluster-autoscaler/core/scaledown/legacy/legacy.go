@@ -39,10 +39,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	klog "k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
@@ -317,10 +315,11 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		return nil, nil, status.ScaleDownError, errors.ToAutoscalerError(errors.InternalError, errSnapshot)
 	}
 
-	nodesWithoutMaster := filterOutMasters(allNodeInfos)
-	nodesWithoutMasterNames := make([]string, 0, len(nodesWithoutMaster))
-	for _, node := range nodesWithoutMaster {
-		nodesWithoutMasterNames = append(nodesWithoutMasterNames, node.Name)
+	allNodes := make([]*apiv1.Node, 0, len(allNodeInfos))
+	allNodeNames := make([]string, 0, len(allNodeInfos))
+	for _, ni := range allNodeInfos {
+		allNodes = append(allNodes, ni.Node())
+		allNodeNames = append(allNodeNames, ni.Node().Name)
 	}
 
 	candidateNames := make([]string, 0)
@@ -332,7 +331,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 		return nil, nil, status.ScaleDownError, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
-	scaleDownResourcesLeft := sd.resourceLimitsFinder.LimitsLeft(sd.context, nodesWithoutMaster, resourceLimiter, currentTime)
+	scaleDownResourcesLeft := sd.resourceLimitsFinder.LimitsLeft(sd.context, allNodes, resourceLimiter, currentTime)
 
 	nodeGroupSize := utils.GetNodeGroupSizeMap(sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
@@ -459,7 +458,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time, pdbs []*policyv1.PodDi
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, unremovable, _, err := sd.removalSimulator.FindNodesToRemove(
 		candidateNames,
-		nodesWithoutMasterNames,
+		allNodeNames,
 		sd.podLocationHints,
 		time.Now(),
 		pdbs)
@@ -556,28 +555,4 @@ func (sd *ScaleDown) getEmptyNodesToRemove(candidates []string, resourcesLimits 
 	}
 
 	return nodesToRemove
-}
-
-const (
-	apiServerLabelKey   = "component"
-	apiServerLabelValue = "kube-apiserver"
-)
-
-func isMasterNode(nodeInfo *schedulerframework.NodeInfo) bool {
-	for _, podInfo := range nodeInfo.Pods {
-		if podInfo.Pod.Namespace == metav1.NamespaceSystem && podInfo.Pod.Labels[apiServerLabelKey] == apiServerLabelValue {
-			return true
-		}
-	}
-	return false
-}
-
-func filterOutMasters(nodeInfos []*schedulerframework.NodeInfo) []*apiv1.Node {
-	result := make([]*apiv1.Node, 0, len(nodeInfos))
-	for _, nodeInfo := range nodeInfos {
-		if !isMasterNode(nodeInfo) {
-			result = append(result, nodeInfo.Node())
-		}
-	}
-	return result
 }

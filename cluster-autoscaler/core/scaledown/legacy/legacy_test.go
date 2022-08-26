@@ -24,7 +24,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -1247,59 +1246,6 @@ func getCountOfChan(c chan string) int {
 			return count
 		}
 	}
-}
-
-func TestFilterOutMasters(t *testing.T) {
-	nodeConfigs := []NodeConfig{
-		{"n1", 2000, 4000, 0, false, "ng1"},
-		{"n2", 2000, 4000, 0, true, "ng2"},
-		{"n3", 2000, 8000, 0, true, ""}, // real master
-		{"n4", 1000, 2000, 0, true, "ng3"},
-		{"n5", 1000, 2000, 0, true, "ng3"},
-		{"n6", 2000, 8000, 0, true, ""}, // same machine type, no node group, no api server
-		{"n7", 2000, 8000, 0, true, ""}, // real master
-	}
-	nodes := make([]*schedulerframework.NodeInfo, len(nodeConfigs))
-	nodeMap := make(map[string]*schedulerframework.NodeInfo, len(nodeConfigs))
-	for i, n := range nodeConfigs {
-		node := BuildTestNode(n.Name, n.Cpu, n.Memory)
-		SetNodeReadyState(node, n.Ready, time.Now())
-		nodeInfo := schedulerframework.NewNodeInfo()
-		nodeInfo.SetNode(node)
-		nodes[i] = nodeInfo
-		nodeMap[n.Name] = nodeInfo
-	}
-
-	BuildTestPodWithExtra := func(name, namespace, node string, labels map[string]string) *apiv1.Pod {
-		pod := BuildTestPod(name, 100, 200)
-		pod.Spec.NodeName = node
-		pod.Namespace = namespace
-		pod.Labels = labels
-		return pod
-	}
-
-	pods := []*apiv1.Pod{
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n2", map[string]string{}),                                          // without label
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "fake-kube-system", "n6", map[string]string{"component": "kube-apiserver"}),        // wrong namespace
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n3", map[string]string{"component": "kube-apiserver"}),             // real api server
-		BuildTestPodWithExtra("hidden-name", "kube-system", "n7", map[string]string{"component": "kube-apiserver"}),                                  // also a real api server
-		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n1", map[string]string{"component": "kube-apiserver-dev"}),         // wrong label
-		BuildTestPodWithExtra("custom-deployment", "custom", "n5", map[string]string{"component": "custom-component", "custom-key": "custom-value"}), // unrelated pod
-	}
-
-	for _, pod := range pods {
-		if node, found := nodeMap[pod.Spec.NodeName]; found {
-			node.AddPod(pod)
-		}
-	}
-
-	withoutMasters := filterOutMasters(nodes)
-
-	withoutMastersNames := make([]string, len(withoutMasters))
-	for i, n := range withoutMasters {
-		withoutMastersNames[i] = n.Name
-	}
-	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
 
 func generateReplicaSets() []*appsv1.ReplicaSet {
