@@ -47,6 +47,7 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeTags",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeLaunchTemplateVersions"
       ],
